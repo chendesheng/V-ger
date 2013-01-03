@@ -35,6 +35,6 @@ func Login(user string, password string) {
 			"p":            {passwordMd5},
 		})
 
-	u, _ := url.Parse("http://vip.xunlei.com")
-	fmt.Println(Client.Jar.Cookies(u))
+	// u, _ := url.Parse("http://vip.xunlei.com")
+	// fmt.Println(Client.Jar.Cookies(u))
 }

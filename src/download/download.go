@@ -57,7 +57,6 @@ func BeginDownload(url string, name string) {
 		return nil
 	}
 
-	fmt.Println(currentTask.URL)
 	resp := sendGet(currentTask.URL)
 	defer func() {
 		resp.Body.Close()
@@ -193,7 +192,7 @@ func readProgress(currentTask Task) (size int64, elapsedTime time.Duration) {
 		return 0, 0
 	}
 
-	fmt.Println(string(bytes))
+	//fmt.Println(string(bytes))
 	return data.Size, data.ElapsedTime
 }
 func saveProgress(currentTask Task, size int64, elapsedTime time.Duration) {

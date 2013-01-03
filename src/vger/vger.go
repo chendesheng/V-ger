@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/cookiejar"
 	"download"
 	"fmt"
+	// "io"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,6 +14,12 @@ import (
 )
 
 func init() {
+	f, err := os.OpenFile("vegar.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(f)
+
 	client := &http.Client{
 		Jar: cookiejar.NewJar(true),
 	}
@@ -31,6 +38,7 @@ func init() {
 	thunder.Client = client
 
 	thunder.Login("129697884", "057764593828")
+
 }
 
 func main() {

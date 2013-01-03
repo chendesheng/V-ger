@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	// "net/http/httputil"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -103,14 +103,6 @@ func getNewlyCreateTask(userId string) []ThunderTask {
 			"tasknum":  {"1"},
 		})
 
-	// regexUrl, _ := regexp.Compile(`("id":"[0-9]*").*("cid":"[^"]*").*("lixian_url":"[^"]*")`)
-	// finalJson := "{" + strings.Join(regexUrl.FindStringSubmatch(text)[1:], ",") + "}"
-	// fmt.Println(finalJson)
-	// var r interface{}
-	// json.Unmarshal([]byte(finalJson), &r)
-	// info := r.(map[string]interface{})
-	// fmt.Println(info["lixian_url"])
-
 	info := parseNewlyCreateTask(text)
 
 	if info["lixian_url"] != "" {
@@ -167,7 +159,7 @@ func sendPost(url string, params *url.Values, data *url.Values) string {
 	}
 
 	text := readBody(resp)
-	fmt.Println(text)
+	log.Println(text)
 	return text
 }
 func sendGet(url string, params *url.Values) string {
@@ -179,8 +171,8 @@ func sendGet(url string, params *url.Values) string {
 		log.Fatal(err)
 	}
 
-	// dumpBytes, _ := httputil.DumpResponse(resp, true)
-	// fmt.Println(string(dumpBytes))
+	dumpBytes, _ := httputil.DumpResponse(resp, true)
+	log.Println(string(dumpBytes))
 
 	text := readBody(resp)
 	return text
@@ -192,8 +184,8 @@ func readBody(resp *http.Response) string {
 		log.Fatal(err)
 	}
 
-	// dumpBytes, _ := httputil.DumpResponse(resp, true)
-	// fmt.Println(string(dumpBytes))
+	dumpBytes, _ := httputil.DumpResponse(resp, true)
+	log.Println(string(dumpBytes))
 
 	text := string(bytes)
 	return text

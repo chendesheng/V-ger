@@ -2,7 +2,8 @@ package thunder
 
 import (
 	"encoding/json"
-	"fmt"
+	// "fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,7 +25,7 @@ func parseUrlQueryResult(text string) (cid string, tsize string, btname string, 
 	for _, s := range regexUrlQuery.FindStringSubmatch(text)[1:] {
 		args = append(args, strings.TrimSpace(s))
 	}
-	fmt.Println(args)
+	log.Println(args)
 
 	sizeList := strings.Split(args[7], ",")
 	trimStringSlice(&sizeList, " '")
@@ -51,7 +52,7 @@ func parseBtTaskList(text string) []ThunderTask {
 
 	jsonStr := regexUrl.FindStringSubmatch(text)[1]
 	//"[{" + strings.Join(regexUrl.FindStringSubmatch(text)[1:], "},{") + "}]"
-	fmt.Println(jsonStr)
+	log.Println(jsonStr)
 
 	var r []interface{}
 	json.Unmarshal([]byte(jsonStr), &r)
@@ -76,7 +77,7 @@ func parseNewlyCreateTask(text string) map[string]interface{} {
 	regexUrl, _ := regexp.Compile(`("id":"[0-9]*").*("filesize":"[^"]*").*("cid":"[^"]*").*("taskname":"[^"]*").*("lixian_url":"[^"]*")`)
 
 	jsonStr := "{" + strings.Join(regexUrl.FindStringSubmatch(text)[1:], ",") + "}"
-	fmt.Println(jsonStr)
+	log.Println(jsonStr)
 
 	var r interface{}
 	json.Unmarshal([]byte(jsonStr), &r)
