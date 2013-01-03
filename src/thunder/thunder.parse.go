@@ -51,7 +51,6 @@ func parseBtTaskList(text string) []ThunderTask {
 	regexUrl, _ := regexp.Compile(`"Record":(\[.+\])`)
 
 	jsonStr := regexUrl.FindStringSubmatch(text)[1]
-	//"[{" + strings.Join(regexUrl.FindStringSubmatch(text)[1:], "},{") + "}]"
 	log.Println(jsonStr)
 
 	var r []interface{}

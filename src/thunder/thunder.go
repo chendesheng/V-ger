@@ -17,15 +17,6 @@ import (
 
 var Client *http.Client
 
-// func pipe() {
-// 	f, err := os.OpenFile("test.log", os.O_APPEND|os.O_CREATE, 0666)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	r, w := io.Pipe()
-
-// }
-
 func NewTask(taskURL string) []ThunderTask {
 	taskType := getTaskType(taskURL)
 	userId := getCookieValue("userid")
@@ -106,14 +97,13 @@ func getNewlyCreateTask(userId string) []ThunderTask {
 	info := parseNewlyCreateTask(text)
 
 	if info["lixian_url"] != "" {
-		file := ThunderTask{
-			Name:        info["taskname"].(string),
-			DownloadURL: info["lixian_url"].(string),
-			Size:        info["filesize"].(string),
+		return []ThunderTask{
+			ThunderTask{
+				Name:        info["taskname"].(string),
+				DownloadURL: info["lixian_url"].(string),
+				Size:        info["filesize"].(string),
+			},
 		}
-		files := [1]ThunderTask{file}
-
-		return files[0:]
 	}
 
 	return getBtTaskList(userId, info["id"].(string), info["cid"].(string))
