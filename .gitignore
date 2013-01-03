@@ -1,0 +1,8 @@
+pkg
+bin
+config.json
+.sublime-project
+.DS_Store
+.project
+*~
+*.diff
