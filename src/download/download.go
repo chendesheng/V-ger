@@ -96,7 +96,7 @@ func BeginDownload(url string, name string) {
 		readLen, _ := resp.Body.Read(bytes)
 		if readLen == 0 {
 			removeTask(currentTask.Name)
-			fmt.Printf("\nIt's done! %.2f KB/s on average.\n", float64(size)*float64(time.Second)/float64(elapsedTime)/1024)
+			fmt.Printf("\nIt's done!\n\n")
 			return
 		}
 		f.Write(bytes[:readLen])
@@ -150,12 +150,14 @@ func GetTasks() []Task {
 var globalConfig Config
 
 func getFileInfo(resp *http.Response) (name string, size int64) {
-	contentDisposition := resp.Header["Content-Disposition"][0]
-	regexFile, err := regexp.Compile(`filename="([^"]+)"`)
-	if err != nil {
-		log.Fatal(err)
+	if len(resp.Header["Content-Disposition"]) > 0 {
+		contentDisposition := resp.Header["Content-Disposition"][0]
+		regexFile, err := regexp.Compile(`filename="([^"]+)"`)
+		if err != nil {
+			log.Fatal(err)
+		}
+		name = regexFile.FindStringSubmatch(contentDisposition)[1]
 	}
-	name = regexFile.FindStringSubmatch(contentDisposition)[1]
 
 	if cr := resp.Header["Content-Range"]; len(cr) > 0 {
 		regexSize, err := regexp.Compile(`/(\d+)`)
