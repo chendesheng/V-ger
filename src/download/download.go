@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -29,86 +30,57 @@ func sendGet(url string) *http.Response {
 	}
 	return resp
 }
-func BeginDownload(url string, name string) {
-	globalConfig = readConfig()
-
-	if DownloadClient == nil {
-		DownloadClient = http.DefaultClient
+func addRangeHeader(req *http.Request, pos int64) {
+	if pos <= 0 {
+		return
 	}
-
-	currentTask, currentTaskIfNew := getOrNewTask(url, name)
-
-	DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		// currentTask.URL = req.URL.String()
-
-		pos := currentTask.DownloadedSize
-		if pos > 0 {
-			req.Header.Add("Range", fmt.Sprintf("bytes=%d-", pos))
-		}
-		return nil
-	}
-
-	resp, err := DownloadClient.Get(url)
+	req.Header.Add("Range", fmt.Sprintf("bytes=%d-", pos))
+}
+func createRequest(t *Task) *http.Request {
+	req := new(http.Request)
+	req.Method = "GET"
+	req.URL, _ = url.Parse(t.URL)
+	req.Header = make(http.Header)
+	return req
+}
+func openOrCreateFileRW(path string) *os.File {
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return f
+}
 
-	defer func() {
-		resp.Body.Close()
-		DownloadClient.CheckRedirect = nil
-	}()
-
-	if currentTaskIfNew {
-		currentTask.Name, currentTask.Size = getFileInfo(resp)
-		if name != "" {
-			currentTask.Name = name
-		}
-
-		currentTask.StartDate = time.Now().String()
-		currentTask.Path = fmt.Sprintf("%s%c%s", globalConfig.BaseDir, os.PathSeparator, currentTask.Name)
-
-		saveTask(currentTask)
-
-		fmt.Printf("New Task: %s    %d\n", currentTask.Name, currentTask.Size)
-	}
-	size := currentTask.Size
-
-	f, err := os.OpenFile(currentTask.Path, os.O_RDWR|os.O_CREATE, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
+func writeDownload(t *Task, resp *http.Response) {
+	f := openOrCreateFileRW(t.Path)
 	defer f.Close()
-	pos, elapsedTime := currentTask.DownloadedSize, currentTask.ElapsedTime
-	f.Seek(pos, 0)
-	bytes := make([]byte, 40000)
-	total := pos
+
+	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
+	f.Seek(total, 0)
+
+	buffer := make([]byte, 40000)
 	part := int64(0)
 	parts := [5]int64{0, 0, 0, 0, 0}
 	checkTimes := [5]time.Time{time.Now(), time.Now(), time.Now(), time.Now(), time.Now()}
 	cnt := 0
-
-	beginTime := time.Now()
-
 	percentage := float64(total) / float64(size) * 100
-	totalElapsedTime := elapsedTime
-	speed := float64(0)
+	speed := float64(0) // average speed of recent 5 seconds
 	for {
-		readLen, _ := resp.Body.Read(bytes)
+		readLen, _ := resp.Body.Read(buffer)
 		if readLen == 0 {
-			removeTask(currentTask.Name)
-			fmt.Printf("\nIt's done!\n\n")
 			return
 		}
-		f.Write(bytes[:readLen])
+		f.Write(buffer[:readLen])
 
 		total += int64(readLen)
 		part += int64(readLen)
 
 		if time.Since(checkTimes[cnt]) > time.Second {
-			totalElapsedTime = time.Since(beginTime) + elapsedTime
-			currentTask.DownloadedSize = total
-			currentTask.ElapsedTime = totalElapsedTime
-			saveTask(currentTask)
+			t.DownloadedSize = total
+			elapsedTime += time.Second
+			t.ElapsedTime = elapsedTime
+			saveTask(t)
+
 			percentage = float64(total) / float64(size) * 100
 
 			cnt++
@@ -127,13 +99,66 @@ func BeginDownload(url string, name string) {
 			speed = float64(sum) * float64(time.Second) / float64(sinceLastCheck) / 1024
 			est := time.Duration(float64((size-total))/speed) * time.Millisecond
 
-			printProgress(percentage, speed, totalElapsedTime, est)
+			printProgress(percentage, speed, elapsedTime, est)
 
 			// if speed > 200 {
 			// 	time.Sleep(time.Duration(float64(sum)*float64(time.Second)/speed/1024))
 			// }
 		}
 	}
+}
+func BeginDownload(url string, name string) {
+	globalConfig = readConfig()
+
+	if DownloadClient == nil {
+		DownloadClient = http.DefaultClient
+	}
+
+	currentTask := getOrNewTask(url, name)
+
+	DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		currentTask.URL = req.URL.String()
+
+		prevReq := via[len(via)-1]
+		rangeVal := prevReq.Header.Get("Range")
+		if rangeVal != "" {
+			req.Header.Add("Range", rangeVal)
+		}
+		return nil
+	}
+
+	req := createRequest(&currentTask)
+	// fmt.Println(req.URL)
+	resp, err := DownloadClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		resp.Body.Close()
+		DownloadClient.CheckRedirect = nil
+	}()
+	currentTask.Name = name
+
+	if currentTask.isNew {
+		var name string
+		name, currentTask.Size = getFileInfo(resp)
+		if currentTask.Name == "" {
+			currentTask.Name = name
+		}
+
+		currentTask.StartDate = time.Now().String()
+		currentTask.Path = fmt.Sprintf("%s%c%s", globalConfig.BaseDir, os.PathSeparator, currentTask.Name)
+
+		saveTask(&currentTask)
+
+		fmt.Printf("New Task: %s    %d\n", currentTask.Name, currentTask.Size)
+	} else {
+		addRangeHeader(req, currentTask.DownloadedSize)
+	}
+	writeDownload(&currentTask, resp)
+	removeTask(currentTask.Name)
+	fmt.Printf("It's done!\n\n")
 }
 
 // func StopDownload(url string) {

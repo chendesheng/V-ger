@@ -75,6 +75,12 @@ func main() {
 	var url string
 
 	if len(os.Args) > 1 {
+		if os.Args[1] == "s" {
+			name := os.Args[2]
+			getMovieSub(name)
+			return
+		}
+
 		url = os.Args[1]
 		tasks := thunder.NewTask(url)
 
