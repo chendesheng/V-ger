@@ -102,6 +102,7 @@ func getNewlyCreateTask(userId string) []ThunderTask {
 				Name:        info["taskname"].(string),
 				DownloadURL: info["lixian_url"].(string),
 				Size:        info["filesize"].(string),
+				Percent:     100,
 			},
 		}
 	}
@@ -153,6 +154,7 @@ func sendPost(url string, params *url.Values, data *url.Values) string {
 	return text
 }
 func sendGet(url string, params *url.Values) string {
+	log.Println("GET ", url)
 	if params != nil {
 		url = url + "?" + params.Encode()
 	}
