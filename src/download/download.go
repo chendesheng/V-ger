@@ -128,6 +128,7 @@ func BeginDownload(url string, name string) {
 	}
 
 	req := createRequest(&currentTask)
+	addRangeHeader(req, currentTask.DownloadedSize)
 	// fmt.Println(req.URL)
 	resp, err := DownloadClient.Do(req)
 	if err != nil {
@@ -153,8 +154,6 @@ func BeginDownload(url string, name string) {
 		saveTask(&currentTask)
 
 		fmt.Printf("New Task: %s    %d\n", currentTask.Name, currentTask.Size)
-	} else {
-		addRangeHeader(req, currentTask.DownloadedSize)
 	}
 	writeDownload(&currentTask, resp)
 	removeTask(currentTask.Name)
