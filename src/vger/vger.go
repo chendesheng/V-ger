@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/cookiejar"
 	"download"
 	"fmt"
+	"runtime"
 	"strings"
 	// "io"
 	"log"
@@ -42,6 +43,7 @@ func init() {
 
 	thunder.Login("129697884", "057764593828")
 
+	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
 func getMovieSub(movieName string) {

@@ -21,6 +21,10 @@ type Task struct {
 	isNew          bool
 }
 
+func GetTasks() []Task {
+	return getTasks()
+}
+
 func taskInfoFileName(taskName string) string {
 	return fmt.Sprintf("tasks%c%s.vger-task.txt", os.PathSeparator, taskName)
 }
