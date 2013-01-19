@@ -22,155 +22,157 @@ type Downloader struct {
 	task *Task
 }
 
-func (d *Downloader) writeDownload(resp *http.Response) {
-	t := d.task
-	f := openOrCreateFileRW(t.Path)
-	defer f.Close()
-
-	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
-	f.Seek(total, 0)
+func (d *Downloader) beginSampleDownload() chan []byte {
+	req := createRequest(d.task)
+	resp, err := DownloadClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	buffer := make([]byte, 40000)
-	part := int64(0)
-	parts := [5]int64{0, 0, 0, 0, 0}
-	checkTimes := [5]time.Time{time.Now(), time.Now(), time.Now(), time.Now(), time.Now()}
-	cnt := 0
-	percentage := float64(total) / float64(size) * 100
-	speed := float64(0) // average speed of recent 5 seconds
+	output := make(chan []byte)
 	for {
 		readLen, _ := resp.Body.Read(buffer)
 		if readLen == 0 {
-			return
-		}
-		f.Write(buffer[:readLen])
-
-		total += int64(readLen)
-		part += int64(readLen)
-
-		if time.Since(checkTimes[cnt]) > time.Second {
-			t.DownloadedSize = total
-			elapsedTime += time.Second
-			t.ElapsedTime = elapsedTime
-			saveTask(t)
-
-			percentage = float64(total) / float64(size) * 100
-
-			cnt++
-			cnt = cnt % 5
-
-			sinceLastCheck := time.Since(checkTimes[cnt])
-
-			checkTimes[cnt] = time.Now()
-			parts[cnt] = part
-			part = 0
-
-			sum := int64(0)
-			for _, p := range parts {
-				sum += p
-			}
-			speed = float64(sum) * float64(time.Second) / float64(sinceLastCheck) / 1024
-			est := time.Duration(float64((size-total))/speed) * time.Millisecond
-
-			printProgress(percentage, speed, elapsedTime, est)
-		}
-	}
-}
-func (d *Downloader) doDownload(from int64, blockSize int64, f *os.File, connChans []chan int64, buffers [][]byte) int64 {
-	to := from + blockSize - 1
-	t := d.task
-	size := t.Size
-
-	var i int
-	for i = 0; i < 6; i++ {
-
-		if to > size {
-			to = -1
-		}
-
-		go func(pBuffer *[]byte, connChan chan int64, from, to int64) {
-			d.downloadBlock(from, to, pBuffer)
-			f.WriteAt(*pBuffer, from)
-			connChan <- int64(len(*pBuffer))
-		}(&buffers[i], connChans[i], from, to)
-
-		if to == -1 {
-			i++
 			break
-		} else {
-			from, to = to+1, to+blockSize
 		}
-
+		output <- buffer[:readLen]
 	}
 
-	total := int64(0)
-	for i--; i >= 0; i-- {
-		length := <-connChans[i]
-		total += length
-	}
-	return total
+	return output
 }
-func (d *Downloader) download() {
+func (d *Downloader) sampleDownload(resp *http.Response) {
+	output := d.beginSampleDownload()
+	d.writeOutput(output)
+}
+
+func (d *Downloader) pipeDownloadBlocks(from int64, blockSize int, size int64, output chan []byte, readyOutput chan bool, cntControl chan bool) {
+	cntControl <- true // block if full
+	if from >= size {
+		<-readyOutput
+		close(output)
+	}
+
+	complete := make(chan bool)
+
+	to := from + int64(blockSize)
+	if to > size {
+		to = size
+	}
+
+	go func() {
+		block := d.downloadBlock(from, to-1)
+
+		<-readyOutput
+		output <- block
+		complete <- true
+		<-cntControl
+	}()
+
+	d.pipeDownloadBlocks(to, blockSize, size, output, complete, cntControl)
+}
+func (d *Downloader) beginPipeDownload() chan []byte {
+	t := d.task
+
+	blockCnt := 6
+	blockSize := 200 * 1024
+
+	output := make(chan []byte, blockCnt)
+	cntControl := make(chan bool, blockCnt)
+
+	readyOutput := make(chan bool)
+	go d.pipeDownloadBlocks(t.DownloadedSize, blockSize, t.Size, output, readyOutput, cntControl)
+	readyOutput <- true
+
+	return output
+}
+func (d *Downloader) pipeDownload() {
+	output := d.beginPipeDownload()
+	d.writeOutput(output)
+}
+
+func (d *Downloader) downloadBlock(from, to int64) []byte {
+	req := createRequest(d.task)
+	addRangeHeader(req, from, to)
+
+	resp, err := DownloadClient.Do(req)
+	defer resp.Body.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	buffer := bytes.NewBuffer(make([]byte, 0, to-from+1))
+	_, err = buffer.ReadFrom(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return buffer.Bytes()
+}
+func (d *Downloader) progress() chan int64 {
+	t := d.task
+	downloadBlockChan := make(chan int64)
+	go func() {
+		size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
+
+		part := int64(0)
+		parts := [5]int64{0, 0, 0, 0, 0}
+		checkTimes := [5]time.Time{time.Now(), time.Now(), time.Now(), time.Now(), time.Now()}
+		cnt := 0
+		percentage := float64(total) / float64(size) * 100
+		speed := float64(0) // average speed of recent 5 seconds
+
+		for length := range downloadBlockChan {
+			total += length
+			part += length
+
+			if time.Since(checkTimes[cnt]) > time.Second || total == size {
+				t.DownloadedSize = total
+				elapsedTime += time.Since(checkTimes[cnt])
+				t.ElapsedTime = elapsedTime
+				saveTask(t)
+
+				percentage = float64(total) / float64(size) * 100
+
+				cnt++
+				cnt = cnt % 5
+
+				sinceLastCheck := time.Since(checkTimes[cnt])
+
+				checkTimes[cnt] = time.Now()
+				parts[cnt] = part
+				part = 0
+
+				//sum up download size of recent 5 seconds
+				sum := int64(0)
+				for _, p := range parts {
+					sum += p
+				}
+				speed = float64(sum) * float64(time.Second) / float64(sinceLastCheck) / 1024
+				est := time.Duration(float64((size-total))/speed) * time.Millisecond
+
+				printProgress(percentage, speed, elapsedTime, est)
+			}
+		}
+	}()
+
+	return downloadBlockChan
+}
+func (d *Downloader) writeOutput(output chan []byte) {
 	t := d.task
 
 	f := openOrCreateFileRW(t.Path)
-	if t.isNew {
-		f.Truncate(t.Size)
-	}
-
 	defer f.Close()
+	f.Seek(t.DownloadedSize, 0)
 
-	blockSize := int64(400 * 1024)
+	progressChan := d.progress()
 
-	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
+	for b := range output {
+		f.Write(b)
 
-	part := int64(0)
-	parts := [5]int64{0, 0, 0, 0, 0}
-	checkTimes := [5]time.Time{time.Now(), time.Now(), time.Now(), time.Now(), time.Now()}
-	cnt := 0
-	percentage := float64(total) / float64(size) * 100
-	speed := float64(0) // average speed of recent 5 seconds
-
-	connChans := make([]chan int64, 10)
-	buffers := make([][]byte, 10)
-	for i := 0; i < 10; i++ {
-		connChans[i] = make(chan int64)
-		buffers[i] = make([]byte, blockSize)
+		progressChan <- int64(len(b))
 	}
-
-	for total < size {
-		length := d.doDownload(total, blockSize, f, connChans, buffers)
-
-		total += length
-		part += length
-
-		if time.Since(checkTimes[cnt]) > time.Second || total == size {
-			t.DownloadedSize = total
-			elapsedTime += time.Since(checkTimes[cnt])
-			t.ElapsedTime = elapsedTime
-			saveTask(t)
-
-			percentage = float64(total) / float64(size) * 100
-
-			cnt++
-			cnt = cnt % 5
-
-			sinceLastCheck := time.Since(checkTimes[cnt])
-
-			checkTimes[cnt] = time.Now()
-			parts[cnt] = part
-			part = 0
-
-			//sum up download size of recent 5 seconds
-			sum := int64(0)
-			for _, p := range parts {
-				sum += p
-			}
-			speed = float64(sum) * float64(time.Second) / float64(sinceLastCheck) / 1024
-			est := time.Duration(float64((size-total))/speed) * time.Millisecond
-
-			printProgress(percentage, speed, elapsedTime, est)
-		}
-	}
+	close(progressChan)
 }
 func BeginDownload(url, name string) {
 	globalConfig = readConfig()
@@ -180,13 +182,10 @@ func BeginDownload(url, name string) {
 	}
 	d := Downloader{}
 	d.initDownload(url, name)
-	// req := createRequest(d.task)
-	// resp, err := DownloadClient.Do(req)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// d.writeDownload(resp)
-	d.download()
+
+	// d.sampleDownload(resp)
+	// d.download()
+	d.pipeDownload()
 	d.done()
 }
 func (d *Downloader) initDownload(url, name string) {
@@ -220,34 +219,6 @@ func (d *Downloader) initDownload(url, name string) {
 
 		fmt.Printf("New Task: %s\t%d\n", t.Name, t.Size)
 	}
-}
-func (d *Downloader) downloadBlock(from, to int64, block *[]byte) {
-	buffer := bytes.NewBuffer(*block)
-	buffer.Truncate(0)
-
-	req := createRequest(d.task)
-	addRangeHeader(req, from, to)
-	resp, err := DownloadClient.Do(req)
-
-	defer resp.Body.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-	part := make([]byte, 2000)
-	total := int64(0)
-	for {
-		readLen, err := resp.Body.Read(part)
-		if readLen == 0 {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		buffer.Write(part[:readLen])
-		total += int64(readLen)
-	}
-
-	*block = buffer.Bytes()[:total]
 }
 func (d *Downloader) done() {
 	removeTask(d.task.Name)
