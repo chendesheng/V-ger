@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 )
+
+var DownloadClient *http.Client
 
 type Task struct {
 	URL       string
@@ -21,8 +24,21 @@ type Task struct {
 	isNew          bool
 }
 
-func GetTasks() []Task {
+func GetTasks() []*Task {
 	return getTasks()
+}
+func BeginDownload(url string, name string) {
+	if DownloadClient == nil {
+		DownloadClient = http.DefaultClient
+	}
+
+	t := getOrNewTask(url, name)
+	// fmt.Printf("%v", *t)
+	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
+	printProgress(progress, t)
+
+	removeTask(t.Name)
+	fmt.Printf("\nIt's done!\n\n")
 }
 
 func taskInfoFileName(taskName string) string {
@@ -37,7 +53,12 @@ func removeTask(name string) {
 		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
 	}
 }
-func getOrNewTask(url string, name string) Task {
+func getOrNewTask(url string, name string) *Task {
+	url, filename, filesize := getDownloadInfo(url)
+	if name == "" {
+		name = filename
+	}
+
 	for _, t := range getTasks() {
 		if name == t.Name {
 			t.isNew = false
@@ -45,14 +66,27 @@ func getOrNewTask(url string, name string) Task {
 		}
 	}
 
-	t := Task{URL: url, Name: name, isNew: true}
+	config := readConfig()
+
+	t := new(Task)
+	t.URL = url
+	t.Name = name
+	t.isNew = true
+	t.Size = filesize
+	t.StartDate = time.Now().String()
+	t.Path = fmt.Sprintf("%s%c%s", config.BaseDir, os.PathSeparator, name)
+	t.DownloadedSize = 0
+	t.ElapsedTime = 0
+
+	saveTask(t)
+
 	return t
 }
 
 //one second cache for task list
 var taskCache []Task //TODO: need lock
 
-func getTasks() []Task {
+func getTasks() []*Task {
 	// if taskCache != nil {
 	// 	return taskCache
 	// }
@@ -62,7 +96,7 @@ func getTasks() []Task {
 		log.Fatal(err)
 	}
 
-	tasks := make([]Task, 0, len(fileInfoes))
+	tasks := make([]*Task, 0, len(fileInfoes))
 	for _, f := range fileInfoes {
 		name := f.Name()
 		if f.IsDir() || !strings.HasSuffix(name, ".vger-task.txt") {
@@ -70,9 +104,10 @@ func getTasks() []Task {
 		}
 
 		// fmt.Println(name)
-		t := Task{}
-		readJson("tasks/"+name, &t)
+		t := new(Task)
+		readJson("tasks/"+name, t)
 		tasks = append(tasks, t)
+		log.Println(*t)
 	}
 
 	// taskCache = tasks
@@ -81,6 +116,5 @@ func getTasks() []Task {
 	// 	<-chanTimeout
 	// 	taskCache = nil
 	// }()
-	log.Println(tasks)
 	return tasks
 }
