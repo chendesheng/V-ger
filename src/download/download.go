@@ -7,13 +7,9 @@ import (
 	"net/http"
 )
 
-// type Downloader struct {
-// 	task *Task
-// }
-
 func doDownload(url string, path string, from, to int64) chan int64 {
-	blockCnt := 6
-	blockSize := 200 * 1024
+	blockCnt := 5
+	blockSize := 300 * 1024
 
 	output := make(chan []byte, blockCnt)
 	cntControl := make(chan bool, blockCnt)
@@ -58,12 +54,18 @@ func pipeDownload(url string, from int64, blockSize int, size int64, output chan
 		}
 
 		go func(url string, from, to int64, output chan []byte, readyOutput, complete, cntControl chan bool) {
-			block := downloadBlock(url, from, to-1)
+			//just block if network is down
+			for {
+				block, err := downloadBlock(url, from, to-1)
+				if err == nil {
+					<-readyOutput
+					output <- block
+					complete <- true
+					<-cntControl
+					return
+				}
+			}
 
-			<-readyOutput
-			output <- block
-			complete <- true
-			<-cntControl
 		}(url, from, to, output, readyOutput, complete, cntControl)
 
 		from = to
@@ -71,26 +73,57 @@ func pipeDownload(url string, from int64, blockSize int, size int64, output chan
 	}
 }
 
-func downloadBlock(url string, from, to int64) []byte {
+func downloadBlock(url string, from, to int64) (data []byte, err error) {
 	req := createDownloadRequest(url, from, to)
 
 	resp, err := DownloadClient.Do(req)
-	defer resp.Body.Close()
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	buffer := bytes.NewBuffer(make([]byte, 0, to-from+1))
 	_, err = buffer.ReadFrom(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
+}
+
+func sampleDownload(url string, path string, from, to int64) chan int64 {
+	output := make(chan []byte)
+	go func(output chan []byte) {
+		defer close(output)
+
+		req := createDownloadRequest(url, from, -1)
+		resp, err := DownloadClient.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for {
+			buffer := make([]byte, 40000)
+			readLen, _ := resp.Body.Read(buffer)
+			if readLen == 0 {
+				break
+			}
+			output <- buffer[:readLen]
+		}
+	}(output)
+
+	progress := make(chan int64)
+	go writeOutput(path, from, output, progress)
+
+	return progress
 }
 
 func getDownloadInfo(url string) (realURL string, name string, size int64) {
-	req := createDownloadRequest(url, 0, 0)
+	req := createDownloadRequest(url, -1, -1)
 	DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		realURL = req.URL.String()
 		return nil

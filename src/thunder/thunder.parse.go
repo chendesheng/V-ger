@@ -2,7 +2,7 @@ package thunder
 
 import (
 	"encoding/json"
-	// "fmt"
+	"fmt"
 	"log"
 	"regexp"
 	"strconv"
@@ -17,6 +17,9 @@ type ThunderTask struct {
 	Percent     int
 }
 
+func (t *ThunderTask) String() string {
+	return fmt.Sprintf("%s  %s %d%%\n", t.Name, t.Size, t.Percent)
+}
 func parseUrlQueryResult(text string) (cid string, tsize string, btname string, size string, findex string) {
 	regexUrlQuery, _ := regexp.Compile(`queryUrl\((-?[0-9]*),'([^']*)','([^']*)','([^']*)','([^']*)',new Array\((.+)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),'[^']*'\)`)
 

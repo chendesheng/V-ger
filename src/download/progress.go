@@ -8,12 +8,15 @@ import (
 func printProgress(progress chan int64, t *Task) {
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
-	part := int64(0)
-	parts := [5]int64{0, 0, 0, 0, 0}
-	checkTimes := [5]time.Time{time.Now(), time.Now(), time.Now(), time.Now(), time.Now()}
+	partsCount := 10
 	cnt := 0
-	percentage := float64(total) / float64(size) * 100
-	speed := float64(0) // average speed of recent 5 seconds
+	part := int64(0)
+	parts := make([]int64, partsCount)
+	checkTimes := make([]time.Time, partsCount)
+	for i := 0; i < partsCount; i++ {
+		parts[i] = 0
+		checkTimes[i] = time.Now()
+	}
 
 	for length := range progress {
 		total += length
@@ -25,10 +28,8 @@ func printProgress(progress chan int64, t *Task) {
 			t.ElapsedTime = elapsedTime
 			saveTask(t)
 
-			percentage = float64(total) / float64(size) * 100
-
 			cnt++
-			cnt = cnt % 5
+			cnt = cnt % partsCount
 
 			sinceLastCheck := time.Since(checkTimes[cnt])
 
@@ -41,10 +42,11 @@ func printProgress(progress chan int64, t *Task) {
 			for _, p := range parts {
 				sum += p
 			}
-			speed = float64(sum) * float64(time.Second) / float64(sinceLastCheck) / 1024
+			percentage := float64(total) / float64(size) * 100
+			speed := float64(sum) * float64(time.Second) / float64(sinceLastCheck) / 1024
 			est := time.Duration(float64((size-total))/speed) * time.Millisecond
 
-			fmt.Printf("\r%.2f%%\t%.2f KB/s\t%s\tEst. %s     ", percentage, speed, elapsedTime, est)
+			fmt.Printf("\r%.2f%%    %.2f KB/s    %s    Est. %s     ", percentage, speed, elapsedTime/time.Second*time.Second, est/time.Second*time.Second)
 		}
 	}
 }

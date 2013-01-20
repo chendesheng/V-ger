@@ -17,11 +17,11 @@ import (
 )
 
 func init() {
-	f, err := os.OpenFile("vger.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.SetOutput(f)
+	// f, err := os.OpenFile("vger.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// log.SetOutput(f)
 
 	client := &http.Client{
 		Jar: cookiejar.NewJar(true),
@@ -45,17 +45,17 @@ func init() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
+func pick(arr []interface{}, emptyMessage string) interface{} {
+	if len(arr) == 0 {
+		if emptyMessage != "" {
+			fmt.Println(emptyMessage)
+		}
+		return nil
+	}
 
-func getMovieSub(movieName string) {
-	subs := shooter.SearchSubtitles(movieName)
-	if len(subs) == 0 {
-		fmt.Println("): no subs find.")
-		return
+	for i, item := range arr {
+		fmt.Printf("[%d] %s\n", i+1, item)
 	}
-	for i, sub := range subs {
-		fmt.Printf("[%d] %s\n%s\n", i+1, sub.Name, sub.Description)
-	}
-	var selectedSub shooter.Subtitle
 
 	i := 0
 	_, err := fmt.Scanf("%d", &i)
@@ -63,17 +63,28 @@ func getMovieSub(movieName string) {
 		log.Fatal(err)
 	}
 	i--
-	if i >= 0 && i < len(subs) {
-		selectedSub = subs[i]
-	} else {
-		fmt.Println("pick wrong number.")
-		return
+	if i >= 0 && i < len(arr) {
+		return arr[i]
 	}
-	url, name := shooter.GetDownloadUrl(selectedSub.URL)
-	download.BeginDownload(url, name)
+	fmt.Println("pick wrong number.")
+	return nil
+}
+func getMovieSub(movieName string) {
+	subs := shooter.SearchSubtitles(movieName)
+
+	arr := make([]interface{}, len(subs))
+	for i, s := range subs {
+		arr[i] = s
+	}
+	selected := pick(arr, ":( no subtitle.")
+	if selected != nil {
+		selectedSub := selected.(shooter.Subtitle)
+		url, name := shooter.GetDownloadUrl(selectedSub.URL)
+		download.BeginDownload(url, name)
+	}
+
 }
 func main() {
-	// var url, name string
 	var url string
 
 	if len(os.Args) > 1 {
@@ -86,55 +97,35 @@ func main() {
 		url = os.Args[1]
 		tasks := thunder.NewTask(url)
 
-		var selectedTask thunder.ThunderTask
-
-		for i, t := range tasks {
-			fmt.Printf("[%d] %s  %s %d%%\n", i+1, t.Name, t.Size, t.Percent)
+		arr := make([]interface{}, len(tasks))
+		for i, s := range tasks {
+			arr[i] = s
 		}
-		i := 0
-		_, err := fmt.Scanf("%d", &i)
-		if err != nil {
-			log.Fatal(err)
-		}
-		i--
-		if i >= 0 && i < len(tasks) {
-			selectedTask = tasks[i]
-		} else {
-			fmt.Println("pick wrong number.")
-			return
-		}
+		selected := pick(arr, "")
+		if selected != nil {
+			selectedTask := selected.(thunder.ThunderTask)
+			if selectedTask.Percent < 100 {
+				fmt.Println("the task is not ready.")
+				return
+			}
 
-		if selectedTask.Percent < 100 {
-			fmt.Println("the task is not ready.")
-			return
+			fmt.Println("choose a subtitle:")
+			getMovieSub(selectedTask.Name[:strings.LastIndex(selectedTask.Name, ".")])
+
+			download.BeginDownload(selectedTask.DownloadURL, selectedTask.Name)
 		}
-
-		fmt.Println("choose a subtitle:")
-		getMovieSub(selectedTask.Name[:strings.LastIndex(selectedTask.Name, ".")])
-
-		download.BeginDownload(selectedTask.DownloadURL, selectedTask.Name)
-		return
 	} else {
 		tasks := download.GetTasks()
-		if len(tasks) == 0 {
-			fmt.Println("no unfinished task.")
-			return
+
+		arr := make([]interface{}, len(tasks))
+		for i, s := range tasks {
+			arr[i] = s
 		}
-		for i, t := range tasks {
-			fmt.Printf("[%d] %s  %s\n", i+1, t.Name, t.StartDate)
+		selected := pick(arr, "no unfinished task.")
+		if selected != nil {
+			selectedTask := selected.(*download.Task)
+			download.BeginDownload(selectedTask.URL, selectedTask.Name)
 		}
-		i := 0
-		_, err := fmt.Scanf("%d", &i)
-		if err != nil {
-			log.Fatal(err)
-		}
-		i--
-		if i >= 0 && i < len(tasks) {
-			t := tasks[i]
-			download.BeginDownload(t.URL, t.Name)
-		} else {
-			fmt.Println("pick wrong number.")
-			return
-		}
+
 	}
 }

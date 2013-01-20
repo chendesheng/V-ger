@@ -24,6 +24,9 @@ type Task struct {
 	isNew          bool
 }
 
+func (t *Task) String() string {
+	return fmt.Sprintf("%s %s %.2f%%", t.Name, t.StartDate, float32(t.DownloadedSize)/float32(t.Size)*100)
+}
 func GetTasks() []*Task {
 	return getTasks()
 }
@@ -35,6 +38,7 @@ func BeginDownload(url string, name string) {
 	t := getOrNewTask(url, name)
 	// fmt.Printf("%v", *t)
 	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
+	// progress := sampleDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
 	printProgress(progress, t)
 
 	removeTask(t.Name)
@@ -83,14 +87,7 @@ func getOrNewTask(url string, name string) *Task {
 	return t
 }
 
-//one second cache for task list
-var taskCache []Task //TODO: need lock
-
 func getTasks() []*Task {
-	// if taskCache != nil {
-	// 	return taskCache
-	// }
-
 	fileInfoes, err := ioutil.ReadDir("tasks")
 	if err != nil {
 		log.Fatal(err)
@@ -103,18 +100,10 @@ func getTasks() []*Task {
 			continue
 		}
 
-		// fmt.Println(name)
 		t := new(Task)
 		readJson("tasks/"+name, t)
 		tasks = append(tasks, t)
-		log.Println(*t)
 	}
 
-	// taskCache = tasks
-	// chanTimeout := time.Tick(time.Second)
-	// go func() {
-	// 	<-chanTimeout
-	// 	taskCache = nil
-	// }()
 	return tasks
 }
