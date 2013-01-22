@@ -125,7 +125,10 @@ func sampleDownload(url string, path string, from, to int64) chan int64 {
 func getDownloadInfo(url string) (realURL string, name string, size int64) {
 	req := createDownloadRequest(url, -1, -1)
 	DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		realURL = req.URL.String()
+		temp := req.URL.String()
+		if temp != "" {
+			url = temp
+		}
 		return nil
 	}
 
@@ -136,8 +139,8 @@ func getDownloadInfo(url string) (realURL string, name string, size int64) {
 
 	name, size = getFileInfo(resp.Header)
 	if name == "" {
-		name = getFileName(realURL)
+		name = getFileName(url)
 	}
-
+	realURL = url
 	return
 }

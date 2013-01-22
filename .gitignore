@@ -6,5 +6,5 @@ config.json
 .project
 *~
 *.diff
-vger
 *.zip
+*.app

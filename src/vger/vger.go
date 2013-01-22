@@ -1,12 +1,14 @@
-package main
+package vger
 
 import (
 	"code.google.com/p/cookiejar"
 	"download"
 	"fmt"
+	// "regexp"
 	"runtime"
 	"strings"
 	// "io"
+	// "encoding/json"
 	"log"
 	"net/http"
 	"net/url"
@@ -17,18 +19,20 @@ import (
 )
 
 func init() {
-	// f, err := os.OpenFile("vger.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.SetOutput(f)
+	f, err := os.OpenFile("vger.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(f)
+
+	config = readConfig()
 
 	client := &http.Client{
 		Jar: cookiejar.NewJar(true),
 	}
 	cookie := http.Cookie{
 		Name:    "gdriveid",
-		Value:   "5120E7CE422D1E3F34D7ED1501A1C86A",
+		Value:   config["gdriveid"],
 		Domain:  "xunlei.com",
 		Expires: time.Now().AddDate(100, 0, 0),
 	}
@@ -37,20 +41,22 @@ func init() {
 	client.Jar.SetCookies(url, cookies)
 
 	download.DownloadClient = client
-
 	thunder.Client = client
 	shooter.Client = client
 
-	thunder.Login("129697884", "057764593828")
+	thunder.Login(config["thunder-user"], config["thunder-password"])
+
+	download.BaseDir = config["dir"]
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
-func pick(arr []interface{}, emptyMessage string) interface{} {
+
+func pick(arr []string, emptyMessage string) int {
 	if len(arr) == 0 {
 		if emptyMessage != "" {
 			fmt.Println(emptyMessage)
 		}
-		return nil
+		return -1
 	}
 
 	for i, item := range arr {
@@ -64,68 +70,52 @@ func pick(arr []interface{}, emptyMessage string) interface{} {
 	}
 	i--
 	if i >= 0 && i < len(arr) {
-		return arr[i]
+		return i
 	}
 	fmt.Println("pick wrong number.")
-	return nil
+	return -1
 }
-func getMovieSub(movieName string) {
-	subs := shooter.SearchSubtitles(movieName)
-
-	arr := make([]interface{}, len(subs))
-	for i, s := range subs {
-		arr[i] = s
-	}
-	selected := pick(arr, ":( no subtitle.")
-	if selected != nil {
-		selectedSub := selected.(shooter.Subtitle)
-		url, name := shooter.GetDownloadUrl(selectedSub.URL)
-		download.BeginDownload(url, name)
-	}
-
+func checkIfDownload(input string) bool {
+	return strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent")
 }
+
 func main() {
-	var url string
-
 	if len(os.Args) > 1 {
-		if os.Args[1] == "s" {
-			name := os.Args[2]
-			getMovieSub(name)
+		input := os.Args[1]
+		if !checkIfDownload(input) {
+			getMovieSub(input)
 			return
 		}
 
-		url = os.Args[1]
-		tasks := thunder.NewTask(url)
+		tasks := thunder.NewTask(input)
 
-		arr := make([]interface{}, len(tasks))
+		arr := make([]string, len(tasks))
 		for i, s := range tasks {
-			arr[i] = s
+			arr[i] = s.String()
 		}
-		selected := pick(arr, "")
-		if selected != nil {
-			selectedTask := selected.(thunder.ThunderTask)
+		i := pick(arr, "")
+		if i != -1 {
+			selectedTask := tasks[i]
 			if selectedTask.Percent < 100 {
 				fmt.Println("the task is not ready.")
 				return
 			}
 
-			fmt.Println("choose a subtitle:")
-			getMovieSub(selectedTask.Name[:strings.LastIndex(selectedTask.Name, ".")])
+			getMovieSub(selectedTask.Name)
 
 			download.BeginDownload(selectedTask.DownloadURL, selectedTask.Name)
 		}
 	} else {
 		tasks := download.GetTasks()
 
-		arr := make([]interface{}, len(tasks))
+		arr := make([]string, len(tasks))
 		for i, s := range tasks {
-			arr[i] = s
+			arr[i] = s.String()
 		}
-		selected := pick(arr, "no unfinished task.")
-		if selected != nil {
-			selectedTask := selected.(*download.Task)
+		i := pick(arr, "no unfinished task.")
+		if i != -1 {
+			selectedTask := tasks[i]
 			download.BeginDownload(selectedTask.URL, selectedTask.Name)
 		}
-
 	}
 }

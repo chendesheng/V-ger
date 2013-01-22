@@ -11,6 +11,7 @@ import (
 )
 
 var DownloadClient *http.Client
+var BaseDir string
 
 type Task struct {
 	URL       string
@@ -59,6 +60,7 @@ func removeTask(name string) {
 }
 func getOrNewTask(url string, name string) *Task {
 	url, filename, filesize := getDownloadInfo(url)
+	fmt.Println(url)
 	if name == "" {
 		name = filename
 	}
@@ -70,15 +72,13 @@ func getOrNewTask(url string, name string) *Task {
 		}
 	}
 
-	config := readConfig()
-
 	t := new(Task)
 	t.URL = url
 	t.Name = name
 	t.isNew = true
 	t.Size = filesize
 	t.StartDate = time.Now().String()
-	t.Path = fmt.Sprintf("%s%c%s", config.BaseDir, os.PathSeparator, name)
+	t.Path = fmt.Sprintf("%s%c%s", BaseDir, os.PathSeparator, name)
 	t.DownloadedSize = 0
 	t.ElapsedTime = 0
 
