@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"shooter"
 	"strings"
-	"fmt"
 	// "os"
 	"download"
 )
@@ -20,8 +20,11 @@ func filterMovieName2(name string) string {
 	return name
 }
 func filterMovieName1(name string) string {
-	name = name[:strings.LastIndex(name, ".")]
-	index := strings.LastIndex(name, "-")
+	index := strings.LastIndex(name, ".")
+	if index > 0 {
+		name = name[:index]
+	}
+	index = strings.LastIndex(name, "-")
 	if index > 0 {
 		name = name[:index]
 	}
@@ -52,6 +55,6 @@ func getMovieSub(movieName string) {
 		selectedSub := subs[i]
 		url, name := shooter.GetDownloadUrl(selectedSub.URL)
 		fmt.Printf("download subtitle: %s from %s", name, url)
-		download.BeginDownload(url, name)
+		download.BeginDownload(url, name, 0)
 	}
 }

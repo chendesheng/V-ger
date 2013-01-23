@@ -31,14 +31,14 @@ func (t *Task) String() string {
 func GetTasks() []*Task {
 	return getTasks()
 }
-func BeginDownload(url string, name string) {
+func BeginDownload(url string, name string, maxSpeed int64) {
 	if DownloadClient == nil {
 		DownloadClient = http.DefaultClient
 	}
 
 	t := getOrNewTask(url, name)
 	// fmt.Printf("%v", *t)
-	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
+	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size, maxSpeed)
 	// progress := sampleDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
 	printProgress(progress, t)
 

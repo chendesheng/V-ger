@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/cookiejar"
 	"download"
 	"fmt"
+	"strconv"
 	// "regexp"
 	"runtime"
 	"strings"
@@ -44,8 +45,6 @@ func init() {
 	thunder.Client = client
 	shooter.Client = client
 
-	thunder.Login(config["thunder-user"], config["thunder-password"])
-
 	download.BaseDir = config["dir"]
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -75,18 +74,46 @@ func pick(arr []string, emptyMessage string) int {
 	fmt.Println("pick wrong number.")
 	return -1
 }
-func checkIfDownload(input string) bool {
+func checkIfSubtitle(input string) bool {
 	return strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:")
 }
-
+func checkIfSpeed(input string) (int64, bool) {
+	num, err := strconv.ParseUint(input, 10, 64)
+	if err != nil {
+		return 0, false
+	}
+	if num > 10*1024*1024 {
+		num = 10 * 1024 * 1024
+	}
+	return int64(num), true
+}
 func main() {
+	maxSpeed := int64(-1)
 	if len(os.Args) > 1 {
 		input := os.Args[1]
-		if !checkIfDownload(input) {
+		if n, ok := checkIfSpeed(input); ok {
+			maxSpeed = n
+			goto existTask
+		}
+
+		if !checkIfSubtitle(input) {
 			getMovieSub(input)
 			return
 		}
 
+		if len(os.Args) > 2 {
+			input2 := os.Args[2]
+			if n, ok := checkIfSpeed(input2); ok {
+				maxSpeed = n
+			}
+		}
+
+		if strings.Contains(input, "lixian.vip.xunlei.com") {
+			download.BeginDownload(input, "", maxSpeed)
+			return
+		}
+
+		thunder.Login(config["thunder-user"], config["thunder-password"])
 		tasks := thunder.NewTask(input)
 
 		arr := make([]string, len(tasks))
@@ -103,19 +130,21 @@ func main() {
 
 			getMovieSub(selectedTask.Name)
 
-			download.BeginDownload(selectedTask.DownloadURL, selectedTask.Name)
+			download.BeginDownload(selectedTask.DownloadURL, selectedTask.Name, maxSpeed)
 		}
-	} else {
-		tasks := download.GetTasks()
-
-		arr := make([]string, len(tasks))
-		for i, s := range tasks {
-			arr[i] = s.String()
-		}
-		i := pick(arr, "no unfinished task.")
-		if i != -1 {
-			selectedTask := tasks[i]
-			download.BeginDownload(selectedTask.URL, selectedTask.Name)
-		}
+		return
 	}
+existTask:
+	tasks := download.GetTasks()
+
+	arr := make([]string, len(tasks))
+	for i, s := range tasks {
+		arr[i] = s.String()
+	}
+	i := pick(arr, "no unfinished task.")
+	if i != -1 {
+		selectedTask := tasks[i]
+		download.BeginDownload(selectedTask.URL, selectedTask.Name, maxSpeed)
+	}
+
 }

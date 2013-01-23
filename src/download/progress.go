@@ -5,10 +5,15 @@ import (
 	"time"
 )
 
+type block struct {
+	from, to int64
+	nap      time.Duration
+}
+
 func printProgress(progress chan int64, t *Task) {
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
-	partsCount := 10
+	partsCount := 15
 	cnt := 0
 	part := int64(0)
 	parts := make([]int64, partsCount)
