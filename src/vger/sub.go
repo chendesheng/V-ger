@@ -1,11 +1,11 @@
-package vger
+package main
 
 import (
 	"regexp"
 	"shooter"
 	"strings"
 	"fmt"
-	"os"
+	// "os"
 	"download"
 )
 
@@ -54,5 +54,4 @@ func getMovieSub(movieName string) {
 		fmt.Printf("download subtitle: %s from %s", name, url)
 		download.BeginDownload(url, name)
 	}
-	os.Exit(1)
 }

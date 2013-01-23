@@ -1,9 +1,9 @@
-package vger
+package main
 
 import (
 	"encoding/json"
-	"log"
 	"io/ioutil"
+	"log"
 )
 
 type configuration map[string]string

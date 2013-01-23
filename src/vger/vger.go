@@ -1,4 +1,4 @@
-package vger
+package main
 
 import (
 	"code.google.com/p/cookiejar"
@@ -76,7 +76,7 @@ func pick(arr []string, emptyMessage string) int {
 	return -1
 }
 func checkIfDownload(input string) bool {
-	return strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent")
+	return strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:")
 }
 
 func main() {

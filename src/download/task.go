@@ -60,7 +60,7 @@ func removeTask(name string) {
 }
 func getOrNewTask(url string, name string) *Task {
 	url, filename, filesize := getDownloadInfo(url)
-	fmt.Println(url)
+	// fmt.Println(url)
 	if name == "" {
 		name = filename
 	}
