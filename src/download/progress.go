@@ -7,7 +7,6 @@ import (
 
 type block struct {
 	from, to int64
-	nap      time.Duration
 }
 
 func printProgress(progress chan int64, t *Task) {

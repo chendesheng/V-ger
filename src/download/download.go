@@ -3,7 +3,7 @@ package download
 import (
 	"bytes"
 	// "fmt"
-	"io"
+	// "io"
 	"log"
 	"net/http"
 	"time"
@@ -25,10 +25,10 @@ func doDownload(url string, path string, from, to int64, maxSpeed int64) chan in
 		for {
 			to := from + blockSize
 			if to <= size {
-				control <- block{from, to, 0}
+				control <- block{from, to}
 				from += blockSize
 			} else {
-				control <- block{from, size, 0}
+				control <- block{from, size}
 				close(control)
 				break
 			}
@@ -103,24 +103,12 @@ func downloadBlock(url string, b block) (data []byte, err error) {
 	}
 
 	buffer := bytes.NewBuffer(make([]byte, 0, to-from))
-	_, err = buffer.ReadFrom(lazyReader{resp.Body, b.nap})
+	_, err = buffer.ReadFrom(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	return buffer.Bytes(), nil
-}
-
-type lazyReader struct {
-	reader io.Reader
-	nap    time.Duration
-}
-
-func (l lazyReader) Read(buf []byte) (int, error) {
-	if l.nap > 0 {
-		time.Sleep(l.nap)
-	}
-	return l.reader.Read(buf)
 }
 
 func sampleDownload(url string, path string, from, to int64) chan int64 {
