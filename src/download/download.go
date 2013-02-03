@@ -17,7 +17,7 @@ func doDownload(url string, path string, from, to int64, maxSpeed int64) chan in
 	output := make(chan []byte, blockCnt)
 
 	go func(control chan block, from, size int64) {
-		blockSize := int64(200 * 1024)
+		blockSize := int64(500 * 1024)
 		if maxSpeed > 0 {
 			blockSize = maxSpeed / 10 * 1024
 		}
@@ -59,7 +59,7 @@ func writeOutput(path string, from int64, output chan []byte, progress chan int6
 }
 
 func pipeDownload(url string, control chan block, output chan []byte) {
-	numOfConn := make(chan bool, 5)
+	numOfConn := make(chan bool, 6)
 	var prevComplete chan bool
 
 	for b := range control {

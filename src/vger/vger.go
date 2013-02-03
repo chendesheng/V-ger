@@ -48,6 +48,7 @@ func init() {
 	download.BaseDir = config["dir"]
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.LockOSThread()
 }
 
 func pick(arr []string, emptyMessage string) int {
@@ -75,7 +76,7 @@ func pick(arr []string, emptyMessage string) int {
 	return -1
 }
 func checkIfSubtitle(input string) bool {
-	return strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:")
+	return !(strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:"))
 }
 func checkIfSpeed(input string) (int64, bool) {
 	num, err := strconv.ParseUint(input, 10, 64)
@@ -87,6 +88,7 @@ func checkIfSpeed(input string) (int64, bool) {
 	}
 	return int64(num), true
 }
+
 func main() {
 	maxSpeed := int64(-1)
 	if len(os.Args) > 1 {
@@ -96,7 +98,7 @@ func main() {
 			goto existTask
 		}
 
-		if !checkIfSubtitle(input) {
+		if checkIfSubtitle(input) {
 			getMovieSub(input)
 			return
 		}
