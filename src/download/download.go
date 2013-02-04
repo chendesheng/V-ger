@@ -111,12 +111,12 @@ func downloadBlock(url string, b block) (data []byte, err error) {
 	return buffer.Bytes(), nil
 }
 
-func sampleDownload(url string, path string, from, to int64) chan int64 {
+func sampleDownload(url string, path string) {
 	output := make(chan []byte)
 	go func(output chan []byte) {
 		defer close(output)
 
-		req := createDownloadRequest(url, from, -1)
+		req := createDownloadRequest(url, 0, -1)
 		resp, err := DownloadClient.Do(req)
 		if err != nil {
 			log.Fatal(err)
@@ -133,9 +133,7 @@ func sampleDownload(url string, path string, from, to int64) chan int64 {
 	}(output)
 
 	progress := make(chan int64)
-	go writeOutput(path, from, output, progress)
-
-	return progress
+	writeOutput(path, 0, output, progress)
 }
 
 func getDownloadInfo(url string) (realURL string, name string, size int64) {

@@ -10,6 +10,7 @@ import (
 	"strings"
 	// "io"
 	// "encoding/json"
+	"b1"
 	"log"
 	"net/http"
 	"net/url"
@@ -44,11 +45,13 @@ func init() {
 	download.DownloadClient = client
 	thunder.Client = client
 	shooter.Client = client
+	b1.Client = client
 
 	download.BaseDir = config["dir"]
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	runtime.LockOSThread()
+	// runtime.LockOSThread()
+
 }
 
 func pick(arr []string, emptyMessage string) int {

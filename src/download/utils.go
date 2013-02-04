@@ -47,7 +47,12 @@ func getFileInfo(header http.Header) (name string, size int64) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		name = regexFile.FindStringSubmatch(contentDisposition)[1]
+		match := regexFile.FindStringSubmatch(contentDisposition)
+		if len(match) > 1 {
+			name = regexFile.FindStringSubmatch(contentDisposition)[1]
+		} else {
+			name = ""
+		}
 	}
 
 	if cr := header["Content-Range"]; len(cr) > 0 {

@@ -37,7 +37,7 @@ func BeginDownload(url string, name string, maxSpeed int64) {
 	}
 
 	t := getOrNewTask(url, name)
-	// fmt.Printf("%v", *t)
+	fmt.Printf("%v", *t)
 	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size, maxSpeed)
 	// progress := sampleDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
 	printProgress(progress, t)
@@ -46,6 +46,14 @@ func BeginDownload(url string, name string, maxSpeed int64) {
 	fmt.Printf("\nIt's done!\n\n")
 }
 
+// func FastDownload(url string, name string) string {
+// 	path := GetFilePath(name)
+// 	sampleDownload(url, path)
+// 	return path
+// }
+func GetFilePath(name string) string {
+	return fmt.Sprintf("%s%c%s", BaseDir, os.PathSeparator, name)
+}
 func taskInfoFileName(taskName string) string {
 	return fmt.Sprintf("tasks%c%s.vger-task.txt", os.PathSeparator, taskName)
 }
@@ -59,7 +67,9 @@ func removeTask(name string) {
 	}
 }
 func getOrNewTask(url string, name string) *Task {
+	// fmt.Println("hello")
 	url, filename, filesize := getDownloadInfo(url)
+	// fmt.Println("hello")
 	// fmt.Println(url)
 	if name == "" {
 		name = filename
@@ -78,7 +88,7 @@ func getOrNewTask(url string, name string) *Task {
 	t.isNew = true
 	t.Size = filesize
 	t.StartDate = time.Now().String()
-	t.Path = fmt.Sprintf("%s%c%s", BaseDir, os.PathSeparator, name)
+	t.Path = GetFilePath(name)
 	t.DownloadedSize = 0
 	t.ElapsedTime = 0
 
