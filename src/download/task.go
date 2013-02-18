@@ -37,10 +37,10 @@ func BeginDownload(url string, name string, maxSpeed int64) {
 	}
 
 	t := getOrNewTask(url, name)
-	fmt.Printf("%v", *t)
+	// fmt.Printf("%v", *t)
 	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size, maxSpeed)
 	// progress := sampleDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
-	printProgress(progress, t)
+	handleProgress(progress, t)
 
 	removeTask(t.Name)
 	fmt.Printf("\nIt's done!\n\n")

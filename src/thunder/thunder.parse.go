@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,6 +20,16 @@ type ThunderTask struct {
 
 func (t *ThunderTask) String() string {
 	return fmt.Sprintf("%s  %s %d%%\n", t.Name, t.Size, t.Percent)
+}
+func printErrAndExit(text string) {
+	regexAlert := regexp.MustCompile(`alert\('(.+)'\)`)
+	result := regexAlert.FindStringSubmatch(text)
+	if len(result) > 0 {
+		fmt.Printf("Thunder server error:%s.\n", result[1])
+	} else {
+		fmt.Println("Unknown thunder server error")
+	}
+	os.Exit(0)
 }
 func parseUrlQueryResult(text string) (cid string, tsize string, btname string, size string, findex string) {
 	regexUrlQuery, _ := regexp.Compile(`queryUrl\((-?[0-9]*),'([^']*)','([^']*)','([^']*)','([^']*)',new Array\((.+)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),'[^']*'\)`)
@@ -53,7 +64,13 @@ func parseUrlQueryResult(text string) (cid string, tsize string, btname string, 
 func parseBtTaskList(text string) []ThunderTask {
 	regexUrl, _ := regexp.Compile(`"Record":(\[.+\])`)
 
-	jsonStr := regexUrl.FindStringSubmatch(text)[1]
+	result := regexUrl.FindStringSubmatch(text)
+	if len(result) == 0 {
+		printErrAndExit(text)
+		return nil
+	}
+
+	jsonStr := result[1]
 	log.Println(jsonStr)
 
 	var r []interface{}

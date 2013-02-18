@@ -37,7 +37,14 @@ func openOrCreateFileRW(path string, position int64) *os.File {
 		log.Fatal(err)
 	}
 
-	f.Seek(position, 0)
+	offset, err := f.Seek(position, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if offset != position {
+		fmt.Println("\nerror offset")
+		os.Exit(1)
+	}
 	return f
 }
 func getFileInfo(header http.Header) (name string, size int64) {
