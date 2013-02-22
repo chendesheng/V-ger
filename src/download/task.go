@@ -38,6 +38,9 @@ func BeginDownload(url string, name string, maxSpeed int64) {
 
 	t := getOrNewTask(url, name)
 	// fmt.Printf("%v", *t)
+	// if t.DownloadedSize > 120*1024 {
+	// 	t.DownloadedSize -= 100 * 1024
+	// }
 	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size, maxSpeed)
 	// progress := sampleDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
 	handleProgress(progress, t)

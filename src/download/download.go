@@ -3,21 +3,30 @@ package download
 import (
 	"bytes"
 	"fmt"
+	// "strconv"
 	// "io"
+	"errors"
 	"log"
 	"net/http"
 	"time"
 )
 
+type block struct {
+	from, to int64
+}
+type dataBlock struct {
+	from, to int64
+	data     []byte
+}
+
 func doDownload(url string, path string, from, to int64, maxSpeed int64) chan int64 {
 	blockCnt := 5
-	// blockSize := 300 * 1024
 
 	control := make(chan block, blockCnt)
-	output := make(chan []byte, blockCnt)
+	output := make(chan *dataBlock, blockCnt)
 
 	go func(control chan block, from, size int64) {
-		blockSize := int64(300 * 1024)
+		blockSize := int64(400 * 1024)
 		if maxSpeed > 0 {
 			blockSize = maxSpeed / 10 * 1024
 		}
@@ -45,14 +54,14 @@ func doDownload(url string, path string, from, to int64, maxSpeed int64) chan in
 
 	return progress
 }
-func writeOutput(path string, from int64, output chan []byte, progress chan int64) {
+func writeOutput(path string, from int64, output chan *dataBlock, progress chan int64) {
 	f := openOrCreateFileRW(path, from)
 	defer f.Close()
 
-	for b := range output {
-		_, err := f.Write(b)
+	for db := range output {
+		_, err := f.WriteAt(db.data, db.from)
 		if err == nil {
-			progress <- int64(len(b))
+			progress <- db.to - db.from
 		} else {
 			fmt.Printf("\n%s", err)
 			log.Fatal(err)
@@ -62,34 +71,39 @@ func writeOutput(path string, from int64, output chan []byte, progress chan int6
 	defer close(progress)
 }
 
-func pipeDownload(url string, control chan block, output chan []byte) {
-	numOfConn := make(chan bool, 5)
-	var prevComplete chan bool
+func pipeDownload(url string, control chan block, output chan *dataBlock) {
+	numOfConn := make(chan bool, 8)
+	prevComplete := make(chan bool, 1)
+	prevComplete <- true
 
 	for b := range control {
+		numOfConn <- true
 		complete := make(chan bool)
-		go func(b block, output chan []byte, numOfConn, prevComplete, complete chan bool) {
+		go func(b block, output chan *dataBlock, numOfConn, prevComplete, complete chan bool) {
 			//just block if network is down
 			for {
-				numOfConn <- true
-				block, err := downloadBlock(url, b)
-				<-numOfConn
+				data, err := downloadBlock(url, b)
+
 				if err == nil {
-					if prevComplete != nil {
-						<-prevComplete
-					}
-					output <- block
+					<-numOfConn
+					<-prevComplete
+					close(prevComplete)
+
+					// log.Printf("write output %v\n", b)
+					output <- &dataBlock{from: b.from, to: b.to, data: data}
 					complete <- true
 					return
+				} else {
+					log.Println(err)
 				}
 			}
 		}(b, output, numOfConn, prevComplete, complete)
 		prevComplete = complete
 	}
-	if prevComplete != nil {
-		<-prevComplete
-	}
+	<-prevComplete
+
 	close(output)
+	close(numOfConn)
 }
 
 func downloadBlock(url string, b block) (data []byte, err error) {
@@ -107,37 +121,46 @@ func downloadBlock(url string, b block) (data []byte, err error) {
 	}
 
 	buffer := bytes.NewBuffer(make([]byte, 0, to-from))
-	_, err = buffer.ReadFrom(resp.Body)
+	n, err := buffer.ReadFrom(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return buffer.Bytes(), nil
+
+	if n != (to - from) {
+		data = nil
+		err = errors.New(fmt.Sprintf("not download whole block. download length: %d, need length: %d\n", n, to-from))
+	} else {
+		data = buffer.Bytes()
+		err = nil
+	}
+
+	return
 }
 
-func sampleDownload(url string, path string) {
-	output := make(chan []byte)
-	go func(output chan []byte) {
-		defer close(output)
+// func sampleDownload(url string, path string) {
+// 	output := make(chan []byte)
+// 	go func(output chan []byte) {
+// 		defer close(output)
 
-		req := createDownloadRequest(url, 0, -1)
-		resp, err := DownloadClient.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
+// 		req := createDownloadRequest(url, 0, -1)
+// 		resp, err := DownloadClient.Do(req)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
 
-		for {
-			buffer := make([]byte, 40000)
-			readLen, _ := resp.Body.Read(buffer)
-			if readLen == 0 {
-				break
-			}
-			output <- buffer[:readLen]
-		}
-	}(output)
+// 		for {
+// 			buffer := make([]byte, 40000)
+// 			readLen, _ := resp.Body.Read(buffer)
+// 			if readLen == 0 {
+// 				break
+// 			}
+// 			output <- buffer[:readLen]
+// 		}
+// 	}(output)
 
-	progress := make(chan int64)
-	writeOutput(path, 0, output, progress)
-}
+// 	progress := make(chan int64)
+// 	writeOutput(path, 0, output, progress)
+// }
 
 func getDownloadInfo(url string) (realURL string, name string, size int64) {
 	req := createDownloadRequest(url, -1, -1)
