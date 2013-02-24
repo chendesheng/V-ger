@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"shooter"
 	"strings"
+	"subtitles"
 )
 
 type filter func(name string) string
@@ -31,17 +31,17 @@ func filterMovieName1(name string) string {
 	}
 	return name
 }
-func getSubList(movieName string, filters []filter) ([]shooter.Subtitle, string) {
+func getSubList(movieName string, filters []filter) ([]subtitles.Subtitle, string) {
 	for _, f := range filters {
 		name := f(movieName)
 		fmt.Printf("searching subtitles for \"%s\"...\n", name)
-		subs := shooter.SearchSubtitles(name)
+		subs := subtitles.SearchSubtitles(name)
 		if len(subs) > 0 {
 			return subs, name
 		}
 	}
 
-	return make([]shooter.Subtitle, 0), movieName
+	return make([]subtitles.Subtitle, 0), movieName
 }
 func filterCategory(category string) string {
 	if strings.Contains(category, "·±Ìå&Ó¢ÎÄ") {
@@ -68,9 +68,9 @@ func getMovieSub(movieName string) {
 	i := pick(arr, "no subtitle :(")
 	if i != -1 {
 		selectedSub := subs[i]
-		url, name := shooter.GetDownloadUrl(selectedSub.URL)
+		url := selectedSub.URL
+		name := download.BeginDownload(url, "", 0)
 		fmt.Printf("download subtitle: %s from %s", name, url)
-		download.BeginDownload(url, name, 0)
 
 		if strings.HasSuffix(name, ".rar") || strings.HasSuffix(name, ".zip") {
 			fileurls := b1.Extract(download.GetFilePath(name))

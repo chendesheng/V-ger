@@ -2,6 +2,7 @@ package download
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -31,29 +32,57 @@ func (t *Task) String() string {
 func GetTasks() []*Task {
 	return getTasks()
 }
-func BeginDownload(url string, name string, maxSpeed int64) {
+func BeginDownload(url string, name string, maxSpeed int64) string {
 	if DownloadClient == nil {
 		DownloadClient = http.DefaultClient
 	}
 
 	t := getOrNewTask(url, name)
-	// fmt.Printf("%v", *t)
-	// if t.DownloadedSize > 120*1024 {
-	// 	t.DownloadedSize -= 100 * 1024
-	// }
+
 	progress := doDownload(t.URL, t.Path, t.DownloadedSize, t.Size, maxSpeed)
 	// progress := sampleDownload(t.URL, t.Path, t.DownloadedSize, t.Size)
 	handleProgress(progress, t)
 
 	removeTask(t.Name)
 	fmt.Printf("\nIt's done!\n\n")
+	return t.Name
 }
 
-// func FastDownload(url string, name string) string {
-// 	path := GetFilePath(name)
-// 	sampleDownload(url, path)
-// 	return path
-// }
+func DownloadSmallFile(url string, name string) (filename string, err error) {
+	if name == "" {
+		url, name, _ = getDownloadInfo(url)
+	}
+
+	resp, err := DownloadClient.Get(url)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	f, err := os.OpenFile(fmt.Sprintf("%s%c%s", BaseDir, os.PathSeparator, name),
+		os.O_CREATE|os.O_RDWR, 0666)
+	defer f.Close()
+	if err != nil {
+		return "", err
+	}
+
+	f.Seek(0, 0)
+	for {
+		b := make([]byte, 5000)
+		n, err := resp.Body.Read(b)
+		if n > 0 {
+			f.Write(b[:n])
+		}
+
+		if err == io.EOF {
+			break
+		}
+	}
+
+	return name, nil
+}
+
 func GetFilePath(name string) string {
 	return fmt.Sprintf("%s%c%s", BaseDir, os.PathSeparator, name)
 }

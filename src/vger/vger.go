@@ -15,9 +15,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"shooter"
+	"subtitles"
 	"thunder"
 	"time"
+	// "yyets"
 )
 
 func init() {
@@ -44,7 +45,7 @@ func init() {
 
 	download.DownloadClient = client
 	thunder.Client = client
-	shooter.Client = client
+	subtitles.Client = client
 	b1.Client = client
 
 	download.BaseDir = config["dir"]

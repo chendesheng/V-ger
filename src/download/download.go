@@ -127,40 +127,11 @@ func downloadBlock(url string, b block) (data []byte, err error) {
 	}
 
 	if n != (to - from) {
-		data = nil
-		err = errors.New(fmt.Sprintf("not download whole block. download length: %d, need length: %d\n", n, to-from))
-	} else {
-		data = buffer.Bytes()
-		err = nil
+		return nil, errors.New(fmt.Sprintf("not download whole block. download length: %d, need length: %d\n", n, to-from))
 	}
 
-	return
+	return buffer.Bytes(), nil
 }
-
-// func sampleDownload(url string, path string) {
-// 	output := make(chan []byte)
-// 	go func(output chan []byte) {
-// 		defer close(output)
-
-// 		req := createDownloadRequest(url, 0, -1)
-// 		resp, err := DownloadClient.Do(req)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-
-// 		for {
-// 			buffer := make([]byte, 40000)
-// 			readLen, _ := resp.Body.Read(buffer)
-// 			if readLen == 0 {
-// 				break
-// 			}
-// 			output <- buffer[:readLen]
-// 		}
-// 	}(output)
-
-// 	progress := make(chan int64)
-// 	writeOutput(path, 0, output, progress)
-// }
 
 func getDownloadInfo(url string) (realURL string, name string, size int64) {
 	req := createDownloadRequest(url, -1, -1)
