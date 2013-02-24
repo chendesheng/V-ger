@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strconv"
 	// "regexp"
+	// "io"
 	"runtime"
 	"strings"
-	// "io"
 	// "encoding/json"
 	"b1"
 	"log"
@@ -55,29 +55,27 @@ func init() {
 
 }
 
-func pick(arr []string, emptyMessage string) int {
+func pick(arr []string, emptyMessage string) (int, string) {
 	if len(arr) == 0 {
 		if emptyMessage != "" {
 			fmt.Println(emptyMessage)
 		}
-		return -1
+		return -1, ""
 	}
 
 	for i, item := range arr {
 		fmt.Printf("[%d] %s\n", i+1, item)
 	}
 
+	next := ""
 	i := 0
-	_, err := fmt.Scanf("%d", &i)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Scanf("%d%s", &i, &next)
 	i--
 	if i >= 0 && i < len(arr) {
-		return i
+		return i, next
 	}
 	fmt.Println("pick wrong number.")
-	return -1
+	return -1, ""
 }
 func checkIfSubtitle(input string) bool {
 	return !(strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:"))
@@ -126,15 +124,16 @@ func main() {
 		for i, s := range tasks {
 			arr[i] = s.String()
 		}
-		i := pick(arr, "")
+		i, next := pick(arr, "")
 		if i != -1 {
 			selectedTask := tasks[i]
 			if selectedTask.Percent < 100 {
 				fmt.Println("the task is not ready.")
 				return
 			}
-
-			getMovieSub(selectedTask.Name)
+			if next == "" {
+				getMovieSub(selectedTask.Name)
+			}
 
 			download.BeginDownload(selectedTask.DownloadURL, selectedTask.Name, maxSpeed)
 		}
@@ -147,9 +146,12 @@ existTask:
 	for i, s := range tasks {
 		arr[i] = s.String()
 	}
-	i := pick(arr, "no unfinished task.")
+	i, next := pick(arr, "no unfinished task.")
 	if i != -1 {
 		selectedTask := tasks[i]
+		if next == "sub" || next == "s" {
+			getMovieSub(selectedTask.Name)
+		}
 		download.BeginDownload(selectedTask.URL, selectedTask.Name, maxSpeed)
 	}
 

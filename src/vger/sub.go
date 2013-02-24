@@ -65,12 +65,12 @@ func getMovieSub(movieName string) {
 	for i, s := range subs {
 		arr[i] = s.String()
 	}
-	i := pick(arr, "no subtitle :(")
+	i, _ := pick(arr, "no subtitle :(")
 	if i != -1 {
 		selectedSub := subs[i]
 		url := selectedSub.URL
+		fmt.Printf("download subtitle: %s", url)
 		name := download.BeginDownload(url, "", 0)
-		fmt.Printf("download subtitle: %s from %s", name, url)
 
 		if strings.HasSuffix(name, ".rar") || strings.HasSuffix(name, ".zip") {
 			fileurls := b1.Extract(download.GetFilePath(name))
