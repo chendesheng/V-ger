@@ -4,11 +4,15 @@ import (
 	"code.google.com/p/cookiejar"
 	"download"
 	"fmt"
+	"html/template"
+	// "io/ioutil"
+	"os/exec"
 	"strconv"
+	"strings"
 	// "regexp"
 	// "io"
 	"runtime"
-	"strings"
+	// "strings"
 	// "encoding/json"
 	"b1"
 	"log"
@@ -18,7 +22,6 @@ import (
 	"subtitles"
 	"thunder"
 	"time"
-	// "yyets"
 )
 
 func init() {
@@ -51,7 +54,6 @@ func init() {
 	download.BaseDir = config["dir"]
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	// runtime.LockOSThread()
 
 }
 
@@ -91,68 +93,243 @@ func checkIfSpeed(input string) (int64, bool) {
 	return int64(num), true
 }
 
-func main() {
-	maxSpeed := int64(-1)
-	if len(os.Args) > 1 {
-		input := os.Args[1]
-		if n, ok := checkIfSpeed(input); ok {
-			maxSpeed = n
-			goto existTask
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.New("tasks").Parse(`<html>
+<head>
+	<title>V'ger</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+		function exeScript(src) {
+			var ele = document.createElement("script");
+			ele.src = src;
+			ele.type = 'text/javascript'
+			document.getElementsByTagName('head')[0].appendChild(ele);
+		}
+		function ajax_get(url) {
+			$.ajax({
+				url: url,
+				data: {
+					zipcode: 97201
+				},
+				success: function( data ) {
+					$( "#weather-temp" ).html( "<strong>" + data + "</strong> degrees" );
+				}
+			});
 		}
 
-		if checkIfSubtitle(input) {
-			getMovieSub(input)
-			return
-		}
+		$(document).ready(function() {
+			function init() {
+				$('.action-play').on('click', function() {
+					$.get('/play/' + $(this).data('name'), function() {})
+				});
 
-		if len(os.Args) > 2 {
-			input2 := os.Args[2]
-			if n, ok := checkIfSpeed(input2); ok {
-				maxSpeed = n
+				$('.action-resume-download').on('click', function() {
+					$.get('/resume/' + $(this).data('name'), function(resp) {
+						get_progress()
+						resp && alert(resp);
+					})
+				});
+
+				$('.action-stop-download').on('click', function() {
+					$.get('/stop/' + $(this).data('name'), function(resp) {
+						get_progress()
+						resp && alert(resp);
+					})
+				});
+				
+				$('.action-limit').on('change', function() {
+					$.post('/limit/'+$(this).data('name'), {'limit': $(this).val() }, function(resp) {
+						get_progress()
+						resp && alert(resp);
+					})
+				})
 			}
-		}
-
-		if strings.Contains(input, "lixian.vip.xunlei.com") {
-			download.BeginDownload(input, "", maxSpeed)
-			return
-		}
-
-		thunder.Login(config["thunder-user"], config["thunder-password"])
-		tasks := thunder.NewTask(input)
-
-		arr := make([]string, len(tasks))
-		for i, s := range tasks {
-			arr[i] = s.String()
-		}
-		i, next := pick(arr, "")
-		if i != -1 {
-			selectedTask := tasks[i]
-			if selectedTask.Percent < 100 {
-				fmt.Println("the task is not ready.")
-				return
+			init();
+			function get_progress() {
+				$.get('/progress', function(resp) {
+					$('#tasks').html(resp);
+					init();
+				});
 			}
-			if next == "" {
-				getMovieSub(selectedTask.Name)
-			}
+			setInterval(get_progress, 2000)
 
-			download.BeginDownload(selectedTask.DownloadURL, selectedTask.Name, maxSpeed)
-		}
+			$('#new-task').on('click', function() {
+				$.post('/new', {'url': $('#new-url').val()}, function(resp) {
+					get_progress()
+					resp && alert(resp);
+				})
+			})
+			$('#refresh-tasks').on('click', function() {
+				get_progress();
+			})
+		});
+	</script>
+	<input type="button" id="refresh-tasks" value="refresh" />
+	<div id="tasks">
+		<ul>
+		{{range .}}
+	       <li>
+	       		{{.}}
+	       		<div>
+	       			<input class="action-play" type="button" value="play" data-name="{{.Name}}"/>
+	       			<input class="action-resume-download" type="button" value="resume" data-name="{{.Name}}"/>
+	       			<input class="action-stop-download" type="button" value="stop" data-name="{{.Name}}"/>
+	       			<select id="limit-{{.NameHash}}" class="action-limit" data-name="{{.Name}}">
+	       				<option value="0">No limit</option>
+	       				<option value="50">Up to 50K</option>
+	       				<option value="100">Up to 100K</option>
+	       				<option value="150">Up to 150K</option>
+	       				<option value="200">Up to 200K</option>
+	       				<option value="300">Up to 300K</option>
+	       			</select>
+		   			<script type="text/javascript">
+		   				$("#limit-{{.NameHash}}").val({{.LimitSpeed}})
+		   			</script>
+	       		<div>
+	       </li>
+	    {{end}}
+		</ul>
+	</div>
+	<div>
+		<textarea id="new-url" cols="100" rows="5"></textarea>
+		<input type="button" id="new-task" value="add"/>
+	</div>
+</body>
+</html>`))
+	tasks := download.GetTasks()
+	t.Execute(w, tasks)
+}
+
+func playHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[6:])
+	fmt.Printf("play \"%s\".\n", name)
+	cmd := exec.Command("open", fmt.Sprintf("%s%c%s", download.BaseDir, os.PathSeparator, name))
+	cmd.Start()
+
+	w.Write([]byte(``))
+}
+
+func resumeHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[8:])
+	fmt.Printf("resume download \"%s\".\n", name)
+
+	w.Write([]byte(download.ResumeDownload(name)))
+}
+func newTaskHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	url := r.FormValue("url")
+
+	if strings.Contains(url, "lixian.vip.xunlei.com") {
+		fmt.Printf("add download \"%s\".\n", url)
+
+		w.Write([]byte(download.NewDownload(url)))
 		return
 	}
-existTask:
-	tasks := download.GetTasks()
+
+	thunder.Login(config["thunder-user"], config["thunder-password"])
+	tasks := thunder.NewTask(url)
 
 	arr := make([]string, len(tasks))
 	for i, s := range tasks {
 		arr[i] = s.String()
 	}
-	i, next := pick(arr, "no unfinished task.")
+	i, next := pick(arr, "")
 	if i != -1 {
 		selectedTask := tasks[i]
-		if next == "sub" || next == "s" {
+		if selectedTask.Percent < 100 {
+			fmt.Println("the task is not ready.")
+			return
+		}
+		if next == "" {
 			getMovieSub(selectedTask.Name)
 		}
-		download.BeginDownload(selectedTask.URL, selectedTask.Name, maxSpeed)
-	}
 
+		fmt.Printf("add download \"%s\".\n", selectedTask.DownloadURL)
+
+		w.Write([]byte(download.NewDownload(selectedTask.DownloadURL)))
+	}
+}
+
+// func newThunderTask(w http.ResponseWriter, r *http.Request) {
+// 	r.ParseForm()
+// 	url := r.FormValue("url")
+
+// 	thunder.NewTask(url)
+// }
+func stopHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[6:])
+	fmt.Printf("stop download \"%s\".\n", name)
+
+	w.Write([]byte(download.StopDownload(name)))
+}
+func limitHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[7:])
+	r.ParseForm()
+	speed := r.FormValue("limit")
+
+	fmt.Printf("download \"%s\" limit speed %dK.\n", name, speed)
+
+	w.Write([]byte(download.LimitSpeed(name, speed)))
+}
+func progressHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.New("tasks").Parse(`<ul>
+	{{range .}}
+       <li>
+       		{{.}}
+       		<div>
+       			<input class="action-play" type="button" value="play" data-name="{{.Name}}"/>
+       			<input class="action-resume-download" type="button" value="resume" data-name="{{.Name}}"/>
+       			<input class="action-stop-download" type="button" value="stop" data-name="{{.Name}}"/>
+	   			<select id="limit-{{.NameHash}}" class="action-limit" data-name="{{.Name}}">
+	   				<option value="0">No limit</option>
+	   				<option value="50">Up to 50K</option>
+	   				<option value="100">Up to 100K</option>
+	   				<option value="150">Up to 150K</option>
+	   				<option value="200">Up to 200K</option>
+	   				<option value="300">Up to 300K</option>
+	   			</select>
+	   			<script type="text/javascript">
+	   				$("#limit-{{.NameHash}}").val({{.LimitSpeed}})
+	   			</script>
+       		<div>
+       </li>
+    {{end}}
+	</ul>`))
+
+	tasks := download.GetTasks()
+	t.Execute(w, tasks)
+	w.Write([]byte(fmt.Sprintf("<h3>Go routine numbers: %d</h3>", runtime.NumGoroutine())))
+}
+
+type command struct {
+	ack    chan bool
+	result chan string
+
+	name string
+	arg  string
+}
+
+func main() {
+	// thunder.Login(config["thunder-user"], config["thunder-password"])
+	// fmt.Println("thunder login success.")
+
+	download.StartHandleCommands()
+
+	http.Handle("/favicon.ico", http.NotFoundHandler())
+
+	http.HandleFunc("/", viewHandler)
+	http.HandleFunc("/play/", playHandler)
+	http.HandleFunc("/resume/", resumeHandler)
+	http.HandleFunc("/stop/", stopHandler)
+	http.HandleFunc("/progress", progressHandler)
+	http.HandleFunc("/new", newTaskHandler)
+	http.HandleFunc("/limit/", limitHandler)
+
+	fmt.Println("server start listern port 3824.")
+	err := http.ListenAndServe(":3824", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

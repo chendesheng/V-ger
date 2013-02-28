@@ -75,12 +75,13 @@ func getFileInfo(header http.Header) (name string, size int64) {
 
 	return
 }
-func getFileName(url string) string {
-	e := strings.Index(url, "?")
+func getFileName(fullURL string) string {
+	e := strings.Index(fullURL, "?")
 	if e < 0 {
-		e = len(url)
+		e = len(fullURL)
 	}
-	return url[strings.LastIndex(url, `/`)+1 : e]
+	name, _ := url.QueryUnescape(fullURL[strings.LastIndex(fullURL, `/`)+1 : e])
+	return name
 }
 func writeJson(path string, object interface{}) {
 	data, err := json.Marshal(object)

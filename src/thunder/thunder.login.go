@@ -34,4 +34,6 @@ func Login(user string, password string) {
 			"u":            {user},
 			"p":            {passwordMd5},
 		})
+
+	fmt.Println("Thunder login success.")
 }

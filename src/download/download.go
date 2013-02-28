@@ -3,6 +3,7 @@ package download
 import (
 	"bytes"
 	"fmt"
+	// "runtime"
 	// "strconv"
 	// "io"
 	"errors"
@@ -19,91 +20,188 @@ type dataBlock struct {
 	data     []byte
 }
 
-func doDownload(url string, path string, from, to int64, maxSpeed int64) chan int64 {
-	blockCnt := 5
+func doDownload(t *Task, url string, path string, from, to int64,
+	maxSpeed int64, control chan int) chan int64 {
 
-	control := make(chan block, blockCnt)
-	output := make(chan *dataBlock, blockCnt)
+	input := make(chan block)
+	output := make(chan *dataBlock)
 
-	go func(control chan block, from, size int64) {
-		blockSize := int64(400 * 1024)
-		if maxSpeed > 0 {
-			blockSize = maxSpeed / 10 * 1024
-		}
+	go generateBlock(input, from, to, maxSpeed, control)
 
-		for {
-			to := from + blockSize
-			if to <= size {
-				control <- block{from, to}
-				from += blockSize
-			} else {
-				control <- block{from, size}
-				close(control)
-				break
-			}
-			if maxSpeed > 0 {
-				time.Sleep(time.Millisecond * 100)
-			}
-		}
-	}(control, from, to)
-
-	go pipeDownload(url, control, output)
+	go pipeDownload(url, input, output)
 
 	progress := make(chan int64)
 	go writeOutput(path, from, output, progress)
 
 	return progress
 }
-func writeOutput(path string, from int64, output chan *dataBlock, progress chan int64) {
+func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control chan int) {
+	blockSize := int64(400 * 1024)
+	if maxSpeed > 0 {
+		blockSize = maxSpeed * 1024
+	}
+
+	to := from + blockSize
+	if to > size {
+		to = size
+	}
+	// lastTime := time.Now()
+	// lastTime2 := time.Now()
+	r := time.Duration(0)
+	for {
+		// if maxSpeed > 0 {
+		// 	now := time.Now()
+		// 	dur := now.Sub(lastTime)
+		// 	lastTime = now
+
+		// 	fmt.Printf("input %d-%d\n", from, to)
+
+		// 	if dur < time.Second {
+		// 		fmt.Println("sleep dur ", dur)
+		// 		time.Sleep(dur)
+		// 	}
+		// }
+		b := time.Now()
+		select {
+		case cmd := <-control:
+			if cmd == -1 {
+				close(input)
+				fmt.Println("input stopped")
+				return
+			} else {
+				fmt.Println("set max speed")
+				maxSpeed = int64(cmd)
+				if maxSpeed > 0 {
+					blockSize = maxSpeed * 1024
+				} else {
+					blockSize = int64(400 * 1024)
+				}
+			}
+		case input <- block{from, to}:
+			if to == size {
+				// fmt.Println("input", from, "-", to)
+				fmt.Println("return input")
+				close(input)
+				return
+			} else {
+				// fmt.Println("input", from, "-", to)
+				from = to
+				to = from + blockSize
+				if to > size {
+					to = size
+				}
+				if maxSpeed > 0 {
+					d := time.Now().Sub(b)
+					if d < time.Second {
+						// fmt.Println("durs: d: ", d, " r: ", r)
+						time.Sleep(time.Second - d - r)
+						r -= time.Second
+						if r < 0 {
+							r = 0
+						}
+					} else {
+						r = d - time.Second
+					}
+				}
+				// if maxSpeed > 0 {
+				// 	now := time.Now()
+				// 	dur := now.Sub(lastTime2)
+				// 	lastTime2 = now
+
+				// 	fmt.Printf("input %d-%d\n", from, to)
+
+				// 	if dur < time.Second {
+				// 		fmt.Println("sleep dur 2", dur)
+				// 		time.Sleep(dur)
+				// 	}
+				// }
+			}
+		}
+	}
+	fmt.Println("doDownload return")
+}
+func writeOutput(path string, from int64, output <-chan *dataBlock, progress chan int64) {
 	f := openOrCreateFileRW(path, from)
 	defer f.Close()
 
+	defer func() {
+		fmt.Println("close progress")
+		close(progress)
+	}()
+
 	for db := range output {
+		// fmt.Printf("writeOutput %d-%d\n", db.from, db.to)
 		_, err := f.WriteAt(db.data, db.from)
+
 		if err == nil {
+			// fmt.Println("progress<-")
 			progress <- db.to - db.from
+			// fmt.Println("progress 111")
 		} else {
 			fmt.Printf("\n%s", err)
 			log.Fatal(err)
 		}
 	}
 
-	defer close(progress)
+	fmt.Println("writeOutput end")
 }
+func pipeDownload(url string, input <-chan block, output chan<- *dataBlock) {
+	defer close(output)
+	numOfConn := make(chan bool, 5)
+	defer close(numOfConn)
 
-func pipeDownload(url string, control chan block, output chan *dataBlock) {
-	numOfConn := make(chan bool, 8)
 	prevComplete := make(chan bool, 1)
 	prevComplete <- true
 
-	for b := range control {
+	// for b := range input {
+	// fmt.Printf("1   %v\n", b)
+	for b := range input {
+		// fmt.Println("14")
 		numOfConn <- true
+		// fmt.Println("7")
 		complete := make(chan bool)
-		go func(b block, output chan *dataBlock, numOfConn, prevComplete, complete chan bool) {
+		go func(b block, output chan<- *dataBlock, numOfConn, prevComplete, complete chan bool) {
+			// defer func() {
+			// 	if r := recover(); r != nil {
+			// 		fmt.Println("Recovered in f ", r)
+			// 	}
+			// }()
 			//just block if network is down
 			for {
+				// fmt.Println("10")
 				data, err := downloadBlock(url, b)
+				// fmt.Println("11")
+				// data, err := make([]byte, 1), error(nil)
 
 				if err == nil {
+					// fmt.Printf("%v 1\n", b)
 					<-numOfConn
+					// fmt.Printf("%v 2\n", b)
 					<-prevComplete
+					// fmt.Printf("%v 3\n", b)
 					close(prevComplete)
-
-					// log.Printf("write output %v\n", b)
+					// fmt.Printf("%v 4\n", b)
 					output <- &dataBlock{from: b.from, to: b.to, data: data}
+
+					// fmt.Printf("%v 5\n", b)
 					complete <- true
+					// 
+					// fmt.Printf("%v 6\n", b)
 					return
 				} else {
+					// fmt.Println("12")
 					log.Println(err)
 				}
 			}
 		}(b, output, numOfConn, prevComplete, complete)
+		// fmt.Println("9")
 		prevComplete = complete
+		// fmt.Println("13")
+
 	}
 	<-prevComplete
 
-	close(output)
-	close(numOfConn)
+	fmt.Println("pipeDownload return")
 }
 
 func downloadBlock(url string, b block) (data []byte, err error) {

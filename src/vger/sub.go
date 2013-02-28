@@ -18,6 +18,7 @@ func filterMovieName2(name string) string {
 	name = string(reg.ReplaceAll([]byte(name), []byte("")))
 	name = strings.Replace(name, ".", " ", -1)
 	name = strings.TrimSpace(name)
+
 	return name
 }
 func filterMovieName1(name string) string {

@@ -10,7 +10,7 @@ func handleProgress(progress chan int64, t *Task) {
 	log.Printf("start handle progress: %v\n", *t)
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
-	timer := time.After(time.Second * 2)
+	timer := time.NewTicker(time.Second * 2)
 
 	speed := float64(0)
 	partsCount := 15
@@ -25,9 +25,14 @@ func handleProgress(progress chan int64, t *Task) {
 	est := time.Duration(0)
 	lastCheck := time.Now()
 
-	for total < size {
+	for {
 		select {
-		case length := <-progress:
+		case length, ok := <-progress:
+			if !ok {
+				saveProgress(t.Name, speed, total, elapsedTime)
+				return
+			}
+			// fmt.Println("progress ", total)
 			total += length
 			part += length
 
@@ -40,12 +45,8 @@ func handleProgress(progress chan int64, t *Task) {
 				parts[cnt] = part
 				part = 0
 			}
-
-		case <-timer:
-			timer = time.After(time.Second * 2)
-
+		case <-timer.C:
 			elapsedTime += time.Second * 2
-			saveProgress(t, total, elapsedTime)
 
 			sum := int64(0)
 			for _, p := range parts {
@@ -53,8 +54,14 @@ func handleProgress(progress chan int64, t *Task) {
 			}
 			speed = float64(sum) * float64(time.Second) / float64(time.Since(lastCheck)) / 1024
 
+			saveProgress(t.Name, speed, total, elapsedTime)
+
 			percentage, est := calcProgress(total, size, speed)
 			printProgress(percentage, speed, elapsedTime, est)
+			if total == size {
+				fmt.Println("progress return")
+				return
+			}
 		}
 	}
 	printProgress(100, speed, elapsedTime, est)
@@ -68,11 +75,14 @@ func calcProgress(total, size int64, speed float64) (percentage float64, est tim
 	}
 	return
 }
-func saveProgress(t *Task, total int64, elapsedTime time.Duration) {
-	t.DownloadedSize = total
-	t.ElapsedTime = elapsedTime
-	saveTask(t)
+func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration) {
+	if t, ok := GetTask(name); ok {
+		t.DownloadedSize = total
+		t.ElapsedTime = elapsedTime
+		t.Speed = speed
+		saveTask(t)
+	}
 }
 func printProgress(percentage float64, speed float64, elapsedTime time.Duration, est time.Duration) {
-	fmt.Printf("\r%.2f%%    %.2f KB/s    %s    Est. %s     ", percentage, speed, elapsedTime/time.Second*time.Second, est/time.Second*time.Second)
+	// fmt.Printf("%.2f%%    %.2f KB/s    %s    Est. %s     \n", percentage, speed, elapsedTime/time.Second*time.Second, est/time.Second*time.Second)
 }
