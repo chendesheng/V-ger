@@ -97,28 +97,11 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	t := template.Must(template.New("tasks").Parse(`<html>
 <head>
 	<title>V'ger</title>
+	<link href="/assets/style.css" rel="stylesheet" type="text/css"> 
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 </head>
 <body>
 	<script type="text/javascript">
-		function exeScript(src) {
-			var ele = document.createElement("script");
-			ele.src = src;
-			ele.type = 'text/javascript'
-			document.getElementsByTagName('head')[0].appendChild(ele);
-		}
-		function ajax_get(url) {
-			$.ajax({
-				url: url,
-				data: {
-					zipcode: 97201
-				},
-				success: function( data ) {
-					$( "#weather-temp" ).html( "<strong>" + data + "</strong> degrees" );
-				}
-			});
-		}
-
 		$(document).ready(function() {
 			function init() {
 				$('.action-play').on('click', function() {
@@ -153,7 +136,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 					init();
 				});
 			}
-			setInterval(get_progress, 2000)
+			// setInterval(get_progress, 2000)
 
 			$('#new-task').on('click', function() {
 				$.post('/new', {'url': $('#new-url').val()}, function(resp) {
@@ -166,16 +149,19 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 			})
 		});
 	</script>
-	<input type="button" id="refresh-tasks" value="refresh" />
+	<!--for debug-->
+	<input type="button" id="refresh-tasks" value="Refresh" style="display:none;" />
+	<h1>V'ger</h1>
+	<h2>Speed is Fun!</h2>
 	<div id="tasks">
 		<ul>
 		{{range .}}
 	       <li>
 	       		{{.}}
 	       		<div>
-	       			<input class="action-play" type="button" value="play" data-name="{{.Name}}"/>
-	       			<input class="action-resume-download" type="button" value="resume" data-name="{{.Name}}"/>
-	       			<input class="action-stop-download" type="button" value="stop" data-name="{{.Name}}"/>
+	       			<input class="action-play" type="button" value="Open" data-name="{{.Name}}"/>
+	       			<input class="action-resume-download" type="button" value="Resume" data-name="{{.Name}}"/>
+	       			<input class="action-stop-download" type="button" value="Stop" data-name="{{.Name}}"/>
 	       			<select id="limit-{{.NameHash}}" class="action-limit" data-name="{{.Name}}">
 	       				<option value="0">No limit</option>
 	       				<option value="50">Up to 50K</option>
@@ -192,9 +178,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	    {{end}}
 		</ul>
 	</div>
-	<div>
-		<textarea id="new-url" cols="100" rows="5"></textarea>
-		<input type="button" id="new-task" value="add"/>
+	<div id="start-download">
+		<div><input type="text" id="new-url" placeHolder="Input anything you want"></div>
+		<div><input type="button" id="new-task" value="Start Download"/></div>
 	</div>
 </body>
 </html>`))
@@ -273,15 +259,18 @@ func limitHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(download.LimitSpeed(name, speed)))
 }
+func deleteHandler(w http.ResponseWriter, r *http.Request) {
+
+}
 func progressHandler(w http.ResponseWriter, r *http.Request) {
 	t := template.Must(template.New("tasks").Parse(`<ul>
 	{{range .}}
        <li>
        		{{.}}
        		<div>
-       			<input class="action-play" type="button" value="play" data-name="{{.Name}}"/>
-       			<input class="action-resume-download" type="button" value="resume" data-name="{{.Name}}"/>
-       			<input class="action-stop-download" type="button" value="stop" data-name="{{.Name}}"/>
+       			<input class="action-play" type="button" value="Open" data-name="{{.Name}}"/>
+       			<input class="action-resume-download" type="button" value="Resume" data-name="{{.Name}}"/>
+       			<input class="action-stop-download" type="button" value="Stop" data-name="{{.Name}}"/>
 	   			<select id="limit-{{.NameHash}}" class="action-limit" data-name="{{.Name}}">
 	   				<option value="0">No limit</option>
 	   				<option value="50">Up to 50K</option>
@@ -311,6 +300,16 @@ type command struct {
 	arg  string
 }
 
+func assetsHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.Path)
+	path := r.URL.Path[1:]
+	if _, err := os.OpenFile(path, os.O_RDONLY, 0666); os.IsNotExist(err) {
+		http.NotFound(w, r)
+	} else {
+		http.ServeFile(w, r, path)
+	}
+}
+
 func main() {
 	// thunder.Login(config["thunder-user"], config["thunder-password"])
 	// fmt.Println("thunder login success.")
@@ -318,6 +317,8 @@ func main() {
 	download.StartHandleCommands()
 
 	http.Handle("/favicon.ico", http.NotFoundHandler())
+
+	http.HandleFunc("/assets/", assetsHandler)
 
 	http.HandleFunc("/", viewHandler)
 	http.HandleFunc("/play/", playHandler)

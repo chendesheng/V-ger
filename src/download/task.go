@@ -45,8 +45,23 @@ func (t *Task) String() string {
 	if t.Status == "Downloading" && t.LimitSpeed > 0 {
 		text = fmt.Sprintf("::Up to %dK/s", t.LimitSpeed)
 	}
-	return fmt.Sprintf("[%s%s] %s %s %.2fK/s %.2f%%", t.Status, text,
-		t.Name, t.StartDate, t.Speed, float32(t.DownloadedSize)/float32(t.Size)*100)
+
+	estDur := time.Duration(0)
+	if t.Speed != 0 {
+		estDur = time.Duration(float64((t.Size-t.DownloadedSize))/t.Speed) * time.Millisecond
+	}
+
+	est := ""
+	if estDur > 0 {
+		est = fmt.Sprintf(" Est. %s", estDur)
+	}
+	speed := ""
+	if t.Status == "Downloading" {
+		speed = fmt.Sprintf(" %.2fKB/s", t.Speed)
+	}
+
+	return fmt.Sprintf("[%s%s] %s %s%s %.2f%%%s", t.Status, text,
+		t.Name, t.StartDate, speed, float32(t.DownloadedSize)/float32(t.Size)*100, est)
 }
 
 func BeginDownload(url string, name string, maxSpeed int64) string {
@@ -224,7 +239,10 @@ func getTask(name string, taskDir string) (*Task, bool) {
 	}
 
 	t := new(Task)
-	readJson(path.Join(taskDir, name), t)
+	err := readJson(path.Join(taskDir, name), t)
+	if err != nil {
+		return nil, false
+	}
 	// if t.NameHash == "" {
 	t.NameHash = hashName(t.Name)
 	// }

@@ -91,10 +91,10 @@ func writeJson(path string, object interface{}) {
 
 	ioutil.WriteFile(path, data, 0666)
 }
-func readJson(path string, object interface{}) {
+func readJson(path string, object interface{}) error {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Println("read json: ")
@@ -102,4 +102,5 @@ func readJson(path string, object interface{}) {
 	log.Println(string(data))
 
 	json.Unmarshal(data, &object)
+	return nil
 }
