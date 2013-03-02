@@ -136,7 +136,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 					init();
 				});
 			}
-			// setInterval(get_progress, 2000)
+			setInterval(get_progress, 2000)
 
 			$('#new-task').on('click', function() {
 				$.post('/new', {'url': $('#new-url').val()}, function(resp) {
@@ -185,6 +185,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 </body>
 </html>`))
 	tasks := download.GetTasks()
+	download.SortTasksByCreateTime(tasks)
 	t.Execute(w, tasks)
 }
 
@@ -288,6 +289,7 @@ func progressHandler(w http.ResponseWriter, r *http.Request) {
 	</ul>`))
 
 	tasks := download.GetTasks()
+	download.SortTasksByCreateTime(tasks)
 	t.Execute(w, tasks)
 	w.Write([]byte(fmt.Sprintf("<h3>Go routine numbers: %d</h3>", runtime.NumGoroutine())))
 }

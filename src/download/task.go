@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -232,6 +233,16 @@ func GetTasks() []*Task {
 
 	// fmt.Printf("get tasks %v.\n", tasks)
 	return tasks
+}
+
+type taskSlice []*Task
+
+func (t taskSlice) Len() int           { return len(t) }
+func (t taskSlice) Less(i, j int) bool { return t[i].StartDate > t[j].StartDate }
+func (t taskSlice) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
+
+func SortTasksByCreateTime(tasks []*Task) {
+	sort.Sort(taskSlice(tasks))
 }
 func getTask(name string, taskDir string) (*Task, bool) {
 	if !strings.HasSuffix(name, ".vger-task.txt") {
