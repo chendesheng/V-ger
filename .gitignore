@@ -1,10 +1,13 @@
 pkg
 bin
 config.json
-.sublime-project
+*.sublime-project
+*.sublime-workspace
+
 .DS_Store
 .project
 *~
 *.diff
 *.zip
 *.app
+gomacdraw.framework
