@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"sort"
+	// "sort"
 	"strconv"
 	"strings"
 	"time"
@@ -29,7 +29,7 @@ type Task struct {
 	URL       string
 	Size      int64
 	Name      string //identifier (a little unsafe but more readable than url)
-	StartDate string
+	StartDate time.Time
 
 	DownloadedSize int64
 	ElapsedTime    time.Duration
@@ -39,6 +39,7 @@ type Task struct {
 	Speed      float64
 	Status     string
 	NameHash   string
+	Est        time.Duration
 }
 
 func (t *Task) String() string {
@@ -191,7 +192,7 @@ func getOrNewTask(url string, name string) *Task {
 	t.Name = name
 	t.isNew = true
 	t.Size = filesize
-	t.StartDate = time.Now().String()
+	t.StartDate = time.Now()
 	t.DownloadedSize = 0
 	t.ElapsedTime = 0
 
@@ -235,15 +236,15 @@ func GetTasks() []*Task {
 	return tasks
 }
 
-type taskSlice []*Task
+// type taskSlice []*Task
 
-func (t taskSlice) Len() int           { return len(t) }
-func (t taskSlice) Less(i, j int) bool { return t[i].StartDate > t[j].StartDate }
-func (t taskSlice) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
+// func (t taskSlice) Len() int           { return len(t) }
+// func (t taskSlice) Less(i, j int) bool { return t[i].StartDate > t[j].StartDate }
+// func (t taskSlice) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
 
-func SortTasksByCreateTime(tasks []*Task) {
-	sort.Sort(taskSlice(tasks))
-}
+// func SortTasksByCreateTime(tasks []*Task) {
+// 	sort.Sort(taskSlice(tasks))
+// }
 func getTask(name string, taskDir string) (*Task, bool) {
 	if !strings.HasSuffix(name, ".vger-task.txt") {
 		return nil, false
@@ -302,7 +303,7 @@ func handleCommands(chanCommand chan *command) {
 				}
 			} else {
 				cmd.ack <- false
-				cmd.result <- "task_not_exist"
+				cmd.result <- "task_not_exists"
 			}
 			break
 		case "stop":
@@ -342,15 +343,15 @@ func StartHandleCommands() {
 	chanCommand = make(chan *command, 5)
 	go handleCommands(chanCommand)
 }
-func LimitSpeed(name string, speed string) string {
+func LimitSpeed(name string, speed int) string {
 	if t, ok := GetTask(name); ok {
-		t.LimitSpeed, _ = strconv.ParseInt(speed, 10, 64)
+		t.LimitSpeed = int64(speed)
 		saveTask(t)
 	} else {
 		return "task has been deleted."
 	}
 
-	cmd := newCommand("limit", fmt.Sprintf("%s:::%s", name, speed))
+	cmd := newCommand("limit", fmt.Sprintf("%s:::%d", name, speed))
 	chanCommand <- cmd
 	if ok := <-cmd.ack; !ok {
 		return <-cmd.result

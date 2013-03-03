@@ -3,9 +3,10 @@ package main
 import (
 	"code.google.com/p/cookiejar"
 	"download"
+	"encoding/json"
 	"fmt"
-	"html/template"
-	// "io/ioutil"
+	// "html/template"
+	"io/ioutil"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -94,10 +95,7 @@ func checkIfSpeed(input string) (int64, bool) {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.New("tasks").ParseFiles("main.html"))
-	tasks := download.GetTasks()
-	download.SortTasksByCreateTime(tasks)
-	t.Execute(w, tasks)
+	http.ServeFile(w, r, "main.html")
 }
 
 func playHandler(w http.ResponseWriter, r *http.Request) {
@@ -116,46 +114,53 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(download.ResumeDownload(name)))
 }
 func newTaskHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	url := r.FormValue("url")
+	input, _ := ioutil.ReadAll(r.Body)
+	url := string(input)
 
-	if strings.Contains(url, "lixian.vip.xunlei.com") {
-		fmt.Printf("add download \"%s\".\n", url)
+	// if strings.Contains(url, "lixian.vip.xunlei.com") {
+	// 	fmt.Printf("add download \"%s\".\n", url)
 
-		w.Write([]byte(download.NewDownload(url)))
-		return
-	}
+	// 	w.Write([]byte(download.NewDownload(url)))
+	// 	return
+	// }
+
+	// thunder.Login(config["thunder-user"], config["thunder-password"])
+	// tasks := thunder.NewTask(url)
+
+	// arr := make([]string, len(tasks))
+	// for i, s := range tasks {
+	// 	arr[i] = s.String()
+	// }
+	// i, next := pick(arr, "")
+	// if i != -1 {
+	// 	selectedTask := tasks[i]
+	// 	if selectedTask.Percent < 100 {
+	// 		fmt.Println("the task is not ready.")
+	// 		return
+	// 	}
+	// 	if next == "" {
+	// 		getMovieSub(selectedTask.Name)
+	// 	}
+
+	// 	fmt.Printf("add download \"%s\".\n", selectedTask.DownloadURL)
+
+	// 	w.Write([]byte(download.NewDownload(selectedTask.DownloadURL)))
+	// }
+	fmt.Printf("add download \"%s\".\n", url)
+
+	w.Write([]byte(download.NewDownload(url)))
+}
+func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
+	input, _ := ioutil.ReadAll(r.Body)
+	url := string(input)
 
 	thunder.Login(config["thunder-user"], config["thunder-password"])
-	tasks := thunder.NewTask(url)
+	files := thunder.NewTask(url)
 
-	arr := make([]string, len(tasks))
-	for i, s := range tasks {
-		arr[i] = s.String()
-	}
-	i, next := pick(arr, "")
-	if i != -1 {
-		selectedTask := tasks[i]
-		if selectedTask.Percent < 100 {
-			fmt.Println("the task is not ready.")
-			return
-		}
-		if next == "" {
-			getMovieSub(selectedTask.Name)
-		}
-
-		fmt.Printf("add download \"%s\".\n", selectedTask.DownloadURL)
-
-		w.Write([]byte(download.NewDownload(selectedTask.DownloadURL)))
-	}
+	text, _ := json.Marshal(files)
+	w.Write([]byte(text))
 }
 
-// func newThunderTask(w http.ResponseWriter, r *http.Request) {
-// 	r.ParseForm()
-// 	url := r.FormValue("url")
-
-// 	thunder.NewTask(url)
-// }
 func stopHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("stop download \"%s\".\n", name)
@@ -164,10 +169,11 @@ func stopHandler(w http.ResponseWriter, r *http.Request) {
 }
 func limitHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
-	r.ParseForm()
-	speed := r.FormValue("limit")
-
-	fmt.Printf("download \"%s\" limit speed %dK.\n", name, speed)
+	// r.ParseForm()
+	// speed := r.FormValue("limit")
+	input, _ := ioutil.ReadAll(r.Body)
+	speed, _ := strconv.Atoi(string(input))
+	fmt.Printf("download \"%s\" limit speed %dKB/s.\n", name, speed)
 
 	w.Write([]byte(download.LimitSpeed(name, speed)))
 }
@@ -175,34 +181,11 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 func progressHandler(w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.New("tasks").Parse(`<ul>
-	{{range .}}
-       <li>
-       		{{.}}
-       		<div>
-       			<input class="action-play" type="button" value="Open" data-name="{{.Name}}"/>
-       			<input class="action-resume-download" type="button" value="Resume" data-name="{{.Name}}"/>
-       			<input class="action-stop-download" type="button" value="Stop" data-name="{{.Name}}"/>
-	   			<select id="limit-{{.NameHash}}" class="action-limit" data-name="{{.Name}}">
-	   				<option value="0">No limit</option>
-	   				<option value="50">Up to 50K</option>
-	   				<option value="100">Up to 100K</option>
-	   				<option value="150">Up to 150K</option>
-	   				<option value="200">Up to 200K</option>
-	   				<option value="300">Up to 300K</option>
-	   			</select>
-	   			<script type="text/javascript">
-	   				$("#limit-{{.NameHash}}").val({{.LimitSpeed}})
-	   			</script>
-       		<div>
-       </li>
-    {{end}}
-	</ul>`))
-
 	tasks := download.GetTasks()
-	download.SortTasksByCreateTime(tasks)
-	t.Execute(w, tasks)
-	w.Write([]byte(fmt.Sprintf("<h3>Go routine numbers: %d</h3>", runtime.NumGoroutine())))
+	// download.SortTasksByCreateTime(tasks)
+	text, _ := json.Marshal(tasks)
+	w.Write([]byte(text))
+	// w.Write([]byte(fmt.Sprintf("<h3>Go routine numbers: %d</h3>", runtime.NumGoroutine())))
 }
 
 type command struct {
@@ -224,9 +207,6 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// thunder.Login(config["thunder-user"], config["thunder-password"])
-	// fmt.Println("thunder login success.")
-
 	download.StartHandleCommands()
 
 	http.Handle("/favicon.ico", http.NotFoundHandler())
@@ -240,6 +220,7 @@ func main() {
 	http.HandleFunc("/progress", progressHandler)
 	http.HandleFunc("/new", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
+	http.HandleFunc("/thunder/new", thunderNewHandler)
 
 	fmt.Println("server start listern port 3824.")
 	err := http.ListenAndServe(":3824", nil)

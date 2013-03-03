@@ -29,7 +29,7 @@ func handleProgress(progress chan int64, t *Task) {
 		select {
 		case length, ok := <-progress:
 			if !ok {
-				saveProgress(t.Name, speed, total, elapsedTime)
+				saveProgress(t.Name, speed, total, elapsedTime, 0)
 				return
 			}
 			// fmt.Println("progress ", total)
@@ -54,9 +54,10 @@ func handleProgress(progress chan int64, t *Task) {
 			}
 			speed = float64(sum) * float64(time.Second) / float64(time.Since(lastCheck)) / 1024
 
-			saveProgress(t.Name, speed, total, elapsedTime)
-
 			percentage, est := calcProgress(total, size, speed)
+
+			saveProgress(t.Name, speed, total, elapsedTime, est)
+
 			printProgress(percentage, speed, elapsedTime, est)
 			if total == size {
 				fmt.Println("progress return")
@@ -75,11 +76,12 @@ func calcProgress(total, size int64, speed float64) (percentage float64, est tim
 	}
 	return
 }
-func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration) {
+func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration) {
 	if t, ok := GetTask(name); ok {
 		t.DownloadedSize = total
 		t.ElapsedTime = elapsedTime
 		t.Speed = speed
+		t.Est = est
 		saveTask(t)
 	}
 }
