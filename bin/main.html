@@ -40,6 +40,8 @@
 	       				<option value="200">Up to 200K</option>
 	       				<option value="300">Up to 300K</option>
 	       			</select>
+
+	       			<input type="button" ng-click="search_subtitles(task)" value="Subtitles"/>
 	       		<div>
 	       </li>
 		</ul>
@@ -53,7 +55,7 @@
 
 		<div id="bt-files-overlay" class="overlay" ng-show="bt_files.length > 0">
 			<div id="bt-files" class="popup">
-				<button class="close" ng-click="close_bt_files_overlay()"></button>
+				<button class="close" ng-click="bt_files=[]"></button>
 				<h3>Select a file ({{bt_files.length}} files total)</h3>
 				<ul>
 					<li ng-repeat="file in bt_files | orderBy:-Size">
@@ -62,6 +64,23 @@
 						<span class="size">{{file.Size}}</span>
 						<input type="button" value="Download" ng-disabled="file.Percent<100" ng-hide="file.loading" ng-click="download_bt_files(file)"/>
 						<span class="loading" ng-show="file.loading"></span>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+
+
+
+		<div id="subtitles-overlay" class="overlay" ng-show="subtitles.length > 0">
+			<div id="subtitles" class="popup">
+				<button class="close" ng-click="subtitles=[]"></button>
+				<h3>Subtitles for '{{subtitles_movie_name}}'</h3>
+				<ul>
+					<li ng-repeat="sub in subtitles | orderBy:-Size">
+						<span class="name">{{sub.Description}}</span>
+						<input type="button" value="Download" ng-hide="sub.loading" ng-click="download_subtitles(sub)"/>
+						<span class="loading" ng-show="sub.loading"></span>
 					</li>
 				</ul>
 			</div>

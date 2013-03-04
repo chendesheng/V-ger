@@ -101,9 +101,7 @@ function tasks_ctrl ($scope, $http) {
 	$scope.get_bt_file_status = function(percent) {
 		return (percent == 100) ? 'Finished' : percent + '%'
 	}
-	$scope.close_bt_files_overlay = function() {
-		$scope.bt_files = [];
-	};
+
 	$scope.download_bt_files = function(file) {
 		file.loading = true;
 		$http.post('/new', file.DownloadURL).success(function(resp) {
@@ -120,4 +118,37 @@ function tasks_ctrl ($scope, $http) {
 		});
 	};
 	$scope.bt_files = [];
+
+
+	//subtitles
+	$scope.subtitles = [];
+	$scope.subtitles_movie_name = '';
+
+	$scope.search_subtitles = function(task) {
+		$scope.subtitles_movie_name = task.Name;
+		$http.get('/subtitles/search/' + task.Name).success(function (data) {
+			if (data.length == 0) {
+				alert("Can't find subtitles!");
+				return
+			}
+			for (var i = data.length - 1; i >= 0; i--) {
+				var item = data[i];
+				item.loading = false;
+
+				//truncate description
+				var description = item.Description;
+				if (description.length > 50)
+					item.Description = description.substr(0, 50) + '...';
+
+			};
+			$scope.subtitles = data;
+		});
+	}
+	$scope.download_subtitles = function (sub) {
+		sub.loading = true;
+		$http.post('/subtitles/download/'+$scope.subtitles_movie_name, sub.URL).success(function () {
+			sub.loading = false;
+			$scope.subtitles = [];
+		})
+	}
 }

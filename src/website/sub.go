@@ -4,7 +4,9 @@ import (
 	"b1"
 	"download"
 	"fmt"
+	"net/url"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"subtitles"
@@ -32,17 +34,17 @@ func filterMovieName1(name string) string {
 	}
 	return name
 }
-func getSubList(movieName string, filters []filter) ([]subtitles.Subtitle, string) {
+func getSubList(movieName string, filters []filter) []subtitles.Subtitle {
 	for _, f := range filters {
 		name := f(movieName)
 		fmt.Printf("searching subtitles for \"%s\"...\n", name)
 		subs := subtitles.SearchSubtitles(name)
 		if len(subs) > 0 {
-			return subs, name
+			return subs
 		}
 	}
 
-	return make([]subtitles.Subtitle, 0), movieName
+	return make([]subtitles.Subtitle, 0)
 }
 func filterCategory(category string) string {
 	if strings.Contains(category, "·±Ìå&Ó¢ÎÄ") {
@@ -59,8 +61,20 @@ func filterCategory(category string) string {
 
 	return category
 }
+
+func GetMovieSub(movieName string) {
+	getMovieSub(movieName)
+}
+func getFileName(fullURL string) string {
+	e := strings.Index(fullURL, "?")
+	if e < 0 {
+		e = len(fullURL)
+	}
+	name, _ := url.QueryUnescape(fullURL[strings.LastIndex(fullURL, `/`)+1 : e])
+	return name
+}
 func getMovieSub(movieName string) {
-	subs, _ := getSubList(movieName, []filter{filterMovieName1, filterMovieName2})
+	subs := getSubList(movieName, []filter{filterMovieName1, filterMovieName2})
 
 	arr := make([]string, len(subs))
 	for i, s := range subs {
@@ -71,7 +85,11 @@ func getMovieSub(movieName string) {
 		selectedSub := subs[i]
 		url := selectedSub.URL
 		fmt.Printf("download subtitle: %s", url)
-		name := download.BeginDownload(url, "", 0)
+		name := getFileName(url)
+		if ok, err := subtitles.QuickDownload(url, path.Join(download.BaseDir, name)); !ok {
+			print(err)
+			return
+		}
 
 		if strings.HasSuffix(name, ".rar") || strings.HasSuffix(name, ".zip") {
 			fileurls := b1.Extract(download.GetFilePath(name))
@@ -92,7 +110,8 @@ func getMovieSub(movieName string) {
 						}
 					}
 
-					download.BeginDownload(f, fmt.Sprintf("%s.%s.srt", movieName, category), 0)
+					subtitles.QuickDownload(f, fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category))
+
 					count++
 				}
 			}
@@ -106,5 +125,42 @@ func getMovieSub(movieName string) {
 		if strings.HasSuffix(name, ".ass") {
 			os.Rename(download.GetFilePath(name), download.GetFilePath(movieName+".ass"))
 		}
+	}
+}
+
+func extractSubtitle(name, movieName string) {
+	if strings.HasSuffix(name, ".rar") || strings.HasSuffix(name, ".zip") {
+		fileurls := b1.Extract(download.GetFilePath(name))
+		count := 0
+		for _, f := range fileurls {
+			if strings.HasSuffix(f, ".srt") || strings.HasSuffix(f, ".ass") {
+				fmt.Println(f)
+
+				temp := f[:len(f)-4]
+				index := strings.LastIndex(temp, ".")
+				category := fmt.Sprint(count)
+				if index > 0 {
+					category = temp[index+1:]
+					fmt.Println(category)
+					category = filterCategory(category)
+					if strings.Contains(category, "cht") {
+						continue
+					}
+				}
+
+				subtitles.QuickDownload(f, fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category))
+
+				count++
+			}
+		}
+		if count > 0 {
+			os.Remove(download.GetFilePath(name))
+		}
+	}
+	if strings.HasSuffix(name, ".srt") {
+		os.Rename(download.GetFilePath(name), download.GetFilePath(movieName+".srt"))
+	}
+	if strings.HasSuffix(name, ".ass") {
+		os.Rename(download.GetFilePath(name), download.GetFilePath(movieName+".ass"))
 	}
 }

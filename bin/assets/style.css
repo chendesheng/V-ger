@@ -283,7 +283,7 @@ h1,h2 {
 .popup .close:active {
 	background-image: url('/assets/close_pressed.png');
 }
-#bt-files ul{
+.overlay ul{
 	padding:0 30px;
 	max-height: 600px;
 	overflow: auto;
@@ -324,4 +324,12 @@ h3 {
 	position: absolute;
 	top:35px;
 	right:55px;
+}
+.overlay h3 {
+	padding-right: 40px;
+}
+#subtitles .name {
+	max-width: 90%;
+	overflow: hidden;
+	white-space: nowrap;
 }

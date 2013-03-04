@@ -2,12 +2,12 @@ package subtitles
 
 import (
 	// "fmt"
-	// "http/httputil/url"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 )
 
 var Client *http.Client
@@ -61,4 +61,29 @@ func SearchSubtitles(name string) []Subtitle {
 	// return yyetsSearchSubtitles(name)
 	// return shooterSearch(name)
 	return concat(shooterSearch(name), yyetsSearchSubtitles(name))
+}
+func QuickDownload(url, path string) (bool, error) {
+	resp, err := Client.Get(url)
+	// bytes, err := httputil.DumpResponse(resp, false)
+	// fmt.Println(string(bytes))
+	if err != nil {
+		return false, err
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	// print(len(data))
+	defer resp.Body.Close()
+
+	if err != nil {
+		return false, err
+	}
+
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0666)
+	defer f.Close()
+	if err != nil {
+		return false, err
+	}
+	// fmt.Println(data)
+	f.WriteAt(data, 0)
+	return true, nil
 }

@@ -5,6 +5,7 @@ import (
 	"download"
 	"encoding/json"
 	"fmt"
+	"path"
 	// "html/template"
 	"io/ioutil"
 	"os/exec"
@@ -205,6 +206,25 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path)
 	}
 }
+func subtitlesSearchHandler(w http.ResponseWriter, r *http.Request) {
+	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
+	data := getSubList(movieName, []filter{filterMovieName1, filterMovieName2})
+	text, _ := json.Marshal(data)
+	w.Write([]byte(text))
+}
+
+func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
+	input, _ := ioutil.ReadAll(r.Body)
+	url := string(input)
+	name := getFileName(url)
+	if ok, err := subtitles.QuickDownload(url, path.Join(download.BaseDir, name)); !ok {
+		w.Write([]byte(err.Error()))
+		return
+	} else {
+		extractSubtitle(name, movieName)
+	}
+}
 func Run() {
 	download.StartHandleCommands()
 
@@ -221,8 +241,11 @@ func Run() {
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 
+	http.HandleFunc("/subtitles/search/", subtitlesSearchHandler)
+	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
+
 	fmt.Println("server start listern port 3824.")
-	err := http.ListenAndServe("127.0.0.1:3824", nil)
+	err := http.ListenAndServe("127.0.0.1:4624", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
