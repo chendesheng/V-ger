@@ -1,0 +1,71 @@
+<html ng-app>
+<head>
+	<title>V'ger</title>
+	<link href="/assets/style.css" rel="stylesheet" type="text/css">
+	<script src="/assets/angular.min.js"></script>
+	<script type="text/javascript" src="/assets/main.js"></script>
+	<script type="text/javascript" src="/assets/date.js"></script>
+</head>
+<body>
+	<!--for debug-->
+	<input type="button" id="refresh-tasks" value="Refresh" style="display:none;" />
+	<h1>V'ger</h1>
+	<h2>Speed is Fun!</h2>
+	<div id="tasks" ng-controller="tasks_ctrl">
+		<ul>
+	       <li ng-repeat="task in tasks | orderBy:-StartDate">
+	       		<div class="task-infoes">
+	       			<span>[{{task.Status}}]</span>
+		       		<span>[{{task.StartDate.format()}}]</span>
+		       		<span>{{task.Name}}</span>
+		       		<span>{{task.Speed.toFixed(2)}}KB/s</span>
+		       		<span>{{(task.DownloadedSize/task.Size*100).toFixed(2)}}%</span>
+
+		       		<span>Est. {{parse_duration(task.Est)}}</span>
+		       		<span>Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
+		       	</div>
+
+	       		<div class="task-tools">
+	       			<input class="action-play" type="button" value="Open" ng-click="send_open(task)"/>
+
+	       			<input class="action-resume-download" type="button" value="Resume" ng-click="send_resume(task)"/>
+
+	       			<input class="action-stop-download" type="button" value="Stop" ng-click="send_stop(task)"/>
+
+	       			<select ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
+	       				<option value="0">No limit</option>
+	       				<option value="50">Up to 50K</option>
+	       				<option value="100">Up to 100K</option>
+	       				<option value="150">Up to 150K</option>
+	       				<option value="200">Up to 200K</option>
+	       				<option value="300">Up to 300K</option>
+	       			</select>
+	       		<div>
+	       </li>
+		</ul>
+		<form ng-submit="new_task()">
+			<div id="start-download">
+				<textarea autofocus ng-model="new_url" type="text" id="new-url" placeHolder="Input anything you want"></textarea>
+				<input id="new-task" type="submit" ng-hide="waiting" value="Download"/>
+				<span ng-show="waiting" id="waiting"></span>
+			</div>
+		</form>
+
+		<div id="bt-files-overlay" class="overlay" ng-show="bt_files.length > 0">
+			<div id="bt-files" class="popup">
+				<button class="close" ng-click="close_bt_files_overlay()"></button>
+				<h3>Select a file ({{bt_files.length}} files total)</h3>
+				<ul>
+					<li ng-repeat="file in bt_files | orderBy:-Size">
+						<span class="status">[{{get_bt_file_status(file.Percent)}}]</span>
+						<span class="name">{{file.Name}}</span>
+						<span class="size">{{file.Size}}</span>
+						<input type="button" value="Download" ng-disabled="file.Percent<100" ng-hide="file.loading" ng-click="download_bt_files(file)"/>
+						<span class="loading" ng-show="file.loading"></span>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

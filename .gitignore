@@ -1,5 +1,4 @@
 pkg
-bin
 config.json
 *.sublime-project
 *.sublime-workspace
@@ -11,3 +10,4 @@ config.json
 *.zip
 *.app
 gomacdraw.framework
+src/github.com
