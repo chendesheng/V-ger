@@ -2,7 +2,8 @@ pkg
 config.json
 *.sublime-project
 *.sublime-workspace
-
+bin/vger
+bin/vger.log
 .DS_Store
 .project
 *~
@@ -11,3 +12,5 @@ config.json
 *.app
 gomacdraw.framework
 src/github.com
+cocoa
+src/.DS_Store
