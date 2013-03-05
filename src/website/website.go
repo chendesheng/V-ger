@@ -118,35 +118,6 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
 	url := string(input)
 
-	// if strings.Contains(url, "lixian.vip.xunlei.com") {
-	// 	fmt.Printf("add download \"%s\".\n", url)
-
-	// 	w.Write([]byte(download.NewDownload(url)))
-	// 	return
-	// }
-
-	// thunder.Login(config["thunder-user"], config["thunder-password"])
-	// tasks := thunder.NewTask(url)
-
-	// arr := make([]string, len(tasks))
-	// for i, s := range tasks {
-	// 	arr[i] = s.String()
-	// }
-	// i, next := pick(arr, "")
-	// if i != -1 {
-	// 	selectedTask := tasks[i]
-	// 	if selectedTask.Percent < 100 {
-	// 		fmt.Println("the task is not ready.")
-	// 		return
-	// 	}
-	// 	if next == "" {
-	// 		getMovieSub(selectedTask.Name)
-	// 	}
-
-	// 	fmt.Printf("add download \"%s\".\n", selectedTask.DownloadURL)
-
-	// 	w.Write([]byte(download.NewDownload(selectedTask.DownloadURL)))
-	// }
 	fmt.Printf("add download \"%s\".\n", url)
 
 	w.Write([]byte(download.NewDownload(url)))
@@ -170,8 +141,6 @@ func stopHandler(w http.ResponseWriter, r *http.Request) {
 }
 func limitHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
-	// r.ParseForm()
-	// speed := r.FormValue("limit")
 	input, _ := ioutil.ReadAll(r.Body)
 	speed, _ := strconv.Atoi(string(input))
 	fmt.Printf("download \"%s\" limit speed %dKB/s.\n", name, speed)
@@ -245,7 +214,7 @@ func Run() {
 	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
 
 	fmt.Println("server start listern port 3824.")
-	err := http.ListenAndServe("127.0.0.1:4624", nil)
+	err := http.ListenAndServe("127.0.0.1:3824", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

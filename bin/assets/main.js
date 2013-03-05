@@ -18,6 +18,10 @@ function tasks_ctrl ($scope, $http) {
 				var task = tasks[i];
 				var source = collection[task.Name];
 				if (source) {
+					if (task.Status == 'Downloading' && source.Status == 'Finished') {
+						notify_task_done(task.Name)
+					}
+
 					angular.forEach(source, function (val, key) {
 						task[key] = val;
 					});
@@ -150,5 +154,13 @@ function tasks_ctrl ($scope, $http) {
 			sub.loading = false;
 			$scope.subtitles = [];
 		})
+	}
+
+	function notify_task_done(name) {
+		var myNotification = new Notify('V\'ger Task Finished', {
+		    body: name,
+		    tag: name+'done',
+		});
+		myNotification.show();
 	}
 }

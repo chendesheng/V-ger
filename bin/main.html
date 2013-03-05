@@ -5,10 +5,13 @@
 	<script src="/assets/angular.min.js"></script>
 	<script type="text/javascript" src="/assets/main.js"></script>
 	<script type="text/javascript" src="/assets/date.js"></script>
+	<script type="text/javascript" src="/assets/notify.js"></script>
 </head>
 <body>
 	<!--for debug-->
 	<input type="button" id="refresh-tasks" value="Refresh" style="display:none;" />
+	<input type="button" style="display:none;" value="show new task notification" onclick="notify_new_task('catch me if you can.mkv');">
+
 	<h1>V'ger</h1>
 	<h2>Speed is Fun!</h2>
 	<div id="tasks" ng-controller="tasks_ctrl">
@@ -28,9 +31,9 @@
 	       		<div class="task-tools">
 	       			<input class="action-play" type="button" value="Open" ng-click="send_open(task)"/>
 
-	       			<input class="action-resume-download" type="button" value="Resume" ng-click="send_resume(task)"/>
+	       			<input class="action-resume-download" type="button" value="Resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped'"/>
 
-	       			<input class="action-stop-download" type="button" value="Stop" ng-click="send_stop(task)"/>
+	       			<input class="action-stop-download" type="button" value="Stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"/>
 
 	       			<select ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
 	       				<option value="0">No limit</option>
