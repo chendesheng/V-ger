@@ -7,9 +7,10 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"native"
 	"net/http"
 	"os"
-	"os/exec"
+	// "os/exec"
 	"path"
 	// "sort"
 	"strconv"
@@ -96,13 +97,7 @@ func download(t *Task, control chan int) {
 
 		t.Status = "Finished"
 
-		//notify download finish
-		wd, _ := os.Getwd()
-		vgerHelper := path.Join(wd, "vgerhelper.app")
-		cmd := exec.Command("open", vgerHelper, "--args", "V'ger Task Finished", t.Name)
-		if err := cmd.Run(); err != nil {
-			log.Println(err)
-		}
+		native.SendNotification("V'ger Task Finished", t.Name)
 	} else {
 		t.Status = "Stopped"
 	}

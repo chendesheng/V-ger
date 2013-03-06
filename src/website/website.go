@@ -5,6 +5,7 @@ import (
 	"download"
 	"encoding/json"
 	"fmt"
+	"native"
 	"path"
 	// "html/template"
 	"io/ioutil"
@@ -57,6 +58,7 @@ func init() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	native.WebSiteAddress = config["server"]
 }
 
 func pick(arr []string, emptyMessage string) (int, string) {
