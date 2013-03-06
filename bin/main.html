@@ -5,12 +5,10 @@
 	<script src="/assets/angular.min.js"></script>
 	<script type="text/javascript" src="/assets/main.js"></script>
 	<script type="text/javascript" src="/assets/date.js"></script>
-	<script type="text/javascript" src="/assets/notify.js"></script>
 </head>
 <body>
 	<!--for debug-->
 	<input type="button" id="refresh-tasks" value="Refresh" style="display:none;" />
-	<input type="button" style="display:none;" value="show new task notification" onclick="notify_new_task('catch me if you can.mkv');">
 
 	<h1>V'ger</h1>
 	<h2>Speed is Fun!</h2>
@@ -45,6 +43,8 @@
 	       			</select>
 
 	       			<input type="button" ng-click="search_subtitles(task)" value="Subtitles"/>
+
+	       			<input type="button" ng-click="move_to_trash(task)" value="Trash"/>
 	       		<div>
 	       </li>
 		</ul>

@@ -119,6 +119,13 @@ function tasks_ctrl ($scope, $http) {
 	};
 	$scope.bt_files = [];
 
+	$scope.move_to_trash = function (task) {
+		$http.get('/trash/' + task.Name).success(
+		function (resp) {
+			resp && alert(resp)
+			get_process();
+		});
+	}
 
 	//subtitles
 	$scope.subtitles = [];
@@ -152,11 +159,4 @@ function tasks_ctrl ($scope, $http) {
 		})
 	}
 
-	function notify_task_done(name) {
-		var myNotification = new Notify('V\'ger Task Finished', {
-		    body: name,
-		    tag: name+'done',
-		});
-		myNotification.show();
-	}
 }

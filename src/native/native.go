@@ -16,7 +16,18 @@ func init() {
 func SendNotification(title, infoText string) error {
 	wd, _ := os.Getwd()
 	vgerHelper := path.Join(wd, "vgerhelper.app")
-	cmd := exec.Command("open", vgerHelper, "--args", WebSiteAddress, title, infoText)
+	cmd := exec.Command("open", vgerHelper, "--args", "notification", WebSiteAddress, title, infoText)
+	if err := cmd.Run(); err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func MoveFileToTrash(dir, name string) error {
+	wd, _ := os.Getwd()
+	vgerHelper := path.Join(wd, "vgerhelper.app")
+	cmd := exec.Command("open", vgerHelper, "--args", "trash", dir, name)
 	if err := cmd.Run(); err != nil {
 		log.Println(err)
 		return err

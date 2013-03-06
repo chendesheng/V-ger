@@ -104,9 +104,18 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 func playHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("play \"%s\".\n", name)
-	cmd := exec.Command("open", fmt.Sprintf("%s%c%s", download.BaseDir, os.PathSeparator, name))
+	cmd := exec.Command("open", path.Join(download.BaseDir, name))
 	cmd.Start()
 
+	// native.MoveFileToTrash(path.Join(download.BaseDir, "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
+	w.Write([]byte(``))
+}
+
+func trashHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[7:])
+	fmt.Printf("trash \"%s\".\n", name)
+
+	native.MoveFileToTrash(path.Join(download.BaseDir, "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
 	w.Write([]byte(``))
 }
 
@@ -196,6 +205,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		extractSubtitle(name, movieName)
 	}
 }
+
 func Run() {
 	download.StartHandleCommands()
 
@@ -210,6 +220,8 @@ func Run() {
 	http.HandleFunc("/progress", progressHandler)
 	http.HandleFunc("/new", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
+	http.HandleFunc("/trash/", trashHandler)
+
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 
 	http.HandleFunc("/subtitles/search/", subtitlesSearchHandler)
