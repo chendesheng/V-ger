@@ -213,8 +213,9 @@ func Run() {
 	http.HandleFunc("/subtitles/search/", subtitlesSearchHandler)
 	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
 
-	fmt.Println("server start listern port 3824.")
-	err := http.ListenAndServe("127.0.0.1:3824", nil)
+	server := config["server"]
+	fmt.Println("server ", server, " started.")
+	err := http.ListenAndServe(server, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

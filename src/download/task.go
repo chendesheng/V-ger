@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	// "sort"
 	"strconv"
@@ -94,6 +95,14 @@ func download(t *Task, control chan int) {
 		fmt.Printf("\nIt's done!\n\n")
 
 		t.Status = "Finished"
+
+		//notify download finish
+		wd, _ := os.Getwd()
+		vgerHelper := path.Join(wd, "vgerhelper.app")
+		cmd := exec.Command("open", vgerHelper, "--args", "V'ger Task Finished", t.Name)
+		if err := cmd.Run(); err != nil {
+			log.Println(err)
+		}
 	} else {
 		t.Status = "Stopped"
 	}

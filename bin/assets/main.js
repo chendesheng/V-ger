@@ -18,10 +18,6 @@ function tasks_ctrl ($scope, $http) {
 				var task = tasks[i];
 				var source = collection[task.Name];
 				if (source) {
-					if (task.Status == 'Downloading' && source.Status == 'Finished') {
-						notify_task_done(task.Name)
-					}
-
 					angular.forEach(source, function (val, key) {
 						task[key] = val;
 					});
