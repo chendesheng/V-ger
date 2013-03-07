@@ -158,8 +158,13 @@ func limitHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(download.LimitSpeed(name, speed)))
 }
-func deleteHandler(w http.ResponseWriter, r *http.Request) {
+func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[14:])
+	input, _ := ioutil.ReadAll(r.Body)
+	autoshutdown := string(input)
+	fmt.Printf("Autoshutdown task \"%s\" %s.", name, autoshutdown)
 
+	download.SetAutoshutdown(name, autoshutdown == "on")
 }
 func progressHandler(w http.ResponseWriter, r *http.Request) {
 	tasks := download.GetTasks()
@@ -221,6 +226,7 @@ func Run() {
 	http.HandleFunc("/new", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
+	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
 
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 

@@ -40,11 +40,17 @@
 	       				<option value="150">Up to 150K</option>
 	       				<option value="200">Up to 200K</option>
 	       				<option value="300">Up to 300K</option>
+	       				<option value="500">Up to 500K</option>
 	       			</select>
 
 	       			<input type="button" ng-click="search_subtitles(task)" value="Subtitles"/>
 
 	       			<input type="button" ng-click="move_to_trash(task)" value="Trash"/>
+
+	       			<span ng-hide="task.Status=='Finished'">
+		       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
+		       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
+	       			</span>
 	       		<div>
 	       </li>
 		</ul>

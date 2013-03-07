@@ -125,7 +125,14 @@ function tasks_ctrl ($scope, $http) {
 			resp && alert(resp)
 			get_process();
 		});
-	}
+	};
+
+	$scope.set_autoshutdown = function (task) {
+		$http.post('/autoshutdown/' + task.Name, task.Autoshutdown?'on':'off')
+			.success(function(){
+				get_process();
+			});
+	};
 
 	//subtitles
 	$scope.subtitles = [];
@@ -150,13 +157,14 @@ function tasks_ctrl ($scope, $http) {
 			};
 			$scope.subtitles = data;
 		});
-	}
+	};
+
 	$scope.download_subtitles = function (sub) {
 		sub.loading = true;
 		$http.post('/subtitles/download/'+$scope.subtitles_movie_name, sub.URL).success(function () {
 			sub.loading = false;
 			$scope.subtitles = [];
 		})
-	}
+	};
 
 }

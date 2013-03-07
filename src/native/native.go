@@ -34,3 +34,14 @@ func MoveFileToTrash(dir, name string) error {
 	}
 	return nil
 }
+
+func Shutdown(reason string) error {
+	wd, _ := os.Getwd()
+	vgerHelper := path.Join(wd, "vgerhelper.app")
+	cmd := exec.Command("open", vgerHelper, "--args", "shutdown", reason)
+	if err := cmd.Run(); err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}

@@ -42,6 +42,8 @@ type Task struct {
 	Status     string
 	NameHash   string
 	Est        time.Duration
+
+	Autoshutdown bool
 }
 
 func (t *Task) String() string {
@@ -86,18 +88,26 @@ func BeginDownload(url string, name string, maxSpeed int64) string {
 func download(t *Task, control chan int) {
 	t.Status = "Downloading"
 	saveTask(t)
-	progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, t.LimitSpeed, control)
 
-	handleProgress(progress, t)
+	if t.DownloadedSize < t.Size {
+		progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, t.LimitSpeed, control)
+
+		handleProgress(progress, t)
+	}
 
 	t, _ = GetTask(t.Name)
-	if t.DownloadedSize == t.Size {
+	if t.DownloadedSize >= t.Size {
 		// removeTask(t.Name)
 		fmt.Printf("\nIt's done!\n\n")
 
 		t.Status = "Finished"
 
-		native.SendNotification("V'ger Task Finished", t.Name)
+		if t.Autoshutdown {
+			go native.Shutdown(t.Name)
+		} else {
+			go native.SendNotification("V'ger Task Finished", t.Name)
+		}
+
 	} else {
 		t.Status = "Stopped"
 	}
@@ -268,6 +278,12 @@ func GetTask(name string) (*Task, bool) {
 	name = fmt.Sprint(name, ".vger-task.txt")
 	taskDir := path.Join(BaseDir, taskDirName)
 	return getTask(name, taskDir)
+}
+func SetAutoshutdown(name string, onOrOff bool) {
+	if t, ok := GetTask(name); ok {
+		t.Autoshutdown = onOrOff
+		saveTask(t)
+	}
 }
 
 type command struct {
