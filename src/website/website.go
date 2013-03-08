@@ -233,7 +233,17 @@ func Run() {
 	http.HandleFunc("/subtitles/search/", subtitlesSearchHandler)
 	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
 
+	//resume downloading tasks
+	tasks := download.GetTasks()
+	for i := 0; i < len(tasks); i++ {
+		t := tasks[i]
+		if t.Status == "Downloading" {
+			download.ResumeDownload(t.Name)
+		}
+	}
+
 	server := config["server"]
+
 	fmt.Println("server ", server, " started.")
 	err := http.ListenAndServe(server, nil)
 	if err != nil {
