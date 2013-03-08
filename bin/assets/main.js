@@ -104,7 +104,9 @@ function tasks_ctrl ($scope, $http) {
 
 	$scope.download_bt_files = function(file) {
 		file.loading = true;
-		$http.post('/new', file.DownloadURL).success(function(resp) {
+
+		$http.post('/new/' + file.Name, file.DownloadURL).success(
+		function(resp) {
 			file.loading = false;
 			if (resp) alert(resp);
 			else {

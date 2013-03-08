@@ -126,12 +126,12 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(download.ResumeDownload(name)))
 }
 func newTaskHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[5:])
 	input, _ := ioutil.ReadAll(r.Body)
 	url := string(input)
-
 	fmt.Printf("add download \"%s\".\n", url)
 
-	w.Write([]byte(download.NewDownload(url)))
+	w.Write([]byte(download.NewDownload(url, name)))
 }
 func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
@@ -223,7 +223,7 @@ func Run() {
 	http.HandleFunc("/resume/", resumeHandler)
 	http.HandleFunc("/stop/", stopHandler)
 	http.HandleFunc("/progress", progressHandler)
-	http.HandleFunc("/new", newTaskHandler)
+	http.HandleFunc("/new/", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
 	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)

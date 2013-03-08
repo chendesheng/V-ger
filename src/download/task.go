@@ -250,15 +250,6 @@ func GetTasks() []*Task {
 	return tasks
 }
 
-// type taskSlice []*Task
-
-// func (t taskSlice) Len() int           { return len(t) }
-// func (t taskSlice) Less(i, j int) bool { return t[i].StartDate > t[j].StartDate }
-// func (t taskSlice) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
-
-// func SortTasksByCreateTime(tasks []*Task) {
-// 	sort.Sort(taskSlice(tasks))
-// }
 func getTask(name string, taskDir string) (*Task, bool) {
 	if !strings.HasSuffix(name, ".vger-task.txt") {
 		return nil, false
@@ -305,7 +296,9 @@ func handleCommands(chanCommand chan *command) {
 	for cmd := range chanCommand {
 		switch cmd.name {
 		case "new":
-			name, control := DownloadAsync(cmd.arg, "")
+			args := strings.Split(cmd.arg, "####")
+			name, url := args[0], args[1]
+			name, control := DownloadAsync(url, name)
 			taskControls[name] = control
 			cmd.ack <- true
 			break
@@ -395,44 +388,11 @@ func ResumeDownload(name string) string {
 	}
 	return ""
 }
-func NewDownload(url string) string {
-	cmd := newCommand("new", url)
+func NewDownload(url string, name string) string {
+	cmd := newCommand("new", fmt.Sprint(name, "####", url))
 	chanCommand <- cmd
 	if ok := <-cmd.ack; !ok {
 		return <-cmd.result
 	}
 	return ""
 }
-
-// func StartTaskRoutine() {
-// 	chanGet := make(chan string)
-// 	chanSet := make(chan *Task)
-// 	output := make(chan *Task)
-
-// 	tasks := getTasks()
-
-// 	getTask := func(name string) (*Task, bool) {
-// 		for _, t := range tasks {
-// 			if t.Name == name {
-// 				return t, true
-// 			}
-// 		}
-// 		return nil, false
-// 	}
-
-// 	for {
-// 		select {
-// 		case name := <-chanGet:
-// 			if t, ok := getTask(name); ok {
-// 				output <- t
-// 			} else {
-// 				output <- nil
-// 			}
-// 		case tSource := <-chanSet:
-// 			if t, ok := getTask(tSource.Name); ok {
-// 				t.LimitSpeed = tSource.LimitSpeed
-// 				//...
-// 			}
-// 		}
-// 	}
-// }
