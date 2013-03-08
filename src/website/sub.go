@@ -35,16 +35,17 @@ func filterMovieName1(name string) string {
 	return name
 }
 func getSubList(movieName string, filters []filter) []subtitles.Subtitle {
+	subs := make([]subtitles.Subtitle, 0)
 	for _, f := range filters {
 		name := f(movieName)
-		fmt.Printf("searching subtitles for \"%s\"...\n", name)
-		subs := subtitles.SearchSubtitles(name)
-		if len(subs) > 0 {
-			return subs
+		findedSubs := subtitles.SearchSubtitles(name)
+
+		for i := 0; i < len(findedSubs); i++ {
+			subs = append(subs, findedSubs[i])
 		}
 	}
 
-	return make([]subtitles.Subtitle, 0)
+	return subs
 }
 func filterCategory(category string) string {
 	if strings.Contains(category, "·±Ìå&Ó¢ÎÄ") {
