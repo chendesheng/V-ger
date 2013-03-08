@@ -22,7 +22,7 @@
 		       		<span>{{task.Speed.toFixed(2)}}KB/s</span>
 		       		<span>{{(task.DownloadedSize/task.Size*100).toFixed(2)}}%</span>
 
-		       		<span>Est. {{parse_duration(task.Est)}}</span>
+		       		<span ng-hide="task.Status=='Finished'">Est. {{parse_duration(task.Est)}}</span>
 		       		<span>Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
 		       	</div>
 
