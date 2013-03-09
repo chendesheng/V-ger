@@ -138,10 +138,13 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	url := string(input)
 
 	thunder.Login(config["thunder-user"], config["thunder-password"])
-	files := thunder.NewTask(url)
-
-	text, _ := json.Marshal(files)
-	w.Write([]byte(text))
+	files, err := thunder.NewTask(url)
+	if err == nil {
+		text, _ := json.Marshal(files)
+		w.Write([]byte(text))
+	} else {
+		w.Write([]byte(err.Error()))
+	}
 }
 
 func stopHandler(w http.ResponseWriter, r *http.Request) {

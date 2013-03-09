@@ -2,6 +2,7 @@ package thunder
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -39,7 +40,6 @@ func parseUrlQueryResult(text string) (cid string, tsize string, btname string, 
 	for _, s := range regexUrlQuery.FindStringSubmatch(text)[1:] {
 		args = append(args, strings.TrimSpace(s))
 	}
-	log.Println(args)
 
 	sizeList := strings.Split(args[7], ",")
 	trimStringSlice(&sizeList, " '")
@@ -125,4 +125,23 @@ func trimStringSlice(strs *[]string, cutset string) {
 	for i, s := range *strs {
 		(*strs)[i] = strings.Trim(s, cutset)
 	}
+}
+func parseUploadTorrentResutl(text string) (map[string]interface{}, error) {
+	i := strings.Index(text, "var btResult =")
+	j := strings.LastIndex(text, ";")
+	s := 14
+	if i == -1 {
+		i = strings.Index(text, "edit_bt_list(")
+		j = strings.LastIndex(text, "}")
+		j = strings.LastIndex(text[:j], "}") + 1
+		s = 13
+	}
+	if i == -1 {
+		return nil, errors.New("Unknown upload .torrent file result.")
+	}
+	text = text[i+s : j]
+	fmt.Println(text)
+	res := make(map[string]interface{})
+	json.Unmarshal([]byte(text), &res)
+	return res, nil
 }

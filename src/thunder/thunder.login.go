@@ -17,7 +17,6 @@ func doubleMD5(p string) string {
 }
 
 func Login(user string, password string) {
-
 	sendGet("http://login.xunlei.com/check",
 		&url.Values{
 			"u": {user},

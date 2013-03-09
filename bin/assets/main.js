@@ -88,10 +88,14 @@ function tasks_ctrl ($scope, $http) {
 			}).error(function(){$scope.waiting = false;});
 		} else {
 			$http.post('/thunder/new', $scope.new_url).success(function(data) {
+				$scope.waiting = false;
+				if (typeof data == 'string') {
+					alert(data);
+					return;
+				}
 				for (var i = data.length - 1; i >= 0; i--) {
 					var item = data[i];
 					item.loading = false;
-					$scope.waiting = false;
 				};
 				$scope.bt_files = data;
 			});
