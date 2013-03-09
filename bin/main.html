@@ -27,7 +27,7 @@
 		       		</div>
 
 		       		<div class="row-3rd">
-		       			<input type="button" ng-click="search_subtitles(task)" value="Subtitles"/>
+		       			<input type="button" ng-click="search_subtitles(task.Name)" value="Subtitles"/>
 		       			<select ng-hide="task.Status=='Finished'" ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
 		       				<option value="0">No limit</option>
 		       				<option value="50">Up to 50K</option>
@@ -62,10 +62,10 @@
 	       		<div>
 	       </li>
 		</ul>
-		<form ng-submit="new_task()">
+		<form ng-submit="go()">
 			<div id="start-download">
 				<textarea autofocus ng-model="new_url" type="text" id="new-url" placeHolder="Input anything you want"></textarea>
-				<input id="new-task" type="submit" ng-hide="waiting" value="Download"/>
+				<input id="new-task" type="submit" ng-hide="waiting" value="GO"/>
 				<span ng-show="waiting" id="waiting"></span>
 			</div>
 		</form>

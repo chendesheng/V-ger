@@ -78,7 +78,7 @@ function tasks_ctrl ($scope, $http) {
 	};
 
 	$scope.waiting = false;
-	$scope.new_task = function() {
+	function new_task() {
 		$scope.waiting = true;
 		if ($scope.new_url.indexOf('lixian.vip.xunlei.com') != -1) {
 			$http.post('/new', $scope.new_url).success(function(resp) {
@@ -143,9 +143,9 @@ function tasks_ctrl ($scope, $http) {
 	$scope.subtitles = [];
 	$scope.subtitles_movie_name = '';
 
-	$scope.search_subtitles = function(task) {
-		$scope.subtitles_movie_name = task.Name;
-		$http.get('/subtitles/search/' + task.Name).success(function (data) {
+	$scope.search_subtitles = function(name) {
+		$scope.subtitles_movie_name = name;
+		$http.get('/subtitles/search/' + name).success(function (data) {
 			if (data.length == 0) {
 				alert("Can't find subtitles!");
 				return
@@ -161,6 +161,7 @@ function tasks_ctrl ($scope, $http) {
 
 			};
 			$scope.subtitles = data;
+			$scope.waiting = false;
 		});
 	};
 
@@ -171,5 +172,14 @@ function tasks_ctrl ($scope, $http) {
 			$scope.subtitles = [];
 		})
 	};
+
+	$scope.go = function () {
+		$scope.waiting = true
+		if ($scope.new_url.indexOf('://') != -1) {
+			new_task();
+		} else {
+			$scope.search_subtitles($scope.new_url)
+		}
+	}
 
 }

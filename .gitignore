@@ -13,3 +13,4 @@ bin/vger.log
 gomacdraw.framework
 src/github.com
 src/.DS_Store
+test
