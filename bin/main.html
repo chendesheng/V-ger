@@ -13,44 +13,52 @@
 	<h1>V'ger</h1>
 	<h2>Speed is Fun!</h2>
 	<div id="tasks" ng-controller="tasks_ctrl">
-		<ul>
+		<ul id="tasks-list">
 	       <li ng-repeat="task in tasks | orderBy:-StartDate">
 	       		<div class="task-infoes">
-	       			<span>[{{task.Status}}]</span>
-		       		<span>[{{task.StartDate.format()}}]</span>
-		       		<span>{{task.Name}}</span>
-		       		<span>{{task.Speed.toFixed(2)}}KB/s</span>
-		       		<span>{{(task.DownloadedSize/task.Size*100).toFixed(2)}}%</span>
+	       			<div class="left-actions">
+		       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped'"></button>
+		       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
+		       		</div>
+	       			<div><span class="name"><a ng-click="send_open(task)">{{task.Name}}</a></span></div>
 
-		       		<span ng-hide="task.Status=='Finished'">Est. {{parse_duration(task.Est)}}</span>
-		       		<span>Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-		       	</div>
+			       	<div class="progress">
+			       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
+		       		</div>
 
-	       		<div class="task-tools">
-	       			<input class="action-play" type="button" value="Open" ng-click="send_open(task)"/>
+		       		<div class="row-3rd">
+		       			<input type="button" ng-click="search_subtitles(task)" value="Subtitles"/>
+		       			<select ng-hide="task.Status=='Finished'" ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
+		       				<option value="0">No limit</option>
+		       				<option value="50">Up to 50K</option>
+		       				<option value="100">Up to 100K</option>
+		       				<option value="150">Up to 150K</option>
+		       				<option value="200">Up to 200K</option>
+		       				<option value="300">Up to 300K</option>
+		       				<option value="500">Up to 500K</option>
+		       			</select>
 
-	       			<input class="action-resume-download" type="button" value="Resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped'"/>
+		       			<span ng-hide="task.Status=='Finished'">
+			       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
+			       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
+		       			</span>
 
-	       			<input class="action-stop-download" type="button" value="Stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"/>
+		       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
+		       			<span ng-show="task.Status=='Downloading'" class="info">{{task.Speed.toFixed(2)}}KB/s</span>
 
-	       			<select ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
-	       				<option value="0">No limit</option>
-	       				<option value="50">Up to 50K</option>
-	       				<option value="100">Up to 100K</option>
-	       				<option value="150">Up to 150K</option>
-	       				<option value="200">Up to 200K</option>
-	       				<option value="300">Up to 300K</option>
-	       				<option value="500">Up to 500K</option>
-	       			</select>
+			       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
+			       		<span ng-show="task.Status!='Downloading'" class="info">{{task.StartDate.format('ddd mmm dd')}}</span>
 
-	       			<input type="button" ng-click="search_subtitles(task)" value="Subtitles"/>
+		       		</div>
 
-	       			<input type="button" ng-click="move_to_trash(task)" value="Trash"/>
+	       			<!-- <div>
+			       		<span style="display:none;">[{{task.StartDate.format()}}]</span>
+			       		<span style="display:none;" class="elapsed">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
+			       	</div> -->
 
-	       			<span ng-hide="task.Status=='Finished'">
-		       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
-		       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
-	       			</span>
+	       			<button class="close" ng-click="move_to_trash(task)" title="Trash"></button>
+		     
+
 	       		<div>
 	       </li>
 		</ul>

@@ -61,16 +61,19 @@ function tasks_ctrl ($scope, $http) {
 	$scope.send_resume = function (task) {
 		$http.get('/resume/' + task.Name).success(function (resp) {
 			resp && alert(resp);
+			get_process();
 		});
 	}
 	$scope.send_stop = function (task) {
 		$http.get('/stop/' + task.Name).success(function (resp) {
 			resp && alert(resp);
+			get_process();
 		});
 	}
 	$scope.send_limit = function (task) {
 		$http.post('/limit/' + task.Name, task.LimitSpeed).success(function (resp) {
 			resp && alert(resp);
+			get_process();
 		});
 	};
 
@@ -88,16 +91,12 @@ function tasks_ctrl ($scope, $http) {
 				for (var i = data.length - 1; i >= 0; i--) {
 					var item = data[i];
 					item.loading = false;
+					$scope.waiting = false;
 				};
 				$scope.bt_files = data;
 			});
 		}
 	};
-	// $scope.thunder_new = function() {
-	// 	// $scope.bt_files = [
-	// 	// 	{Status:'Finished', Name:'Catch me if you can.', Size:'1.5GB', URL:'http://www.xyz.com'}
-	// 	// ];
-	// };
 	$scope.get_bt_file_status = function(percent) {
 		return (percent == 100) ? 'Finished' : percent + '%'
 	}
