@@ -365,6 +365,7 @@ h3 {
 	width: 500px;
 	margin: 2px 0 0 0;
 	height: 2px;
+	background-color: #383022;
 }
 .task-infoes .progress div {
 	width: 100%;

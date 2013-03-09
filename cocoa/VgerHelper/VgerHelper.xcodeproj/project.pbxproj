@@ -1,0 +1,296 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B0798B7C16E64941003126E0 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0798B7B16E64941003126E0 /* Cocoa.framework */; };
+		B0798B8616E64941003126E0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0798B8416E64941003126E0 /* InfoPlist.strings */; };
+		B0798B8816E64941003126E0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B0798B8716E64941003126E0 /* main.m */; };
+		B0798B8C16E64941003126E0 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = B0798B8A16E64941003126E0 /* Credits.rtf */; };
+		B0798B8F16E64941003126E0 /* VAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B0798B8E16E64941003126E0 /* VAppDelegate.m */; };
+		B0798BB416E661D6003126E0 /* Itzikgur-My-Seven-Downloads-2 1.icns in Resources */ = {isa = PBXBuildFile; fileRef = B0798BB316E661D6003126E0 /* Itzikgur-My-Seven-Downloads-2 1.icns */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B0798B7716E64941003126E0 /* VgerHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VgerHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0798B7B16E64941003126E0 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		B0798B7E16E64941003126E0 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		B0798B7F16E64941003126E0 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		B0798B8016E64941003126E0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		B0798B8316E64941003126E0 /* VgerHelper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VgerHelper-Info.plist"; sourceTree = "<group>"; };
+		B0798B8516E64941003126E0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B0798B8716E64941003126E0 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B0798B8916E64941003126E0 /* VgerHelper-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VgerHelper-Prefix.pch"; sourceTree = "<group>"; };
+		B0798B8B16E64941003126E0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		B0798B8D16E64941003126E0 /* VAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VAppDelegate.h; sourceTree = "<group>"; };
+		B0798B8E16E64941003126E0 /* VAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VAppDelegate.m; sourceTree = "<group>"; };
+		B0798BB316E661D6003126E0 /* Itzikgur-My-Seven-Downloads-2 1.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Itzikgur-My-Seven-Downloads-2 1.icns"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B0798B7416E64941003126E0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0798B7C16E64941003126E0 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B0798B6C16E64941003126E0 = {
+			isa = PBXGroup;
+			children = (
+				B0798BB316E661D6003126E0 /* Itzikgur-My-Seven-Downloads-2 1.icns */,
+				B0798B8116E64941003126E0 /* VgerHelper */,
+				B0798B7A16E64941003126E0 /* Frameworks */,
+				B0798B7816E64941003126E0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B0798B7816E64941003126E0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B0798B7716E64941003126E0 /* VgerHelper.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B0798B7A16E64941003126E0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B0798B7B16E64941003126E0 /* Cocoa.framework */,
+				B0798B7D16E64941003126E0 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B0798B7D16E64941003126E0 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B0798B7E16E64941003126E0 /* AppKit.framework */,
+				B0798B7F16E64941003126E0 /* CoreData.framework */,
+				B0798B8016E64941003126E0 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		B0798B8116E64941003126E0 /* VgerHelper */ = {
+			isa = PBXGroup;
+			children = (
+				B0798B8D16E64941003126E0 /* VAppDelegate.h */,
+				B0798B8E16E64941003126E0 /* VAppDelegate.m */,
+				B0798B8216E64941003126E0 /* Supporting Files */,
+			);
+			path = VgerHelper;
+			sourceTree = "<group>";
+		};
+		B0798B8216E64941003126E0 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				B0798B8316E64941003126E0 /* VgerHelper-Info.plist */,
+				B0798B8416E64941003126E0 /* InfoPlist.strings */,
+				B0798B8716E64941003126E0 /* main.m */,
+				B0798B8916E64941003126E0 /* VgerHelper-Prefix.pch */,
+				B0798B8A16E64941003126E0 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B0798B7616E64941003126E0 /* VgerHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B0798B9516E64942003126E0 /* Build configuration list for PBXNativeTarget "VgerHelper" */;
+			buildPhases = (
+				B0798B7316E64941003126E0 /* Sources */,
+				B0798B7416E64941003126E0 /* Frameworks */,
+				B0798B7516E64941003126E0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VgerHelper;
+			productName = VgerHelper;
+			productReference = B0798B7716E64941003126E0 /* VgerHelper.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B0798B6E16E64941003126E0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = V;
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = me;
+			};
+			buildConfigurationList = B0798B7116E64941003126E0 /* Build configuration list for PBXProject "VgerHelper" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = B0798B6C16E64941003126E0;
+			productRefGroup = B0798B7816E64941003126E0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B0798B7616E64941003126E0 /* VgerHelper */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B0798B7516E64941003126E0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0798B8616E64941003126E0 /* InfoPlist.strings in Resources */,
+				B0798B8C16E64941003126E0 /* Credits.rtf in Resources */,
+				B0798BB416E661D6003126E0 /* Itzikgur-My-Seven-Downloads-2 1.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B0798B7316E64941003126E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0798B8816E64941003126E0 /* main.m in Sources */,
+				B0798B8F16E64941003126E0 /* VAppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B0798B8416E64941003126E0 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0798B8516E64941003126E0 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		B0798B8A16E64941003126E0 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0798B8B16E64941003126E0 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		B0798B9316E64942003126E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B0798B9416E64942003126E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		B0798B9616E64942003126E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VgerHelper/VgerHelper-Prefix.pch";
+				INFOPLIST_FILE = "VgerHelper/VgerHelper-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		B0798B9716E64942003126E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VgerHelper/VgerHelper-Prefix.pch";
+				INFOPLIST_FILE = "VgerHelper/VgerHelper-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B0798B7116E64941003126E0 /* Build configuration list for PBXProject "VgerHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0798B9316E64942003126E0 /* Debug */,
+				B0798B9416E64942003126E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B0798B9516E64942003126E0 /* Build configuration list for PBXNativeTarget "VgerHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0798B9616E64942003126E0 /* Debug */,
+				B0798B9716E64942003126E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B0798B6E16E64941003126E0 /* Project object */;
+}

@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'VgerClient' target in the 'VgerClient' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif

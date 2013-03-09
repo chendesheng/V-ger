@@ -12,5 +12,4 @@ bin/vger.log
 *.app
 gomacdraw.framework
 src/github.com
-cocoa
 src/.DS_Store
