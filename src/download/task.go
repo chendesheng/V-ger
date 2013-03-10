@@ -360,6 +360,10 @@ func LimitSpeed(name string, speed int) string {
 	if t, ok := GetTask(name); ok {
 		t.LimitSpeed = int64(speed)
 		saveTask(t)
+
+		if t.Status != "Downloading" {
+			return ""
+		}
 	} else {
 		return "task has been deleted."
 	}
