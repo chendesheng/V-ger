@@ -177,7 +177,7 @@ function tasks_ctrl ($scope, $http) {
 
 	$scope.go = function () {
 		$scope.waiting = true
-		if ($scope.new_url.indexOf('://') != -1) {
+		if (/.+\:\/\/.+|^magnet\:\?.+/.test($scope.new_url)) {
 			new_task();
 		} else {
 			$scope.search_subtitles($scope.new_url)
@@ -190,4 +190,8 @@ function tasks_ctrl ($scope, $http) {
 		$scope.nosubtitles = false;
 	};
 
+	$scope.parse_time = function (time) {
+		var d = new Date(time * 1000);
+		return d.format('ddd mmm dd')
+	}
 }

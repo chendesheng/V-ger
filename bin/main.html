@@ -14,7 +14,7 @@
 	<h2>Speed is Fun!</h2>
 	<div id="tasks" ng-controller="tasks_ctrl">
 		<ul id="tasks-list">
-	       <li ng-repeat="task in tasks | orderBy:-StartDate">
+	       <li ng-repeat="task in tasks | orderBy:'StartTime':1">
 	       		<div class="task-infoes">
 	       			<div class="left-actions">
 		       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped'"></button>
@@ -47,7 +47,7 @@
 		       			<span ng-show="task.Status=='Downloading'" class="info">{{task.Speed.toFixed(2)}}KB/s</span>
 
 			       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-			       		<span ng-show="task.Status!='Downloading'" class="info">{{task.StartDate.format('ddd mmm dd')}}</span>
+			       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span>
 
 		       		</div>
 

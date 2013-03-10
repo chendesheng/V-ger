@@ -198,7 +198,7 @@ input[type=text], textarea {
 #new-task {
 	font-size: 1.2em;
 	position: absolute;
-	right: 15px;
+	right: 45px;
 	top: 35px;
 	height: 29px;
 	display: block;

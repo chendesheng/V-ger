@@ -28,10 +28,11 @@ func init() {
 }
 
 type Task struct {
-	URL       string
-	Size      int64
-	Name      string //identifier (a little unsafe but more readable than url)
-	StartDate time.Time
+	URL  string
+	Size int64
+	Name string //identifier (a little unsafe but more readable than url)
+	// seconds from 1970-1-1
+	StartTime int64
 
 	DownloadedSize int64
 	ElapsedTime    time.Duration
@@ -46,29 +47,29 @@ type Task struct {
 	Autoshutdown bool
 }
 
-func (t *Task) String() string {
-	text := ""
-	if t.Status == "Downloading" && t.LimitSpeed > 0 {
-		text = fmt.Sprintf("::Up to %dK/s", t.LimitSpeed)
-	}
+// func (t *Task) String() string {
+// 	text := ""
+// 	if t.Status == "Downloading" && t.LimitSpeed > 0 {
+// 		text = fmt.Sprintf("::Up to %dK/s", t.LimitSpeed)
+// 	}
 
-	estDur := time.Duration(0)
-	if t.Speed != 0 {
-		estDur = time.Duration(float64((t.Size-t.DownloadedSize))/t.Speed) * time.Millisecond
-	}
+// 	estDur := time.Duration(0)
+// 	if t.Speed != 0 {
+// 		estDur = time.Duration(float64((t.Size-t.DownloadedSize))/t.Speed) * time.Millisecond
+// 	}
 
-	est := ""
-	if estDur > 0 {
-		est = fmt.Sprintf(" Est. %s", estDur)
-	}
-	speed := ""
-	if t.Status == "Downloading" {
-		speed = fmt.Sprintf(" %.2fKB/s", t.Speed)
-	}
+// 	est := ""
+// 	if estDur > 0 {
+// 		est = fmt.Sprintf(" Est. %s", estDur)
+// 	}
+// 	speed := ""
+// 	if t.Status == "Downloading" {
+// 		speed = fmt.Sprintf(" %.2fKB/s", t.Speed)
+// 	}
 
-	return fmt.Sprintf("[%s%s] %s %s%s %.2f%%%s", t.Status, text,
-		t.Name, t.StartDate, speed, float32(t.DownloadedSize)/float32(t.Size)*100, est)
-}
+// 	return fmt.Sprintf("[%s%s] %s %s%s %.2f%%%s", t.Status, text,
+// 		t.Name, time.Time, speed, float32(t.DownloadedSize)/float32(t.Size)*100, est)
+// }
 
 func BeginDownload(url string, name string, maxSpeed int64) string {
 	if DownloadClient == nil {
@@ -206,7 +207,7 @@ func getOrNewTask(url string, name string) *Task {
 	t.Name = name
 	t.isNew = true
 	t.Size = filesize
-	t.StartDate = time.Now()
+	t.StartTime = time.Now().Unix()
 	t.DownloadedSize = 0
 	t.ElapsedTime = 0
 

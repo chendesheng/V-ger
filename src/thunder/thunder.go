@@ -2,7 +2,7 @@ package thunder
 
 import (
 	"bytes"
-	"errors"
+	// "errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -47,7 +47,7 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 		}
 		ret_value := result["ret_value"].(float64)
 		if ret_value == 0 {
-			return nil, errors.New("Upload torrent file: Can't find files.")
+			return nil, fmt.Errorf("Upload torrent file: Can't find files.")
 		}
 
 		btsize := int64(result["btsize"].(float64))
@@ -102,7 +102,7 @@ func taskCommit(userId string, taskURL string, taskType int) error {
 
 	cid, gcid, size, t := parseTaskCheck(text)
 	if cid == "" {
-		return errors.New("Commit task error, try again later")
+		return fmt.Errorf("Commit task error, try again later")
 	}
 
 	sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_commit",
@@ -148,7 +148,7 @@ func btTaskCommit(userId string, taskURL string) error {
 	cid, tsize, btname, size, findex := parseUrlQueryResult(text)
 
 	if cid == "" {
-		return errors.New("Commit bt task error, try again later.")
+		return fmt.Errorf("Commit bt task error, try again later.")
 	}
 
 	sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
