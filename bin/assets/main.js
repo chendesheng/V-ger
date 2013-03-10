@@ -147,9 +147,11 @@ function tasks_ctrl ($scope, $http) {
 		$scope.subtitles_movie_name = name;
 		$http.get('/subtitles/search/' + name).success(function (data) {
 			if (data.length == 0) {
-				alert("Can't find subtitles!");
+				$scope.nosubtitles = true;
+				$scope.waiting = false;
 				return
 			}
+			$scope.nosubtitles = false;
 			for (var i = data.length - 1; i >= 0; i--) {
 				var item = data[i];
 				item.loading = false;
@@ -180,6 +182,12 @@ function tasks_ctrl ($scope, $http) {
 		} else {
 			$scope.search_subtitles($scope.new_url)
 		}
-	}
+	};
+	$scope.google_subtitles = function() {
+		var name = $scope.subtitles_movie_name;
+		name = name.replace(/(.*)[.](mkv|avi|mp4|rm|rmvb)/, '$1').replace(/(.*)-.*/, '$1') + ' subtitles';
+		window.open("http://www.google.com/search?q=" + encodeURIComponent(name));
+		$scope.nosubtitles = false;
+	};
 
 }

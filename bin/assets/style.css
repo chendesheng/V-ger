@@ -278,6 +278,10 @@ h1,h2 {
 	top: 10px;
 	z-index: 1;
 }
+.popup .bottom {
+	padding-bottom: 10px;
+	text-align: center;
+}
 .close {
 	width: 14px;
 	height: 14px;

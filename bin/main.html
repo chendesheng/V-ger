@@ -87,7 +87,13 @@
 		</div>
 
 
-
+		<div id="nosubtitles-overlay" class="overlay" ng-show="nosubtitles">
+			<div class="popup">
+				<button class="close" ng-click="nosubtitles=false"></button>
+				<h3>No subtitles for '{{subtitles_movie_name}}'</h3>
+				<div class="bottom"><input type="button" value="Search in Google" ng-click="google_subtitles()"/></div>
+			</div>
+		</div>
 
 		<div id="subtitles-overlay" class="overlay" ng-show="subtitles.length > 0">
 			<div id="subtitles" class="popup">
