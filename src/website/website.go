@@ -213,7 +213,19 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		extractSubtitle(name, movieName)
 	}
 }
-
+func appStatusHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(fmt.Sprintf("# of goruntine: %d.", runtime.NumGoroutine())))
+}
+func appShutdownHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("bye"))
+	go func() {
+		time.Sleep(time.Second)
+		os.Exit(1) //output all goroutines, for detect goroutine leak
+	}()
+}
+func appGCHandler(w http.ResponseWriter, r *http.Request) {
+	runtime.GC()
+}
 func Run() {
 	download.StartHandleCommands()
 
@@ -235,6 +247,10 @@ func Run() {
 
 	http.HandleFunc("/subtitles/search/", subtitlesSearchHandler)
 	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
+
+	http.HandleFunc("/app/status", appStatusHandler)
+	http.HandleFunc("/app/shutdown", appShutdownHandler)
+	http.HandleFunc("/app/gc", appGCHandler)
 
 	//resume downloading tasks
 	tasks := download.GetTasks()

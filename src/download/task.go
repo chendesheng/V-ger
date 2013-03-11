@@ -47,51 +47,27 @@ type Task struct {
 	Autoshutdown bool
 }
 
-// func (t *Task) String() string {
-// 	text := ""
-// 	if t.Status == "Downloading" && t.LimitSpeed > 0 {
-// 		text = fmt.Sprintf("::Up to %dK/s", t.LimitSpeed)
+// func BeginDownload(url string, name string, maxSpeed int64) string {
+// 	if DownloadClient == nil {
+// 		DownloadClient = http.DefaultClient
 // 	}
 
-// 	estDur := time.Duration(0)
-// 	if t.Speed != 0 {
-// 		estDur = time.Duration(float64((t.Size-t.DownloadedSize))/t.Speed) * time.Millisecond
-// 	}
+// 	t := getOrNewTask(url, name)
 
-// 	est := ""
-// 	if estDur > 0 {
-// 		est = fmt.Sprintf(" Est. %s", estDur)
-// 	}
-// 	speed := ""
-// 	if t.Status == "Downloading" {
-// 		speed = fmt.Sprintf(" %.2fKB/s", t.Speed)
-// 	}
+// 	control := make(chan int)
+// 	progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, maxSpeed, control, quit)
+// 	handleProgress(progress, t)
 
-// 	return fmt.Sprintf("[%s%s] %s %s%s %.2f%%%s", t.Status, text,
-// 		t.Name, time.Time, speed, float32(t.DownloadedSize)/float32(t.Size)*100, est)
+// 	removeTask(t.Name)
+// 	fmt.Printf("\nIt's done!\n\n")
+// 	return t.Name
 // }
-
-func BeginDownload(url string, name string, maxSpeed int64) string {
-	if DownloadClient == nil {
-		DownloadClient = http.DefaultClient
-	}
-
-	t := getOrNewTask(url, name)
-
-	control := make(chan int)
-	progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, maxSpeed, control)
-	handleProgress(progress, t)
-
-	removeTask(t.Name)
-	fmt.Printf("\nIt's done!\n\n")
-	return t.Name
-}
-func download(t *Task, control chan int) {
+func download(t *Task, control chan int, quit chan bool) {
 	t.Status = "Downloading"
 	saveTask(t)
 
 	if t.DownloadedSize < t.Size {
-		progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, t.LimitSpeed, control)
+		progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, t.LimitSpeed, control, quit)
 
 		handleProgress(progress, t)
 	}
@@ -113,30 +89,43 @@ func download(t *Task, control chan int) {
 		t.Status = "Stopped"
 	}
 	saveTask(t)
+
+	go func() {
+		timeout := time.After(time.Second * 500)
+		for i := 0; i < 50; i++ {
+			select {
+			case quit <- true:
+			case <-timeout:
+				break
+			}
+		}
+	}()
 }
-func DownloadAsync(url string, name string) (string, chan int) {
+func DownloadAsync(url string, name string) (string, chan int, chan bool) {
 	control := make(chan int)
+	quit := make(chan bool, 50)
 	t := getOrNewTask(url, name)
 
-	go download(t, control)
+	go download(t, control, quit)
 
-	return t.Name, control
+	return t.Name, control, quit
 }
-func ResumeDownloadAsync(name string) (chan int, error) {
+func ResumeDownloadAsync(name string) (chan int, chan bool, error) {
 	for _, t := range GetTasks() {
 		if name == t.Name {
 			t.isNew = false
 
 			control := make(chan int)
+			quit := make(chan bool, 50)
 			go func(t *Task, control chan int) {
-				download(t, control)
+				download(t, control, quit)
 			}(t, control)
 
-			return control, nil
+			return control, quit, nil
 		}
 	}
 
-	return nil, errors.New("task not exists")
+	return nil, nil, errors.New("task not exists")
 }
 
 func DownloadSmallFile(url string, name string) (filename string, err error) {
@@ -292,26 +281,32 @@ func newCommand(name, arg string) *command {
 	return &command{make(chan bool), make(chan string), name, arg}
 }
 
+type taskControl struct {
+	quit     chan bool
+	maxSpeed chan int
+}
+
 func handleCommands(chanCommand chan *command) {
-	taskControls := make(map[string]chan int)
+	taskControls := make(map[string]taskControl)
+
 	for cmd := range chanCommand {
 		switch cmd.name {
 		case "new":
 			args := strings.Split(cmd.arg, "####")
 			name, url := args[0], args[1]
-			name, control := DownloadAsync(url, name)
-			taskControls[name] = control
+			name, control, quit := DownloadAsync(url, name)
+			taskControls[name] = taskControl{quit, control}
 			cmd.ack <- true
 			break
 		case "resume":
 			name := cmd.arg
 			if _, ok := taskControls[name]; !ok {
-				control, err := ResumeDownloadAsync(name)
+				control, quit, err := ResumeDownloadAsync(name)
 				if err != nil {
 					cmd.ack <- false
 					cmd.result <- err.Error()
 				} else {
-					taskControls[name] = control
+					taskControls[name] = taskControl{quit, control}
 					cmd.ack <- true
 					close(cmd.result)
 				}
@@ -326,7 +321,9 @@ func handleCommands(chanCommand chan *command) {
 
 			if control, ok := taskControls[name]; ok {
 				delete(taskControls, name)
-				control <- -1
+				for i := 0; i < 50; i++ {
+					control.quit <- true
+				}
 				cmd.ack <- true
 				close(cmd.result)
 			} else {
@@ -341,7 +338,7 @@ func handleCommands(chanCommand chan *command) {
 			if control, ok := taskControls[name]; ok {
 				speed, _ := strconv.Atoi(args[1])
 				fmt.Println("up to ", speed)
-				control <- speed
+				control.maxSpeed <- speed
 				cmd.ack <- true
 				close(cmd.result)
 			} else {
