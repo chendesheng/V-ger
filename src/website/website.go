@@ -28,13 +28,14 @@ import (
 )
 
 func init() {
-	f, err := os.OpenFile("vger.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.SetOutput(f)
-
 	config = readConfig()
+	if logPath, ok := config["log"]; ok {
+		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.SetOutput(f)
+	}
 
 	client := &http.Client{
 		Jar: cookiejar.NewJar(true),
