@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func handleProgress(progress chan int64, t *Task) {
+func handleProgress(progress chan int64, t *Task, quit chan bool) {
 	log.Printf("start handle progress: %v\n", *t)
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
@@ -22,7 +22,7 @@ func handleProgress(progress chan int64, t *Task) {
 	}
 	part := int64(0)
 	cnt := 0
-	est := time.Duration(0)
+	// est := time.Duration(0)
 	lastCheck := time.Now()
 
 	for {
@@ -32,7 +32,7 @@ func handleProgress(progress chan int64, t *Task) {
 				saveProgress(t.Name, speed, total, elapsedTime, 0)
 				return
 			}
-			// fmt.Println("progress ", total)
+			fmt.Println("progress ", total)
 			total += length
 			part += length
 
@@ -54,18 +54,20 @@ func handleProgress(progress chan int64, t *Task) {
 			}
 			speed = float64(sum) * float64(time.Second) / float64(time.Since(lastCheck)) / 1024
 
-			percentage, est := calcProgress(total, size, speed)
+			_, est := calcProgress(total, size, speed)
 
 			saveProgress(t.Name, speed, total, elapsedTime, est)
 
-			printProgress(percentage, speed, elapsedTime, est)
 			if total == size {
 				fmt.Println("progress return")
 				return
 			}
+		case <-quit:
+			fmt.Println("progress quit")
+			return
 		}
 	}
-	printProgress(100, speed, elapsedTime, est)
+
 }
 func calcProgress(total, size int64, speed float64) (percentage float64, est time.Duration) {
 	percentage = float64(total) / float64(size) * 100
@@ -84,7 +86,4 @@ func saveProgress(name string, speed float64, total int64, elapsedTime time.Dura
 		t.Est = est
 		saveTask(t)
 	}
-}
-func printProgress(percentage float64, speed float64, elapsedTime time.Duration, est time.Duration) {
-	// fmt.Printf("%.2f%%    %.2f KB/s    %s    Est. %s     \n", percentage, speed, elapsedTime/time.Second*time.Second, est/time.Second*time.Second)
 }

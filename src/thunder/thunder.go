@@ -91,7 +91,7 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 			return nil, err
 		}
 	}
-	return getNewlyCreateTask(userId), nil
+	return getNewlyCreateTask(userId)
 }
 func taskCommit(userId string, taskURL string, taskType int) error {
 	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_check",
@@ -172,7 +172,7 @@ func btTaskCommit(userId string, taskURL string) error {
 
 	return nil
 }
-func getNewlyCreateTask(userId string) []ThunderTask {
+func getNewlyCreateTask(userId string) ([]ThunderTask, error) {
 	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/showtask_unfresh",
 		&url.Values{
 			"callback": {"jsonp1"},
@@ -192,12 +192,12 @@ func getNewlyCreateTask(userId string) []ThunderTask {
 				Size:        info["filesize"].(string),
 				Percent:     100,
 			},
-		}
+		}, nil
 	}
 
 	return getBtTaskList(userId, info["id"].(string), info["cid"].(string))
 }
-func getBtTaskList(userId string, id string, cid string) []ThunderTask {
+func getBtTaskList(userId string, id string, cid string) ([]ThunderTask, error) {
 	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/fill_bt_list",
 		&url.Values{
 			"uid":      {userId},

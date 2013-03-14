@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"native"
+	"net/http/httputil"
 	"path"
 	// "html/template"
 	"io/ioutil"
@@ -18,10 +19,13 @@ import (
 	// "strings"
 	// "encoding/json"
 	"b1"
+	"errors"
 	"log"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"subtitles"
 	"thunder"
 	"time"
@@ -214,6 +218,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		extractSubtitle(name, movieName)
 	}
 }
+
 func appStatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("# of goruntine: %d.", runtime.NumGoroutine())))
 }
@@ -227,6 +232,122 @@ func appShutdownHandler(w http.ResponseWriter, r *http.Request) {
 func appGCHandler(w http.ResponseWriter, r *http.Request) {
 	runtime.GC()
 }
+
+func testVideo(w http.ResponseWriter, r *http.Request) {
+	bytes, _ := httputil.DumpRequest(r, true)
+	fmt.Println(string(bytes))
+	w.Header().Add("Content-Disposition", `filename="testVideo.mp4"`)
+	http.ServeFile(w, r, "/Volumes/Data/Downloads/Video/Game Change 2012 720p HDTv x264 AAC - KiNGDOM.mp4")
+}
+
+func playFile(w http.ResponseWriter, r *http.Request) {
+	bytes, _ := httputil.DumpRequest(r, true)
+	fmt.Println(string(bytes))
+
+	url := "http://127.0.0.1:3824/testVideo"
+	url, name, size := download.GetDownloadInfo(url)
+
+	code := http.StatusOK
+
+	// If Content-Type isn't set, use the file's extension to find it.
+	ctype := w.Header().Get("Content-Type")
+	if ctype == "" {
+		ctype = mime.TypeByExtension(filepath.Ext(name))
+		if ctype != "" {
+			w.Header().Set("Content-Type", ctype)
+		} else {
+			w.Header().Set("Content-Type", "application/octet-stream")
+		}
+	}
+
+	// handle Content-Range header.
+	sendSize := size
+	// var sendContent io.Reader = content
+	// if size >= 0 {
+	ranges, err := parseRange(r.Header.Get("Range"), size)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusRequestedRangeNotSatisfiable)
+		return
+	}
+	ra := ranges[0]
+	sendSize = ra.length
+	code = http.StatusPartialContent
+	w.Header().Set("Content-Range", ra.contentRange(size))
+	w.Header().Set("Accept-Ranges", "bytes")
+	if w.Header().Get("Content-Encoding") == "" {
+		w.Header().Set("Content-Length", strconv.FormatInt(sendSize, 10))
+	}
+	w.WriteHeader(code)
+
+	download.Play(url, w, ra.start, ra.start+sendSize)
+}
+
+type httpRange struct {
+	start, length int64
+}
+
+func (r httpRange) contentRange(size int64) string {
+	return fmt.Sprintf("bytes %d-%d/%d", r.start, r.start+r.length-1, size)
+}
+
+// parseRange parses a Range header string as per RFC 2616.
+func parseRange(s string, size int64) ([]httpRange, error) {
+	if s == "" {
+		return nil, nil // header not present
+	}
+	const b = "bytes="
+	if !strings.HasPrefix(s, b) {
+		return nil, errors.New("invalid range")
+	}
+	var ranges []httpRange
+	for _, ra := range strings.Split(s[len(b):], ",") {
+		ra = strings.TrimSpace(ra)
+		if ra == "" {
+			continue
+		}
+		i := strings.Index(ra, "-")
+		if i < 0 {
+			return nil, errors.New("invalid range")
+		}
+		start, end := strings.TrimSpace(ra[:i]), strings.TrimSpace(ra[i+1:])
+		var r httpRange
+		if start == "" {
+			// If no start is specified, end specifies the
+			// range start relative to the end of the file.
+			i, err := strconv.ParseInt(end, 10, 64)
+			if err != nil {
+				return nil, errors.New("invalid range")
+			}
+			if i > size {
+				i = size
+			}
+			r.start = size - i
+			r.length = size - r.start
+		} else {
+			i, err := strconv.ParseInt(start, 10, 64)
+			if err != nil || i > size || i < 0 {
+				return nil, errors.New("invalid range")
+			}
+			r.start = i
+			if end == "" {
+				// If no end is specified, range extends to end of the file.
+				r.length = size - r.start
+			} else {
+				i, err := strconv.ParseInt(end, 10, 64)
+				if err != nil || r.start > i {
+					return nil, errors.New("invalid range")
+				}
+				if i >= size {
+					i = size - 1
+				}
+				r.length = i - r.start + 1
+			}
+		}
+		ranges = append(ranges, r)
+	}
+	return ranges, nil
+}
+
 func Run() {
 	download.StartHandleCommands()
 
@@ -252,6 +373,9 @@ func Run() {
 	http.HandleFunc("/app/status", appStatusHandler)
 	http.HandleFunc("/app/shutdown", appShutdownHandler)
 	http.HandleFunc("/app/gc", appGCHandler)
+
+	http.HandleFunc("/testVideo", testVideo)
+	http.HandleFunc("/playfile", playFile)
 
 	//resume downloading tasks
 	tasks := download.GetTasks()

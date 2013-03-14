@@ -67,9 +67,9 @@ func download(t *Task, control chan int, quit chan bool) {
 	saveTask(t)
 
 	if t.DownloadedSize < t.Size {
-		progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, t.LimitSpeed, control, quit)
+		progress := doDownload(t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, t.LimitSpeed, control, quit)
 
-		handleProgress(progress, t)
+		handleProgress(progress, t, quit)
 	}
 
 	t, _ = GetTask(t.Name)
@@ -86,17 +86,18 @@ func download(t *Task, control chan int, quit chan bool) {
 		}
 
 	} else {
+		fmt.Println(t.DownloadedSize, " ", t.Size)
 		t.Status = "Stopped"
 	}
 	saveTask(t)
 
 	go func() {
-		timeout := time.After(time.Second * 500)
+		timeout := time.After(time.Second * 1)
 		for i := 0; i < 50; i++ {
 			select {
 			case quit <- true:
 			case <-timeout:
-				break
+				return
 			}
 		}
 	}()
@@ -130,7 +131,7 @@ func ResumeDownloadAsync(name string) (chan int, chan bool, error) {
 
 func DownloadSmallFile(url string, name string) (filename string, err error) {
 	if name == "" {
-		url, name, _ = getDownloadInfo(url)
+		url, name, _ = GetDownloadInfo(url)
 	}
 
 	resp, err := DownloadClient.Get(url)
@@ -180,7 +181,7 @@ func removeTask(name string) {
 }
 func getOrNewTask(url string, name string) *Task {
 	// fmt.Println("hello")
-	url, filename, filesize := getDownloadInfo(url)
+	url, filename, filesize := GetDownloadInfo(url)
 	// fmt.Println("hello")
 	// fmt.Println(url)
 	if name == "" {

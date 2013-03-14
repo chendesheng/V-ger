@@ -18,6 +18,7 @@ func createDownloadRequest(urlString string, from, to int64) *http.Request {
 	req.Method = "GET"
 	req.URL, _ = url.Parse(urlString)
 	req.Header = make(http.Header)
+	// fmt.Println(urlString)
 	addRangeHeader(req, from, to)
 	return req
 }
