@@ -279,6 +279,15 @@ func playFile(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(code)
 
+	// first request only need download by single request
+	// if ra.start == 0 && sendSize == size {
+	// 	err := download.SingleRoutineDownload(url, w, ra.start, ra.start+sendSize)
+	// 	if err != nil {
+	// 		w.Write([]byte(err.Error()))
+	// 	}
+
+	// 	return
+	// }
 	download.Play(url, w, ra.start, ra.start+sendSize)
 }
 

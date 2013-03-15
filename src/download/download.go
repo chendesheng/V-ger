@@ -44,7 +44,7 @@ func doDownload(url string, path string, from, to int64,
 	return progress
 }
 func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
-	blockSize := int64(400 * 1024)
+	blockSize := int64(60 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
 	}
@@ -63,7 +63,7 @@ func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(400 * 1024)
+				blockSize = int64(60 * 1024)
 			}
 		case input <- block{from, to}:
 			if to == size {
@@ -237,6 +237,7 @@ func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock
 	chan3 := createDownloadRoutine(url, disorderOutput, quit)
 	chan4 := createDownloadRoutine(url, disorderOutput, quit)
 	chan5 := createDownloadRoutine(url, disorderOutput, quit)
+	chan6 := createDownloadRoutine(url, disorderOutput, quit)
 
 	go func(input <-chan *dataBlock, output chan<- *dataBlock, quit chan bool, from, to int64) {
 		sortOutput(input, output, quit, from, to)
@@ -252,6 +253,7 @@ func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock
 				close(chan3)
 				close(chan4)
 				close(chan5)
+				close(chan6)
 				return
 			}
 			select {
@@ -260,6 +262,7 @@ func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock
 			case chan3 <- b:
 			case chan4 <- b:
 			case chan5 <- b:
+			case chan6 <- b:
 			case <-quit:
 				fmt.Println("currentDownload quit")
 				return
@@ -273,101 +276,6 @@ func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock
 	}
 
 }
-func pipeDownload(url string, input <-chan block, output chan<- *dataBlock, quit chan bool) {
-	numOfConn := make(chan bool, 5)
-	defer close(numOfConn)
-
-	prevComplete := make(chan bool, 1)
-	prevComplete <- true
-
-	for {
-		select {
-		case b, ok := <-input:
-			// log.Printf("pipdownload %v\n", b)
-			if !ok {
-				select {
-				case <-prevComplete:
-					close(output)
-					fmt.Println("pipdownload return")
-					return
-				case <-quit:
-					fmt.Println("pipdownload quit")
-					return
-				}
-				return
-			}
-			select {
-			case numOfConn <- true:
-			case <-quit:
-				return
-			}
-			complete := make(chan bool)
-			go func(b block, output chan<- *dataBlock, numOfConn, prevComplete, complete chan bool) {
-				for {
-					chanRes, closer, err := downloadBlock(url, b, quit)
-
-					select {
-					case data := <-chanRes:
-
-						if err == nil {
-
-							select {
-							case <-numOfConn:
-								break
-							case <-quit:
-								return
-							}
-
-							select {
-							case <-prevComplete:
-								break
-							case <-quit:
-								return
-							}
-
-							close(prevComplete)
-
-							select {
-							case output <- &dataBlock{from: b.from, to: b.to, data: data}:
-								break
-							case <-quit:
-								return
-							}
-
-							select {
-							case complete <- true:
-								break
-							case <-quit:
-								return
-							}
-							return
-						} else {
-							log.Println(err)
-						}
-					case <-quit:
-						fmt.Println("download block quit")
-						closer.Close()
-						return
-					}
-				}
-			}(b, output, numOfConn, prevComplete, complete)
-			prevComplete = complete
-		case <-quit:
-			return
-		}
-	}
-
-	select {
-	case <-prevComplete:
-		close(output)
-		fmt.Println("pipdownload return")
-		return
-	case <-quit:
-		fmt.Println("pipdownload quit")
-		return
-	}
-}
-
 func downloadBlock(url string, b block, quit chan bool) (chan []byte, io.Closer, error) {
 	from, to := b.from, b.to
 	req := createDownloadRequest(url, from, to-1)
@@ -430,4 +338,23 @@ func GetDownloadInfo(url string) (realURL string, name string, size int64) {
 	}
 	realURL = url
 	return
+}
+
+func SingleRoutineDownload(url string, w io.Writer, from, to int64) error {
+	req := createDownloadRequest(url, from, to-1)
+
+	resp, err := DownloadClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println(r)
+		}
+	}()
+
+	io.Copy(w, resp.Body)
+
+	return nil
 }
