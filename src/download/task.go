@@ -188,7 +188,7 @@ func getOrNewTask(url string, name string) *Task {
 		name = filename
 	}
 
-	if t, ok := GetTask(name); ok {
+	if t, err := GetTask(name); err == nil {
 		return t
 	}
 
@@ -232,7 +232,7 @@ func GetTasks() []*Task {
 		}
 
 		name := f.Name()
-		if t, ok := getTask(name, taskDir); ok {
+		if t, err := getTask(name, taskDir); err == nil {
 			tasks = append(tasks, t)
 		}
 	}
@@ -241,28 +241,28 @@ func GetTasks() []*Task {
 	return tasks
 }
 
-func getTask(name string, taskDir string) (*Task, bool) {
+func getTask(name string, taskDir string) (*Task, error) {
 	if !strings.HasSuffix(name, ".vger-task.txt") {
-		return nil, false
+		return nil, errors.New("Task file name error.")
 	}
 
 	t := new(Task)
 	err := readJson(path.Join(taskDir, name), t)
 	if err != nil {
-		return nil, false
+		return nil, err
 	}
 	// if t.NameHash == "" {
 	t.NameHash = hashName(t.Name)
 	// }
-	return t, true
+	return t, nil
 }
-func GetTask(name string) (*Task, bool) {
+func GetTask(name string) (*Task, error) {
 	name = fmt.Sprint(name, ".vger-task.txt")
 	taskDir := path.Join(BaseDir, taskDirName)
 	return getTask(name, taskDir)
 }
 func SetAutoshutdown(name string, onOrOff bool) {
-	if t, ok := GetTask(name); ok {
+	if t, err := GetTask(name); err == nil {
 		t.Autoshutdown = onOrOff
 		saveTask(t)
 	}
@@ -356,7 +356,7 @@ func StartHandleCommands() {
 	go handleCommands(chanCommand)
 }
 func LimitSpeed(name string, speed int) string {
-	if t, ok := GetTask(name); ok {
+	if t, err := GetTask(name); err == nil {
 		t.LimitSpeed = int64(speed)
 		saveTask(t)
 

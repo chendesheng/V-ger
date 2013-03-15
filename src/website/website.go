@@ -106,9 +106,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "main.html")
 }
 
-func playHandler(w http.ResponseWriter, r *http.Request) {
+func openHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
-	fmt.Printf("play \"%s\".\n", name)
+	fmt.Printf("open \"%s\".\n", name)
 	cmd := exec.Command("open", path.Join(download.BaseDir, name))
 	cmd.Start()
 
@@ -240,12 +240,27 @@ func testVideo(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "/Volumes/Data/Downloads/Video/Game Change 2012 720p HDTv x264 AAC - KiNGDOM.mp4")
 }
 
-func playFile(w http.ResponseWriter, r *http.Request) {
-	bytes, _ := httputil.DumpRequest(r, true)
-	fmt.Println(string(bytes))
+func playHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[6:])
+	fmt.Printf("open \"%s\".\n", name)
+	cmd := exec.Command("open", "/Volumes/Data/Video/VLC.app", "--args", "http://"+config["server"]+"/video/"+name)
+	cmd.Start()
+}
 
-	url := "http://127.0.0.1:3824/testVideo"
-	url, name, size := download.GetDownloadInfo(url)
+func writeError(w http.ResponseWriter, err error) {
+	w.Write([]byte(err.Error()))
+}
+func videoHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := url.QueryUnescape(r.URL.String()[7:])
+	t, err := download.GetTask(name)
+	if err != nil {
+		writeError(w, err)
+	}
+	if t.Status == "Downloading" {
+		download.StopDownload(name)
+	}
+
+	url, size := t.URL, t.Size
 
 	code := http.StatusOK
 
@@ -260,10 +275,8 @@ func playFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// handle Content-Range header.
 	sendSize := size
-	// var sendContent io.Reader = content
-	// if size >= 0 {
+
 	ranges, err := parseRange(r.Header.Get("Range"), size)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusRequestedRangeNotSatisfiable)
@@ -365,7 +378,9 @@ func Run() {
 	http.HandleFunc("/assets/", assetsHandler)
 
 	http.HandleFunc("/", viewHandler)
+	http.HandleFunc("/open/", openHandler)
 	http.HandleFunc("/play/", playHandler)
+	http.HandleFunc("/video/", videoHandler)
 	http.HandleFunc("/resume/", resumeHandler)
 	http.HandleFunc("/stop/", stopHandler)
 	http.HandleFunc("/progress", progressHandler)
@@ -384,7 +399,6 @@ func Run() {
 	http.HandleFunc("/app/gc", appGCHandler)
 
 	http.HandleFunc("/testVideo", testVideo)
-	http.HandleFunc("/playfile", playFile)
 
 	//resume downloading tasks
 	tasks := download.GetTasks()

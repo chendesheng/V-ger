@@ -28,6 +28,7 @@
 
 		       		<div class="row-3rd">
 		       			<input type="button" ng-click="search_subtitles(task.Name)" value="Subtitles"/>
+		       			<input type="button" ng-click="send_play(task)" value="Play Online" ng-show="task.Status!='Finished'"/>
 		       			<select ng-hide="task.Status=='Finished'" ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
 		       				<option value="0">No limit</option>
 		       				<option value="50">Up to 50K</option>

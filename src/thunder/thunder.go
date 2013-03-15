@@ -225,7 +225,7 @@ func getTaskType(url string) int {
 		return 4
 	} else if strings.Index(url, "ed2k://") != -1 {
 		return 2
-	} else if strings.Index(url, ".torrent") != -1 {
+	} else if strings.Index(url, ".torrent") != -1 || strings.Index(url, "nyaa.eu/?page=download") != -1 {
 		return 1
 	}
 	return 0
@@ -275,6 +275,14 @@ func readBody(resp *http.Response) string {
 
 //download small files like .torrent or .srt file
 func quickDownload(url string) ([]byte, error) {
+	Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		temp := req.URL.String()
+		if temp != "" {
+			url = temp
+		}
+		return nil
+	}
+
 	resp, err := Client.Get(url)
 	if err != nil {
 		return nil, err

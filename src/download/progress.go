@@ -79,7 +79,7 @@ func calcProgress(total, size int64, speed float64) (percentage float64, est tim
 	return
 }
 func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration) {
-	if t, ok := GetTask(name); ok {
+	if t, err := GetTask(name); err == nil {
 		t.DownloadedSize = total
 		t.ElapsedTime = elapsedTime
 		t.Speed = speed

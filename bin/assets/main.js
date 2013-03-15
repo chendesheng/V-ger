@@ -54,7 +54,7 @@ function tasks_ctrl ($scope, $http) {
 	}
 
 	$scope.send_open = function (task) {
-		$http.get('/play/' + task.Name).success(function (resp) {
+		$http.get('/open/' + task.Name).success(function (resp) {
 			resp && alert(resp);
 		});
 	}
@@ -75,6 +75,12 @@ function tasks_ctrl ($scope, $http) {
 			resp && alert(resp);
 			get_process();
 		});
+	};
+	$scope.send_play = function (task) {
+		$http.get('/play/' + task.Name).success(function (resp) {
+			resp && alert(resp);
+			get_process();
+		})
 	};
 
 	$scope.waiting = false;
@@ -138,6 +144,7 @@ function tasks_ctrl ($scope, $http) {
 				get_process();
 			});
 	};
+
 
 	//subtitles
 	$scope.subtitles = [];

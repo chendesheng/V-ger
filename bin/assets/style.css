@@ -347,7 +347,7 @@ h3 {
 }
 .task-infoes {
 	width: 550px;
-	height: 40px;
+	/*height: 40px;*/
 	padding-left:20px;
 	display: block;
 	margin: auto;
@@ -356,7 +356,7 @@ h3 {
 .task-infoes .name {
 	cursor: pointer;
 	font-weight: bold;
-	font-size: 1.1em;
+	/*font-size: 1.1em;*/
 }
 .task-infoes .close {
 	position: absolute;
