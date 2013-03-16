@@ -3,7 +3,7 @@ package download
 import (
 	"bytes"
 	"fmt"
-	"sort"
+	// "sort"
 	// "runtime"
 	// "strconv"
 	// "errors"
@@ -20,7 +20,7 @@ type dataBlock struct {
 	from, to int64
 	data     []byte
 
-	// next *dataBlock
+	next *dataBlock
 }
 type dataBlockSlice []*dataBlock
 
@@ -118,6 +118,7 @@ func writeOutput(path string, from int64, output <-chan *dataBlock, progress cha
 				return
 			}
 			_, err := f.WriteAt(db.data, db.from)
+			db.data = nil
 
 			if err == nil {
 				select {
@@ -192,37 +193,28 @@ func createDownloadRoutine(url string, output chan<- *dataBlock, quit chan bool)
 	return input
 }
 func sortOutput(input <-chan *dataBlock, output chan<- *dataBlock, quit chan bool, from int64, to int64) {
-	sortedOutput := make([]*dataBlock, 0)
+	dbmap := make(map[int64]*dataBlock)
 	var nextOutputFrom = from
 	for {
 		select {
 		case db, _ := <-input:
-			// fmt.Println("sort output")
-			// if !ok {
-			// 	close(output)
-			// 	fmt.Println("sortOutput finish")
-			// 	return
-			// }
-			if db != nil {
-				sortedOutput = append(sortedOutput, db)
-				sort.Sort(dataBlockSlice(sortedOutput))
+			if db == nil {
+				break
 			}
 
-			for i := len(sortedOutput) - 1; i >= 0; i-- {
-				d := sortedOutput[i]
-				if d.from == nextOutputFrom {
+			dbmap[db.from] = db
+			for {
+				if d, ok := dbmap[nextOutputFrom]; ok {
+					fmt.Printf("sort output %d-%d\n", d.from, d.to)
 					select {
 					case output <- d:
 					case <-quit:
 						return
 					}
 					nextOutputFrom = d.to
-					length := len(sortedOutput)
-					for j := i; j < length-1; j++ {
-						sortedOutput[j] = sortedOutput[j+1]
-					}
-
-					sortedOutput = sortedOutput[:len(sortedOutput)-1]
+					delete(dbmap, db.from)
+				} else {
+					break
 				}
 			}
 			if nextOutputFrom == to {

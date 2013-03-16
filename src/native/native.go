@@ -1,6 +1,7 @@
 package native
 
 import (
+	// "encoding/utf8"
 	"log"
 	"os"
 	"os/exec"
@@ -45,4 +46,15 @@ func Shutdown(reason string) error {
 		return err
 	}
 	return nil
+}
+
+func ConvertEncodingToUTF8(file string, srcEncoding string) {
+	cmd := exec.Command("iconv", "-f", srcEncoding, "-t", "utf8", file)
+
+	f, err := os.OpenFile(file, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return
+	}
+	cmd.Stdout = f
+	cmd.Run()
 }

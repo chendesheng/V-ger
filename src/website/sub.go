@@ -4,6 +4,7 @@ import (
 	"b1"
 	"download"
 	"fmt"
+	"native"
 	"net/url"
 	"os"
 	"path"
@@ -48,15 +49,15 @@ func getSubList(movieName string, filters []filter) []subtitles.Subtitle {
 	return subs
 }
 func filterCategory(category string) string {
-	if strings.Contains(category, "·±Ìå&Ó¢ÎÄ") {
+	if strings.Contains(category, "·±Ìå&Ó¢ÎÄ") || strings.Contains(category, "繁体&英文") {
 		category = "cht&eng"
-	} else if strings.Contains(category, "¼òÌå&Ó¢ÎÄ") {
+	} else if strings.Contains(category, "¼òÌå&Ó¢ÎÄ") || strings.Contains(category, "简体&英文") {
 		category = "chs&eng"
-	} else if strings.Contains(category, "Ó¢ÎÄ") {
+	} else if strings.Contains(category, "Ó¢ÎÄ") || strings.Contains(category, "英文") {
 		category = "eng"
-	} else if strings.Contains(category, "¼òÌå") {
+	} else if strings.Contains(category, "¼òÌå") || strings.Contains(category, "简体") {
 		category = "chs"
-	} else if strings.Contains(category, "·±Ìå") {
+	} else if strings.Contains(category, "·±Ìå") || strings.Contains(category, "繁体&英文") {
 		category = "cht"
 	}
 
@@ -106,12 +107,19 @@ func getMovieSub(movieName string) {
 						category = temp[index+1:]
 						fmt.Println(category)
 						category = filterCategory(category)
+						category = strings.ToLower(category)
 						if strings.Contains(category, "cht") {
 							continue
 						}
 					}
 
-					subtitles.QuickDownload(f, fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category))
+					category = strings.ToLower(category)
+					subfile := fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category)
+					subtitles.QuickDownload(f, subfile)
+
+					if strings.Contains(category, "chs") {
+						native.ConvertEncodingToUTF8(subfile, "gb18030")
+					}
 
 					count++
 				}
@@ -146,12 +154,18 @@ func extractSubtitle(name, movieName string) {
 					category = temp[index+1:]
 					fmt.Println(category)
 					category = filterCategory(category)
+					category = strings.ToLower(category)
 					if strings.Contains(category, "cht") {
 						continue
 					}
 				}
+				category = strings.ToLower(category)
+				subfile := fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category)
+				subtitles.QuickDownload(f, subfile)
 
-				subtitles.QuickDownload(f, fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category))
+				if strings.Contains(category, "chs") {
+					native.ConvertEncodingToUTF8(subfile, "gb18030")
+				}
 
 				count++
 			}
