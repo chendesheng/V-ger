@@ -39,7 +39,7 @@ func Play(url string, w io.Writer, from, to int64) {
 	for {
 		select {
 		case db, ok := <-output:
-			fmt.Printf("write to client %d-%d\n", db.from, db.to)
+			// fmt.Printf("write to client %d-%d\n", db.from, db.to)
 			if !ok {
 				fmt.Println("play output finish")
 				return

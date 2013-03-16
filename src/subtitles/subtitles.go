@@ -15,6 +15,7 @@ var Client *http.Client
 type Subtitle struct {
 	URL         string
 	Description string
+	Source      string
 }
 
 func (s *Subtitle) String() string {
@@ -60,7 +61,7 @@ func concat(old1, old2 []Subtitle) []Subtitle {
 func SearchSubtitles(name string) []Subtitle {
 	// return yyetsSearchSubtitles(name)
 	// return shooterSearch(name)
-	return concat(shooterSearch(name), yyetsSearchSubtitles(name))
+	return concat(yyetsSearchSubtitles(name), shooterSearch(name))
 }
 func QuickDownload(url, path string) (bool, error) {
 	resp, err := Client.Get(url)

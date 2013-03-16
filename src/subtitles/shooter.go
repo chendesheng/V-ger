@@ -47,6 +47,7 @@ func getSub(n *html.Node) Subtitle {
 
 	log.Println(sub.URL)
 	log.Println(sub.Description)
+	sub.Source = "Shooter"
 
 	return sub
 }

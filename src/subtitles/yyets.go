@@ -24,6 +24,7 @@ func yyetsParseSub(n *html.Node) Subtitle {
 	sub.Description = regClean.ReplaceAllString(text, "")
 
 	log.Printf("%v\n", sub)
+	sub.Source = "YYets"
 	return sub
 }
 func yyetsSearchSubtitles(name string) []Subtitle {

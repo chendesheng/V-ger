@@ -32,7 +32,7 @@ func handleProgress(progress chan int64, t *Task, quit chan bool) {
 				saveProgress(t.Name, speed, total, elapsedTime, 0)
 				return
 			}
-			fmt.Println("progress ", total)
+			// fmt.Println("progress ", total)
 			total += length
 			part += length
 

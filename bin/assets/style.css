@@ -445,3 +445,16 @@ h3 {
 .task-infoes .action-limit {
 	font-size: 0.7em;
 }
+.icon {
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+}
+.YYets {
+	background: url('http://www.yyets.com/favicon.ico');
+	vertical-align: middle;
+}
+.Shooter {
+	background: url('http://www.shooter.cn/favicon.ico');
+	vertical-align: middle;
+}

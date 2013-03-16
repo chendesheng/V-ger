@@ -16,7 +16,7 @@ func readJson(path string, object interface{}) {
 		log.Fatal(err)
 	}
 
-	log.Printf("read json:%s\n%s\n", path, string(data))
+	// log.Printf("read json:%s\n%s\n", path, string(data))
 
 	json.Unmarshal(data, object)
 }

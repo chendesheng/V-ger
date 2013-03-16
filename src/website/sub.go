@@ -130,6 +130,8 @@ func getMovieSub(movieName string) {
 }
 
 func extractSubtitle(name, movieName string) {
+	download.GetFilePath(name)
+
 	if strings.HasSuffix(name, ".rar") || strings.HasSuffix(name, ".zip") {
 		fileurls := b1.Extract(download.GetFilePath(name))
 		count := 0

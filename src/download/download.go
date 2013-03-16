@@ -54,6 +54,10 @@ func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control
 		to = size
 	}
 	r := time.Duration(0)
+
+	//use small blocksize after start,
+	//change to a larger blocksize after 10 seconds
+	changeBlockSize := time.Tick(time.Second * 30)
 	for {
 		b := time.Now()
 		select {
@@ -63,7 +67,7 @@ func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(60 * 1024)
+				blockSize = int64(300 * 1024)
 			}
 		case input <- block{from, to}:
 			if to == size {
@@ -89,6 +93,8 @@ func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control
 					}
 				}
 			}
+		case <-changeBlockSize:
+			blockSize = 300 * 1024
 		case <-quit:
 			close(input)
 			fmt.Println("input quit")
@@ -159,7 +165,7 @@ func downloadRoutine(url string, input <-chan block, output chan<- *dataBlock, q
 					if err != nil {
 						break
 					}
-					fmt.Printf("write downloadBlock %v\n", b)
+					// fmt.Printf("write downloadBlock %v\n", b)
 					select {
 					case output <- &dataBlock{from: b.from, to: b.to, data: data}:
 						break tryDownloadBlock
@@ -267,7 +273,7 @@ func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock
 				fmt.Println("currentDownload quit")
 				return
 			}
-			fmt.Println("write to downloadRoutine")
+			// fmt.Println("write to downloadRoutine")
 			// chan1 <- b
 		case <-quit:
 			fmt.Println("currentDownload quit2")

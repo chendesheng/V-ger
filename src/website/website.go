@@ -209,7 +209,7 @@ type command struct {
 }
 
 func assetsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.URL.Path)
+	// fmt.Println(r.URL.Path)
 	path := r.URL.Path[1:]
 	if _, err := os.OpenFile(path, os.O_RDONLY, 0666); os.IsNotExist(err) {
 		http.NotFound(w, r)
@@ -228,7 +228,8 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
 	input, _ := ioutil.ReadAll(r.Body)
 	url := string(input)
-	name := getFileName(url)
+	// name := getFileName(url)
+	url, name, _ := download.GetDownloadInfo(url)
 	if ok, err := subtitles.QuickDownload(url, path.Join(download.BaseDir, name)); !ok {
 		w.Write([]byte(err.Error()))
 		return
