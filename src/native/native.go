@@ -25,6 +25,7 @@ func SendNotification(title, infoText string) error {
 }
 
 func MoveFileToTrash(dir, name string) error {
+	print("trash file ", name)
 	wd, _ := os.Getwd()
 	vgerHelper := path.Join(wd, "vgerhelper.app")
 	cmd := exec.Command("open", vgerHelper, "--args", "trash", dir, name)

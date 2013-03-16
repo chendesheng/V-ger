@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"native"
-	"net/http/httputil"
+	// "net/http/httputil"
 	"path"
 	// "html/template"
 	"io/ioutil"
@@ -112,7 +112,6 @@ func openHandler(w http.ResponseWriter, r *http.Request) {
 	cmd := exec.Command("open", path.Join(download.BaseDir, name))
 	cmd.Start()
 
-	// native.MoveFileToTrash(path.Join(download.BaseDir, "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
 	w.Write([]byte(``))
 }
 
@@ -120,6 +119,7 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
 	fmt.Printf("trash \"%s\".\n", name)
 
+	native.MoveFileToTrash(download.BaseDir, name)
 	native.MoveFileToTrash(path.Join(download.BaseDir, "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
 	w.Write([]byte(``))
 }
@@ -151,7 +151,27 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 	}
 }
+func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
+	// res, _ := httputil.DumpRequest(r, true)
+	// fmt.Println(string(res))
+	fmt.Println("thunder torrent handler")
+	f, _, err := r.FormFile("torrent")
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+	input, _ := ioutil.ReadAll(f)
 
+	thunder.Login(config["thunder-user"], config["thunder-password"])
+
+	files, err := thunder.NewTaskWithTorrent(input)
+	if err == nil {
+		text, _ := json.Marshal(files)
+		w.Write([]byte(text))
+	} else {
+		w.Write([]byte(err.Error()))
+	}
+}
 func stopHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("stop download \"%s\".\n", name)
@@ -176,10 +196,8 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 }
 func progressHandler(w http.ResponseWriter, r *http.Request) {
 	tasks := download.GetTasks()
-	// download.SortTasksByCreateTime(tasks)
 	text, _ := json.Marshal(tasks)
 	w.Write([]byte(text))
-	// w.Write([]byte(fmt.Sprintf("<h3>Go routine numbers: %d</h3>", runtime.NumGoroutine())))
 }
 
 type command struct {
@@ -233,17 +251,10 @@ func appGCHandler(w http.ResponseWriter, r *http.Request) {
 	runtime.GC()
 }
 
-func testVideo(w http.ResponseWriter, r *http.Request) {
-	bytes, _ := httputil.DumpRequest(r, true)
-	fmt.Println(string(bytes))
-	w.Header().Add("Content-Disposition", `filename="testVideo.mp4"`)
-	http.ServeFile(w, r, "/Volumes/Data/Downloads/Video/Game Change 2012 720p HDTv x264 AAC - KiNGDOM.mp4")
-}
-
 func playHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("open \"%s\".\n", name)
-	cmd := exec.Command("open", "/Volumes/Data/Video/VLC.app", "--args", "http://"+config["server"]+"/video/"+name)
+	cmd := exec.Command("open", config["video-player"], "--args", "http://"+config["server"]+"/video/"+name)
 	cmd.Start()
 }
 
@@ -390,6 +401,7 @@ func Run() {
 	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
 
 	http.HandleFunc("/thunder/new", thunderNewHandler)
+	http.HandleFunc("/thunder/torrent", thunderTorrentHandler)
 
 	http.HandleFunc("/subtitles/search/", subtitlesSearchHandler)
 	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
@@ -397,8 +409,6 @@ func Run() {
 	http.HandleFunc("/app/status", appStatusHandler)
 	http.HandleFunc("/app/shutdown", appShutdownHandler)
 	http.HandleFunc("/app/gc", appGCHandler)
-
-	http.HandleFunc("/testVideo", testVideo)
 
 	//resume downloading tasks
 	tasks := download.GetTasks()

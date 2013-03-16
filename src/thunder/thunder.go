@@ -35,63 +35,79 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		text, err := uploadTorrentFile(torrent)
+		err = uploadTorrent(torrent, userId)
 		if err != nil {
 			return nil, err
 		}
 
-		result, err := parseUploadTorrentResutl(text)
-		if err != nil {
-			return nil, err
-		}
-		ret_value := result["ret_value"].(float64)
-		if ret_value == 0 {
-			return nil, fmt.Errorf("Upload torrent file: Can't find files.")
-		}
-
-		btsize := int64(result["btsize"].(float64))
-		infoid := result["infoid"].(string)
-		ftitle := result["ftitle"].(string)
-
-		filelist := result["filelist"].([]interface{})
-		selectionList := make([]string, 0)
-		sizelist := make([]string, 0)
-		for _, f := range filelist {
-			item := f.(map[string]interface{})
-			if item["valid"].(float64) == 1 {
-				selectionList = append(selectionList, item["findex"].(string))
-				sizelist = append(sizelist, item["subsize"].(string))
-			}
-		}
-
-		findex := strings.Join(selectionList, "_")
-		size := strings.Join(sizelist, "_")
-
-		sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
-			&url.Values{
-				"callback": {"jsonp"},
-				"t":        {time.Now().String()},
-			},
-			&url.Values{
-				"uid":        {userId},
-				"cid":        {infoid},
-				"tsize":      {fmt.Sprint(btsize)},
-				"goldbean":   {"0"},
-				"silverbean": {"0"},
-				"btname":     {ftitle},
-				"size":       {size},
-				"findex":     {findex},
-				"o_page":     {"task"},
-				"o_taskid":   {"0"},
-				"class_id":   {"0"},
-			})
 	} else {
 		if err := taskCommit(userId, taskURL, taskType); err != nil {
 			return nil, err
 		}
 	}
 	return getNewlyCreateTask(userId)
+}
+func NewTaskWithTorrent(torrent []byte) ([]ThunderTask, error) {
+	userId := getCookieValue("userid")
+
+	err := uploadTorrent(torrent, userId)
+	if err != nil {
+		return nil, err
+	}
+	return getNewlyCreateTask(userId)
+}
+func uploadTorrent(torrent []byte, userId string) error {
+	text, err := uploadTorrentFile(torrent)
+	if err != nil {
+		return err
+	}
+
+	result, err := parseUploadTorrentResutl(text)
+	if err != nil {
+		return err
+	}
+	ret_value := result["ret_value"].(float64)
+	if ret_value == 0 {
+		return fmt.Errorf("Upload torrent file: Can't find files.")
+	}
+
+	btsize := int64(result["btsize"].(float64))
+	infoid := result["infoid"].(string)
+	ftitle := result["ftitle"].(string)
+
+	filelist := result["filelist"].([]interface{})
+	selectionList := make([]string, 0)
+	sizelist := make([]string, 0)
+	for _, f := range filelist {
+		item := f.(map[string]interface{})
+		if item["valid"].(float64) == 1 {
+			selectionList = append(selectionList, item["findex"].(string))
+			sizelist = append(sizelist, item["subsize"].(string))
+		}
+	}
+
+	findex := strings.Join(selectionList, "_")
+	size := strings.Join(sizelist, "_")
+
+	sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
+		&url.Values{
+			"callback": {"jsonp"},
+			"t":        {time.Now().String()},
+		},
+		&url.Values{
+			"uid":        {userId},
+			"cid":        {infoid},
+			"tsize":      {fmt.Sprint(btsize)},
+			"goldbean":   {"0"},
+			"silverbean": {"0"},
+			"btname":     {ftitle},
+			"size":       {size},
+			"findex":     {findex},
+			"o_page":     {"task"},
+			"o_taskid":   {"0"},
+			"class_id":   {"0"},
+		})
+	return nil
 }
 func taskCommit(userId string, taskURL string, taskType int) error {
 	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_check",

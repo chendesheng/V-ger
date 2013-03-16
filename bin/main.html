@@ -1,8 +1,9 @@
-<html ng-app>
+<html ng-app="vger">
 <head>
 	<title>V'ger</title>
 	<link href="/assets/style.css" rel="stylesheet" type="text/css">
 	<script src="/assets/angular.min.js"></script>
+	<script type="text/javascript" src="/assets/angular-ui.min.js"></script>
 	<script type="text/javascript" src="/assets/main.js"></script>
 	<script type="text/javascript" src="/assets/date.js"></script>
 </head>
@@ -64,7 +65,7 @@
 	       </li>
 		</ul>
 		<form ng-submit="go()">
-			<div id="start-download">
+			<div id="start-download" ui-event="{drop:'upload_torrent($event)'}" ondragover="return;">
 				<textarea autofocus ng-model="new_url" type="text" id="new-url" placeHolder="Input anything you want"></textarea>
 				<input id="new-task" type="submit" ng-hide="waiting" value="GO"/>
 				<span ng-show="waiting" id="waiting"></span>
