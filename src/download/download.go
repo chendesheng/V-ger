@@ -15,24 +15,18 @@ import (
 
 type block struct {
 	from, to int64
-}
-type dataBlock struct {
-	from, to int64
 	data     []byte
-
-	next *dataBlock
 }
-type dataBlockSlice []*dataBlock
 
-func (p dataBlockSlice) Len() int           { return len(p) }
-func (p dataBlockSlice) Less(i, j int) bool { return p[i].from > p[j].from }
-func (p dataBlockSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func newDataBlock(from, to int64) *block {
+	return &block{from, to, make([]byte, 0)}
+}
 
 func doDownload(url string, path string, from, to int64,
 	maxSpeed int64, control chan int, quit chan bool) chan int64 {
 
-	input := make(chan block)
-	output := make(chan *dataBlock)
+	input := make(chan *block)
+	output := make(chan *block)
 
 	go generateBlock(input, from, to, maxSpeed, control, quit)
 
@@ -43,7 +37,7 @@ func doDownload(url string, path string, from, to int64,
 
 	return progress
 }
-func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
+func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
 	blockSize := int64(60 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
@@ -55,8 +49,8 @@ func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control
 	}
 	r := time.Duration(0)
 
-	//use small blocksize after start,
-	//change to a larger blocksize after 10 seconds
+	//small blocksize after start,
+	//change to a larger blocksize after 30 seconds
 	changeBlockSize := time.Tick(time.Second * 30)
 	for {
 		b := time.Now()
@@ -69,7 +63,7 @@ func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control
 			} else {
 				blockSize = int64(300 * 1024)
 			}
-		case input <- block{from, to}:
+		case input <- newDataBlock(from, to):
 			if to == size {
 				fmt.Println("return input")
 				close(input)
@@ -102,7 +96,7 @@ func generateBlock(input chan<- block, from, size int64, maxSpeed int64, control
 		}
 	}
 }
-func writeOutput(path string, from int64, output <-chan *dataBlock, progress chan int64, quit chan bool) {
+func writeOutput(path string, from int64, output <-chan *block, progress chan int64, quit chan bool) {
 	f := openOrCreateFileRW(path, from)
 	defer f.Close()
 
@@ -141,7 +135,7 @@ func writeOutput(path string, from int64, output <-chan *dataBlock, progress cha
 	fmt.Println("writeOutput end")
 }
 
-func downloadRoutine(url string, input <-chan block, output chan<- *dataBlock, quit chan bool) {
+func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -166,9 +160,10 @@ func downloadRoutine(url string, input <-chan block, output chan<- *dataBlock, q
 					if err != nil {
 						break
 					}
+					b.data = data
 					// fmt.Printf("write downloadBlock %v\n", b)
 					select {
-					case output <- &dataBlock{from: b.from, to: b.to, data: data}:
+					case output <- b:
 						break tryDownloadBlock
 					case <-quit:
 						return
@@ -185,15 +180,15 @@ func downloadRoutine(url string, input <-chan block, output chan<- *dataBlock, q
 		}
 	}
 }
-func createDownloadRoutine(url string, output chan<- *dataBlock, quit chan bool) chan<- block {
-	input := make(chan block)
-	go func(url string, input <-chan block, output chan<- *dataBlock, quit chan bool) {
+func createDownloadRoutine(url string, output chan<- *block, quit chan bool) chan<- *block {
+	input := make(chan *block)
+	go func(url string, input <-chan *block, output chan<- *block, quit chan bool) {
 		downloadRoutine(url, input, output, quit)
 	}(url, input, output, quit)
 	return input
 }
-func sortOutput(input <-chan *dataBlock, output chan<- *dataBlock, quit chan bool, from int64, to int64) {
-	dbmap := make(map[int64]*dataBlock)
+func sortOutput(input <-chan *block, output chan<- *block, quit chan bool, from int64, to int64) {
+	dbmap := make(map[int64]*block)
 	var nextOutputFrom = from
 	for {
 		select {
@@ -228,8 +223,8 @@ func sortOutput(input <-chan *dataBlock, output chan<- *dataBlock, quit chan boo
 		}
 	}
 }
-func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock, quit chan bool, from, to int64) {
-	disorderOutput := make(chan *dataBlock)
+func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
+	disorderOutput := make(chan *block)
 	chan1 := createDownloadRoutine(url, disorderOutput, quit)
 	chan2 := createDownloadRoutine(url, disorderOutput, quit)
 	chan3 := createDownloadRoutine(url, disorderOutput, quit)
@@ -237,7 +232,7 @@ func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock
 	chan5 := createDownloadRoutine(url, disorderOutput, quit)
 	chan6 := createDownloadRoutine(url, disorderOutput, quit)
 
-	go func(input <-chan *dataBlock, output chan<- *dataBlock, quit chan bool, from, to int64) {
+	go func(input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
 		sortOutput(input, output, quit, from, to)
 	}(disorderOutput, output, quit, from, to)
 
@@ -274,7 +269,7 @@ func concurrentDownload(url string, input <-chan block, output chan<- *dataBlock
 	}
 
 }
-func downloadBlock(url string, b block, quit chan bool) (chan []byte, io.Closer, error) {
+func downloadBlock(url string, b *block, quit chan bool) (chan []byte, io.Closer, error) {
 	from, to := b.from, b.to
 	req := createDownloadRequest(url, from, to-1)
 
