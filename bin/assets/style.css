@@ -458,3 +458,6 @@ h3 {
 	background: url('http://www.shooter.cn/favicon.ico');
 	vertical-align: middle;
 }
+.alert .content {
+	padding: 0 30px 20px 30px;
+}

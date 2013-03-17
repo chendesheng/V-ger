@@ -111,6 +111,15 @@
 				</ul>
 			</div>
 		</div>
+
+
+		<div id="subtitles-overlay" class="overlay" ng-repeat="a in alerts" ng-show="alerts.length>0">
+			<div class="popup alert">
+				<button class="close" ng-click="pop_alert()"></button>
+				<h3>{{a.title}}</h3>
+				<div class="content">{{a.content}}</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

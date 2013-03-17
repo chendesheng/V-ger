@@ -54,30 +54,30 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 
 		$scope.send_open = function (task) {
 			$http.get('/open/' + task.Name).success(function (resp) {
-				resp && alert(resp);
+				resp && $scope.push_alert(resp);
 			});
 		}
 		$scope.send_resume = function (task) {
 			$http.get('/resume/' + task.Name).success(function (resp) {
-				resp && alert(resp);
+				resp && $scope.push_alert(resp);
 				get_process();
 			});
 		}
 		$scope.send_stop = function (task) {
 			$http.get('/stop/' + task.Name).success(function (resp) {
-				resp && alert(resp);
+				resp && $scope.push_alert(resp);
 				get_process();
 			});
 		}
 		$scope.send_limit = function (task) {
 			$http.post('/limit/' + task.Name, task.LimitSpeed).success(function (resp) {
-				resp && alert(resp);
+				resp && $scope.push_alert(resp);
 				get_process();
 			});
 		};
 		$scope.send_play = function (task) {
 			$http.get('/play/' + task.Name).success(function (resp) {
-				resp && alert(resp);
+				resp && $scope.push_alert(resp);
 				get_process();
 			})
 		};
@@ -89,13 +89,13 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 				$http.post('/new', $scope.new_url).success(function(resp) {
 					$scope.new_url = '';
 					$scope.waiting = false;
-					resp && alert(resp);
+					resp && $scope.push_alert(resp);
 				}).error(function(){$scope.waiting = false;});
 			} else {
 				$http.post('/thunder/new', $scope.new_url).success(function(data) {
 					$scope.waiting = false;
 					if (typeof data == 'string') {
-						alert(data);
+						$scope.push_alert(data);
 						return;
 					}
 					for (var i = data.length - 1; i >= 0; i--) {
@@ -116,7 +116,7 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 			$http.post('/new/' + file.Name, file.DownloadURL).success(
 			function(resp) {
 				file.loading = false;
-				if (resp) alert(resp);
+				if (resp) $scope.push_alert(resp);
 				else {
 					$scope.bt_files = [];
 					$scope.new_url = '';
@@ -132,7 +132,7 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 		$scope.move_to_trash = function (task) {
 			$http.get('/trash/' + task.Name).success(
 			function (resp) {
-				resp && alert(resp)
+				resp && $scope.push_alert(resp)
 				get_process();
 			});
 		};
@@ -203,9 +203,21 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 		$scope.upload_torrent = function ($event) {
 			$event.preventDefault();
 			
-			if ($event.dataTransfer.files.length == 0
-				|| !/[.]torrent$/.test($event.dataTransfer.files[0].name))
+			if ($event.dataTransfer.files.length == 0) {
+				var items = $event.dataTransfer.items;
+				if (items.length > 0 && items[0].type=='text/plain') {
+					items[0].getAsString(function(str){
+						$scope.$apply(function() {
+							$scope.new_url = str;
+						})
+					});
+				}
 				return;
+			}
+
+			if (/[.]torrent$/.test($event.dataTransfer.files[0].name)) {
+				return;
+			}
 
 			var xhr = new XMLHttpRequest;
 			var fd = new FormData();
@@ -226,7 +238,7 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 				    	var responseText = this.responseText;
 				    	$scope.$apply(function () {
 				    		if (responseText[0] != '[') {
-				    			responseText && alert(responseText);
+				    			responseText && $scope.push_alert(responseText);
 					    	} else {
 						    	$scope.bt_files = JSON.parse(responseText);
 						    }
@@ -234,6 +246,15 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 				    }
 				}
 			}
+		}
+
+		$scope.alerts = [];
+		$scope.push_alert = function(content, title) {
+			title = title || 'Error';
+			$scope.alerts.push({'title': title, 'content': content});
+		}
+		$scope.pop_alert = function() {
+			$scope.alerts.pop();
 		}
 	}
 );
