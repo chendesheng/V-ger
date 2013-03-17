@@ -159,6 +159,9 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 				chanRes, closer, err := downloadBlock(url, b, quit)
 				select {
 				case data := <-chanRes:
+					if int64(len(data)) != (b.to - b.from) {
+						break
+					}
 					if err != nil {
 						break
 					}
