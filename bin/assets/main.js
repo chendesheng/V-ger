@@ -205,7 +205,7 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 			
 			if ($event.dataTransfer.files.length == 0) {
 				var items = $event.dataTransfer.items;
-				if (items.length > 0 && items[0].type=='text/plain') {
+				if (items && items.length > 0 && items[0].type=='text/plain') {
 					items[0].getAsString(function(str){
 						$scope.$apply(function() {
 							$scope.new_url = str;
