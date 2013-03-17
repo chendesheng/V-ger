@@ -120,6 +120,7 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("trash \"%s\".\n", name)
 
 	native.MoveFileToTrash(download.BaseDir, name)
+	time.Sleep(time.Second)
 	native.MoveFileToTrash(path.Join(download.BaseDir, "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
 	w.Write([]byte(``))
 }
@@ -131,7 +132,13 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(download.ResumeDownload(name)))
 }
 func newTaskHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[5:])
+	var name string
+	if len(r.URL.String()) > 4 {
+		name, _ = url.QueryUnescape(r.URL.String()[5:])
+	} else {
+		name = ""
+	}
+	fmt.Println("newTaskhandler", name)
 	input, _ := ioutil.ReadAll(r.Body)
 	url := string(input)
 	fmt.Printf("add download \"%s\".\n", url)
@@ -397,6 +404,7 @@ func Run() {
 	http.HandleFunc("/stop/", stopHandler)
 	http.HandleFunc("/progress", progressHandler)
 	http.HandleFunc("/new/", newTaskHandler)
+	http.HandleFunc("/new", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
 	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
