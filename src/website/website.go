@@ -245,7 +245,7 @@ func appShutdownHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("bye"))
 	go func() {
 		time.Sleep(time.Second)
-		os.Exit(1) //output all goroutines, for detect goroutine leak
+		os.Exit(1)
 	}()
 }
 func appGCHandler(w http.ResponseWriter, r *http.Request) {

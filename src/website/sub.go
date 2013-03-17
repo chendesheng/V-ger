@@ -4,7 +4,7 @@ import (
 	"b1"
 	"download"
 	"fmt"
-	"native"
+	// "native"
 	"net/url"
 	"os"
 	"path"
@@ -117,9 +117,9 @@ func getMovieSub(movieName string) {
 					subfile := fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category)
 					subtitles.QuickDownload(f, subfile)
 
-					if strings.Contains(category, "chs") {
-						native.ConvertEncodingToUTF8(subfile, "gb18030")
-					}
+					// if strings.Contains(category, "chs") {
+					// 	native.ConvertEncodingToUTF8(subfile, "gb18030")
+					// }
 
 					count++
 				}
@@ -163,9 +163,9 @@ func extractSubtitle(name, movieName string) {
 				subfile := fmt.Sprintf("%s%c%s.%s.srt", download.BaseDir, os.PathSeparator, movieName, category)
 				subtitles.QuickDownload(f, subfile)
 
-				if strings.Contains(category, "chs") {
-					native.ConvertEncodingToUTF8(subfile, "gb18030")
-				}
+				// if strings.Contains(category, "chs") {
+				// 	native.ConvertEncodingToUTF8(subfile, "gb18030")
+				// }
 
 				count++
 			}

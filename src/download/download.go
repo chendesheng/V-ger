@@ -88,7 +88,9 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 				}
 			}
 		case <-changeBlockSize:
-			blockSize = 300 * 1024
+			if maxSpeed == 0 {
+				blockSize = 300 * 1024
+			}
 		case <-quit:
 			close(input)
 			fmt.Println("input quit")
