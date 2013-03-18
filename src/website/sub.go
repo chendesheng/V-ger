@@ -37,8 +37,14 @@ func filterMovieName1(name string) string {
 }
 func getSubList(movieName string, filters []filter) []subtitles.Subtitle {
 	subs := make([]subtitles.Subtitle, 0)
+	searched := make(map[string]bool)
 	for _, f := range filters {
 		name := f(movieName)
+		if _, ok := searched[name]; ok {
+			continue
+		} else {
+			searched[name] = true
+		}
 		findedSubs := subtitles.SearchSubtitles(name)
 
 		for i := 0; i < len(findedSubs); i++ {

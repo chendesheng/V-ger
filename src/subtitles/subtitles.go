@@ -61,7 +61,16 @@ func concat(old1, old2 []Subtitle) []Subtitle {
 func SearchSubtitles(name string) []Subtitle {
 	// return yyetsSearchSubtitles(name)
 	// return shooterSearch(name)
-	return concat(yyetsSearchSubtitles(name), shooterSearch(name))
+	yyetsSubs := make(chan []Subtitle)
+	go func() {
+		yyetsSubs <- yyetsSearchSubtitles(name)
+	}()
+	shooterSubs := make(chan []Subtitle)
+	go func() {
+		shooterSubs <- shooterSearch(name)
+	}()
+
+	return concat(<-yyetsSubs, <-shooterSubs)
 }
 func QuickDownload(url, path string) (bool, error) {
 	resp, err := Client.Get(url)
