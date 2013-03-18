@@ -85,7 +85,8 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 		$scope.waiting = false;
 		function new_task() {
 			$scope.waiting = true;
-			if ($scope.new_url.indexOf('lixian.vip.xunlei.com') != -1) {
+			if ($scope.new_url.indexOf('lixian.vip.xunlei.com') != -1 ||
+				$scope.new_url.indexOf('youtube.com') != -1) {
 				$http.post('/new', $scope.new_url).success(function(resp) {
 					$scope.new_url = '';
 					$scope.waiting = false;
@@ -101,8 +102,13 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 					for (var i = data.length - 1; i >= 0; i--) {
 						var item = data[i];
 						item.loading = false;
-					};
-					$scope.bt_files = data;
+					}
+					if (data.length == 1 && data[0].Percent == 100) {
+						$scope.waiting = true;
+						$scope.download_bt_files(data[0]);
+					} else {
+						$scope.bt_files = data;
+					}
 				});
 			}
 		};
@@ -116,11 +122,11 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 			$http.post('/new/' + file.Name, file.DownloadURL).success(
 			function(resp) {
 				file.loading = false;
+				$scope.waiting = false;
 				if (resp) $scope.push_alert(resp);
 				else {
 					$scope.bt_files = [];
 					$scope.new_url = '';
-					$scope.waiting = false;
 				}
 			}).error(function() {
 				file.loading = false;
