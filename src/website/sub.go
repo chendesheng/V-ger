@@ -57,7 +57,7 @@ func filterCategory(category string) string {
 		category = "eng"
 	} else if strings.Contains(category, "¼òÌå") || strings.Contains(category, "简体") {
 		category = "chs"
-	} else if strings.Contains(category, "·±Ìå") || strings.Contains(category, "繁体&英文") {
+	} else if strings.Contains(category, "·±Ìå") || strings.Contains(category, "繁体") {
 		category = "cht"
 	}
 
