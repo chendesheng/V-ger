@@ -22,20 +22,17 @@ func (s *Subtitle) String() string {
 	return s.Description
 }
 
-func sendGet(url string, params *url.Values) string {
+func sendGet(url string, params *url.Values) (string, error) {
 	if params != nil {
 		url = url + "?" + params.Encode()
 	}
 	resp, err := Client.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	dumpBytes, _ := httputil.DumpResponse(resp, true)
-	log.Println(string(dumpBytes))
-
 	text := readBody(resp)
-	return text
+	return text, nil
 }
 func readBody(resp *http.Response) string {
 	bytes, err := ioutil.ReadAll(resp.Body)

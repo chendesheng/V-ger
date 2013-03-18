@@ -37,21 +37,27 @@ func getSubDesc(n *html.Node) string {
 
 	return desc
 }
-func getSub(n *html.Node) Subtitle {
+func getSub(n *html.Node) (Subtitle, error) {
 	sub := Subtitle{}
 
 	a := getClass1(getClass1(getClass1(n, "sublist_box_title"), "sublist_box_title_l"), "introtitle")
 
-	sub.URL = getDownloadUrl(getAttr(a, "href"))
+	var err error
+	sub.URL, err = getDownloadUrl(getAttr(a, "href"))
+	if err != nil {
+		return sub, err
+	}
 	sub.Description = fmt.Sprintf("%s\n%s", getText(a), getSubDesc(getId(n, "sublist_ul")))
 
 	log.Println(sub.URL)
 	log.Println(sub.Description)
 	sub.Source = "Shooter"
 
-	return sub
+	return sub, nil
 }
 func shooterSearch(name string) []Subtitle {
+	loadmain = ""
+
 	resp, err := Client.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
 	if err != nil {
 		log.Fatal(err)
@@ -68,7 +74,9 @@ func shooterSearch(name string) []Subtitle {
 		if n.Data == "div" {
 			if hasId(n, "resultsdiv") {
 				for _, c := range getClass(n, "subitem") {
-					subs = append(subs, getSub(c))
+					if s, err := getSub(c); err == nil {
+						subs = append(subs, s)
+					}
 				}
 				return
 			}
@@ -198,25 +206,37 @@ func decryptUrl(encryptedUrl string) string {
 	}
 	return a
 }
-func getDownloadUrl(webPageURL string) string {
+
+var loadmain string
+
+func getDownloadUrl(webPageURL string) (string, error) {
 	webPageURL = "http://www.shooter.cn" + webPageURL
 
 	subId := getSubId(webPageURL)
 	log.Println(subId)
 
-	pageHtml := sendGet(webPageURL, nil)
+	pageHtml, err := sendGet(webPageURL, nil)
+	if err != nil {
+		return "", err
+	}
 	fileId := getFileId(pageHtml)
 	log.Println(fileId)
 
-	loadmain := sendGet("http://www.shooter.cn/a/loadmain.js", nil)
+	if loadmain == "" {
+		var err error
+		loadmain, err = sendGet("http://www.shooter.cn/a/loadmain.js", nil)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	hash := getHash(loadmain)
-	log.Println(hash)
 
-	log.Println(fmt.Sprintf("http://www.shooter.cn/files/file3.php?hash=%s&fileid=%s", hash, fileId))
-	encryptedUrl := sendGet(fmt.Sprintf("http://www.shooter.cn/files/file3.php?hash=%s&fileid=%s", hash, fileId), nil)
-	log.Println(encryptedUrl)
+	encryptedUrl, err := sendGet(fmt.Sprintf("http://www.shooter.cn/files/file3.php?hash=%s&fileid=%s", hash, fileId), nil)
+	if err != nil {
+		return "", err
+	}
 	url := decryptUrl(encryptedUrl)
-	log.Println(url)
 
-	return "http://file0.shooter.cn" + url
+	return "http://file0.shooter.cn" + url, nil
 }
