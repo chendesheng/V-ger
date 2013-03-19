@@ -163,9 +163,9 @@ func btTaskCommit(userId string, taskURL string) error {
 
 	cid, tsize, btname, size, findex := parseUrlQueryResult(text)
 
-	if cid == "" {
-		return fmt.Errorf("Commit bt task error, try again later.")
-	}
+	// if cid == "" {
+	// 	return fmt.Errorf("Commit bt task error, try again later.")
+	// }
 
 	sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
 		&url.Values{
