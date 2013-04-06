@@ -129,7 +129,7 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[8:])
 	fmt.Printf("resume download \"%s\".\n", name)
 
-	w.Write([]byte(download.ResumeDownload(name)))
+	w.Write([]byte(download.TryResumeDownload(name)))
 }
 func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var name string
@@ -201,6 +201,14 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	download.SetAutoshutdown(name, autoshutdown == "on")
 }
+
+// func queueHandler(w http.ResponseWriter, r *http.Request) {
+// 	name, _ := url.QueryUnescape(r.URL.String()[7:])
+
+// 	if err := download.QueueDownload(name); err != nil {
+// 		w.Write([]byte(err.Error()))
+// 	}
+// }
 func progressHandler(w http.ResponseWriter, r *http.Request) {
 	tasks := download.GetTasks()
 	text, _ := json.Marshal(tasks)
@@ -408,6 +416,7 @@ func Run() {
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
 	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
+	// http.HandleFunc("/queue/", queueHandler)
 
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 	http.HandleFunc("/thunder/torrent", thunderTorrentHandler)
@@ -421,11 +430,15 @@ func Run() {
 
 	//resume downloading tasks
 	tasks := download.GetTasks()
-	for i := 0; i < len(tasks); i++ {
-		t := tasks[i]
+	hasDownloading := false
+	for _, t := range tasks {
 		if t.Status == "Downloading" {
+			hasDownloading = true
 			download.ResumeDownload(t.Name)
 		}
+	}
+	if !hasDownloading {
+		download.ResumeNextQueuedTask()
 	}
 
 	server := config["server"]

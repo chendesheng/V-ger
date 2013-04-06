@@ -12,5 +12,7 @@ bin/vger.log
 *.app
 gomacdraw.framework
 src/github.com
-src/.DS_Store
+.DS_Store
 test
+oj
+vger-player

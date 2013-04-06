@@ -117,9 +117,9 @@ func taskCommit(userId string, taskURL string, taskType int) error {
 		})
 
 	cid, gcid, size, t := parseTaskCheck(text)
-	if cid == "" {
-		return fmt.Errorf("Commit task error, try again later")
-	}
+	// if cid == "" {
+	// 	return fmt.Errorf("Commit task error, try again later")
+	// }
 
 	sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_commit",
 		&url.Values{

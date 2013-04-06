@@ -20,8 +20,9 @@
 	       			<div class="left-actions">
 		       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped'"></button>
 		       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
+		       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
 		       		</div>
-	       			<div><span class="name"><a ng-click="send_open(task)">{{task.Name}}</a></span></div>
+	       			<div><span class="name"><span ng-show="task.Status=='Queued'">[Waiting] </span><a ng-click="send_open(task)">{{task.Name}}</a></span></div>
 
 			       	<div class="progress">
 			       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
@@ -113,7 +114,7 @@
 		</div>
 
 
-		<div id="subtitles-overlay" class="overlay" ng-repeat="a in alerts" ng-show="alerts.length>0">
+		<div class="overlay" ng-repeat="a in alerts" ng-show="alerts.length>0">
 			<div class="popup alert">
 				<button class="close" ng-click="pop_alert()"></button>
 				<h3>{{a.title}}</h3>

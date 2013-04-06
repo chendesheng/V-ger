@@ -337,6 +337,10 @@ h3 {
 	top:35px;
 	right:55px;
 }
+.queued {
+	background: url('/assets/queued.png') no-repeat;
+	vertical-align: middle;
+}
 .overlay h3 {
 	padding-right: 40px;
 }

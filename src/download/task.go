@@ -10,6 +10,7 @@ import (
 	"native"
 	"net/http"
 	"os"
+	// "sort"
 	// "os/exec"
 	"path"
 	// "sort"
@@ -47,21 +48,12 @@ type Task struct {
 	Autoshutdown bool
 }
 
-// func BeginDownload(url string, name string, maxSpeed int64) string {
-// 	if DownloadClient == nil {
-// 		DownloadClient = http.DefaultClient
-// 	}
+// type taskSlice []*Task
 
-// 	t := getOrNewTask(url, name)
+// func (t taskSlice) Len() int           { return len(t) }
+// func (t taskSlice) Less(i, j int) bool { return t[i].StartTime < t[j].StartTime }
+// func (t taskSlice) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
 
-// 	control := make(chan int)
-// 	progress := doDownload(t, t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, maxSpeed, control, quit)
-// 	handleProgress(progress, t)
-
-// 	removeTask(t.Name)
-// 	fmt.Printf("\nIt's done!\n\n")
-// 	return t.Name
-// }
 func download(t *Task, control chan int, quit chan bool) {
 	t.Status = "Downloading"
 	saveTask(t)
@@ -78,18 +70,19 @@ func download(t *Task, control chan int, quit chan bool) {
 		fmt.Printf("\nIt's done!\n\n")
 
 		t.Status = "Finished"
+		saveTask(t)
 
 		if t.Autoshutdown {
 			go native.Shutdown(t.Name)
 		} else {
 			go native.SendNotification("V'ger Task Finished", t.Name)
+			ResumeNextQueuedTask()
 		}
-
 	} else {
 		fmt.Println(t.DownloadedSize, " ", t.Size)
 		t.Status = "Stopped"
+		saveTask(t)
 	}
-	saveTask(t)
 
 	go func() {
 		timeout := time.After(time.Second * 1)
@@ -106,6 +99,11 @@ func DownloadAsync(url string, name string) (string, chan int, chan bool) {
 	control := make(chan int)
 	quit := make(chan bool, 50)
 	t := getOrNewTask(url, name)
+	if n := getNumOfDownloadingTasks(); n > 0 {
+		t.Status = "Queued"
+		saveTask(t)
+		return t.Name, nil, nil
+	}
 
 	go download(t, control, quit)
 
@@ -256,6 +254,26 @@ func getTask(name string, taskDir string) (*Task, error) {
 	// }
 	return t, nil
 }
+func ResumeNextQueuedTask() {
+	if t := GetNextQueuedTask(); t != nil {
+		fmt.Println("Resume download ", t.Name)
+		ResumeDownload(t.Name)
+	}
+}
+func GetNextQueuedTask() *Task {
+	tasks := GetTasks()
+
+	var nextTask *Task
+	startTime := time.Now().Unix()
+	for _, t := range tasks {
+		if t.Status == "Queued" && t.StartTime < startTime {
+			startTime = t.StartTime
+			nextTask = t
+		}
+	}
+
+	return nextTask
+}
 func GetTask(name string) (*Task, error) {
 	name = fmt.Sprint(name, ".vger-task.txt")
 	taskDir := path.Join(BaseDir, taskDirName)
@@ -296,9 +314,10 @@ func handleCommands(chanCommand chan *command) {
 			args := strings.Split(cmd.arg, "####")
 			name, url := args[0], args[1]
 			name, control, quit := DownloadAsync(url, name)
-			taskControls[name] = taskControl{quit, control}
+			if control != nil {
+				taskControls[name] = taskControl{quit, control}
+			}
 			cmd.ack <- true
-			break
 		case "resume":
 			name := cmd.arg
 			if _, ok := taskControls[name]; !ok {
@@ -315,7 +334,6 @@ func handleCommands(chanCommand chan *command) {
 				cmd.ack <- false
 				cmd.result <- "task_not_exists"
 			}
-			break
 		case "stop":
 			name := cmd.arg
 			fmt.Println("handle stopped")
@@ -328,10 +346,16 @@ func handleCommands(chanCommand chan *command) {
 				cmd.ack <- true
 				close(cmd.result)
 			} else {
-				cmd.ack <- false
-				cmd.result <- "task_not_exists"
+				t, err := GetTask(name)
+				if err != nil {
+					cmd.ack <- false
+					cmd.result <- err.Error()
+					return
+				}
+				t.Status = "Stopped"
+				saveTask(t)
+				cmd.ack <- true
 			}
-			break
 		case "limit":
 			args := strings.Split(cmd.arg, ":::")
 			name := args[0]
@@ -346,7 +370,6 @@ func handleCommands(chanCommand chan *command) {
 				cmd.ack <- false
 				cmd.result <- "task_not_exists"
 			}
-			break
 		}
 	}
 }
@@ -383,7 +406,44 @@ func StopDownload(name string) string {
 
 	return ""
 }
+func QueueDownload(name string) error {
+	t, err := GetTask(name)
+	if err != nil {
+		return err
+	}
+
+	t.Status = "Queued"
+	saveTask(t)
+	return nil
+}
+func getNumOfDownloadingTasks() int {
+	n := 0
+	for _, t := range GetTasks() {
+		if t.Status == "Downloading" {
+			n++
+		}
+	}
+	return n
+}
 func ResumeDownload(name string) string {
+	cmd := newCommand("resume", name)
+	chanCommand <- cmd
+	if ok := <-cmd.ack; !ok {
+		return <-cmd.result
+	}
+	return ""
+}
+func TryResumeDownload(name string) string {
+	task, err := GetTask(name)
+	if err != nil {
+		return err.Error()
+	}
+	if n := getNumOfDownloadingTasks(); n > 0 {
+		task.Status = "Queued"
+		saveTask(task)
+		return ""
+	}
+
 	cmd := newCommand("resume", name)
 	chanCommand <- cmd
 	if ok := <-cmd.ack; !ok {
