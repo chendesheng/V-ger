@@ -225,6 +225,9 @@ h1,h2 {
 #tasks-list li {
 	padding: 15px 0;
 }
+#tasks-list li:hover {
+	background-color: #fff;
+}
 #tasks ul {
 	padding: 0;
 }

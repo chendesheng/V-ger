@@ -24,7 +24,7 @@
 		       		</div>
 	       			<div><span class="name"><span ng-show="task.Status=='Queued'">[Waiting] </span><a ng-click="send_open(task)">{{task.Name}}</a></span></div>
 
-			       	<div class="progress">
+			       	<div class="progress" ng-hide="task.Status=='Finished'">
 			       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
 		       		</div>
 
@@ -48,9 +48,9 @@
 
 		       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
 		       			<span ng-show="task.Status=='Downloading'" class="info">{{task.Speed.toFixed(2)}}KB/s</span>
-
+<!-- 
 			       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-			       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span>
+			       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span> -->
 
 		       		</div>
 

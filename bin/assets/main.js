@@ -125,7 +125,7 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 				$scope.waiting = false;
 				if (resp) $scope.push_alert(resp);
 				else {
-					$scope.bt_files = [];
+					// $scope.bt_files = [];
 					$scope.new_url = '';
 				}
 			}).error(function() {
