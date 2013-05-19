@@ -3,6 +3,8 @@ package download
 import (
 	"bytes"
 	"fmt"
+	"regexp"
+	"strings"
 	// "sort"
 	// "runtime"
 	// "strconv"
@@ -335,6 +337,10 @@ func GetDownloadInfo(url string) (realURL string, name string, size int64) {
 		name = getFileName(url)
 	}
 	realURL = url
+
+	reg := regexp.MustCompile("[/]")
+	name = reg.ReplaceAllString(name, "")
+	name = strings.TrimLeft(name, ".")
 	return
 }
 
