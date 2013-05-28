@@ -86,7 +86,8 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 		function new_task() {
 			$scope.waiting = true;
 			if ($scope.new_url.indexOf('lixian.vip.xunlei.com') != -1 ||
-				$scope.new_url.indexOf('youtube.com') != -1) {
+				$scope.new_url.indexOf('youtube.com') != -1 || 
+				/.*dmg$/.test($scope.new_url)) {
 				$http.post('/new', $scope.new_url).success(function(resp) {
 					$scope.new_url = '';
 					$scope.waiting = false;
@@ -169,9 +170,10 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 					item.loading = false;
 
 					//truncate description
+					item.FullDescription = item.Description;
 					var description = item.Description;
-					if (description.length > 50)
-						item.Description = description.substr(0, 50) + '...';
+					if (description.length > 83)
+						item.Description = description.substr(0, 40) + '...' + description.substr(description.length-40, 40);
 
 				};
 				$scope.subtitles = data;
@@ -264,3 +266,8 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 		}
 	}
 );
+
+
+			setTimeout(function() {
+        		window.scrollTo(0, 1);
+	        }, 100);

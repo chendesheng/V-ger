@@ -30,11 +30,12 @@ func yyetsParseSub(n *html.Node) Subtitle {
 func yyetsSearchSubtitles(name string) []Subtitle {
 	resp, err := Client.Get("http://www.yyets.com/php/search/index?type=subtitle&order=uptime&keyword=" + url.QueryEscape(name))
 	if err != nil {
-		log.Fatal(err)
+		return make([]Subtitle, 0)
 	}
 	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
+
 	if err != nil {
 		log.Fatal(err)
 	}

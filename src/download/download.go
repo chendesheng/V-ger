@@ -207,7 +207,7 @@ func sortOutput(input <-chan *block, output chan<- *block, quit chan bool, from 
 			dbmap[db.from] = db
 			for {
 				if d, ok := dbmap[nextOutputFrom]; ok {
-					fmt.Printf("sort output %d-%d\n", d.from, d.to)
+					// fmt.Printf("sort output %d-%d\n", d.from, d.to)
 					select {
 					case output <- d:
 					case <-quit:

@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"time"
 )
 
 var Client *http.Client
@@ -60,11 +61,21 @@ func SearchSubtitles(name string) []Subtitle {
 	// return shooterSearch(name)
 	yyetsSubs := make(chan []Subtitle)
 	go func() {
+		print("start search yyets ", name)
+		begin := time.Now()
+
 		yyetsSubs <- yyetsSearchSubtitles(name)
+
+		log.Printf("yyets takes %v", time.Now().Sub(begin))
 	}()
 	shooterSubs := make(chan []Subtitle)
 	go func() {
+		print("start search shooter ", name)
+		begin := time.Now()
+
 		shooterSubs <- shooterSearch(name)
+
+		log.Printf("shooter takes %v", time.Now().Sub(begin))
 	}()
 
 	return concat(<-yyetsSubs, <-shooterSubs)

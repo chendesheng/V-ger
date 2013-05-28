@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"native"
+	// "regexp"
 	// "net/http/httputil"
 	"path"
 	// "html/template"
@@ -233,8 +234,9 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func subtitlesSearchHandler(w http.ResponseWriter, r *http.Request) {
+	print("subtitlesSearchHandler")
 	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
-	data := getSubList(movieName, []filter{filterMovieName1, filterMovieName2})
+	data := getSubList2(filterMovieName2(movieName))
 	text, _ := json.Marshal(data)
 	w.Write([]byte(text))
 }

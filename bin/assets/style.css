@@ -326,8 +326,9 @@ h3 {
 }
 .loading {
 	background: url('/assets/loading.svg') no-repeat;
-	width: 66px;
+	width: 18px;
 	height: 18px;
+	padding-left:24px;
 	display: inline-block;
 	vertical-align: middle;
 }
@@ -457,6 +458,9 @@ h3 {
 	height: 16px;
 	display: inline-block;
 }
+#subtitles .icon {
+	margin-bottom: 5px;
+}
 .YYets {
 	background: url('http://www.yyets.com/favicon.ico');
 	vertical-align: middle;
@@ -467,4 +471,13 @@ h3 {
 }
 .alert .content {
 	padding: 0 30px 20px 30px;
+}
+.name {
+	cursor: default;
+}
+.left-actions button {
+	height: 16px;
+}
+#subtitles .loading,#subtitles input[type=button] {
+	float:right;
 }

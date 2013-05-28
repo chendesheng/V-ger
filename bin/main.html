@@ -105,7 +105,7 @@
 				<ul>
 					<li ng-repeat="sub in subtitles | orderBy:-Size">
 						<span class="{{sub.Source}} icon"></span>
-						<span class="name">{{sub.Description}}</span>
+						<span class="name" title="{{sub.FullDescription}}">{{sub.Description}}</span>
 						<input type="button" value="Download" ng-hide="sub.loading" ng-click="download_subtitles(sub)"/>
 						<span class="loading" ng-show="sub.loading"></span>
 					</li>

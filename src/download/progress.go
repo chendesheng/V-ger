@@ -24,7 +24,7 @@ func handleProgress(progress chan int64, t *Task, quit chan bool) {
 	cnt := 0
 	// est := time.Duration(0)
 	lastCheck := time.Now()
-
+	live := 0
 	for {
 		select {
 		case length, ok := <-progress:
@@ -45,14 +45,20 @@ func handleProgress(progress chan int64, t *Task, quit chan bool) {
 				parts[cnt] = part
 				part = 0
 			}
+			live = 0
 		case <-timer.C:
 			elapsedTime += time.Second * 2
 
-			sum := int64(0)
-			for _, p := range parts {
-				sum += p
+			if live > 5 {
+				speed = 0
+			} else {
+				sum := int64(0)
+				for _, p := range parts {
+					sum += p
+				}
+
+				speed = float64(sum) * float64(time.Second) / float64(time.Since(lastCheck)) / 1024
 			}
-			speed = float64(sum) * float64(time.Second) / float64(time.Since(lastCheck)) / 1024
 
 			_, est := calcProgress(total, size, speed)
 
@@ -62,6 +68,8 @@ func handleProgress(progress chan int64, t *Task, quit chan bool) {
 				fmt.Println("progress return")
 				return
 			}
+
+			live++
 		case <-quit:
 			fmt.Println("progress quit")
 			return

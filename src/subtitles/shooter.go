@@ -60,11 +60,12 @@ func shooterSearch(name string) []Subtitle {
 
 	resp, err := Client.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
 	if err != nil {
-		log.Fatal(err)
+		return make([]Subtitle, 0)
 	}
 	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
+
 	if err != nil {
 		log.Fatal(err)
 	}
