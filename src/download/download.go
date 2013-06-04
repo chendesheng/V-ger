@@ -40,7 +40,7 @@ func doDownload(url string, path string, from, to int64,
 	return progress
 }
 func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
-	blockSize := int64(60 * 1024)
+	blockSize := int64(40 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
 	}
@@ -63,7 +63,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(300 * 1024)
+				blockSize = int64(100 * 1024)
 			}
 		case input <- newDataBlock(from, to):
 			if to == size {
@@ -91,7 +91,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 			}
 		case <-changeBlockSize:
 			if maxSpeed == 0 {
-				blockSize = 300 * 1024
+				blockSize = 100 * 1024
 			}
 		case <-quit:
 			close(input)
@@ -158,8 +158,14 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 		tryDownloadBlock:
 			for {
 				//fmt.Printf("downloadBlock %s %v\n", url, b)
+				// downloadBlockQuit := make(chan bool)
 				chanRes, closer, err := downloadBlock(url, b, quit)
+				// chTimeout := time.After(time.Second * 10)
 				select {
+				// case <-chTimeout:
+				// 	fmt.Println("download block timeout")
+				// 	downloadBlockQuit <- true
+				// 	break
 				case data := <-chanRes:
 					if int64(len(data)) != (b.to - b.from) {
 						break
@@ -177,6 +183,7 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 					}
 				case <-quit:
 					fmt.Println("downloadRoutine quit close")
+					// downloadBlockQuit <- true
 					closer.Close()
 					return
 				}
@@ -236,8 +243,8 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 	chan2 := createDownloadRoutine(url, disorderOutput, quit)
 	chan3 := createDownloadRoutine(url, disorderOutput, quit)
 	chan4 := createDownloadRoutine(url, disorderOutput, quit)
-	chan5 := createDownloadRoutine(url, disorderOutput, quit)
-	chan6 := createDownloadRoutine(url, disorderOutput, quit)
+	// chan5 := createDownloadRoutine(url, disorderOutput, quit)
+	// chan6 := createDownloadRoutine(url, disorderOutput, quit)
 
 	go func(input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
 		sortOutput(input, output, quit, from, to)
@@ -252,8 +259,8 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 				close(chan2)
 				close(chan3)
 				close(chan4)
-				close(chan5)
-				close(chan6)
+				// close(chan5)
+				// close(chan6)
 				return
 			}
 			select {
@@ -261,8 +268,8 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 			case chan2 <- b:
 			case chan3 <- b:
 			case chan4 <- b:
-			case chan5 <- b:
-			case chan6 <- b:
+			// case chan5 <- b:
+			// case chan6 <- b:
 			case <-quit:
 				fmt.Println("currentDownload quit")
 				return
@@ -298,11 +305,27 @@ func downloadBlock(url string, b *block, quit chan bool) (chan []byte, io.Closer
 		defer func() {
 			if r := recover(); r != nil {
 				fmt.Println(r)
+				go func() { result <- make([]byte, 0) }()
 			}
 		}()
 		buffer := bytes.NewBuffer(make([]byte, 0, to-from))
 		// fmt.Println("read from buffer")
-		buffer.ReadFrom(resp.Body)
+
+		chFinish := make(chan bool)
+		go func() {
+			buffer.ReadFrom(resp.Body)
+			chFinish <- true
+		}()
+
+		chTimeout := time.After(time.Second * 10)
+		select {
+		case <-chFinish:
+			break
+		case <-chTimeout:
+			panic("network read timeout")
+			return
+		}
+
 		// fmt.Println("read from buffer end")
 
 		select {

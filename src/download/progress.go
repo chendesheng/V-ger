@@ -49,7 +49,7 @@ func handleProgress(progress chan int64, t *Task, quit chan bool) {
 		case <-timer.C:
 			elapsedTime += time.Second * 2
 
-			if live > 5 {
+			if live > 10 {
 				speed = 0
 			} else {
 				sum := int64(0)
