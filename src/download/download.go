@@ -3,6 +3,8 @@ package download
 import (
 	"bytes"
 	"fmt"
+	"native"
+	"path/filepath"
 	"regexp"
 	"strings"
 	// "sort"
@@ -12,6 +14,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -115,19 +118,33 @@ func writeOutput(path string, from int64, output <-chan *block, progress chan in
 			if !ok {
 				return
 			}
-			_, err := f.WriteAt(db.data, db.from)
-			db.data = nil
+			pathErrNotifyTimes := 0
+			for {
 
-			if err == nil {
-				select {
-				case progress <- db.to - db.from:
+				_, err := f.WriteAt(db.data, db.from)
+				db.data = nil
+
+				if err == nil {
+					select {
+					case progress <- db.to - db.from:
+						break
+					case <-quit:
+						return
+					}
 					break
-				case <-quit:
-					return
+				} else if perr, ok := err.(*os.PathError); ok {
+					log.Print(err)
+
+					if pathErrNotifyTimes == 0 { //only report once
+						native.SendNotification("Error write "+filepath.Base(perr.Path), perr.Err.Error())
+						pathErrNotifyTimes++
+					}
+
+					time.Sleep(time.Second * 2)
+				} else {
+					fmt.Printf("\n%s", err)
+					log.Fatal(err)
 				}
-			} else {
-				fmt.Printf("\n%s", err)
-				log.Fatal(err)
 			}
 		case <-quit:
 			fmt.Println("write output quit")
