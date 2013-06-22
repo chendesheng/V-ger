@@ -147,6 +147,14 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(download.NewDownload(url, name)))
 }
 func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if re := recover(); re != nil {
+			err := re.(error)
+
+			w.Write([]byte(err.Error()))
+		}
+	}()
+
 	input, _ := ioutil.ReadAll(r.Body)
 	url := string(input)
 
@@ -160,6 +168,13 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if re := recover(); re != nil {
+			err := re.(error)
+
+			w.Write([]byte(err.Error()))
+		}
+	}()
 	// res, _ := httputil.DumpRequest(r, true)
 	// fmt.Println(string(res))
 	fmt.Println("thunder torrent handler")
