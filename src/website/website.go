@@ -460,7 +460,7 @@ func Run() {
 
 	server := config["server"]
 
-	fmt.Println("server ", server, " started.")
+	log.Print("server ", server, " started.")
 	err := http.ListenAndServe(server, nil)
 	if err != nil {
 		log.Fatal(err)
