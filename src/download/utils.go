@@ -33,6 +33,8 @@ func addRangeHeader(req *http.Request, from, to int64) {
 	}
 }
 func openOrCreateFileRW(path string, position int64) *os.File {
+	log.Print("open or create file " + path)
+
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
@@ -51,23 +53,18 @@ func openOrCreateFileRW(path string, position int64) *os.File {
 func getFileInfo(header http.Header) (name string, size int64) {
 	if len(header["Content-Disposition"]) > 0 {
 		contentDisposition := header["Content-Disposition"][0]
-		regexFile, err := regexp.Compile(`filename="([^"]+)"`)
-		if err != nil {
-			log.Fatal(err)
-		}
-		match := regexFile.FindStringSubmatch(contentDisposition)
-		if len(match) > 1 {
-			name = regexFile.FindStringSubmatch(contentDisposition)[1]
+		regexFile := regexp.MustCompile(`filename="([^"]+)"`)
+
+		if match := regexFile.FindStringSubmatch(contentDisposition); len(match) > 1 {
+			name = match[1]
 		} else {
 			name = ""
 		}
 	}
 
 	if cr := header["Content-Range"]; len(cr) > 0 {
-		regexSize, err := regexp.Compile(`/(\d+)`)
-		if err != nil {
-			log.Fatal(err)
-		}
+		regexSize := regexp.MustCompile(`/(\d+)`)
+
 		sizeStr := regexSize.FindStringSubmatch(cr[0])[1]
 		size, _ = strconv.ParseInt(sizeStr, 10, 64)
 	} else {

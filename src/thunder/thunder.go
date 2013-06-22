@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 	// "encoding/json"
-	// "regexp"
+	"regexp"
 	// "io"
 	// "os"
 )
@@ -23,7 +23,7 @@ var Client *http.Client
 func NewTask(taskURL string) ([]ThunderTask, error) {
 	log.Println("thunder new task: ", taskURL)
 
-	taskType := getTaskType(taskURL)
+	taskType, torrent := getTaskType(taskURL)
 	userId := getCookieValue("userid")
 
 	if taskType == 4 {
@@ -31,11 +31,11 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 			return nil, err
 		}
 	} else if taskType == 1 {
-		torrent, err := quickDownload(taskURL)
-		if err != nil {
-			return nil, err
-		}
-		err = uploadTorrent(torrent, userId)
+		// torrent, err := quickDownload(taskURL)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		err := uploadTorrent(torrent, userId)
 		if err != nil {
 			return nil, err
 		}
@@ -236,15 +236,58 @@ func getCookieValue(name string) string {
 
 	return ""
 }
-func getTaskType(url string) int {
-	if strings.Index(url, "magnet:") != -1 {
-		return 4
-	} else if strings.Index(url, "ed2k://") != -1 {
-		return 2
-	} else if strings.Index(url, ".torrent") != -1 || strings.Index(url, "nyaa.eu/?page=download") != -1 {
-		return 1
+func checkIfTorrentFile(url string, header http.Header) bool {
+	if len(header["Content-Disposition"]) > 0 {
+		contentDisposition := header["Content-Disposition"][0]
+		regexFile := regexp.MustCompile(`filename="([^"]+)"`)
+
+		if match := regexFile.FindStringSubmatch(contentDisposition); len(match) > 1 {
+			name := match[1]
+			if strings.Index(name, ".torrent") != -1 {
+				log.Print("torrent file name: " + name)
+				return true
+			}
+		}
 	}
-	return 0
+
+	if strings.Index(url, ".torrent") != -1 {
+		return true
+	}
+
+	return false
+}
+func getTaskType(url string) (int, []byte) {
+	if strings.Index(url, "magnet:") != -1 {
+		return 4, nil
+	} else if strings.Index(url, "ed2k://") != -1 {
+		return 2, nil
+	} else {
+		Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			temp := req.URL.String()
+			if temp != "" {
+				url = temp
+			}
+			return nil
+		}
+		resp, err := Client.Get(url)
+		if err != nil {
+			return 0, nil
+		}
+
+		if checkIfTorrentFile(url, resp.Header) {
+			data, err := ioutil.ReadAll(resp.Body)
+			defer resp.Body.Close()
+
+			if err != nil {
+				log.Print(err)
+				return 0, nil
+			}
+
+			return 1, data
+		}
+
+	}
+	return 0, nil
 }
 func sendPost(url string, params *url.Values, data *url.Values) string {
 	if params != nil {
