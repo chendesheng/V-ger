@@ -31,10 +31,6 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 			return nil, err
 		}
 	} else if taskType == 1 {
-		// torrent, err := quickDownload(taskURL)
-		// if err != nil {
-		// 	return nil, err
-		// }
 		err := uploadTorrent(torrent, userId)
 		if err != nil {
 			return nil, err
@@ -261,6 +257,8 @@ func getTaskType(url string) (int, []byte) {
 		return 4, nil
 	} else if strings.Index(url, "ed2k://") != -1 {
 		return 2, nil
+	} else if strings.Index(url, "thunder://") != -1 {
+		return 0, nil
 	} else {
 		Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			temp := req.URL.String()

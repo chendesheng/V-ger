@@ -2,8 +2,8 @@ package main
 
 import (
 	"cocoa"
-	// "runtime"
 	"flag"
+	"runtime"
 	// "fmt"
 	// "io/ioutil"
 	"log"
@@ -31,6 +31,9 @@ func main() {
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	go website.Run()
 
 	cocoa.Start()

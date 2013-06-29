@@ -19,6 +19,7 @@ func init() {
 	c.AddMethod("applicationDidFinishLaunching:", (*AppDelegate).ApplicationDidFinishLaunching)
 	c.AddMethod("buttonclick:", (*AppDelegate).IButtonClick)
 	c.AddMethod("menuClick:", (*AppDelegate).MenuClick)
+	c.AddMethod("didActivateNotification:", (*AppDelegate).DidActivateNotification)
 
 	objc.RegisterClass(c)
 }
@@ -103,6 +104,9 @@ func (delegate *AppDelegate) MenuClick(sender uintptr) {
 		cmd.Start()
 	}
 }
+func (delegate *AppDelegate) DidActivateNotification(notification objc.Object) {
+	log.Print("DidActivateNotification")
+}
 
 func Start() {
 	runtime.LockOSThread()
@@ -110,7 +114,14 @@ func Start() {
 	pool := NewNSAutoreleasePool()
 	defer pool.Release()
 
+	InstallNSBundleHook()
+
+	delegate := objc.GetClass("GOAppDelegate").Alloc().Init()
+
 	app := NSSharedApplication()
-	app.SetDelegate(objc.GetClass("GOAppDelegate").Alloc().Init())
+	app.SetDelegate(delegate)
+
+	NSDefaultUserNotificationCenter().SetDelegate(delegate)
+
 	app.Run()
 }

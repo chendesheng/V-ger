@@ -63,8 +63,6 @@ func init() {
 	download.BaseDir = config["dir"]
 	task.BaseDir = config["dir"]
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
 	native.WebSiteAddress = config["server"]
 }
 
@@ -441,6 +439,15 @@ func parseRange(s string, size int64) ([]httpRange, error) {
 	return ranges, nil
 }
 
+func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
+	action, _ := url.QueryUnescape(r.URL.String()[11:])
+	log.Printf("test %s", action)
+	switch action {
+	case "notification":
+		native.SendNotification("title", "infoText")
+		break
+	}
+}
 func Run() {
 	download.StartHandleCommands()
 
@@ -470,6 +477,8 @@ func Run() {
 	http.HandleFunc("/app/status", appStatusHandler)
 	http.HandleFunc("/app/shutdown", appShutdownHandler)
 	http.HandleFunc("/app/gc", appGCHandler)
+
+	http.HandleFunc("/cocoatest/", cocoaTestHandler)
 
 	//resume downloading tasks
 	tasks := task.GetTasks()
