@@ -58,6 +58,7 @@
     notification.soundName = NSUserNotificationDefaultSoundName;
     notification.hasActionButton = true;
     notification.actionButtonTitle = @"Play";
+    notification.deliveryRepeatInterval = nil;
     //    notification.subtitle = @"test";
     NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
     [center setDelegate:self];

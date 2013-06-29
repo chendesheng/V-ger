@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B0743C6516EAEE5500FF9AB3"
-               BuildableName = "VgerClient.app"
+               BuildableName = "V&apos;ger.app"
                BlueprintName = "VgerClient"
                ReferencedContainer = "container:VgerClient.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B0743C6516EAEE5500FF9AB3"
-            BuildableName = "VgerClient.app"
+            BuildableName = "V&apos;ger.app"
             BlueprintName = "VgerClient"
             ReferencedContainer = "container:VgerClient.xcodeproj">
          </BuildableReference>
@@ -52,7 +52,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B0743C6516EAEE5500FF9AB3"
-            BuildableName = "VgerClient.app"
+            BuildableName = "V&apos;ger.app"
             BlueprintName = "VgerClient"
             ReferencedContainer = "container:VgerClient.xcodeproj">
          </BuildableReference>
@@ -70,7 +70,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B0743C6516EAEE5500FF9AB3"
-            BuildableName = "VgerClient.app"
+            BuildableName = "V&apos;ger.app"
             BlueprintName = "VgerClient"
             ReferencedContainer = "container:VgerClient.xcodeproj">
          </BuildableReference>

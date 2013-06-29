@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B06C7A681776BC5000EF60C7 /* Vger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B06C7A671776BC5000EF60C7 /* Vger-Info.plist */; };
 		B0743C6B16EAEE5500FF9AB3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0743C6A16EAEE5500FF9AB3 /* Cocoa.framework */; };
 		B0743C7516EAEE5500FF9AB3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0743C7316EAEE5500FF9AB3 /* InfoPlist.strings */; };
 		B0743C7716EAEE5500FF9AB3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B0743C7616EAEE5500FF9AB3 /* main.m */; };
@@ -18,12 +19,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B0743C6616EAEE5500FF9AB3 /* VgerClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VgerClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B06C7A671776BC5000EF60C7 /* Vger-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Vger-Info.plist"; sourceTree = "<group>"; };
+		B0743C6616EAEE5500FF9AB3 /* V'ger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "V'ger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0743C6A16EAEE5500FF9AB3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		B0743C6D16EAEE5500FF9AB3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		B0743C6E16EAEE5500FF9AB3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		B0743C6F16EAEE5500FF9AB3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		B0743C7216EAEE5500FF9AB3 /* VgerClient-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VgerClient-Info.plist"; sourceTree = "<group>"; };
 		B0743C7416EAEE5500FF9AB3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B0743C7616EAEE5500FF9AB3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B0743C7816EAEE5500FF9AB3 /* VgerClient-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VgerClient-Prefix.pch"; sourceTree = "<group>"; };
@@ -33,6 +34,7 @@
 		B0743C8016EAEE5500FF9AB3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		B0743C8716EAF03C00FF9AB3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B0743C8916EAF4CD00FF9AB3 /* Itzikgur-My-Seven-Downloads-2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Itzikgur-My-Seven-Downloads-2.icns"; sourceTree = "<group>"; };
+		B0AE6354174D32AA00DFCC06 /* VgerClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = VgerClient.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +64,7 @@
 		B0743C6716EAEE5500FF9AB3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B0743C6616EAEE5500FF9AB3 /* VgerClient.app */,
+				B0743C6616EAEE5500FF9AB3 /* V'ger.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -89,6 +91,7 @@
 		B0743C7016EAEE5500FF9AB3 /* VgerClient */ = {
 			isa = PBXGroup;
 			children = (
+				B0AE6354174D32AA00DFCC06 /* VgerClient.entitlements */,
 				B0743C7C16EAEE5500FF9AB3 /* VAppDelegate.h */,
 				B0743C7D16EAEE5500FF9AB3 /* VAppDelegate.m */,
 				B0743C7F16EAEE5500FF9AB3 /* MainMenu.xib */,
@@ -100,7 +103,7 @@
 		B0743C7116EAEE5500FF9AB3 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				B0743C7216EAEE5500FF9AB3 /* VgerClient-Info.plist */,
+				B06C7A671776BC5000EF60C7 /* Vger-Info.plist */,
 				B0743C7316EAEE5500FF9AB3 /* InfoPlist.strings */,
 				B0743C7616EAEE5500FF9AB3 /* main.m */,
 				B0743C7816EAEE5500FF9AB3 /* VgerClient-Prefix.pch */,
@@ -126,7 +129,7 @@
 			);
 			name = VgerClient;
 			productName = VgerClient;
-			productReference = B0743C6616EAEE5500FF9AB3 /* VgerClient.app */;
+			productReference = B0743C6616EAEE5500FF9AB3 /* V'ger.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -165,6 +168,7 @@
 				B0743C7B16EAEE5500FF9AB3 /* Credits.rtf in Resources */,
 				B0743C8116EAEE5500FF9AB3 /* MainMenu.xib in Resources */,
 				B0743C8A16EAF4CD00FF9AB3 /* Itzikgur-My-Seven-Downloads-2.icns in Resources */,
+				B06C7A681776BC5000EF60C7 /* Vger-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,11 +268,12 @@
 		B0743C8516EAEE5500FF9AB3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VgerClient/VgerClient-Prefix.pch";
-				INFOPLIST_FILE = "VgerClient/VgerClient-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				INFOPLIST_FILE = "VgerClient/Vger-Info.plist";
+				PRODUCT_NAME = "V'ger";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -276,11 +281,12 @@
 		B0743C8616EAEE5500FF9AB3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VgerClient/VgerClient-Prefix.pch";
-				INFOPLIST_FILE = "VgerClient/VgerClient-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				INFOPLIST_FILE = "VgerClient/Vger-Info.plist";
+				PRODUCT_NAME = "V'ger";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
