@@ -16,3 +16,11 @@ src/github.com
 test
 oj
 vger-player
+bencoding
+demo
+server
+gomacdraw.framework
+oj
+libav
+staticfileserver
+*.pbxproj
