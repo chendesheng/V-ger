@@ -3,10 +3,11 @@ package download
 import (
 	"fmt"
 	"log"
+	"task"
 	"time"
 )
 
-func handleProgress(progress chan int64, t *Task, quit chan bool) {
+func handleProgress(progress chan int64, t *task.Task, quit chan bool) {
 	log.Printf("start handle progress: %v\n", *t)
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
@@ -87,11 +88,11 @@ func calcProgress(total, size int64, speed float64) (percentage float64, est tim
 	return
 }
 func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration) {
-	if t, err := GetTask(name); err == nil {
+	if t, err := task.GetTask(name); err == nil {
 		t.DownloadedSize = total
 		t.ElapsedTime = elapsedTime
 		t.Speed = speed
 		t.Est = est
-		saveTask(t)
+		task.SaveTask(t)
 	}
 }

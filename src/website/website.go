@@ -17,7 +17,6 @@ import (
 	// "regexp"
 	// "io"
 	"runtime"
-	// "strings"
 	// "encoding/json"
 	"b1"
 	"errors"
@@ -28,6 +27,7 @@ import (
 	"os"
 	"path/filepath"
 	"subtitles"
+	"task"
 	"thunder"
 	"time"
 )
@@ -61,6 +61,7 @@ func init() {
 	b1.Client = client
 
 	download.BaseDir = config["dir"]
+	task.BaseDir = config["dir"]
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -226,7 +227,7 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 // 	}
 // }
 func progressHandler(w http.ResponseWriter, r *http.Request) {
-	tasks := download.GetTasks()
+	tasks := task.GetTasks()
 	text, _ := json.Marshal(tasks)
 	w.Write([]byte(text))
 }
@@ -262,11 +263,14 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	url := string(input)
 	// name := getFileName(url)
 	url, name, _ := download.GetDownloadInfo(url)
-	if ok, err := subtitles.QuickDownload(url, path.Join(download.BaseDir, name)); !ok {
+
+	if ok, err := subtitles.QuickDownload(url, path.Join(download.BaseDir, movieName+path.Ext(name))); !ok {
 		w.Write([]byte(err.Error()))
 		return
 	} else {
-		extractSubtitle(name, movieName)
+		cmd := exec.Command("open", path.Join(download.BaseDir, movieName+path.Ext(name)))
+		cmd.Start()
+		// extractSubtitle(name, movieName)
 	}
 }
 
@@ -287,7 +291,30 @@ func appGCHandler(w http.ResponseWriter, r *http.Request) {
 func playHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("open \"%s\".\n", name)
-	cmd := exec.Command("open", config["video-player"], "--args", "http://"+config["server"]+"/video/"+name)
+
+	playerPath := config["video-player"]
+
+	ps := exec.Command("ps", "-e", "-opid,comm")
+	output, _ := ps.Output()
+	for i, s := range strings.Split(string(output), "\n") {
+		if i == 0 || len(s) == 0 {
+			continue
+		}
+
+		f := strings.Fields(s)
+		pid, _ := strconv.Atoi(f[0])
+		processPath := f[1]
+
+		if strings.Index(processPath, playerPath) != -1 {
+			log.Print("Kill process: " + processPath)
+
+			p, _ := os.FindProcess(pid)
+			p.Kill()
+			break
+		}
+	}
+
+	cmd := exec.Command("open", playerPath, "--args", "http://"+config["server"]+"/video/"+name)
 	cmd.Start()
 }
 
@@ -296,7 +323,7 @@ func writeError(w http.ResponseWriter, err error) {
 }
 func videoHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
-	t, err := download.GetTask(name)
+	t, err := task.GetTask(name)
 	if err != nil {
 		writeError(w, err)
 	}
@@ -429,7 +456,6 @@ func Run() {
 	http.HandleFunc("/stop/", stopHandler)
 	http.HandleFunc("/progress", progressHandler)
 	http.HandleFunc("/new/", newTaskHandler)
-	http.HandleFunc("/new", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
 	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
@@ -446,7 +472,7 @@ func Run() {
 	http.HandleFunc("/app/gc", appGCHandler)
 
 	//resume downloading tasks
-	tasks := download.GetTasks()
+	tasks := task.GetTasks()
 	hasDownloading := false
 	for _, t := range tasks {
 		if t.Status == "Downloading" {

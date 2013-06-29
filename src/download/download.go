@@ -112,13 +112,13 @@ func writeOutput(path string, from int64, output <-chan *block, progress chan in
 		close(progress)
 	}()
 
+	pathErrNotifyTimes := 0
 	for {
 		select {
 		case db, ok := <-output:
 			if !ok {
 				return
 			}
-			pathErrNotifyTimes := 0
 			for {
 
 				_, err := f.WriteAt(db.data, db.from)
