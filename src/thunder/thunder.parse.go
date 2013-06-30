@@ -36,7 +36,14 @@ func parseUrlQueryResult(text string) (cid string, tsize string, btname string, 
 
 	args := make([]string, 0, 10)
 
-	for _, s := range regexUrlQuery.FindStringSubmatch(text)[1:] {
+	text = strings.Replace(text, "\\'", "", -1) //ensure no ' in side ''
+	matches := regexUrlQuery.FindStringSubmatch(text)
+
+	if len(matches) == 0 {
+		panic(fmt.Errorf("parseUrlQueryResult error: %s", text))
+	}
+
+	for _, s := range matches[1:] {
 		args = append(args, strings.TrimSpace(s))
 	}
 
