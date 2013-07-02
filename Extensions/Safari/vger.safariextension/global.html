@@ -1,0 +1,90 @@
+<!--
+Global HTML Page to control the extension logic.
+-->
+<!DOCTYPE HTML>
+
+<script>
+// Set up the Listener
+// safari.application.addEventListener("contextmenu", handleContextMenu, false);
+// function handleContextMenu(event) {
+    
+// }
+// Function to perform when event is received
+
+safari.application.addEventListener("command", performCommand, false);
+function performCommand(event) {
+	// Make sure event comes from the button
+	if (event.command == "download") {
+		console.log(currentLinkURL);
+		post('/thunder/new', currentLinkURL, function (data) {
+			for (var i = 0; i < data.length; i++) {
+				var f = data[i];
+				if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
+					downloadFile(f);
+					return;
+				}
+			}
+
+			alert(currentPage, 'Download fail.');
+		});
+	} else if (event.command == "play") {
+		post('/thunder/new', currentLinkURL, function (data) {
+			for (var i = 0; i < data.length; i++) {
+				var f = data[i];
+				if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
+					post('/new/' + f.Name, f.DownloadURL, function() {
+						post('/play/' + f.Name);
+					});
+					return;
+				}
+			}
+
+			alert(currentPage, 'Download fail.');
+		});
+	}
+}
+
+
+function alert(page, m) {
+	if (currentPage != null) {
+		page.dispatchMessage("alert", m);
+	}
+}
+function downloadFile(f) {
+	post('/new/' + f.Name, f.DownloadURL, function(resp) {});
+}
+
+var currentLinkURL = "";
+var currentPage = null;
+
+safari.application.addEventListener("message", handleMessage, false);
+function handleMessage (event) {
+	if (event.name == "contextmenu") {
+		currentLinkURL = event.message;
+		currentPage = event.target.page;
+	}
+}
+
+
+var baseUrl = safari.extension.settings.server;//'http://localhost:9527';
+function post(path, data, success) {
+	var request = new XMLHttpRequest();
+	request.open("POST", baseUrl + path);
+	request.onreadystatechange = function()
+	{
+	    // "4" means "completed"
+	    if (request.readyState != 4) return;
+
+	    console.log(request.responseText);
+	    if (success) {
+	    	if (!request.responseText) {
+	    		success("");
+	    	} else {
+		    	success(JSON.parse(request.responseText));
+	    	}
+	    }
+	}
+	request.send(data);
+}
+
+</script>
