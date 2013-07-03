@@ -176,6 +176,10 @@ func getOrNewTask(url string, name string) *task.Task {
 		name = filename
 	}
 
+	if name == "" {
+		panic("File name must not be empty.")
+	}
+
 	if t, err := task.GetTask(name); err == nil {
 		return t
 	}

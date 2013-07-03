@@ -94,7 +94,8 @@ func GetTasks() []*Task {
 
 	tasks := make([]*Task, 0, len(fileInfoes))
 	for _, f := range fileInfoes {
-		if f.IsDir() {
+		// log.Print(f.Name())
+		if strings.HasPrefix(f.Name(), ".") || f.IsDir() { //exculding hidden files
 			continue
 		}
 

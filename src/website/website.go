@@ -5,6 +5,7 @@ import (
 	"download"
 	"encoding/json"
 	"fmt"
+	"html"
 	"native"
 	// "regexp"
 	// "net/http/httputil"
@@ -132,6 +133,16 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(download.TryResumeDownload(name)))
 }
 func newTaskHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if re := recover(); re != nil {
+			err := re.(error)
+
+			log.Print(err)
+
+			w.Write([]byte(html.EscapeString(err.Error())))
+		}
+	}()
+
 	var name string
 	if len(r.URL.String()) > 4 {
 		name, _ = url.QueryUnescape(r.URL.String()[5:])
@@ -150,7 +161,9 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 		if re := recover(); re != nil {
 			err := re.(error)
 
-			w.Write([]byte(err.Error()))
+			log.Print(err)
+
+			w.Write([]byte(html.EscapeString(err.Error())))
 		}
 	}()
 
