@@ -1,6 +1,7 @@
 package native
 
 import (
+	// "cocoa"
 	// "encoding/utf8"
 	// "github.com/mkrautz/objc"
 	// . "github.com/mkrautz/objc/AppKit"
@@ -29,8 +30,15 @@ func init() {
 // func (n *NotificationCenterDelegate) DidActivateNotification(notification objc.Object) {
 // 	log.Print("DidActivateNotification")
 // }
+// var uiCh chan cocoa.UICommand
+
+// func SetUIChan(ch chan cocoa.UICommand) {
+// 	uiCh = ch
+// }
 
 func SendNotification(title, infoText string) error {
+	// cocoa.SendNotification(title, infoText)
+
 	// notification := NSUserNotification{objc.GetClass("NSUserNotification").Alloc().Init()}
 	// notification.SetTitle(title)
 	// notification.SetInformativeText(infoText)

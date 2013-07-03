@@ -14,87 +14,17 @@ import (
 )
 
 func init() {
-
 	c := objc.NewClass(AppDelegate{})
-	c.AddMethod("applicationDidFinishLaunching:", (*AppDelegate).ApplicationDidFinishLaunching)
-	c.AddMethod("buttonclick:", (*AppDelegate).IButtonClick)
 	c.AddMethod("menuClick:", (*AppDelegate).MenuClick)
-	c.AddMethod("didActivateNotification:", (*AppDelegate).DidActivateNotification)
+	// c.AddMethod("didActivateNotification:", (*AppDelegate).DidActivateNotification)
 
 	objc.RegisterClass(c)
 }
 
 type AppDelegate struct {
 	objc.Object `objc:"GOAppDelegate : NSObject"`
-	Window      objc.Object `objc:"IBOutlet"`
 }
 
-func (delegate *AppDelegate) ApplicationDidFinishLaunching(notification objc.Object) {
-	statusItem := NSStatusItem{NSSystemStatusBar().StatusItemWithLength(-1).Retain()}
-	statusItem.SetHighlightMode(true)
-	statusItem.SetTarget(delegate.Pointer())
-	statusItem.SetAction(objc.GetSelector("menuClick:"))
-
-	go func() {
-		// pool := NewNSAutoreleasePool()
-		// defer pool.Release()
-
-		i := 0
-		for {
-			t := time.Tick(time.Second)
-			select {
-			case <-t:
-				i++
-				if t, ok := task.GetDownloadingTask(); ok {
-					statusItem.SetTitle(fmt.Sprintf("%s %.1f%%", task.CleanName(t.Name), float64(t.DownloadedSize)/float64(t.Size)*100.0))
-					statusItem.SetToolTip(fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est))
-				} else {
-					statusItem.SetTitle("V'ger")
-				}
-
-				break
-			}
-		}
-	}()
-}
-
-// func (delegate *AppDelegate) ApplicationDidFinishLaunching(notification objc.Object) {
-// 	delegate.statusItem = NSStatusItem{NSSystemStatusBar().StatusItemWithLength(-1).Retain()}
-// 	delegate.statusItem.SetTitle("V'ger")
-
-// 	ScheduledTimerWithTimeInterval(1, delegate.Pointer(), objc.GetSelector("timerTick:"), uintptr(0), true)
-// }
-
-// func (delegate *AppDelegate) TimerTick(sender objc.Object) {
-// 	// log.Print("tick")
-
-// 	// fmt.Printf("%v\n", delegate.statusItem)
-// 	go func() {
-
-// 		defer func() {
-// 			if re := recover(); re != nil {
-// 				log.Print(re)
-
-// 				delegate.statusItem = NSStatusItem{NSSystemStatusBar().StatusItemWithLength(-1).Retain()}
-// 				if t, ok := task.GetDownloadingTask(); ok {
-// 					delegate.statusItem.SetTitle(fmt.Sprintf("%s %.1f%%", t.Name, float64(t.DownloadedSize)/float64(t.Size)*100.0))
-// 				} else {
-// 					delegate.statusItem.SetTitle("V'ger")
-// 				}
-// 			}
-// 		}()
-
-// 		if t, ok := task.GetDownloadingTask(); ok {
-// 			delegate.statusItem.SetTitle(fmt.Sprintf("%s %.1f%%", t.Name, float64(t.DownloadedSize)/float64(t.Size)*100.0))
-// 		} else {
-// 			delegate.statusItem.SetTitle("V'ger")
-// 		}
-// 	}()
-// }
-//export IButtonClick
-func (delegate *AppDelegate) IButtonClick(sender uintptr) {
-	log.Print("clicked")
-}
 func (delegate *AppDelegate) MenuClick(sender uintptr) {
 	if t, ok := task.GetDownloadingTask(); ok {
 		cmd := exec.Command("open", path.Join(task.BaseDir, t.Name))
@@ -104,24 +34,112 @@ func (delegate *AppDelegate) MenuClick(sender uintptr) {
 		cmd.Start()
 	}
 }
-func (delegate *AppDelegate) DidActivateNotification(notification objc.Object) {
-	log.Print("DidActivateNotification")
+
+// func (delegate *AppDelegate) DidActivateNotification(notification objc.Object) {
+// 	log.Print("DidActivateNotification")
+// }
+
+type uiCommand struct {
+	name      string
+	arguments interface{}
 }
 
+func goAppStarted(chUI chan uiCommand) {
+	go func(chUI chan uiCommand) {
+		for {
+			t := time.Tick(time.Second)
+			select {
+			case <-t:
+				var properties []string
+				if t, ok := task.GetDownloadingTask(); ok {
+					properties = []string{fmt.Sprintf("%s %.1f%%", task.CleanName(t.Name), float64(t.DownloadedSize)/float64(t.Size)*100.0), fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+				} else {
+					properties = []string{"V'ger"}
+				}
+
+				chUI <- uiCommand{"statusItem", properties}
+
+				break
+			}
+		}
+	}(chUI)
+}
+
+var chUI chan uiCommand
+
+// func SendNotification(title string, infoText string) {
+// 	chUI <- uiCommand{"sendNotification", []string{title, infoText}}
+// }
 func Start() {
 	runtime.LockOSThread()
 
 	pool := NewNSAutoreleasePool()
-	defer pool.Release()
 
 	InstallNSBundleHook()
 
 	delegate := objc.GetClass("GOAppDelegate").Alloc().Init()
 
 	app := NSSharedApplication()
-	app.SetDelegate(delegate)
 
 	NSDefaultUserNotificationCenter().SetDelegate(delegate)
 
-	app.Run()
+	statusItem := NSStatusItem{NSSystemStatusBar().StatusItemWithLength(-1).Retain()}
+	statusItem.SetHighlightMode(true)
+	statusItem.SetTarget(delegate.Pointer())
+	statusItem.SetAction(objc.GetSelector("menuClick:"))
+	statusItem.SetTitle("V'ger")
+
+	chUI = make(chan uiCommand)
+
+	goAppStarted(chUI)
+
+	for {
+		pool.Release()
+		pool = NewNSAutoreleasePool()
+
+		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(0.05), "kCFRunLoopDefaultMode", true)
+
+		app.SendEvent(event)
+		app.UpdateWindows()
+
+		t := time.After(time.Millisecond * 5)
+		select {
+		case cmd := <-chUI:
+			switch cmd.name {
+			case "statusItem":
+				prop := cmd.arguments.([]string)
+
+				statusItem.SetTitle(prop[0])
+
+				if len(prop) > 1 {
+					statusItem.SetToolTip(prop[1])
+				}
+				break
+			// case "sendNotification":
+			// 	args := cmd.arguments.([]string)
+			// 	title := args[0]
+			// 	infoText := args[1]
+
+			// 	notification := NSUserNotification{objc.GetClass("NSUserNotification").Alloc().Init()}
+			// 	notification.SetTitle(title)
+			// 	notification.SetInformativeText(infoText)
+			// 	notification.SetSoundName(NSUserNotificationDefaultSoundName)
+			// 	notification.SetHasActionButton(true)
+			// 	notification.SetActionButtonTitle("Open")
+
+			// 	center := NSDefaultUserNotificationCenter()
+			// 	center.DeliverNotification(notification)
+
+			// 	break
+			default:
+				log.Printf("unknown cmd %v", cmd)
+				break
+			}
+			break
+		case <-t:
+			break
+		}
+	}
+
+	pool.Release()
 }
