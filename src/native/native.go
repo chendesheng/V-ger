@@ -1,7 +1,7 @@
 package native
 
 import (
-	// "cocoa"
+	"cocoa"
 	// "encoding/utf8"
 	// "github.com/mkrautz/objc"
 	// . "github.com/mkrautz/objc/AppKit"
@@ -61,13 +61,19 @@ func SendNotification(title, infoText string) error {
 
 func MoveFileToTrash(dir, name string) error {
 	print("trash file ", name)
-	wd, _ := os.Getwd()
-	vgerHelper := path.Join(wd, "vgerhelper.app")
-	cmd := exec.Command("open", vgerHelper, "--args", "trash", dir, name)
-	if err := cmd.Run(); err != nil {
-		log.Println(err)
-		return err
-	}
+
+	// tag := int64(0)
+	// NSSharedWorkspace().PerformFileOperation("recycle", dir, "", NSArrayWithObjects(NSStringFromString(name)), tag)
+
+	cocoa.TrashFile(dir, name)
+
+	// wd, _ := os.Getwd()
+	// vgerHelper := path.Join(wd, "vgerhelper.app")
+	// cmd := exec.Command("open", vgerHelper, "--args", "trash", dir, name)
+	// if err := cmd.Run(); err != nil {
+	// 	log.Println(err)
+	// 	return err
+	// }
 	return nil
 }
 

@@ -121,7 +121,6 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("trash \"%s\".\n", name)
 
 	native.MoveFileToTrash(download.BaseDir, name)
-	time.Sleep(time.Second)
 	native.MoveFileToTrash(path.Join(download.BaseDir, "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
 	w.Write([]byte(``))
 }

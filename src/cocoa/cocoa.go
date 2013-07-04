@@ -70,6 +70,10 @@ var chUI chan uiCommand
 // func SendNotification(title string, infoText string) {
 // 	chUI <- uiCommand{"sendNotification", []string{title, infoText}}
 // }
+func TrashFile(dir string, name string) {
+	chUI <- uiCommand{"trashFile", []string{dir, name}}
+}
+
 func Start() {
 	runtime.LockOSThread()
 
@@ -131,6 +135,9 @@ func Start() {
 			// 	center.DeliverNotification(notification)
 
 			// 	break
+			case "trashFile":
+				prop := cmd.arguments.([]string)
+				NSTrashFile(prop[0], prop[1])
 			default:
 				log.Printf("unknown cmd %v", cmd)
 				break
