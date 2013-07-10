@@ -203,6 +203,26 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 			window.open("http://www.google.com/search?q=" + encodeURIComponent(name));
 			$scope.nosubtitles = false;
 		};
+		$scope.addic7ed_subtitles = function () {
+			var name = $scope.subtitles_movie_name;
+			var i = name.lastIndexOf('.');
+			if (i != -1) {
+				name = name.substring(0, i);
+			}
+
+			i = name.lastIndexOf('-');
+			if (i != -1) {
+				name = name.substring(0, i);
+			}
+
+			name = name.replace(/720p|x[.]264|BluRay|DTS|x264|1080p|H[.]264|AC3|[.]ENG|[.]BD|[.]Rip|H264|HDTV|-IMMERSE|-DIMENSION|xvid|[[]PublicHD[]]|[.]Rus|Chi_Eng|DD5[.]1|HR-HDTV|[.]HDTVrip|[.]AAC|[0-9]+x[0-9]+|blu-ray|Remux|dxva|dvdscr/ig, '');
+			name = name.replace(/[\u4E00-\u9FFF]+/ig, '');
+			name = name.replace(/[.]/g, ' ');
+
+			window.open("http://www.addic7ed.com/search.php?search=" + encodeURIComponent(name));
+			$scope.nosubtitles = false;	
+		}
+
 
 		$scope.parse_time = function (time) {
 			var d = new Date(time * 1000);
