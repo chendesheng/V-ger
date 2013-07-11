@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"task"
 	"time"
+	"util"
 )
 
 func init() {
@@ -27,7 +28,7 @@ type AppDelegate struct {
 
 func (delegate *AppDelegate) MenuClick(sender uintptr) {
 	if t, ok := task.GetDownloadingTask(); ok {
-		cmd := exec.Command("open", path.Join(task.BaseDir, t.Name))
+		cmd := exec.Command("open", path.Join(task.TaskDir, t.Name))
 		cmd.Start()
 	} else {
 		cmd := exec.Command("open", "/Applications/V'ger.app")
@@ -52,7 +53,7 @@ func goAppStarted(chUI chan uiCommand) {
 			case <-t:
 				var properties []string
 				if t, ok := task.GetDownloadingTask(); ok {
-					properties = []string{fmt.Sprintf("%s %.1f%%", task.CleanName(t.Name), float64(t.DownloadedSize)/float64(t.Size)*100.0), fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+					properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name), float64(t.DownloadedSize)/float64(t.Size)*100.0), fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
 				} else {
 					properties = []string{"V'ger"}
 				}

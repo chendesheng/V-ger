@@ -1,10 +1,11 @@
 package task
 
 import (
-	"encoding/base64"
-	"encoding/json"
-	"errors"
+	// "encoding/base64"
+	// "encoding/json"
+	// "errors"
 	"fmt"
+	"util"
 	// "io"
 	"io/ioutil"
 	"log"
@@ -13,17 +14,12 @@ import (
 	"os"
 	"path"
 	// "strconv"
-	"regexp"
+	// "regexp"
 	"strings"
 	"time"
 )
 
-var BaseDir string
-var taskDirName string
-
-func init() {
-	taskDirName = "vger-tasks"
-}
+var TaskDir string
 
 type Task struct {
 	URL  string
@@ -45,73 +41,50 @@ type Task struct {
 	Autoshutdown bool
 }
 
-func taskInfoFileName(taskName string) string {
-	return path.Join(BaseDir, taskDirName, fmt.Sprint(taskName, ".vger-task.txt"))
+func taskInfoFileName(name string) string {
+	if !strings.HasSuffix(name, ".vger-task.txt") {
+		name = fmt.Sprint(name, ".vger-task.txt")
+	}
+	return path.Join(TaskDir, name)
 }
-func SaveTask(t *Task) {
-	writeJson(taskInfoFileName(t.Name), *t)
-}
-func RemoveTask(name string) {
-	err := os.Remove(taskInfoFileName(name))
+
+// func hashName(name string) string {
+// 	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
+// }
+
+func GetTask(name string) (*Task, error) {
+	t := new(Task)
+	err := util.ReadJson(taskInfoFileName(name), t)
 	if err != nil {
-		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
+		return nil, err
 	}
-}
 
-func CleanName(name string) string {
-	return filterMovieName2(name)
-}
-
-func filterMovieName2(name string) string {
-	name = filterMovieName1(name)
-	reg, _ := regexp.Compile("(?i)720p|x[.]264|BluRay|DTS|x264|1080p|H[.]264|AC3|[.]ENG|[.]BD|Rip|H264|HDTV|-IMMERSE|-DIMENSION|xvid|[[]PublicHD[]]|[.]Rus|Chi_Eng|DD5[.]1|HR-HDTV|[.]AAC|[0-9]+x[0-9]+|blu-ray|Remux|dxva|dvdscr")
-	name = string(reg.ReplaceAll([]byte(name), []byte("")))
-	name = strings.Replace(name, ".", " ", -1)
-	name = strings.TrimSpace(name)
-
-	return name
-}
-func filterMovieName1(name string) string {
-	index := strings.LastIndex(name, ".")
-	if index > 0 {
-		name = name[:index]
-	}
-	index = strings.LastIndex(name, "-")
-	if index > 0 {
-		name = name[:index]
-	}
-	return name
+	return t, nil
 }
 
 func GetTasks() []*Task {
-	taskDir := path.Join(BaseDir, taskDirName)
-	fileInfoes, err := ioutil.ReadDir(taskDir)
-	if os.IsNotExist(err) {
-		os.Mkdir(taskDir, 0666)
-	} else if err != nil {
-		log.Fatal(err)
+	fileInfoes, err := ioutil.ReadDir(TaskDir)
+	if err != nil {
+		log.Print(err)
+		return make([]*Task, 0)
 	}
 
 	tasks := make([]*Task, 0, len(fileInfoes))
 	for _, f := range fileInfoes {
-		// log.Print(f.Name())
-		if strings.HasPrefix(f.Name(), ".") || f.IsDir() { //exculding hidden files
+		name := f.Name()
+
+		if strings.HasPrefix(name, ".") || f.IsDir() || !strings.HasSuffix(name, ".vger-task.txt") { //exculding hidden files
 			continue
 		}
 
-		name := f.Name()
-		if t, err := getTask(name, taskDir); err == nil {
+		if t, err := GetTask(name); err == nil {
 			tasks = append(tasks, t)
 		}
 	}
 
-	// fmt.Printf("get tasks %v.\n", tasks)
 	return tasks
 }
 
-func hashName(name string) string {
-	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
-}
 func GetDownloadingTask() (*Task, bool) {
 	for _, t := range GetTasks() {
 		if t.Status == "Downloading" {
@@ -121,45 +94,41 @@ func GetDownloadingTask() (*Task, bool) {
 
 	return nil, false
 }
-func GetTask(name string) (*Task, error) {
-	name = fmt.Sprint(name, ".vger-task.txt")
-	taskDir := path.Join(BaseDir, taskDirName)
-	return getTask(name, taskDir)
-}
-func getTask(name string, taskDir string) (*Task, error) {
-	if !strings.HasSuffix(name, ".vger-task.txt") {
-		return nil, errors.New("Task file name error.")
+
+func SaveTask(t *Task) (err error) {
+	_, err = ioutil.ReadDir(TaskDir)
+	if os.IsNotExist(err) {
+		os.Mkdir(TaskDir, 0777)
 	}
 
-	t := new(Task)
-	err := readJson(path.Join(taskDir, name), t)
-	if err != nil {
-		return nil, err
+	err = util.WriteJson(taskInfoFileName(t.Name), t)
+	if err == nil {
+		writeChangeEvent()
 	}
 
-	t.NameHash = hashName(t.Name)
-
-	return t, nil
+	return
 }
 
-func writeJson(path string, object interface{}) {
-	data, err := json.Marshal(object)
+func RemoveTask(name string) error {
+	err := os.Remove(taskInfoFileName(name))
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	ioutil.WriteFile(path, data, 0666)
-}
-func readJson(path string, object interface{}) error {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
+		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
 		return err
 	}
 
-	// log.Println("read json: ")
-	// log.Println(path)
-	// log.Println(string(data))
+	writeChangeEvent()
 
-	json.Unmarshal(data, &object)
 	return nil
+}
+
+var chTaskChange chan []*Task
+
+func WatchChange(ch chan []*Task) {
+	chTaskChange = ch
+}
+
+func writeChangeEvent() {
+	if chTaskChange != nil {
+		chTaskChange <- GetTasks()
+	}
 }

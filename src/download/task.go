@@ -1,7 +1,7 @@
 package download
 
 import (
-	// "encoding/base64"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -197,16 +197,16 @@ func getOrNewTask(url string, name string) *task.Task {
 	t.Speed = 0
 	t.Status = "Stopped"
 
-	// t.NameHash = hashName(t.Name)
+	t.NameHash = hashName(t.Name)
 
 	task.SaveTask(t)
 
 	return t
 }
 
-// func hashName(name string) string {
-// 	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
-// }
+func hashName(name string) string {
+	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
+}
 
 // func task.GetTasks() []*task.Task {
 // 	taskDir := path.Join(BaseDir, taskDirName)

@@ -62,7 +62,7 @@ func init() {
 	b1.Client = client
 
 	download.BaseDir = config["dir"]
-	task.BaseDir = config["dir"]
+	task.TaskDir = path.Join(config["dir"], "vger-tasks")
 
 	native.WebSiteAddress = config["server"]
 }
@@ -474,7 +474,7 @@ func Run() {
 	http.HandleFunc("/resume/", resumeHandler)
 	http.HandleFunc("/stop/", stopHandler)
 	http.HandleFunc("/progress", progressHandler)
-	http.HandleFunc("/new/", newTaskHandler)
+	http.HandleFunc("/new", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
 	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
