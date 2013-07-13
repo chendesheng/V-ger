@@ -39,8 +39,8 @@ func parseUrlQueryResult(text string) (cid string, tsize string, btname string, 
 	text = strings.Replace(text, "\\'", "", -1) //ensure no ' in side ''
 	matches := regexUrlQuery.FindStringSubmatch(text)
 
-	if len(matches) == 0 {
-		panic(fmt.Errorf("parseUrlQueryResult error: %s", text))
+	if matches == nil {
+		panic(fmt.Errorf("Parse unexpected response: %s", text))
 	}
 
 	for _, s := range matches[1:] {
@@ -98,15 +98,20 @@ func parseBtTaskList(text string) ([]ThunderTask, error) {
 }
 
 func parseNewlyCreateTask(text string) map[string]interface{} {
-	regexUrl, _ := regexp.Compile(`("id":"[0-9]*").*("filesize":"[^"]*").*("cid":"[^"]*").*("taskname":"[^"]*").*("lixian_url":"[^"]*")`)
+	regexUrl := regexp.MustCompile(`("id":"[0-9]*").*("filesize":"[^"]*").*("cid":"[^"]*").*("taskname":"[^"]*").*("lixian_url":"[^"]*")`)
 
-	jsonStr := "{" + strings.Join(regexUrl.FindStringSubmatch(text)[1:], ",") + "}"
-	log.Println(jsonStr)
+	if matches := regexUrl.FindStringSubmatch(text); matches != nil {
 
-	var r interface{}
-	json.Unmarshal([]byte(jsonStr), &r)
+		jsonStr := "{" + strings.Join(matches[1:], ",") + "}"
+		log.Println(jsonStr)
 
-	return r.(map[string]interface{})
+		var r interface{}
+		json.Unmarshal([]byte(jsonStr), &r)
+
+		return r.(map[string]interface{})
+	} else {
+		panic(fmt.Errorf("Parse unexpected response: %s", text))
+	}
 }
 func parseTaskCheck(text string) (cid string, gcid string, size string, t string) {
 	args := parseJsFuncArgs(text)

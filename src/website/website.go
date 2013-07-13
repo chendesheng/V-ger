@@ -474,7 +474,7 @@ func Run() {
 	http.HandleFunc("/resume/", resumeHandler)
 	http.HandleFunc("/stop/", stopHandler)
 	http.HandleFunc("/progress", progressHandler)
-	http.HandleFunc("/new", newTaskHandler)
+	http.HandleFunc("/new/", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
 	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
