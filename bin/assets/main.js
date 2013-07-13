@@ -88,7 +88,7 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 			if ($scope.new_url.indexOf('lixian.vip.xunlei.com') != -1 ||
 				$scope.new_url.indexOf('youtube.com') != -1 || 
 				/.*dmg$/.test($scope.new_url)) {
-				$http.post('/new', $scope.new_url).success(function(resp) {
+				$http.post('/new/', $scope.new_url).success(function(resp) {
 					$scope.new_url = '';
 					$scope.waiting = false;
 					resp && $scope.push_alert(resp);

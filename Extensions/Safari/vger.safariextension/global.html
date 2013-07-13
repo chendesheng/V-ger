@@ -16,17 +16,24 @@ function performCommand(event) {
 	// Make sure event comes from the button
 	if (event.command == "download") {
 		console.log(currentLinkURL);
-		post('/thunder/new', currentLinkURL, function (data) {
-			for (var i = 0; i < data.length; i++) {
-				var f = data[i];
-				if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
-					downloadFile(f);
-					return;
-				}
-			}
 
-			alert(currentPage, 'Download fail.');
-		});
+		if (currentLinkURL.indexOf('lixian.vip.xunlei.com') != -1 ||
+			currentLinkURL.indexOf('youtube.com') != -1 || 
+			/.*dmg$/.test(currentLinkURL)) {
+			post('/new/', currentLinkURL, function(){});
+		} else {
+			post('/thunder/new', currentLinkURL, function (data) {
+				for (var i = 0; i < data.length; i++) {
+					var f = data[i];
+					if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
+						downloadFile(f);
+						return;
+					}
+				}
+
+				alert(currentPage, 'Download fail.');
+			});
+		}
 	} else if (event.command == "play") {
 		post('/thunder/new', currentLinkURL, function (data) {
 			for (var i = 0; i < data.length; i++) {
@@ -68,8 +75,10 @@ function handleMessage (event) {
 
 var baseUrl = safari.extension.settings.server;//'http://localhost:9527';
 function post(path, data, success) {
+	console.log('post ' + path + ' ' + data);
 	var request = new XMLHttpRequest();
 	request.open("POST", baseUrl + path);
+	request.send(data);
 	request.onreadystatechange = function()
 	{
 	    // "4" means "completed"
@@ -83,8 +92,7 @@ function post(path, data, success) {
 		    	success(JSON.parse(request.responseText));
 	    	}
 	    }
-	}
-	request.send(data);
+	};
 }
 
 </script>
