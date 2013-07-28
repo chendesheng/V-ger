@@ -27,7 +27,7 @@ func Play(url string, w io.Writer, from, to int64) {
 
 	input := make(chan *block)
 	output := make(chan *block)
-
+	
 	go func(quit chan bool) {
 		generateBlock(input, from, to, 0, control, quit)
 	}(play_quit)

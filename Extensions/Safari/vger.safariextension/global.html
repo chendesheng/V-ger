@@ -20,7 +20,7 @@ function performCommand(event) {
 		if (currentLinkURL.indexOf('lixian.vip.xunlei.com') != -1 ||
 			currentLinkURL.indexOf('youtube.com') != -1 || 
 			/.*dmg$/.test(currentLinkURL)) {
-			post('/new/', currentLinkURL, function(){});
+			post('/new/', currentLinkURL);
 		} else {
 			post('/thunder/new', currentLinkURL, function (data) {
 				for (var i = 0; i < data.length; i++) {
@@ -74,6 +74,8 @@ function handleMessage (event) {
 
 
 var baseUrl = safari.extension.settings.server;//'http://localhost:9527';
+console.log(baseUrl);
+
 function post(path, data, success) {
 	console.log('post ' + path + ' ' + data);
 	var request = new XMLHttpRequest();

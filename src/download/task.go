@@ -18,43 +18,16 @@ import (
 	"strings"
 	"task"
 	"time"
+	"util"
 )
 
 var DownloadClient *http.Client
 
-var BaseDir string
+var baseDir string
 
-// var task.taskDirName string
-
-// func init() {
-// 	taskDirName = "vger-tasks"
-// }
-
-// type Task struct {
-// 	URL  string
-// 	Size int64
-// 	Name string //identifier (a little unsafe but more readable than url)
-// 	// seconds from 1970-1-1
-// 	StartTime int64
-
-// 	DownloadedSize int64
-// 	ElapsedTime    time.Duration
-// 	isNew          bool
-
-// 	LimitSpeed int64
-// 	Speed      float64
-// 	Status     string
-// 	NameHash   string
-// 	Est        time.Duration
-
-// 	Autoshutdown bool
-// }
-
-// type taskSlice []*Task
-
-// func (t taskSlice) Len() int           { return len(t) }
-// func (t taskSlice) Less(i, j int) bool { return t[i].StartTime < t[j].StartTime }
-// func (t taskSlice) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
+func init() {
+	baseDir = util.ReadConfig("dir")
+}
 
 func download(t *task.Task, control chan int, quit chan bool) {
 	t.Status = "Downloading"
@@ -141,7 +114,7 @@ func DownloadSmallFile(url string, name string) (filename string, err error) {
 
 	defer resp.Body.Close()
 
-	f, err := os.OpenFile(fmt.Sprintf("%s%c%s", BaseDir, os.PathSeparator, name),
+	f, err := os.OpenFile(fmt.Sprintf("%s%c%s", baseDir, os.PathSeparator, name),
 		os.O_CREATE|os.O_RDWR, 0666)
 	defer f.Close()
 	if err != nil {
@@ -165,7 +138,7 @@ func DownloadSmallFile(url string, name string) (filename string, err error) {
 }
 
 func GetFilePath(name string) string {
-	return fmt.Sprintf("%s%c%s", BaseDir, os.PathSeparator, name)
+	return fmt.Sprintf("%s%c%s", baseDir, os.PathSeparator, name)
 }
 func getOrNewTask(url string, name string) *task.Task {
 	// fmt.Println("hello")
@@ -209,7 +182,7 @@ func hashName(name string) string {
 }
 
 // func task.GetTasks() []*task.Task {
-// 	taskDir := path.Join(BaseDir, taskDirName)
+// 	taskDir := path.Join(baseDir, taskDirName)
 // 	fileInfoes, err := ioutil.ReadDir(taskDir)
 // 	if os.IsNotExist(err) {
 // 		os.Mkdir(taskDir, 0666)
@@ -271,7 +244,7 @@ func GetNextQueuedTask() *task.Task {
 
 // func GetTask(name string) (*task.Task, error) {
 // 	name = fmt.Sprint(name, ".vger-task.txt")
-// 	taskDir := path.Join(BaseDir, taskDirName)
+// 	taskDir := path.Join(baseDir, taskDirName)
 // 	return getTask(name, taskDir)
 // }
 func SetAutoshutdown(name string, onOrOff bool) {

@@ -14,6 +14,8 @@ import (
 	"util"
 )
 
+var config map[string]string
+
 func init() {
 	c := objc.NewClass(AppDelegate{})
 	c.AddMethod("menuClick:", (*AppDelegate).MenuClick)
@@ -28,7 +30,7 @@ type AppDelegate struct {
 
 func (delegate *AppDelegate) MenuClick(sender uintptr) {
 	if t, ok := task.GetDownloadingTask(); ok {
-		cmd := exec.Command("open", path.Join(task.TaskDir, t.Name))
+		cmd := exec.Command("open", path.Join(util.ReadConfig("dir"), t.Name))
 		cmd.Start()
 	} else {
 		cmd := exec.Command("open", "/Applications/V'ger.app")
@@ -45,25 +47,25 @@ type uiCommand struct {
 	arguments interface{}
 }
 
-func goAppStarted(chUI chan uiCommand) {
-	go func(chUI chan uiCommand) {
-		for {
-			t := time.Tick(time.Second)
-			select {
-			case <-t:
-				var properties []string
-				if t, ok := task.GetDownloadingTask(); ok {
-					properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name), float64(t.DownloadedSize)/float64(t.Size)*100.0), fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
-				} else {
-					properties = []string{"V'ger"}
-				}
-
-				chUI <- uiCommand{"statusItem", properties}
-
-				break
+func timerStart(chUI chan uiCommand) {
+	for {
+		t := time.Tick(time.Second)
+		select {
+		case <-t:
+			var properties []string
+			if t, ok := task.GetDownloadingTask(); ok {
+				properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
+					float64(t.DownloadedSize)/float64(t.Size)*100.0),
+					fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+			} else {
+				properties = []string{"V'ger"}
 			}
+
+			chUI <- uiCommand{"statusItem", properties}
+
+			break
 		}
-	}(chUI)
+	}
 }
 
 var chUI chan uiCommand
@@ -80,7 +82,7 @@ func Start() {
 
 	pool := NewNSAutoreleasePool()
 
-	InstallNSBundleHook()
+	// InstallNSBundleHook()
 
 	delegate := objc.GetClass("GOAppDelegate").Alloc().Init()
 
@@ -96,18 +98,19 @@ func Start() {
 
 	chUI = make(chan uiCommand)
 
-	goAppStarted(chUI)
+	go timerStart(chUI)
 
 	for {
 		pool.Release()
 		pool = NewNSAutoreleasePool()
 
-		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(0.05), "kCFRunLoopDefaultMode", true)
+		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(0.05),
+			"kCFRunLoopDefaultMode", true)
 
 		app.SendEvent(event)
-		app.UpdateWindows()
+		// app.UpdateWindows()
 
-		t := time.After(time.Millisecond * 5)
+		t := time.After(time.Millisecond * 100)
 		select {
 		case cmd := <-chUI:
 			switch cmd.name {
@@ -118,6 +121,8 @@ func Start() {
 
 				if len(prop) > 1 {
 					statusItem.SetToolTip(prop[1])
+				} else {
+					statusItem.SetToolTip("")
 				}
 				break
 			// case "sendNotification":
@@ -149,5 +154,6 @@ func Start() {
 		}
 	}
 
+	statusItem.Release()
 	pool.Release()
 }

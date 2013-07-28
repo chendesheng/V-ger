@@ -19,7 +19,11 @@ import (
 	"time"
 )
 
-var TaskDir string
+var taskDir string
+
+func init() {
+	taskDir = path.Join(util.ReadConfig("dir"), "vger-tasks")
+}
 
 type Task struct {
 	URL  string
@@ -45,7 +49,7 @@ func taskInfoFileName(name string) string {
 	if !strings.HasSuffix(name, ".vger-task.txt") {
 		name = fmt.Sprint(name, ".vger-task.txt")
 	}
-	return path.Join(TaskDir, name)
+	return path.Join(taskDir, name)
 }
 
 // func hashName(name string) string {
@@ -63,7 +67,7 @@ func GetTask(name string) (*Task, error) {
 }
 
 func GetTasks() []*Task {
-	fileInfoes, err := ioutil.ReadDir(TaskDir)
+	fileInfoes, err := ioutil.ReadDir(taskDir)
 	if err != nil {
 		log.Print(err)
 		return make([]*Task, 0)
@@ -96,9 +100,9 @@ func GetDownloadingTask() (*Task, bool) {
 }
 
 func SaveTask(t *Task) (err error) {
-	_, err = ioutil.ReadDir(TaskDir)
+	_, err = ioutil.ReadDir(taskDir)
 	if os.IsNotExist(err) {
-		os.Mkdir(TaskDir, 0777)
+		os.Mkdir(taskDir, 0777)
 	}
 
 	err = util.WriteJson(taskInfoFileName(t.Name), t)

@@ -4,37 +4,33 @@ import (
 	"code.google.com/p/cookiejar"
 	"download"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html"
-	"native"
-	// "regexp"
-	// "net/http/httputil"
-	"path"
-	// "html/template"
 	"io/ioutil"
-	"os/exec"
-	"strconv"
-	"strings"
-	// "regexp"
-	// "io"
-	"runtime"
-	// "encoding/json"
-	"b1"
-	"errors"
 	"log"
 	"mime"
+	"native"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"subtitles"
 	"task"
 	"thunder"
 	"time"
+	"util"
 )
 
+var config map[string]string
+
 func init() {
-	config = readConfig()
+	config = util.ReadAllConfigs()
+
 	if logPath, ok := config["log"]; ok {
 		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
@@ -59,12 +55,6 @@ func init() {
 	download.DownloadClient = client
 	thunder.Client = client
 	subtitles.Client = client
-	b1.Client = client
-
-	download.BaseDir = config["dir"]
-	task.TaskDir = path.Join(config["dir"], "vger-tasks")
-
-	native.WebSiteAddress = config["server"]
 }
 
 func pick(arr []string, emptyMessage string) (int, string) {
@@ -110,7 +100,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 func openHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("open \"%s\".\n", name)
-	cmd := exec.Command("open", path.Join(download.BaseDir, name))
+	cmd := exec.Command("open", path.Join(config["dir"], name))
 	cmd.Start()
 
 	w.Write([]byte(``))
@@ -120,8 +110,10 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
 	fmt.Printf("trash \"%s\".\n", name)
 
-	native.MoveFileToTrash(download.BaseDir, name)
-	native.MoveFileToTrash(path.Join(download.BaseDir, "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
+	download.StopDownload(name)
+
+	native.MoveFileToTrash(config["dir"], name)
+	native.MoveFileToTrash(path.Join(config["dir"], "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
 	w.Write([]byte(``))
 }
 
@@ -150,10 +142,12 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("newTaskhandler", name)
 	input, _ := ioutil.ReadAll(r.Body)
-	url := string(input)
-	fmt.Printf("add download \"%s\".\n", url)
 
-	w.Write([]byte(download.NewDownload(url, name)))
+	if url := string(input); url != "" {
+		fmt.Printf("add download \"%s\".\n", url)
+
+		w.Write([]byte(download.NewDownload(url, name)))
+	}
 }
 func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
@@ -258,44 +252,6 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.ServeFile(w, r, path)
 	}
-}
-func subtitlesSearchHandler(w http.ResponseWriter, r *http.Request) {
-	print("subtitlesSearchHandler")
-	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
-	data := getSubList2(filterMovieName2(movieName))
-	text, _ := json.Marshal(data)
-	w.Write([]byte(text))
-}
-
-func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
-	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
-	input, _ := ioutil.ReadAll(r.Body)
-	url := string(input)
-	// name := getFileName(url)
-	url, name, _ := download.GetDownloadInfo(url)
-
-	if ok, err := subtitles.QuickDownload(url, path.Join(download.BaseDir, movieName+path.Ext(name))); !ok {
-		w.Write([]byte(err.Error()))
-		return
-	} else {
-		cmd := exec.Command("open", path.Join(download.BaseDir, movieName+path.Ext(name)))
-		cmd.Start()
-		// extractSubtitle(name, movieName)
-	}
-}
-
-func appStatusHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(fmt.Sprintf("# of goruntine: %d.", runtime.NumGoroutine())))
-}
-func appShutdownHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("bye"))
-	go func() {
-		time.Sleep(time.Second)
-		os.Exit(1)
-	}()
-}
-func appGCHandler(w http.ResponseWriter, r *http.Request) {
-	runtime.GC()
 }
 
 func playHandler(w http.ResponseWriter, r *http.Request) {

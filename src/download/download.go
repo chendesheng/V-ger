@@ -43,7 +43,7 @@ func doDownload(url string, path string, from, to int64,
 	return progress
 }
 func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
-	blockSize := int64(40 * 1024)
+	blockSize := int64(400 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
 	}
@@ -234,11 +234,12 @@ func sortOutput(input <-chan *block, output chan<- *block, quit chan bool, from 
 					// fmt.Printf("sort output %d-%d\n", d.from, d.to)
 					select {
 					case output <- d:
+						nextOutputFrom = d.to
+						delete(dbmap, db.from)
+						break
 					case <-quit:
 						return
 					}
-					nextOutputFrom = d.to
-					delete(dbmap, db.from)
 				} else {
 					break
 				}
@@ -260,7 +261,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 	chan2 := createDownloadRoutine(url, disorderOutput, quit)
 	chan3 := createDownloadRoutine(url, disorderOutput, quit)
 	chan4 := createDownloadRoutine(url, disorderOutput, quit)
-	// chan5 := createDownloadRoutine(url, disorderOutput, quit)
+	chan5 := createDownloadRoutine(url, disorderOutput, quit)
 	// chan6 := createDownloadRoutine(url, disorderOutput, quit)
 
 	go func(input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
@@ -276,7 +277,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 				close(chan2)
 				close(chan3)
 				close(chan4)
-				// close(chan5)
+				close(chan5)
 				// close(chan6)
 				return
 			}
@@ -285,7 +286,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 			case chan2 <- b:
 			case chan3 <- b:
 			case chan4 <- b:
-			// case chan5 <- b:
+			case chan5 <- b:
 			// case chan6 <- b:
 			case <-quit:
 				fmt.Println("currentDownload quit")
@@ -334,11 +335,10 @@ func downloadBlock(url string, b *block, quit chan bool) (chan []byte, io.Closer
 			chFinish <- true
 		}()
 
-		chTimeout := time.After(time.Second * 10)
 		select {
 		case <-chFinish:
 			break
-		case <-chTimeout:
+		case <-time.After(time.Second * 30):
 			panic("network read timeout")
 			return
 		}

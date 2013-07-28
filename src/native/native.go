@@ -10,13 +10,10 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"util"
 )
 
-var WebSiteAddress string
-
 func init() {
-	WebSiteAddress = "127.0.0.1:9527"
-
 	// c := objc.NewClass(NotificationCenterDelegate{})
 	// c.AddMethod("didActivateNotification:", (*NotificationCenterDelegate).DidActivateNotification)
 
@@ -35,6 +32,9 @@ func init() {
 // func SetUIChan(ch chan cocoa.UICommand) {
 // 	uiCh = ch
 // }
+func Start() {
+	cocoa.Start()
+}
 
 func SendNotification(title, infoText string) error {
 	// cocoa.SendNotification(title, infoText)
@@ -51,7 +51,7 @@ func SendNotification(title, infoText string) error {
 
 	wd, _ := os.Getwd()
 	vgerHelper := path.Join(wd, "vgerhelper.app")
-	cmd := exec.Command("open", vgerHelper, "--args", "notification", WebSiteAddress, title, infoText)
+	cmd := exec.Command("open", vgerHelper, "--args", "notification", util.ReadConfig("server"), title, infoText)
 	if err := cmd.Run(); err != nil {
 		log.Println(err)
 		return err
