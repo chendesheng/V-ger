@@ -1,7 +1,6 @@
 package website
 
 import (
-	"code.google.com/p/cookiejar"
 	"download"
 	"encoding/json"
 	"errors"
@@ -12,6 +11,7 @@ import (
 	"mime"
 	"native"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"os/exec"
@@ -38,9 +38,9 @@ func init() {
 		}
 		log.SetOutput(f)
 	}
-
+	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
-		Jar: cookiejar.NewJar(true),
+		Jar: jar,
 	}
 	cookie := http.Cookie{
 		Name:    "gdriveid",
