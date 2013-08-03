@@ -27,7 +27,7 @@ func newDataBlock(from, to int64) *block {
 	return &block{from, to, make([]byte, 0)}
 }
 
-func doDownload(url string, path string, from, to int64,
+func doDownload(url string, w io.Writer, from, to int64,
 	maxSpeed int64, control chan int, quit chan bool) chan int64 {
 
 	input := make(chan *block)
@@ -38,12 +38,16 @@ func doDownload(url string, path string, from, to int64,
 	go concurrentDownload(url, input, output, quit, from, to)
 
 	progress := make(chan int64)
-	go writeOutput(path, from, output, progress, quit)
+
+	go func() {
+		writeOutput(w, from, output, progress, quit)
+		ensureQuit(quit)
+	}()
 
 	return progress
 }
 func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
-	blockSize := int64(400 * 1024)
+	blockSize := int64(50 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
 	}
@@ -56,7 +60,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 
 	//small blocksize after start,
 	//change to a larger blocksize after 30 seconds
-	changeBlockSize := time.Tick(time.Second * 30)
+	changeBlockSize := time.NewTimer(time.Second * 30)
 	for {
 		b := time.Now()
 		select {
@@ -66,7 +70,8 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(100 * 1024)
+				blockSize = int64(50 * 1024)
+				changeBlockSize.Reset(time.Second * 30)
 			}
 		case input <- newDataBlock(from, to):
 			if to == size {
@@ -92,10 +97,11 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 					}
 				}
 			}
-		case <-changeBlockSize:
+		case <-changeBlockSize.C:
 			if maxSpeed == 0 {
 				blockSize = 100 * 1024
 			}
+			changeBlockSize.Stop()
 		case <-quit:
 			close(input)
 			fmt.Println("input quit")
@@ -103,10 +109,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 		}
 	}
 }
-func writeOutput(path string, from int64, output <-chan *block, progress chan int64, quit chan bool) {
-	f := openOrCreateFileRW(path, from)
-	defer f.Close()
-
+func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan int64, quit chan bool) {
 	defer func() {
 		fmt.Println("close progress")
 		close(progress)
@@ -121,7 +124,7 @@ func writeOutput(path string, from int64, output <-chan *block, progress chan in
 			}
 			for {
 
-				_, err := f.WriteAt(db.data, db.from)
+				_, err := w.Write(db.data)
 				db.data = nil
 
 				if err == nil {
@@ -142,8 +145,10 @@ func writeOutput(path string, from int64, output <-chan *block, progress chan in
 
 					time.Sleep(time.Second * 2)
 				} else {
-					fmt.Printf("\n%s", err)
-					log.Fatal(err)
+					// fmt.Printf("\n%s", err)
+					log.Print(err)
+					// log.Fatal(err)
+					return
 				}
 			}
 		case <-quit:

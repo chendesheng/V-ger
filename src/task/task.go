@@ -1,7 +1,7 @@
 package task
 
 import (
-	// "encoding/base64"
+	"encoding/base64"
 	// "encoding/json"
 	// "errors"
 	"fmt"
@@ -52,10 +52,29 @@ func taskInfoFileName(name string) string {
 	return path.Join(taskDir, name)
 }
 
-// func hashName(name string) string {
-// 	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
-// }
+func hashName(name string) string {
+	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
+}
+func NewTask(name string, url string, size int64) *Task {
+	t := new(Task)
+	t.URL = url
+	t.Name = name
+	t.IsNew = true
+	t.Size = size
+	t.StartTime = time.Now().Unix()
+	t.DownloadedSize = 0
+	t.ElapsedTime = 0
 
+	t.LimitSpeed = 0
+	t.Speed = 0
+	t.Status = "Stopped"
+
+	t.NameHash = hashName(t.Name)
+
+	SaveTask(t)
+
+	return t
+}
 func GetTask(name string) (*Task, error) {
 	t := new(Task)
 	err := util.ReadJson(taskInfoFileName(name), t)

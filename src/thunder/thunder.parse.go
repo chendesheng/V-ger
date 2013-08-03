@@ -110,6 +110,7 @@ func parseNewlyCreateTask(text string) map[string]interface{} {
 
 		return r.(map[string]interface{})
 	} else {
+		log.Println("parseNewlyCreateTask")
 		panic(fmt.Errorf("Parse unexpected response: %s", text))
 	}
 }

@@ -297,7 +297,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		download.StopDownload(name)
 	}
 
-	url, size := t.URL, t.Size
+	size := t.Size
 
 	code := http.StatusOK
 
@@ -338,7 +338,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 	return
 	// }
-	download.Play(url, w, ra.start, ra.start+sendSize)
+	download.Play(t, w, ra.start, ra.start+sendSize)
 }
 
 type httpRange struct {

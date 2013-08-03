@@ -34,9 +34,12 @@ func download(t *task.Task, control chan int, quit chan bool) {
 	task.SaveTask(t)
 
 	if t.DownloadedSize < t.Size {
-		progress := doDownload(t.URL, GetFilePath(t.Name), t.DownloadedSize, t.Size, t.LimitSpeed, control, quit)
+		f := openOrCreateFileRW(GetFilePath(t.Name), t.DownloadedSize)
+
+		progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, t.LimitSpeed, control, quit)
 
 		handleProgress(progress, t, quit)
+		f.Close()
 	}
 
 	t, _ = task.GetTask(t.Name)
@@ -59,17 +62,20 @@ func download(t *task.Task, control chan int, quit chan bool) {
 		task.SaveTask(t)
 	}
 
-	go func() {
-		timeout := time.After(time.Second * 1)
-		for i := 0; i < 50; i++ {
-			select {
-			case quit <- true:
-			case <-timeout:
-				return
-			}
-		}
-	}()
+	go ensureQuit(quit)
 }
+
+func ensureQuit(quit chan bool) {
+	timeout := time.After(time.Second * 1)
+	for i := 0; i < 50; i++ {
+		select {
+		case quit <- true:
+		case <-timeout:
+			return
+		}
+	}
+}
+
 func DownloadAsync(url string, name string) (string, chan int, chan bool) {
 	control := make(chan int)
 	quit := make(chan bool, 50)
@@ -157,70 +163,13 @@ func getOrNewTask(url string, name string) *task.Task {
 		return t
 	}
 
-	t := new(task.Task)
-	t.URL = url
-	t.Name = name
-	t.IsNew = true
-	t.Size = filesize
-	t.StartTime = time.Now().Unix()
-	t.DownloadedSize = 0
-	t.ElapsedTime = 0
-
-	t.LimitSpeed = 0
-	t.Speed = 0
-	t.Status = "Stopped"
-
-	t.NameHash = hashName(t.Name)
-
-	task.SaveTask(t)
-
-	return t
+	return task.NewTask(name, url, filesize)
 }
 
 func hashName(name string) string {
 	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
 }
 
-// func task.GetTasks() []*task.Task {
-// 	taskDir := path.Join(baseDir, taskDirName)
-// 	fileInfoes, err := ioutil.ReadDir(taskDir)
-// 	if os.IsNotExist(err) {
-// 		os.Mkdir(taskDir, 0666)
-// 	} else if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	tasks := make([]*task.Task, 0, len(fileInfoes))
-// 	for _, f := range fileInfoes {
-// 		if f.IsDir() {
-// 			continue
-// 		}
-
-// 		name := f.Name()
-// 		if t, err := getTask(name, taskDir); err == nil {
-// 			tasks = append(tasks, t)
-// 		}
-// 	}
-
-// 	// fmt.Printf("get tasks %v.\n", tasks)
-// 	return tasks
-// }
-
-// func getTask(name string, taskDir string) (*task.Task, error) {
-// 	if !strings.HasSuffix(name, ".vger-task.txt") {
-// 		return nil, errors.New("Task file name error.")
-// 	}
-
-// 	t := new(task.Task)
-// 	err := readJson(path.Join(taskDir, name), t)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// if t.NameHash == "" {
-// 	t.NameHash = hashName(t.Name)
-// 	// }
-// 	return t, nil
-// }
 func ResumeNextQueuedTask() {
 	if t := GetNextQueuedTask(); t != nil {
 		fmt.Println("Resume download ", t.Name)
@@ -242,11 +191,6 @@ func GetNextQueuedTask() *task.Task {
 	return nextTask
 }
 
-// func GetTask(name string) (*task.Task, error) {
-// 	name = fmt.Sprint(name, ".vger-task.txt")
-// 	taskDir := path.Join(baseDir, taskDirName)
-// 	return getTask(name, taskDir)
-// }
 func SetAutoshutdown(name string, onOrOff bool) {
 	if t, err := task.GetTask(name); err == nil {
 		t.Autoshutdown = onOrOff
