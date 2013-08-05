@@ -110,7 +110,9 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
 	fmt.Printf("trash \"%s\".\n", name)
 
-	download.StopDownload(name)
+	if t, err := task.GetTask(name); err != nil && t.Status == "Downloading" {
+		download.StopDownload(name)
+	}
 
 	native.MoveFileToTrash(config["dir"], name)
 	native.MoveFileToTrash(path.Join(config["dir"], "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))

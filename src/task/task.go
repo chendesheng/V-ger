@@ -22,6 +22,7 @@ import (
 var taskDir string
 
 func init() {
+	watchers = make([]chan []*Task, 0)
 	taskDir = path.Join(util.ReadConfig("dir"), "vger-tasks")
 }
 
@@ -144,14 +145,38 @@ func RemoveTask(name string) error {
 	return nil
 }
 
-var chTaskChange chan []*Task
+var watchers []chan []*Task
 
 func WatchChange(ch chan []*Task) {
-	chTaskChange = ch
+	if ch == nil {
+		panic("ch cannot be nil")
+	}
+
+	for _, w := range watchers {
+		if w == ch {
+			return
+		}
+	}
+
+	watchers = append(watchers, ch)
+	// chTaskChange = ch
+}
+
+func RemoveWatch(ch chan []*Task) {
+	for i, w := range watchers {
+		if w == ch {
+			watchers = append(watchers[:i], watchers[i+1:]...)
+		}
+	}
 }
 
 func writeChangeEvent() {
-	if chTaskChange != nil {
-		chTaskChange <- GetTasks()
+	for _, w := range watchers {
+		select {
+		case w <- GetTasks():
+			return
+		case <-time.After(time.Second):
+			return
+		}
 	}
 }

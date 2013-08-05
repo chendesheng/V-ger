@@ -60,31 +60,30 @@ func TestWatchTasksChange(t *testing.T) {
 
 	ch := make(chan []*Task)
 	WatchChange(ch)
+	WatchChange(ch)
 
 	go func() {
-		for {
-			tks := <-ch
-			if len(tks) != 1 {
-				t.Errorf("length of tasks must be 1 now %d", len(tks))
-			}
-			if tks[0].Name != "hello" {
-				t.Errorf("Except hello now %s", tks[0].Name)
-			}
-			tks = <-ch
-			if len(tks) != 2 {
-				t.Errorf("length of tasks must be 2 now %d", len(tks))
-			}
-			tks = <-ch
-			if len(tks) != 1 {
-				t.Errorf("length of tasks must be 1 now %d", len(tks))
-			}
-			if tks[0].Name != "hello1" {
-				t.Errorf("Except hello1 now %s", tks[0].Name)
-			}
-			tks = <-ch
-			if len(tks) != 0 {
-				t.Errorf("Except 0 but %d", len(tks))
-			}
+		tks := <-ch
+		if len(tks) != 1 {
+			t.Errorf("length of tasks must be 1 now %d", len(tks))
+		}
+		if tks[0].Name != "hello" {
+			t.Errorf("Except hello now %s", tks[0].Name)
+		}
+		tks = <-ch
+		if len(tks) != 2 {
+			t.Errorf("length of tasks must be 2 now %d", len(tks))
+		}
+		tks = <-ch
+		if len(tks) != 1 {
+			t.Errorf("length of tasks must be 1 now %d", len(tks))
+		}
+		if tks[0].Name != "hello1" {
+			t.Errorf("Except hello1 now %s", tks[0].Name)
+		}
+		tks = <-ch
+		if len(tks) != 0 {
+			t.Errorf("Except 0 but %d", len(tks))
 		}
 	}()
 
@@ -98,9 +97,9 @@ func TestWatchTasksChange(t *testing.T) {
 
 	GetTasks()
 
-	WatchChange(nil)
 	RemoveTask("hello")
 	RemoveTask("hello1")
+
 	os.Remove(taskDir)
 }
 

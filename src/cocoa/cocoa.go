@@ -48,23 +48,29 @@ type uiCommand struct {
 }
 
 func timerStart(chUI chan uiCommand) {
-	for {
-		t := time.Tick(time.Second)
-		select {
-		case <-t:
-			var properties []string
-			if t, ok := task.GetDownloadingTask(); ok {
-				properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
-					float64(t.DownloadedSize)/float64(t.Size)*100.0),
-					fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
-			} else {
-				properties = []string{"V'ger"}
+	watch := make(chan []*task.Task)
+	task.WatchChange(watch)
+
+	for tks := range watch {
+		println("task change")
+		var downloadingTask *task.Task
+
+		for _, t := range tks {
+			if t.Status == "Downloading" {
+				downloadingTask = t
 			}
-
-			chUI <- uiCommand{"statusItem", properties}
-
-			break
 		}
+
+		var properties []string
+		if t := downloadingTask; t != nil {
+			properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
+				float64(t.DownloadedSize)/float64(t.Size)*100.0),
+				fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+		} else {
+			properties = []string{"V'ger"}
+		}
+
+		chUI <- uiCommand{"statusItem", properties}
 	}
 }
 
