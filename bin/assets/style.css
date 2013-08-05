@@ -193,6 +193,8 @@ input[type=text], textarea {
 	spellcheck:false;
 	border-top: solid 1px #424242;
 	border-radius: 0;
+	outline: none;
+	padding: 10px;
 }
 
 #new-task {
@@ -277,7 +279,7 @@ h1,h2 {
 }
 .popup .close {
 	position: absolute;
-	right: 10px;
+	left: 10px;
 	top: 10px;
 	z-index: 1;
 }
@@ -286,17 +288,22 @@ h1,h2 {
 	text-align: center;
 }
 .close {
-	width: 14px;
-	height: 14px;
-	background-image: url('/assets/close.png');
-	background-position: center;
-	background-repeat: no-repeat;
+	font-size: 15px;
+	-webkit-transition: all 0.2s;
+	-moz-transition: all 0.2s;
+	-ms-transition: all 0.2s;
+	-o-transition: all 0.2s;
+	transition: all 0.2s;
+	color: #999;
 }
 .close:hover {
-	background-image: url('/assets/close_hover.png');
+	color: #555;
 }
 .close:active {
-	background-image: url('/assets/close_pressed.png');
+	color: #777;
+}
+.close:after {
+	content: '✖'
 }
 .overlay ul{
 	padding:0 30px;
@@ -347,6 +354,7 @@ h3 {
 }
 .overlay h3 {
 	padding-right: 40px;
+	padding-left: 40px;
 }
 #subtitles .name {
 	max-width: 90%;
@@ -370,7 +378,7 @@ h3 {
 	position: absolute;
 	right:0;
 	top: 50%;
-	margin-top:-7px;
+	margin-top:-12px;
 }
 
 .task-infoes .progress {
