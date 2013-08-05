@@ -243,7 +243,8 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 				return;
 			}
 
-			if (/[.]torrent$/.test($event.dataTransfer.files[0].name)) {
+			if (!/[.]torrent$/.test($event.dataTransfer.files[0].name)) {
+				$scope.push_alert('Only support .torrent file!')
 				return;
 			}
 
