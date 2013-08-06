@@ -335,13 +335,22 @@ func downloadBlock(url string, b *block, quit chan bool) (chan []byte, io.Closer
 		// fmt.Println("read from buffer")
 
 		chFinish := make(chan bool)
-		go func() {
+		go func(ch chan bool) {
 			buffer.ReadFrom(resp.Body)
-			chFinish <- true
-		}()
+			select {
+			case ch <- true:
+				break
+			case <-time.After(time.Second * 10):
+				break
+			case <-quit:
+				break
+			}
+		}(chFinish)
 
 		select {
 		case <-chFinish:
+			break
+		case <-quit:
 			break
 		case <-time.After(time.Second * 30):
 			panic("network read timeout")
