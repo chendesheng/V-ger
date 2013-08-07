@@ -140,10 +140,19 @@ func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan in
 
 					if pathErrNotifyTimes == 0 { //only report once
 						native.SendNotification("Error write "+filepath.Base(perr.Path), perr.Err.Error())
-						pathErrNotifyTimes++
+					}
+					pathErrNotifyTimes++
+					if pathErrNotifyTimes > 100 {
+						log.Fatal(err)
+						return
 					}
 
-					time.Sleep(time.Second * 2)
+					select {
+					case <-quit:
+						return
+					case <-time.After(time.Second * 2):
+						break
+					}
 				} else {
 					// fmt.Printf("\n%s", err)
 					log.Print(err)
