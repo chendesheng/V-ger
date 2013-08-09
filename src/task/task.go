@@ -177,9 +177,10 @@ func UpdateFiles() {
 }
 
 func writeChangeEvent() {
+	tks := GetTasks()
 	for _, w := range watchers {
 		select {
-		case w <- GetTasks():
+		case w <- tks:
 			break
 		case <-time.After(time.Second):
 			break
