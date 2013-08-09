@@ -56,16 +56,20 @@ func timerStart(chUI chan uiCommand) {
 		var downloadingTask *task.Task
 
 		for _, t := range tks {
-			if t.Status == "Downloading" {
+			if t.Status == "Downloading" || t.Status == "Playing" {
 				downloadingTask = t
 			}
 		}
 
 		var properties []string
 		if t := downloadingTask; t != nil {
-			properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
-				float64(t.DownloadedSize)/float64(t.Size)*100.0),
-				fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+			if t.Status == "Downloading" {
+				properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
+					float64(t.DownloadedSize)/float64(t.Size)*100.0),
+					fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+			} else if t.Status == "Playing" {
+				properties = []string{fmt.Sprintf("%s %.1f KB/s", util.CleanMovieName(t.Name), t.Speed), ""}
+			}
 		} else {
 			properties = []string{"V'ger"}
 		}
@@ -150,6 +154,7 @@ func Start() {
 			case "trashFile":
 				prop := cmd.arguments.([]string)
 				NSTrashFile(prop[0], prop[1])
+				task.UpdateFiles()
 			default:
 				log.Printf("unknown cmd %v", cmd)
 				break
