@@ -103,6 +103,11 @@ func TestWatchTasksChange(t *testing.T) {
 	os.Remove(taskDir)
 }
 
+//TODO
+func TestMultiWatcher(t *testing.T) {
+
+}
+
 func TestGetDownloadingTask(t *testing.T) {
 	taskDir = "abc"
 	tk := &Task{}

@@ -1,47 +1,86 @@
 angular.module('vger', ['ui']).controller('tasks_ctrl',
 	function ($scope, $http) {
-		function get_process() {
-			$http.get('/progress').success(function(data) {
-				for (var i = data.length - 1; i >= 0; i--) {
-					var item = data[i];
-					item.StartDate = new Date(Date.parse(item.StartDate))
-				};
 
-				var collection  =  {};
-				for (var i = data.length - 1; i >= 0; i--) {
-					var item = data[i]
-					collection[item.Name] = item;
-				};
-				var tasks = $scope.tasks;
-				for (var i = tasks.length - 1; i >= 0; i--) {
-					var task = tasks[i];
-					var source = collection[task.Name];
-					if (source) {
-						angular.forEach(source, function (val, key) {
-							task[key] = val;
-						});
-						delete collection[task.Name];
-					} else {
-						tasks.splice(i, 1);
-					}
+		function monitor(path, ondata, onclose, onerror) {
+			var websocket = new WebSocket('ws://' + 
+				window.location.host + path);
+
+			websocket.onopen = function(evt) { onOpen(evt) };
+			websocket.onclose = function(evt) { onClose(evt) };
+			websocket.onmessage = function(evt) { onMessage(evt) };
+			websocket.onerror = function(evt) { onError(evt) };
+
+			function onOpen(evt) { 
+			}
+			function onClose(evt) { 
+				// $scope.push_alert('socket close');
+				if (onclose) {
+					onclose(evt);
 				}
-				angular.forEach(collection, function (val, key) {
-					tasks.push(val)
-				});
-			})
+			}
+			function onMessage(evt) { 
+				ondata(JSON.parse(evt.data));
+			}  
+			function onError(evt) { 
+				// $scope.push_alert(evt.data);
+				if (onerror) {
+					onerror(evt.data);
+				}
+			}
+
+			function doSend(message) { 
+				websocket.send(message);
+			}
 		}
-		function init() {
-			$http.get('/progress').success(function(data) {
+
+
+		$scope.tasks = [];
+
+		function monitor_process() {
+			monitor('/progress', function(data) {
 				for (var i = data.length - 1; i >= 0; i--) {
 					var item = data[i];
 					item.StartDate = new Date(Date.parse(item.StartDate))
 				};
-				$scope.tasks = data;
-			})
-		}
 
-		init();
-		setInterval(get_process, 2000)
+				$scope.$apply(function() {
+					var collection  =  {};
+					for (var i = data.length - 1; i >= 0; i--) {
+						var item = data[i]
+						collection[item.Name] = item;
+					};
+					var tasks = $scope.tasks;
+					for (var i = tasks.length - 1; i >= 0; i--) {
+						var task = tasks[i];
+						var source = collection[task.Name];
+						if (source) {
+							angular.forEach(source, function (val, key) {
+								task[key] = val;
+							});
+							delete collection[task.Name];
+						} else {
+							tasks.splice(i, 1);
+						}
+					}
+					angular.forEach(collection, function (val, key) {
+						tasks.push(val)
+					});
+				});
+			}, monitor_process);
+		}
+		monitor_process();
+		// function init() {
+		// 	$http.get('/progress').success(function(data) {
+		// 		for (var i = data.length - 1; i >= 0; i--) {
+		// 			var item = data[i];
+		// 			item.StartDate = new Date(Date.parse(item.StartDate))
+		// 		};
+		// 		$scope.tasks = data;
+		// 	})
+		// }
+
+		// init();
+		
 
 		$scope.parse_duration = function(dur) {
 			var sec = Math.floor(dur/1000000000);
@@ -60,25 +99,21 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 		$scope.send_resume = function (task) {
 			$http.get('/resume/' + task.Name).success(function (resp) {
 				resp && $scope.push_alert(resp);
-				get_process();
 			});
 		}
 		$scope.send_stop = function (task) {
 			$http.get('/stop/' + task.Name).success(function (resp) {
 				resp && $scope.push_alert(resp);
-				get_process();
 			});
 		}
 		$scope.send_limit = function (task) {
 			$http.post('/limit/' + task.Name, task.LimitSpeed).success(function (resp) {
 				resp && $scope.push_alert(resp);
-				get_process();
 			});
 		};
 		$scope.send_play = function (task) {
 			$http.get('/play/' + task.Name).success(function (resp) {
 				resp && $scope.push_alert(resp);
-				get_process();
 			})
 		};
 
@@ -140,14 +175,12 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 			$http.get('/trash/' + task.Name).success(
 			function (resp) {
 				resp && $scope.push_alert(resp)
-				get_process();
 			});
 		};
 
 		$scope.set_autoshutdown = function (task) {
 			$http.post('/autoshutdown/' + task.Name, task.Autoshutdown?'on':'off')
 				.success(function(){
-					get_process();
 				});
 		};
 
@@ -172,8 +205,8 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 					//truncate description
 					item.FullDescription = item.Description;
 					var description = item.Description;
-					if (description.length > 83)
-						item.Description = description.substr(0, 40) + '...' + description.substr(description.length-40, 40);
+					if (description.length > 73)
+						item.Description = description.substr(0, 35) + '...' + description.substr(description.length-35, 35);
 
 				};
 				$scope.subtitles = data;
@@ -287,8 +320,3 @@ angular.module('vger', ['ui']).controller('tasks_ctrl',
 		}
 	}
 );
-
-
-			setTimeout(function() {
-        		window.scrollTo(0, 1);
-	        }, 100);

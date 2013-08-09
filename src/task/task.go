@@ -133,6 +133,7 @@ func SaveTask(t *Task) (err error) {
 	return
 }
 
+//never use, use move to trash instead.
 func RemoveTask(name string) error {
 	err := os.Remove(taskInfoFileName(name))
 	if err != nil {
@@ -170,13 +171,18 @@ func RemoveWatch(ch chan []*Task) {
 	}
 }
 
+//call this function after modify task file directly, like trash task.
+func UpdateFiles() {
+	writeChangeEvent()
+}
+
 func writeChangeEvent() {
 	for _, w := range watchers {
 		select {
 		case w <- GetTasks():
-			return
+			break
 		case <-time.After(time.Second):
-			return
+			break
 		}
 	}
 }

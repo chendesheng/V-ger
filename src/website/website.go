@@ -1,11 +1,13 @@
 package website
 
 import (
+	"code.google.com/p/go.net/websocket"
 	"download"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"html"
+	"io"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -225,17 +227,19 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 	download.SetAutoshutdown(name, autoshutdown == "on")
 }
 
-// func queueHandler(w http.ResponseWriter, r *http.Request) {
-// 	name, _ := url.QueryUnescape(r.URL.String()[7:])
-
-// 	if err := download.QueueDownload(name); err != nil {
-// 		w.Write([]byte(err.Error()))
-// 	}
-// }
-func progressHandler(w http.ResponseWriter, r *http.Request) {
+func progressHandler(ws *websocket.Conn) {
 	tasks := task.GetTasks()
 	text, _ := json.Marshal(tasks)
-	w.Write([]byte(text))
+
+	io.WriteString(ws, string(text))
+
+	ch := make(chan []*task.Task)
+	task.WatchChange(ch)
+
+	for tks := range ch {
+		text, _ := json.Marshal(tks)
+		io.WriteString(ws, string(text))
+	}
 }
 
 type command struct {
@@ -431,7 +435,9 @@ func Run() {
 	http.HandleFunc("/video/", videoHandler)
 	http.HandleFunc("/resume/", resumeHandler)
 	http.HandleFunc("/stop/", stopHandler)
-	http.HandleFunc("/progress", progressHandler)
+
+	http.Handle("/progress", websocket.Handler(progressHandler))
+
 	http.HandleFunc("/new/", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
 	http.HandleFunc("/trash/", trashHandler)
