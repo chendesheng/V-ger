@@ -76,19 +76,22 @@ func ensureQuit(quit chan bool) {
 	}
 }
 
-func DownloadAsync(url string, name string) (string, chan int, chan bool) {
+func DownloadAsync(url string, name string) (string, chan int, chan bool, error) {
 	control := make(chan int)
 	quit := make(chan bool, 50)
-	t := getOrNewTask(url, name)
+	t, err := getOrNewTask(url, name)
+	if err != nil {
+		return "", nil, nil, err
+	}
 	if n := getNumOfDownloadingTasks(); n > 0 {
 		t.Status = "Queued"
 		task.SaveTask(t)
-		return t.Name, nil, nil
+		return t.Name, nil, nil, nil
 	}
 
 	go download(t, control, quit)
 
-	return t.Name, control, quit
+	return t.Name, control, quit, nil
 }
 func ResumeDownloadAsync(name string) (chan int, chan bool, error) {
 	for _, t := range task.GetTasks() {
@@ -110,7 +113,10 @@ func ResumeDownloadAsync(name string) (chan int, chan bool, error) {
 
 func DownloadSmallFile(url string, name string) (filename string, err error) {
 	if name == "" {
-		url, name, _ = GetDownloadInfo(url)
+		url, name, _, err = GetDownloadInfo(url)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	resp, err := DownloadClient.Get(url)
@@ -146,11 +152,12 @@ func DownloadSmallFile(url string, name string) (filename string, err error) {
 func GetFilePath(name string) string {
 	return fmt.Sprintf("%s%c%s", baseDir, os.PathSeparator, name)
 }
-func getOrNewTask(url string, name string) *task.Task {
-	// fmt.Println("hello")
-	url, filename, filesize := GetDownloadInfo(url)
-	// fmt.Println("hello")
-	// fmt.Println(url)
+func getOrNewTask(url string, name string) (*task.Task, error) {
+	url, filename, filesize, err := GetDownloadInfo(url)
+	if err != nil {
+		return nil, err
+	}
+
 	if name == "" {
 		name = filename
 	}
@@ -160,10 +167,10 @@ func getOrNewTask(url string, name string) *task.Task {
 	}
 
 	if t, err := task.GetTask(name); err == nil {
-		return t
+		return t, nil
 	}
 
-	return task.NewTask(name, url, filesize)
+	return task.NewTask(name, url, filesize), nil
 }
 
 func hashName(name string) string {
@@ -225,7 +232,12 @@ func handleCommands(chanCommand chan *command) {
 		case "new":
 			args := strings.Split(cmd.arg, "####")
 			name, url := args[0], args[1]
-			name, control, quit := DownloadAsync(url, name)
+			name, control, quit, err := DownloadAsync(url, name)
+			if err != nil {
+				cmd.ack <- false
+				cmd.result <- err.Error()
+				break
+			}
 			if control != nil {
 				taskControls[name] = taskControl{quit, control}
 			}
@@ -262,7 +274,7 @@ func handleCommands(chanCommand chan *command) {
 				if err != nil {
 					cmd.ack <- false
 					cmd.result <- err.Error()
-					return
+					break
 				}
 				t.Status = "Stopped"
 				task.SaveTask(t)

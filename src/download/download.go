@@ -70,8 +70,8 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(50 * 1024)
-				changeBlockSize.Reset(time.Second * 30)
+				blockSize = int64(10 * 1024)
+				changeBlockSize.Reset(time.Second * 15)
 			}
 		case input <- newDataBlock(from, to):
 			if to == size {
@@ -380,7 +380,7 @@ func downloadBlock(url string, b *block, quit chan bool) (chan []byte, io.Closer
 	return result, resp.Body, nil
 }
 
-func GetDownloadInfo(url string) (realURL string, name string, size int64) {
+func GetDownloadInfo(url string) (realURL string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
 	DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		temp := req.URL.String()
@@ -392,7 +392,9 @@ func GetDownloadInfo(url string) (realURL string, name string, size int64) {
 
 	resp, err := DownloadClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		// panic(err)
+		return "", "", 0, err
 	}
 
 	name, size = getFileInfo(resp.Header)
