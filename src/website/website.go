@@ -117,7 +117,10 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	native.MoveFileToTrash(config["dir"], name)
-	native.MoveFileToTrash(path.Join(config["dir"], "vger-tasks"), fmt.Sprint(name, ".vger-task.txt"))
+	native.MoveFileToTrash(task.TaskDir, fmt.Sprint(name, ".vger-task.txt"))
+	native.MoveFileToTrash(config["dir"], fmt.Sprint(name, ".zip"))
+	native.MoveFileToTrash(config["dir"], fmt.Sprint(name, ".rar"))
+
 	w.Write([]byte(``))
 }
 

@@ -25,17 +25,17 @@ func testSaveTask(t *testing.T) {
 }
 
 func TestTaskDir(t *testing.T) {
-	taskDir = ""
+	TaskDir = ""
 	testSaveTask(t)
 
-	taskDir = "abc"
+	TaskDir = "abc"
 	testSaveTask(t)
 
-	os.Remove(taskDir)
+	os.Remove(TaskDir)
 }
 
 func TestGetTasks(t *testing.T) {
-	taskDir = "abc"
+	TaskDir = "abc"
 
 	tk := &Task{}
 	tk.Name = "hello"
@@ -52,11 +52,11 @@ func TestGetTasks(t *testing.T) {
 
 	RemoveTask(tk.Name)
 	RemoveTask("hello")
-	os.Remove(taskDir)
+	os.Remove(TaskDir)
 }
 
 func TestWatchTasksChange(t *testing.T) {
-	taskDir = "abc"
+	TaskDir = "abc"
 
 	ch := make(chan []*Task)
 	WatchChange(ch)
@@ -100,7 +100,7 @@ func TestWatchTasksChange(t *testing.T) {
 	RemoveTask("hello")
 	RemoveTask("hello1")
 
-	os.Remove(taskDir)
+	os.Remove(TaskDir)
 }
 
 //TODO
@@ -109,7 +109,7 @@ func TestMultiWatcher(t *testing.T) {
 }
 
 func TestGetDownloadingTask(t *testing.T) {
-	taskDir = "abc"
+	TaskDir = "abc"
 	tk := &Task{}
 	tk.Name = "hello"
 	tk.Status = "Downloading"
@@ -131,5 +131,5 @@ func TestGetDownloadingTask(t *testing.T) {
 	}
 
 	RemoveTask(tk.Name)
-	os.Remove(taskDir)
+	os.Remove(TaskDir)
 }

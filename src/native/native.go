@@ -60,6 +60,13 @@ func SendNotification(title, infoText string) error {
 }
 
 func MoveFileToTrash(dir, name string) error {
+	f, err := os.Open(path.Join(dir, name))
+	if err != nil {
+		return err
+	} else {
+		f.Close()
+	}
+
 	print("trash file ", name)
 
 	// tag := int64(0)
