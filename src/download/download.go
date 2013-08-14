@@ -60,7 +60,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 
 	//small blocksize after start,
 	//change to a larger blocksize after 30 seconds
-	changeBlockSize := time.NewTimer(time.Second * 30)
+	changeBlockSize := time.NewTimer(time.Second * 10)
 	for {
 		b := time.Now()
 		select {
@@ -70,7 +70,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(10 * 1024)
+				blockSize = int64(50 * 1024)
 				changeBlockSize.Reset(time.Second * 15)
 			}
 		case input <- newDataBlock(from, to):

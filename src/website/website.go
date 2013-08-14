@@ -112,9 +112,7 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
 	fmt.Printf("trash \"%s\".\n", name)
 
-	if t, err := task.GetTask(name); err != nil && t.Status == "Downloading" {
-		download.StopDownload(name)
-	}
+	task.StopTask(name)
 
 	native.MoveFileToTrash(config["dir"], name)
 	native.MoveFileToTrash(task.TaskDir, fmt.Sprint(name, ".vger-task.txt"))
@@ -128,7 +126,9 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[8:])
 	fmt.Printf("resume download \"%s\".\n", name)
 
-	w.Write([]byte(download.TryResumeDownload(name)))
+	if err := task.ResumeTask(name); err != nil {
+		writeError(w, err)
+	}
 }
 func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
@@ -147,13 +147,32 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		name = ""
 	}
-	fmt.Println("newTaskhandler", name)
 	input, _ := ioutil.ReadAll(r.Body)
 
 	if url := string(input); url != "" {
-		fmt.Printf("add download \"%s\".\n", url)
 
-		w.Write([]byte(download.NewDownload(url, name)))
+		url, name2, size, err := download.GetDownloadInfo(url)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if name == "" {
+			name = name2
+		}
+
+		fmt.Printf("add download \"%s\".\nname: %s\n", url, name)
+
+		if t, err := task.GetTask(name); err == nil {
+			if t.Status == "Finished" {
+				w.Write([]byte("File has been downloaded."))
+			} else {
+				log.Print("task already exists")
+				task.ResumeTask(name)
+			}
+		} else if err := task.StartNewTask(name, url, size); err != nil {
+			writeError(w, err)
+		}
 	}
 }
 func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +195,7 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 		text, _ := json.Marshal(files)
 		w.Write([]byte(text))
 	} else {
-		w.Write([]byte(err.Error()))
+		writeError(w, err)
 	}
 }
 func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +203,7 @@ func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
 		if re := recover(); re != nil {
 			err := re.(error)
 
-			w.Write([]byte(err.Error()))
+			writeError(w, err)
 		}
 	}()
 	// res, _ := httputil.DumpRequest(r, true)
@@ -192,7 +211,7 @@ func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("thunder torrent handler")
 	f, _, err := r.FormFile("torrent")
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		writeError(w, err)
 		return
 	}
 	input, _ := ioutil.ReadAll(f)
@@ -204,14 +223,18 @@ func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
 		text, _ := json.Marshal(files)
 		w.Write([]byte(text))
 	} else {
-		w.Write([]byte(err.Error()))
+		writeError(w, err)
 	}
 }
 func stopHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("stop download \"%s\".\n", name)
 
-	w.Write([]byte(download.StopDownload(name)))
+	if err := task.StopTask(name); err != nil {
+		writeError(w, err)
+	}
+
+	fmt.Println("stop download finish")
 }
 func limitHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
@@ -219,7 +242,9 @@ func limitHandler(w http.ResponseWriter, r *http.Request) {
 	speed, _ := strconv.Atoi(string(input))
 	fmt.Printf("download \"%s\" limit speed %dKB/s.\n", name, speed)
 
-	w.Write([]byte(download.LimitSpeed(name, speed)))
+	if err := task.LimitSpeed(name, speed); err != nil {
+		writeError(w, err)
+	}
 }
 func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[14:])
@@ -227,7 +252,7 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 	autoshutdown := string(input)
 	fmt.Printf("Autoshutdown task \"%s\" %s.", name, autoshutdown)
 
-	download.SetAutoshutdown(name, autoshutdown == "on")
+	task.SetAutoshutdown(name, autoshutdown == "on")
 }
 
 func progressHandler(ws *websocket.Conn) {
@@ -238,10 +263,20 @@ func progressHandler(ws *websocket.Conn) {
 
 	ch := make(chan []*task.Task)
 	task.WatchChange(ch)
+	defer task.RemoveWatch(ch)
 
-	for tks := range ch {
-		text, _ := json.Marshal(tks)
-		io.WriteString(ws, string(text))
+	for {
+		select {
+		case tks := <-ch:
+			text, _ := json.Marshal(tks)
+			io.WriteString(ws, string(text))
+			break
+		case <-time.After(time.Second * 20):
+			//close connection every 20 seconds
+			//if client is alive, it should reconnect to server
+			//prevent socket connection & goroutine leak
+			return
+		}
 	}
 }
 
@@ -303,7 +338,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err)
 	}
 	if t.Status == "Downloading" {
-		download.StopDownload(name)
+		task.StopTask(name)
 	}
 
 	size := t.Size
@@ -342,7 +377,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	// if ra.start == 0 && sendSize == size {
 	// 	err := download.SingleRoutineDownload(url, w, ra.start, ra.start+sendSize)
 	// 	if err != nil {
-	// 		w.Write([]byte(err.Error()))
+	// 		writeError(w, err)
 	// 	}
 
 	// 	return
@@ -426,8 +461,6 @@ func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func Run() {
-	download.StartHandleCommands()
-
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 
 	http.HandleFunc("/assets/", assetsHandler)
@@ -460,17 +493,17 @@ func Run() {
 	http.HandleFunc("/cocoatest/", cocoaTestHandler)
 
 	//resume downloading tasks
-	tasks := task.GetTasks()
-	hasDownloading := false
-	for _, t := range tasks {
-		if t.Status == "Downloading" {
-			hasDownloading = true
-			download.ResumeDownload(t.Name)
-		}
-	}
-	if !hasDownloading {
-		download.ResumeNextQueuedTask()
-	}
+	// tasks := task.GetTasks()
+	// hasDownloading := false
+	// for _, t := range tasks {
+	// 	if t.Status == "Downloading" {
+	// 		hasDownloading = true
+	// 		download.ResumeDownload(t.Name)
+	// 	}
+	// }
+	// if !hasDownloading {
+	// 	download.ResumeNextQueuedTask()
+	// }
 
 	server := config["server"]
 

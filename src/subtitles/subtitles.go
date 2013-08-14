@@ -49,13 +49,6 @@ func readBody(resp *http.Response) string {
 	return text
 }
 
-func concat(old1, old2 []Subtitle) []Subtitle {
-	newslice := make([]Subtitle, len(old1)+len(old2))
-	copy(newslice, old1)
-	copy(newslice[len(old1):], old2)
-	return newslice
-}
-
 func SearchSubtitles(name string) []Subtitle {
 	// return yyetsSearchSubtitles(name)
 	// return shooterSearch(name)
@@ -78,7 +71,7 @@ func SearchSubtitles(name string) []Subtitle {
 		log.Printf("shooter takes %v", time.Now().Sub(begin))
 	}()
 
-	return concat(<-yyetsSubs, <-shooterSubs)
+	return append(<-yyetsSubs, <-shooterSubs...)
 }
 func QuickDownload(url, path string) (bool, error) {
 	resp, err := Client.Get(url)

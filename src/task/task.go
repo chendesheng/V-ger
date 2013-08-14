@@ -35,15 +35,21 @@ type Task struct {
 
 	DownloadedSize int64
 	ElapsedTime    time.Duration
-	IsNew          bool
 
-	LimitSpeed int64
+	LimitSpeed int
 	Speed      float64
 	Status     string
 	NameHash   string
 	Est        time.Duration
 
 	Autoshutdown bool
+}
+
+func SetAutoshutdown(name string, onOrOff bool) {
+	if t, err := GetTask(name); err == nil {
+		t.Autoshutdown = onOrOff
+		SaveTask(t)
+	}
 }
 
 func taskInfoFileName(name string) string {
@@ -56,11 +62,10 @@ func taskInfoFileName(name string) string {
 func hashName(name string) string {
 	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
 }
-func NewTask(name string, url string, size int64) *Task {
+func newTask(name string, url string, size int64) *Task {
 	t := new(Task)
 	t.URL = url
 	t.Name = name
-	t.IsNew = true
 	t.Size = size
 	t.StartTime = time.Now().Unix()
 	t.DownloadedSize = 0
@@ -68,12 +73,9 @@ func NewTask(name string, url string, size int64) *Task {
 
 	t.LimitSpeed = 0
 	t.Speed = 0
-	t.Status = "Stopped"
+	t.Status = "New"
 
 	t.NameHash = hashName(t.Name)
-
-	SaveTask(t)
-
 	return t
 }
 func GetTask(name string) (*Task, error) {
