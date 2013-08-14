@@ -56,6 +56,10 @@ func monitorTask() {
 					tc.stopDownload()
 					delete(taskControls, t.Name)
 				}
+				if t.Status == "Deleted" {
+					tc.stopDownload()
+					delete(taskControls, t.Name)
+				}
 				if t.Status == "Finished" {
 					delete(taskControls, t.Name)
 				}
@@ -72,6 +76,14 @@ func monitorTask() {
 
 					go download(t, control, quit)
 				}
+			}
+
+			if t.Status == "Deleted" {
+				dir := util.ReadConfig("dir")
+				native.MoveFileToTrash(dir, t.Name)
+				native.MoveFileToTrash(task.TaskDir, fmt.Sprint(t.Name, ".vger-task.txt"))
+				native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".zip"))
+				native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".rar"))
 			}
 		}
 	}
@@ -110,7 +122,15 @@ func download(t *task.Task, control chan int, quit chan bool) {
 		handleProgress(progress, t, quit)
 	}
 
-	t, _ = task.GetTask(t.Name)
+	t, err := task.GetTask(t.Name)
+	if err != nil {
+		return
+	}
+
+	if t.Status == "Deleted" {
+		return
+	}
+
 	if t.DownloadedSize >= t.Size {
 		fmt.Printf("\nIt's done!\n\n")
 

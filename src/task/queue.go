@@ -38,6 +38,18 @@ func ResumeTask(name string) error {
 
 	return nil
 }
+
+func DeleteTask(name string) error {
+	t, err := GetTask(name)
+	if err != nil {
+		return err
+	} else {
+		t.Status = "Deleted"
+		SaveTask(t)
+	}
+	return nil
+}
+
 func StopTask(name string) error {
 	t, err := GetTask(name)
 	if err != nil {

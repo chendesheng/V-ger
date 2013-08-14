@@ -110,16 +110,11 @@ func openHandler(w http.ResponseWriter, r *http.Request) {
 
 func trashHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
-	fmt.Printf("trash \"%s\".\n", name)
+	log.Printf("trash \"%s\".\n", name)
 
-	task.StopTask(name)
+	task.DeleteTask(name)
 
-	native.MoveFileToTrash(config["dir"], name)
-	native.MoveFileToTrash(task.TaskDir, fmt.Sprint(name, ".vger-task.txt"))
-	native.MoveFileToTrash(config["dir"], fmt.Sprint(name, ".zip"))
-	native.MoveFileToTrash(config["dir"], fmt.Sprint(name, ".rar"))
-
-	w.Write([]byte(``))
+	log.Println("end trash")
 }
 
 func resumeHandler(w http.ResponseWriter, r *http.Request) {

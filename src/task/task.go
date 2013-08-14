@@ -135,19 +135,6 @@ func SaveTask(t *Task) (err error) {
 	return
 }
 
-//never use, use move to trash instead.
-func RemoveTask(name string) error {
-	err := os.Remove(taskInfoFileName(name))
-	if err != nil {
-		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
-		return err
-	}
-
-	writeChangeEvent()
-
-	return nil
-}
-
 var watchers []chan []*Task
 
 func WatchChange(ch chan []*Task) {
@@ -168,7 +155,12 @@ func WatchChange(ch chan []*Task) {
 func RemoveWatch(ch chan []*Task) {
 	for i, w := range watchers {
 		if w == ch {
-			watchers = append(watchers[:i], watchers[i+1:]...)
+			if i == len(watchers)-1 {
+				watchers = watchers[:i]
+			} else {
+				watchers = append(watchers[:i], watchers[i+1:]...)
+			}
+			break
 		}
 	}
 }
@@ -185,6 +177,7 @@ func writeChangeEvent() {
 		case w <- tks:
 			break
 		case <-time.After(time.Second):
+			log.Println("writeChangeEvent timeout")
 			break
 		}
 	}

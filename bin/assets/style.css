@@ -510,8 +510,8 @@ h3 {
 .task {
 	overflow: hidden;
 }
-.task.ng-enter .task-infoes, 
-.task.ng-leave .task-infoes,
+/*.task.ng-enter .task-infoes, 
+.task.ng-leave .task-infoes,*/
 .task.ng-enter, 
 .task.ng-leave { 
 	-webkit-transition: all 0.5s ease;                  
@@ -523,19 +523,17 @@ h3 {
 	display: block;
 } 
  
-.task.ng-enter.ng-enter-active .task-infoes, 
+/*.task.ng-enter.ng-enter-active .task-infoes, 
 .task.ng-leave .task-infoes {
 	opacity: 1;
-	top: 0;
-	/*height: 74px;*/
+	left: 0;
 }
  
 .task.ng-leave.ng-leave-active .task-infoes,
 .task.ng-enter .task-infoes {
 	opacity: 0;
-	top: -80px;
-	/*height: 0px;*/
-}
+	left: -80px;
+}*/
 
 .task.ng-enter.ng-enter-active, 
 .task.ng-leave {

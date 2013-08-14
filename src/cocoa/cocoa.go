@@ -154,7 +154,6 @@ func Start() {
 			case "trashFile":
 				prop := cmd.arguments.([]string)
 				NSTrashFile(prop[0], prop[1])
-				task.UpdateFiles()
 			default:
 				log.Printf("unknown cmd %v", cmd)
 				break
