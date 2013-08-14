@@ -222,10 +222,11 @@ h1,h2 {
 	/*box-shadow: 0px -2px 3px #888888;*/
 }
 #tasks li {
-	padding: 10px 0;
+	padding: 0px 0;
 }
-#tasks-list li {
+#tasks-list .task-infoes {
 	padding: 15px 0;
+	height: 50px;
 }
 #tasks-list li:hover {
 	background-color: #fff;
@@ -368,6 +369,12 @@ h3 {
 	display: block;
 	margin: auto;
 	position: relative;
+
+    -webkit-transition: all 0.3s ease;                  
+    -moz-transition: all 0.3s ease;                 
+    -o-transition: all 0.3s ease;   
+    -ms-transition: all 0.3s ease;          
+    transition: all 0.3s ease;
 }
 .task-infoes .name {
 	cursor: pointer;
@@ -383,13 +390,24 @@ h3 {
 
 .task-infoes .progress {
 	width: 500px;
-	margin: 2px 0 0 0;
+	/*margin: 2px 0 0 0;*/
 	height: 2px;
 	background-color: #383022;
+}
+.task-infoes .progress-box {
+	margin-top:  2px;
+	height: 2px;
+	display: block;
 }
 .task-infoes .progress div {
 	width: 100%;
 	height: 2px;
+
+    -webkit-transition: all 0.3s ease;                  
+    -moz-transition: all 0.3s ease;                 
+    -o-transition: all 0.3s ease;   
+    -ms-transition: all 0.3s ease;          
+    transition: all 0.3s ease;
 }
 
 .task-infoes .progress .downloading {
@@ -400,7 +418,7 @@ h3 {
 }
 .task-infoes .left-actions {
 	position: absolute;
-	left:0;
+	left:-22px;
 	top:50%;
 	width: 16px;
 	height: 16px;
@@ -489,3 +507,47 @@ h3 {
 #subtitles .loading,#subtitles input[type=button] {
 	float:right;
 }
+.task {
+	overflow: hidden;
+}
+.task.ng-enter .task-infoes, 
+.task.ng-leave .task-infoes,
+.task.ng-enter, 
+.task.ng-leave { 
+	-webkit-transition: all 0.5s ease;                  
+	-moz-transition: all 0.5s ease;                 
+	-o-transition: all 0.5s ease;   
+	-ms-transition: all 0.5s ease;          
+	transition: all 0.5s ease;
+	/*position: relative;*/
+	display: block;
+} 
+ 
+.task.ng-enter.ng-enter-active .task-infoes, 
+.task.ng-leave .task-infoes {
+	opacity: 1;
+	top: 0;
+	/*height: 74px;*/
+}
+ 
+.task.ng-leave.ng-leave-active .task-infoes,
+.task.ng-enter .task-infoes {
+	opacity: 0;
+	top: -80px;
+	/*height: 0px;*/
+}
+
+.task.ng-enter.ng-enter-active, 
+.task.ng-leave {
+	opacity: 1;
+	/*top: 0;*/
+	height: 80px;
+}
+ 
+.task.ng-leave.ng-leave-active,
+.task.ng-enter {
+	opacity: 0;
+	/*top: -97px;*/
+	height: 0px;
+}
+

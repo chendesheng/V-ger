@@ -2,8 +2,8 @@
 <head>
 	<title>V'ger</title>
 	<link href="/assets/style.css" rel="stylesheet" type="text/css">
-	<script src="/assets/angular.min.js"></script>
-	<script type="text/javascript" src="/assets/angular-ui.min.js"></script>
+	<script src="/assets/angular.js"></script>
+	<script src="/assets/angular-animate.js"></script>
 	<script type="text/javascript" src="/assets/main.js"></script>
 	<script type="text/javascript" src="/assets/date.js"></script>
 </head>
@@ -15,7 +15,7 @@
 	<h2>Speed is Fun!</h2>
 	<div id="tasks" ng-controller="tasks_ctrl">
 		<ul id="tasks-list">
-	       <li ng-repeat="task in tasks | orderBy:'StartTime':1">
+	       <li ng-repeat="task in tasks | orderBy:'StartTime':1" class="task">
 	       		<div class="task-infoes">
 	       			<div class="left-actions">
 		       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped' || task.Status=='Playing'"></button>
@@ -23,10 +23,12 @@
 		       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
 		       		</div>
 	       			<div><span class="name"><span ng-show="task.Status=='Queued'">[Waiting] </span><a ng-click="send_open(task)">{{task.Name}}</a></span></div>
-
-			       	<div class="progress" ng-hide="task.Status=='Finished'">
-			       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
-		       		</div>
+					
+					<div class="progress-box">
+				       	<div class="progress" ng-hide="task.Status=='Finished'">
+				       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
+						</div>
+					</div>
 
 		       		<div class="row-3rd">
 		       			<input type="button" ng-click="search_subtitles(task.Name)" value="Subtitles"/>
