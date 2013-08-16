@@ -257,6 +257,7 @@ func progressHandler(ws *websocket.Conn) {
 	io.WriteString(ws, string(text))
 
 	ch := make(chan []*task.Task)
+	log.Println("website watch task change ", ch)
 	task.WatchChange(ch)
 	defer task.RemoveWatch(ch)
 
@@ -330,7 +331,8 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
 	t, err := task.GetTask(name)
 	if err != nil {
-		writeError(w, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	if t.Status == "Downloading" {
 		task.StopTask(name)
@@ -368,15 +370,6 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(code)
 
-	// first request only need download by single request
-	// if ra.start == 0 && sendSize == size {
-	// 	err := download.SingleRoutineDownload(url, w, ra.start, ra.start+sendSize)
-	// 	if err != nil {
-	// 		writeError(w, err)
-	// 	}
-
-	// 	return
-	// }
 	download.Play(t, w, ra.start, ra.start+sendSize)
 }
 

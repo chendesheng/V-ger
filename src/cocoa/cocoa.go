@@ -49,10 +49,11 @@ type uiCommand struct {
 
 func timerStart(chUI chan uiCommand) {
 	watch := make(chan []*task.Task)
+
+	log.Println("status bar watch task change: ", watch)
 	task.WatchChange(watch)
 
 	for tks := range watch {
-		println("task change")
 		var downloadingTask *task.Task
 
 		for _, t := range tks {

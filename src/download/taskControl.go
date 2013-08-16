@@ -45,12 +45,13 @@ func init() {
 
 func monitorTask() {
 	ch := make(chan []*task.Task)
+	log.Println("task control watch task: ", ch)
 	task.WatchChange(ch)
 
 	for tks := range ch {
 		for _, t := range tks {
 			if tc, ok := taskControls[t.Name]; ok {
-				log.Printf("monitor task %v\n", t)
+				// log.Printf("monitor task %v\n", t)
 
 				if t.Status == "Stopped" {
 					tc.stopDownload()
@@ -150,14 +151,12 @@ func ensureQuit(quit chan bool) {
 	log.Println("ensure quit")
 
 	buf := make([]byte, 20000)
-	runtime.Stack(buf, false)
-	log.Println(string(buf))
+	log.Println(string(buf[:runtime.Stack(buf, false)]))
 
-	timeout := time.After(time.Second * 1)
 	for i := 0; i < 50; i++ {
 		select {
 		case quit <- true:
-		case <-timeout:
+		case <-time.After(time.Second * 1):
 			return
 		}
 	}

@@ -99,6 +99,5 @@ func readJson(path string, object interface{}) error {
 	// log.Println(path)
 	// log.Println(string(data))
 
-	json.Unmarshal(data, &object)
-	return nil
+	return json.Unmarshal(data, &object)
 }

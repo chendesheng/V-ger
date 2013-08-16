@@ -47,7 +47,7 @@ func doDownload(url string, w io.Writer, from, to int64,
 	return progress
 }
 func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
-	blockSize := int64(50 * 1024)
+	blockSize := int64(100 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
 	}
@@ -70,7 +70,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(50 * 1024)
+				blockSize = int64(100 * 1024)
 				changeBlockSize.Reset(time.Second * 15)
 			}
 		case input <- newDataBlock(from, to):
@@ -99,7 +99,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 			}
 		case <-changeBlockSize.C:
 			if maxSpeed == 0 {
-				blockSize = 100 * 1024
+				blockSize = 200 * 1024
 			}
 			changeBlockSize.Stop()
 		case <-quit:

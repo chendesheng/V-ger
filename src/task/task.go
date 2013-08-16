@@ -2,6 +2,7 @@ package task
 
 import (
 	"encoding/base64"
+	"sync"
 	// "encoding/json"
 	// "errors"
 	"fmt"
@@ -45,6 +46,17 @@ type Task struct {
 	Autoshutdown bool
 }
 
+func RemoveTask(name string) error {
+	err := os.Remove(taskInfoFileName(name))
+	if err != nil {
+		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
+		return err
+	}
+
+	writeChangeEvent()
+
+	return nil
+}
 func SetAutoshutdown(name string, onOrOff bool) {
 	if t, err := GetTask(name); err == nil {
 		t.Autoshutdown = onOrOff
@@ -136,11 +148,15 @@ func SaveTask(t *Task) (err error) {
 }
 
 var watchers []chan []*Task
+var watcherLock sync.Mutex = sync.Mutex{}
 
 func WatchChange(ch chan []*Task) {
 	if ch == nil {
 		panic("ch cannot be nil")
 	}
+
+	watcherLock.Lock()
+	defer watcherLock.Unlock()
 
 	for _, w := range watchers {
 		if w == ch {
@@ -153,6 +169,9 @@ func WatchChange(ch chan []*Task) {
 }
 
 func RemoveWatch(ch chan []*Task) {
+	watcherLock.Lock()
+	defer watcherLock.Unlock()
+
 	for i, w := range watchers {
 		if w == ch {
 			if i == len(watchers)-1 {
@@ -160,6 +179,8 @@ func RemoveWatch(ch chan []*Task) {
 			} else {
 				watchers = append(watchers[:i], watchers[i+1:]...)
 			}
+
+			log.Println("remove watch: ", w)
 			break
 		}
 	}
@@ -172,12 +193,18 @@ func UpdateFiles() {
 
 func writeChangeEvent() {
 	tks := GetTasks()
-	for _, w := range watchers {
+
+	watcherLock.Lock()
+	copyWatchers := make([]chan []*Task, len(watchers))
+	copy(copyWatchers, watchers)
+	watcherLock.Unlock()
+
+	for _, w := range copyWatchers {
 		select {
 		case w <- tks:
 			break
 		case <-time.After(time.Second):
-			log.Println("writeChangeEvent timeout")
+			log.Printf("writeChangeEvent timeout: %v\n", w)
 			break
 		}
 	}
