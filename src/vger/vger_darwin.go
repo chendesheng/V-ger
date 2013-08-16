@@ -9,7 +9,7 @@ import (
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
-	go website.Run()
 	go download.Start()
+	website.Run()
 	native.Start()
 }
