@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path"
 	"util"
 )
@@ -67,21 +68,16 @@ func MoveFileToTrash(dir, name string) error {
 		f.Close()
 	}
 
-	print("trash file ", name)
+	log.Println("trash file ", name)
 
-	// tag := int64(0)
-	// NSSharedWorkspace().PerformFileOperation("recycle", dir, "", NSArrayWithObjects(NSStringFromString(name)), tag)
+	u, err := user.Current()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
-	cocoa.TrashFile(dir, name)
-
-	// wd, _ := os.Getwd()
-	// vgerHelper := path.Join(wd, "vgerhelper.app")
-	// cmd := exec.Command("open", vgerHelper, "--args", "trash", dir, name)
-	// if err := cmd.Run(); err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
-	return nil
+	trashPath := path.Join(u.HomeDir, ".Trash")
+	return os.Rename(path.Join(dir, name), path.Join(trashPath, name))
 }
 
 func Shutdown(reason string) error {
