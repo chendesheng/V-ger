@@ -48,6 +48,8 @@
                                         repeats:NO];
         NSString *msg = [[NSProcessInfo processInfo] arguments][2];
         [self sendNotification:@"V'ger shutdown after 60 seconds." message:msg];
+        
+        NSNull
     }
 }
 -(void) sendNotification:(NSString*)title message:(NSString*)message
