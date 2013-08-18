@@ -6,7 +6,7 @@ import (
 	"native"
 	"net/http"
 	"os"
-	"runtime"
+	// "runtime"
 	"task"
 	"time"
 	"util"
@@ -34,14 +34,8 @@ func (tc *taskControl) limitSpeed(speed int) error {
 }
 
 var DownloadClient *http.Client
-
-var baseDir string
-var taskControls map[string]taskControl
-
-func init() {
-	baseDir = util.ReadConfig("dir")
-	taskControls = make(map[string]taskControl)
-}
+var baseDir string = util.ReadConfig("dir")
+var taskControls map[string]taskControl = make(map[string]taskControl)
 
 func monitorTask() {
 	ch := make(chan []*task.Task)
@@ -63,9 +57,17 @@ func monitorTask() {
 				}
 				if t.Status == "Finished" {
 					delete(taskControls, t.Name)
+
+					if t.Autoshutdown {
+						go native.Shutdown(t.Name)
+					} else {
+						go native.SendNotification("V'ger Task Finished", t.Name)
+						task.ResumeNextTask()
+					}
 				}
 				if t.LimitSpeed != tc.t.LimitSpeed {
 					tc.limitSpeed(t.LimitSpeed)
+					tc.t = t
 				}
 			} else {
 				if t.Status == "Downloading" {
@@ -81,7 +83,10 @@ func monitorTask() {
 
 			if t.Status == "Deleted" {
 				dir := util.ReadConfig("dir")
-				native.MoveFileToTrash(dir, t.Name)
+				err := native.MoveFileToTrash(dir, t.Name)
+				if err != nil {
+					log.Println(err)
+				}
 				native.MoveFileToTrash(task.TaskDir, fmt.Sprint(t.Name, ".vger-task.txt"))
 				native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".zip"))
 				native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".rar"))
@@ -133,25 +138,18 @@ func download(t *task.Task, control chan int, quit chan bool) {
 	}
 
 	if t.DownloadedSize >= t.Size {
-		fmt.Printf("\nIt's done!\n\n")
+		log.Println(t.Name, " Finished")
 
 		t.Status = "Finished"
 		task.SaveTask(t)
-
-		if t.Autoshutdown {
-			go native.Shutdown(t.Name)
-		} else {
-			go native.SendNotification("V'ger Task Finished", t.Name)
-			task.ResumeNextTask()
-		}
 	}
 }
 
 func ensureQuit(quit chan bool) {
 	log.Println("ensure quit")
 
-	buf := make([]byte, 20000)
-	log.Println(string(buf[:runtime.Stack(buf, false)]))
+	// buf := make([]byte, 20000)
+	// log.Println(string(buf[:runtime.Stack(buf, false)]))
 
 	for i := 0; i < 50; i++ {
 		select {
