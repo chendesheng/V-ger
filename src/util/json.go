@@ -4,17 +4,23 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"sync"
 )
 
+var locker sync.Mutex = sync.Mutex{}
+
 func WriteJson(path string, object interface{}) error {
+	locker.Lock()
+	defer locker.Unlock()
+
 	data, err := json.Marshal(object)
 	if err != nil {
 		log.Print(err)
 		return err
 	}
 
-	ioutil.WriteFile(path, data, 0666)
-	return nil
+	return ioutil.WriteFile(path, data, 0666)
+	// return nil
 }
 
 func ReadJson(path string, object interface{}) error {
@@ -24,6 +30,6 @@ func ReadJson(path string, object interface{}) error {
 		return err
 	}
 
-	json.Unmarshal(data, &object)
-	return nil
+	return json.Unmarshal(data, &object)
+	// return nil
 }
