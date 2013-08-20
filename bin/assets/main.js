@@ -88,6 +88,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			$http.get('/open/' + task.Name).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
+
+			return false;
 		}
 		$scope.send_resume = function(task) {
 			$http.get('/resume/' + task.Name).success(function(resp) {

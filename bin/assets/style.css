@@ -490,6 +490,10 @@ h3 {
 .name {
 	cursor: default;
 }
+.name a {
+	color: inherit;
+	text-decoration: none;
+}
 .left-actions button {
 	height: 16px;
 }
