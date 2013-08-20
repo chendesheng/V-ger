@@ -141,7 +141,7 @@ func SaveTask(t *Task) (err error) {
 
 	err = util.WriteJson(taskInfoFileName(t.Name), t)
 	if err == nil {
-		writeChangeEvent()
+		go writeChangeEvent()
 	}
 
 	return
