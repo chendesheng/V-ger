@@ -2,6 +2,7 @@ package native
 
 import (
 	"cocoa"
+	"strings"
 	// "encoding/utf8"
 	// "github.com/mkrautz/objc"
 	// . "github.com/mkrautz/objc/AppKit"
@@ -76,7 +77,17 @@ func MoveFileToTrash(dir, name string) error {
 		return err
 	}
 
+	// print(u.Uid)
 	trashPath := path.Join(u.HomeDir, ".Trash")
+	if strings.HasPrefix(dir, "/Volumes") {
+		strs := strings.SplitN(dir, "/", 4)
+		if len(strs) >= 3 {
+			trashPath = "/" + path.Join(strs[1], strs[2], ".Trashes", u.Uid)
+		} else {
+			log.Println("Error external volumes directory.")
+		}
+	}
+
 	println(path.Join(dir, name))
 	println(path.Join(trashPath, name))
 	return os.Rename(path.Join(dir, name), path.Join(trashPath, name))
