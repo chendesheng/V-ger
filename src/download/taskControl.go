@@ -6,20 +6,19 @@ import (
 	"native"
 	"net/http"
 	"os"
-	// "runtime"
 	"task"
 	"time"
 	"util"
 )
 
 type taskControl struct {
-	quit     chan bool
+	quit     chan<- bool
 	maxSpeed chan int
 	t        *task.Task
 }
 
 func (tc *taskControl) stopDownload() {
-	ensureQuit(tc.quit)
+	close(tc.quit)
 }
 
 func (tc *taskControl) limitSpeed(speed int) error {
@@ -110,7 +109,7 @@ func Start() {
 			hasDownloading = true
 
 			control := make(chan int)
-			quit := make(chan bool, 50)
+			quit := make(chan bool)
 			taskControls[t.Name] = taskControl{quit, control, t}
 
 			go download(t, control, quit)
@@ -121,7 +120,7 @@ func Start() {
 	}
 }
 
-func download(t *task.Task, control chan int, quit chan bool) {
+func download(t *task.Task, control chan int, quit <-chan bool) {
 	if t.DownloadedSize < t.Size {
 		f := openOrCreateFileRW(getFilePath(t.Name), t.DownloadedSize)
 		defer f.Close()
@@ -145,21 +144,6 @@ func download(t *task.Task, control chan int, quit chan bool) {
 
 		t.Status = "Finished"
 		task.SaveTask(t)
-	}
-}
-
-func ensureQuit(quit chan bool) {
-	log.Println("ensure quit")
-
-	// buf := make([]byte, 20000)
-	// log.Println(string(buf[:runtime.Stack(buf, false)]))
-
-	for i := 0; i < 50; i++ {
-		select {
-		case quit <- true:
-		case <-time.After(time.Second * 1):
-			return
-		}
 	}
 }
 

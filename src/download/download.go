@@ -29,7 +29,7 @@ func newDataBlock(from, to int64) *block {
 }
 
 func doDownload(url string, w io.Writer, from, to int64,
-	maxSpeed int64, control chan int, quit chan bool) chan int64 {
+	maxSpeed int64, control chan int, quit <-chan bool) chan int64 {
 
 	input := make(chan *block)
 	output := make(chan *block)
@@ -47,7 +47,7 @@ func doDownload(url string, w io.Writer, from, to int64,
 
 	return progress
 }
-func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit chan bool) {
+func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit <-chan bool) {
 	blockSize := int64(100 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
@@ -110,7 +110,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 		}
 	}
 }
-func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan int64, quit chan bool) {
+func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan int64, quit <-chan bool) {
 	defer func() {
 		fmt.Println("close progress")
 		close(progress)
@@ -171,7 +171,7 @@ func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan in
 	fmt.Println("writeOutput end")
 }
 
-func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
+func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit <-chan bool) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -226,14 +226,14 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 		}
 	}
 }
-func createDownloadRoutine(url string, output chan<- *block, quit chan bool) chan<- *block {
+func createDownloadRoutine(url string, output chan<- *block, quit <-chan bool) chan<- *block {
 	input := make(chan *block)
-	go func(url string, input <-chan *block, output chan<- *block, quit chan bool) {
+	go func(url string, input <-chan *block, output chan<- *block, quit <-chan bool) {
 		downloadRoutine(url, input, output, quit)
 	}(url, input, output, quit)
 	return input
 }
-func sortOutput(input <-chan *block, output chan<- *block, quit chan bool, from int64, to int64) {
+func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, from int64, to int64) {
 	dbmap := make(map[int64]*block)
 	var nextOutputFrom = from
 	for {
@@ -270,7 +270,7 @@ func sortOutput(input <-chan *block, output chan<- *block, quit chan bool, from 
 		}
 	}
 }
-func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
+func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit <-chan bool, from, to int64) {
 	disorderOutput := make(chan *block)
 	chan1 := createDownloadRoutine(url, disorderOutput, quit)
 	chan2 := createDownloadRoutine(url, disorderOutput, quit)
@@ -279,7 +279,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 	chan5 := createDownloadRoutine(url, disorderOutput, quit)
 	// chan6 := createDownloadRoutine(url, disorderOutput, quit)
 
-	go func(input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
+	go func(input <-chan *block, output chan<- *block, quit <-chan bool, from, to int64) {
 		sortOutput(input, output, quit, from, to)
 	}(disorderOutput, output, quit, from, to)
 
@@ -316,7 +316,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 	}
 
 }
-func downloadBlock(url string, b *block, quit chan bool) (chan []byte, io.Closer, error) {
+func downloadBlock(url string, b *block, quit <-chan bool) (chan []byte, io.Closer, error) {
 	from, to := b.from, b.to
 	req := createDownloadRequest(url, from, to-1)
 
@@ -328,7 +328,7 @@ func downloadBlock(url string, b *block, quit chan bool) (chan []byte, io.Closer
 		return result, nil, err
 	}
 
-	go func(quit chan bool, resp *http.Response) {
+	go func(quit <-chan bool, resp *http.Response) {
 		defer func() {
 			if resp != nil && resp.Body != nil {
 				resp.Body.Close()
