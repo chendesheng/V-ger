@@ -42,7 +42,7 @@ func doDownload(url string, w io.Writer, from, to int64,
 
 	go func() {
 		writeOutput(w, from, output, progress, quit)
-		ensureQuit(quit)
+		// ensureQuit(quit)
 	}()
 
 	return progress
@@ -292,7 +292,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 				close(chan2)
 				close(chan3)
 				close(chan4)
-				// close(chan5)
+				close(chan5)
 				// close(chan6)
 				return
 			}
