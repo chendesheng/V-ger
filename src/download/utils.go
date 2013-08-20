@@ -51,6 +51,7 @@ func openOrCreateFileRW(path string, position int64) *os.File {
 	return f
 }
 func getFileInfo(header http.Header) (name string, size int64) {
+	log.Printf("%v\n", header)
 	if len(header["Content-Disposition"]) > 0 {
 		contentDisposition := header["Content-Disposition"][0]
 		regexFile := regexp.MustCompile(`filename="([^"]+)"`)
@@ -78,7 +79,12 @@ func getFileName(fullURL string) string {
 	if e < 0 {
 		e = len(fullURL)
 	}
-	name, _ := url.QueryUnescape(fullURL[strings.LastIndex(fullURL, `/`)+1 : e])
+	s := strings.LastIndex(fullURL, `/`) + 1
+	if s >= e {
+		return ""
+	}
+
+	name, _ := url.QueryUnescape(fullURL[s:e])
 	return name
 }
 func writeJson(path string, object interface{}) {

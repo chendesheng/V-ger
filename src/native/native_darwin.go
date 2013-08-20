@@ -77,6 +77,8 @@ func MoveFileToTrash(dir, name string) error {
 	}
 
 	trashPath := path.Join(u.HomeDir, ".Trash")
+	println(path.Join(dir, name))
+	println(path.Join(trashPath, name))
 	return os.Rename(path.Join(dir, name), path.Join(trashPath, name))
 }
 

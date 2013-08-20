@@ -20,7 +20,6 @@ func WriteJson(path string, object interface{}) error {
 	}
 
 	return ioutil.WriteFile(path, data, 0666)
-	// return nil
 }
 
 func ReadJson(path string, object interface{}) error {
@@ -31,5 +30,4 @@ func ReadJson(path string, object interface{}) error {
 	}
 
 	return json.Unmarshal(data, &object)
-	// return nil
 }

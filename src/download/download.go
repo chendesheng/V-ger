@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	// "util"
 	// "sort"
 	// "runtime"
 	// "strconv"
@@ -291,7 +292,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 				close(chan2)
 				close(chan3)
 				close(chan4)
-				close(chan5)
+				// close(chan5)
 				// close(chan6)
 				return
 			}
@@ -392,20 +393,30 @@ func GetDownloadInfo(url string) (realURL string, name string, size int64, err e
 
 	resp, err := DownloadClient.Do(req)
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error() + " Try again after one second")
 		// panic(err)
-		return "", "", 0, err
+		time.After(time.Second)
+		resp, err = DownloadClient.Do(req)
+		if err != nil {
+			log.Println(err)
+			return "", "", 0, err
+		}
 	}
 
 	name, size = getFileInfo(resp.Header)
 	if name == "" {
 		name = getFileName(url)
 	}
-	realURL = url
 
 	reg := regexp.MustCompile("[/]")
 	name = reg.ReplaceAllString(name, "")
 	name = strings.TrimLeft(name, ".")
+
+	if name == "" && size == 0 {
+		err = fmt.Errorf("Broken resource\n")
+	}
+
+	realURL = url
 	return
 }
 
