@@ -1,4 +1,4 @@
-angular.module('vger', ['ngAnimate']).controller('tasks_ctrl',
+angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 	function($scope, $http) {
 
 		function monitor(path, ondata, onclose, onerror) {

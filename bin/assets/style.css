@@ -484,17 +484,6 @@ h3 {
 	height: 16px;
 	display: inline-block;
 }
-#subtitles .icon {
-	margin-bottom: 5px;
-}
-.YYets {
-	background: url('http://www.yyets.com/favicon.ico');
-	vertical-align: middle;
-}
-.Shooter {
-	background: url('http://www.shooter.cn/favicon.ico');
-	vertical-align: middle;
-}
 .alert .content {
 	padding: 0 30px 20px 30px;
 }
@@ -505,7 +494,9 @@ h3 {
 	height: 16px;
 }
 #subtitles .loading,#subtitles input[type=button] {
-	float:right;
+	position: absolute;
+	right: 0px;
+	top: 0px;
 }
 .task {
 	overflow: hidden;
@@ -522,6 +513,13 @@ h3 {
 	/*position: relative;*/
 	display: block;
 } 
+.popup li.ng-enter {
+	display: block;
+}
+
+.popup li.ng-leave {
+	display: none;
+}
  
 /*.task.ng-enter.ng-enter-active .task-infoes, 
 .task.ng-leave .task-infoes {
@@ -549,3 +547,21 @@ h3 {
 	height: 0px;
 }
 
+#subtitles li {
+	padding-bottom: 10px;
+	padding-right: 80px;
+	padding-left: 20px;
+	position: relative;
+}
+#subtitles .icon {
+	position: absolute;
+	left: 0px;
+}
+.YYets {
+	background: url('/assets/yyets.ico');
+	vertical-align: middle;
+}
+.Shooter {
+	background: url('/assets/shooter.ico');
+	vertical-align: middle;
+}
