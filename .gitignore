@@ -17,3 +17,4 @@ vger.exe
 backup
 test
 *.safariextz
+gdb
