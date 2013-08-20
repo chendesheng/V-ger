@@ -77,6 +77,9 @@ func monitorTask() {
 					quit := make(chan bool, 50)
 					taskControls[t.Name] = taskControl{quit, control, t}
 
+					if t.DownloadedSize == 0 {
+						native.SendNotification("V'ger task begin", t.Name)
+					}
 					go download(t, control, quit)
 				}
 			}
