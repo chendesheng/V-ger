@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"task"
-	"time"
+	// "time"
 	// "bytes"
 	// "log"
 	// "bytes"
@@ -16,14 +16,7 @@ var play_quit chan bool
 func Play(t *task.Task, w io.Writer, from, to int64) {
 	fmt.Println("playing download from ", from, " to ", to)
 	if play_quit != nil {
-		select {
-		case <-play_quit:
-			// Since no one write to quit channel,
-			// the channel must be closed when pass through receive operation.
-			break
-		case <-time.After(time.Millisecond):
-			close(play_quit)
-		}
+		ensureQuit(play_quit)
 	}
 
 	t.Status = "Playing"

@@ -29,7 +29,7 @@ func newDataBlock(from, to int64) *block {
 }
 
 func doDownload(url string, w io.Writer, from, to int64,
-	maxSpeed int64, control chan int, quit <-chan bool) chan int64 {
+	maxSpeed int64, control chan int, quit chan bool) chan int64 {
 
 	input := make(chan *block)
 	output := make(chan *block)
@@ -42,7 +42,6 @@ func doDownload(url string, w io.Writer, from, to int64,
 
 	go func() {
 		writeOutput(w, from, output, progress, quit)
-		// ensureQuit(quit)
 	}()
 
 	return progress
@@ -110,7 +109,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 		}
 	}
 }
-func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan int64, quit <-chan bool) {
+func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan int64, quit chan bool) {
 	defer func() {
 		fmt.Println("close progress")
 		close(progress)
@@ -155,9 +154,8 @@ func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan in
 						break
 					}
 				} else {
-					// fmt.Printf("\n%s", err)
 					log.Print(err)
-					// log.Fatal(err)
+					ensureQuit(quit)
 					return
 				}
 			}

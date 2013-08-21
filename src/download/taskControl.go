@@ -12,13 +12,13 @@ import (
 )
 
 type taskControl struct {
-	quit     chan<- bool
+	quit     chan bool
 	maxSpeed chan int
 	t        *task.Task
 }
 
 func (tc *taskControl) stopDownload() {
-	close(tc.quit)
+	ensureQuit(tc.quit)
 }
 
 func (tc *taskControl) limitSpeed(speed int) error {
@@ -30,6 +30,17 @@ func (tc *taskControl) limitSpeed(speed int) error {
 	}
 
 	return nil
+}
+
+func ensureQuit(quit chan bool) {
+	select {
+	case <-quit:
+		// Since no one write to quit channel,
+		// the channel must be closed when pass through receive operation.
+		break
+	case <-time.After(time.Millisecond):
+		close(quit)
+	}
 }
 
 var DownloadClient *http.Client
@@ -120,7 +131,7 @@ func Start() {
 	}
 }
 
-func download(t *task.Task, control chan int, quit <-chan bool) {
+func download(t *task.Task, control chan int, quit chan bool) {
 	if t.DownloadedSize < t.Size {
 		f := openOrCreateFileRW(getFilePath(t.Name), t.DownloadedSize)
 		defer f.Close()
