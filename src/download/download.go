@@ -242,13 +242,15 @@ func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, fro
 			}
 
 			dbmap[db.from] = db
+
+			// log.Println(len(dbmap))
 			for {
 				if d, ok := dbmap[nextOutputFrom]; ok {
 					// fmt.Printf("sort output %d-%d\n", d.from, d.to)
 					select {
 					case output <- d:
 						nextOutputFrom = d.to
-						delete(dbmap, db.from)
+						delete(dbmap, d.from)
 						break
 					case <-quit:
 						return
@@ -339,8 +341,10 @@ func downloadBlock(url string, b *block, quit <-chan bool) (chan []byte, io.Clos
 				go func() { result <- make([]byte, 0) }()
 			}
 		}()
-		buffer := bytes.NewBuffer(make([]byte, 0, to-from))
-		// fmt.Println("read from buffer")
+
+		//Always read more bytes to avoid buffer glow.
+		buffer := bytes.NewBuffer(make([]byte, 0, to-from+bytes.MinRead))
+		// log.Println(to - from)
 
 		chFinish := make(chan bool)
 		go func(ch chan bool) {

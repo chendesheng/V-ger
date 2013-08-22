@@ -1,9 +1,7 @@
 package download
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -86,24 +84,4 @@ func getFileName(fullURL string) string {
 
 	name, _ := url.QueryUnescape(fullURL[s:e])
 	return name
-}
-func writeJson(path string, object interface{}) {
-	data, err := json.Marshal(object)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ioutil.WriteFile(path, data, 0666)
-}
-func readJson(path string, object interface{}) error {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	// log.Println("read json: ")
-	// log.Println(path)
-	// log.Println(string(data))
-
-	return json.Unmarshal(data, &object)
 }

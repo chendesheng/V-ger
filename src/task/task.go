@@ -25,6 +25,11 @@ var TaskDir string
 func init() {
 	watchers = make([]chan []*Task, 0)
 	TaskDir = path.Join(util.ReadConfig("dir"), "vger-tasks")
+
+	_, err := ioutil.ReadDir(TaskDir)
+	if os.IsNotExist(err) {
+		os.Mkdir(TaskDir, 0777)
+	}
 }
 
 type Task struct {
@@ -134,11 +139,6 @@ func GetDownloadingTask() (*Task, bool) {
 }
 
 func SaveTask(t *Task) (err error) {
-	_, err = ioutil.ReadDir(TaskDir)
-	if os.IsNotExist(err) {
-		os.Mkdir(TaskDir, 0777)
-	}
-
 	err = util.WriteJson(taskInfoFileName(t.Name), t)
 	if err == nil {
 		go writeChangeEvent()
