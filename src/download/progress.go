@@ -2,13 +2,13 @@ package download
 
 import (
 	"fmt"
-	"log"
+	// "log"
 	"task"
 	"time"
 )
 
 func handleProgress(progress chan int64, t *task.Task, quit <-chan bool) {
-	log.Printf("start handle progress: %v\n", *t)
+	// log.Printf("start handle progress: %v\n", *t)
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
 	timer := time.NewTicker(time.Second * 2)

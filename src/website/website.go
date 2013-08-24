@@ -33,13 +33,6 @@ var config map[string]string
 func init() {
 	config = util.ReadAllConfigs()
 
-	if logPath, ok := config["log"]; ok {
-		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.SetOutput(f)
-	}
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
 		Jar: jar,
@@ -256,15 +249,15 @@ func progressHandler(ws *websocket.Conn) {
 
 	io.WriteString(ws, string(text))
 
-	ch := make(chan []*task.Task)
+	ch := make(chan *task.Task)
 	log.Println("website watch task change ", ch)
 	task.WatchChange(ch)
 	defer task.RemoveWatch(ch)
 
 	for {
 		select {
-		case tks := <-ch:
-			text, _ := json.Marshal(tks)
+		case <-ch:
+			text, _ := json.Marshal(task.GetTasks())
 			io.WriteString(ws, string(text))
 			break
 		case <-time.After(time.Second * 20):

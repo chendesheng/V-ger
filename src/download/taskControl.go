@@ -48,63 +48,62 @@ var baseDir string = util.ReadConfig("dir")
 var taskControls map[string]taskControl = make(map[string]taskControl)
 
 func monitorTask() {
-	ch := make(chan []*task.Task)
+	ch := make(chan *task.Task)
 	log.Println("task control watch task: ", ch)
 	task.WatchChange(ch)
 
-	for tks := range ch {
-		for _, t := range tks {
-			if tc, ok := taskControls[t.Name]; ok {
-				// log.Printf("monitor task %v\n", t)
+	for t := range ch {
+		if tc, ok := taskControls[t.Name]; ok {
+			// log.Printf("monitor task %v\n", t)
 
-				if t.Status == "Stopped" {
-					tc.stopDownload()
-					delete(taskControls, t.Name)
-				}
-				if t.Status == "Deleted" {
-					tc.stopDownload()
-					delete(taskControls, t.Name)
-				}
-				if t.Status == "Finished" {
-					delete(taskControls, t.Name)
+			if t.Status == "Stopped" {
+				tc.stopDownload()
+				delete(taskControls, t.Name)
+			}
+			if t.Status == "Deleted" {
+				tc.stopDownload()
+				delete(taskControls, t.Name)
+			}
+			if t.Status == "Finished" {
+				delete(taskControls, t.Name)
 
-					if t.Autoshutdown {
-						go native.Shutdown(t.Name)
-					} else {
-						go native.SendNotification("V'ger Task Finished", t.Name)
-						task.ResumeNextTask()
-					}
-				}
-				if t.LimitSpeed != tc.t.LimitSpeed {
-					tc.limitSpeed(t.LimitSpeed)
-					tc.t = t
-				}
-			} else {
-				if t.Status == "Downloading" {
-					log.Printf("download task %v\n", t)
-
-					control := make(chan int)
-					quit := make(chan bool, 50)
-					taskControls[t.Name] = taskControl{quit, control, t}
-
-					if t.DownloadedSize == 0 {
-						native.SendNotification("V'ger task begin", t.Name)
-					}
-					go download(t, control, quit)
+				if t.Autoshutdown {
+					go native.Shutdown(t.Name)
+				} else {
+					go native.SendNotification("V'ger Task Finished", t.Name)
+					task.ResumeNextTask()
 				}
 			}
+			if t.LimitSpeed != tc.t.LimitSpeed {
+				tc.limitSpeed(t.LimitSpeed)
+				tc.t = t
+			}
+		} else {
+			if t.Status == "Downloading" {
+				log.Printf("download task %v\n", t)
 
-			if t.Status == "Deleted" {
-				dir := util.ReadConfig("dir")
-				err := native.MoveFileToTrash(dir, t.Name)
-				if err != nil {
-					log.Println(err)
+				control := make(chan int)
+				quit := make(chan bool, 50)
+				taskControls[t.Name] = taskControl{quit, control, t}
+
+				if t.DownloadedSize == 0 {
+					native.SendNotification("V'ger task begin", t.Name)
 				}
-				native.MoveFileToTrash(task.TaskDir, fmt.Sprint(t.Name, ".vger-task.txt"))
-				native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".zip"))
-				native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".rar"))
+				go download(t, control, quit)
 			}
 		}
+
+		if t.Status == "Deleted" {
+			dir := util.ReadConfig("dir")
+			err := native.MoveFileToTrash(dir, t.Name)
+			if err != nil {
+				log.Println(err)
+			}
+			native.MoveFileToTrash(task.TaskDir, fmt.Sprint(t.Name, ".vger-task.txt"))
+			native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".zip"))
+			native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".rar"))
+		}
+
 	}
 }
 func Start() {

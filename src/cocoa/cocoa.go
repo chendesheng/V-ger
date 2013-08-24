@@ -48,31 +48,23 @@ type uiCommand struct {
 }
 
 func timerStart(chUI chan uiCommand) {
-	watch := make(chan []*task.Task)
+	watch := make(chan *task.Task)
 
 	log.Println("status bar watch task change: ", watch)
 	task.WatchChange(watch)
 
-	for tks := range watch {
-		var downloadingTask *task.Task
-
-		for _, t := range tks {
-			if t.Status == "Downloading" || t.Status == "Playing" {
-				downloadingTask = t
-			}
-		}
-
+	for t := range watch {
 		var properties []string
-		if t := downloadingTask; t != nil {
-			if t.Status == "Downloading" {
-				properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
-					float64(t.DownloadedSize)/float64(t.Size)*100.0),
-					fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
-			} else if t.Status == "Playing" {
-				properties = []string{fmt.Sprintf("%s %.1f KB/s", util.CleanMovieName(t.Name), t.Speed), ""}
-			}
+		if t.Status == "Downloading" {
+			properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
+				float64(t.DownloadedSize)/float64(t.Size)*100.0),
+				fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+		} else if t.Status == "Playing" {
+			properties = []string{fmt.Sprintf("%s %.1f KB/s", util.CleanMovieName(t.Name), t.Speed), ""}
 		} else {
-			properties = []string{"V'ger"}
+			if !task.HasDownloadingOrPlaying() {
+				properties = []string{"V'ger"}
+			}
 		}
 
 		chUI <- uiCommand{"statusItem", properties}
@@ -84,9 +76,9 @@ var chUI chan uiCommand
 // func SendNotification(title string, infoText string) {
 // 	chUI <- uiCommand{"sendNotification", []string{title, infoText}}
 // }
-func TrashFile(dir string, name string) {
-	chUI <- uiCommand{"trashFile", []string{dir, name}}
-}
+// func TrashFile(dir string, name string) {
+// 	chUI <- uiCommand{"trashFile", []string{dir, name}}
+// }
 
 func Start() {
 	runtime.LockOSThread()
@@ -152,9 +144,9 @@ func Start() {
 			// 	center.DeliverNotification(notification)
 
 			// 	break
-			case "trashFile":
-				prop := cmd.arguments.([]string)
-				NSTrashFile(prop[0], prop[1])
+			// case "trashFile":
+			// 	prop := cmd.arguments.([]string)
+			// 	NSTrashFile(prop[0], prop[1])
 			default:
 				log.Printf("unknown cmd %v", cmd)
 				break

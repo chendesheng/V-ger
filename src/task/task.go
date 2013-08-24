@@ -2,7 +2,7 @@ package task
 
 import (
 	"encoding/base64"
-	"sync"
+	// "sync"
 	// "encoding/json"
 	// "errors"
 	"fmt"
@@ -23,7 +23,7 @@ import (
 var TaskDir string
 
 func init() {
-	watchers = make([]chan []*Task, 0)
+	watchers = make([]chan *Task, 0)
 	TaskDir = path.Join(util.ReadConfig("dir"), "vger-tasks")
 
 	_, err := ioutil.ReadDir(TaskDir)
@@ -58,7 +58,7 @@ func RemoveTask(name string) error {
 		return err
 	}
 
-	writeChangeEvent()
+	writeChangeEvent(name)
 
 	return nil
 }
@@ -137,75 +137,20 @@ func GetDownloadingTask() (*Task, bool) {
 
 	return nil, false
 }
+func HasDownloadingOrPlaying() bool {
+	for _, t := range GetTasks() {
+		if t.Status == "Downloading" || t.Status == "Playing" {
+			return true
+		}
+	}
 
+	return false
+}
 func SaveTask(t *Task) (err error) {
 	err = util.WriteJson(taskInfoFileName(t.Name), t)
 	if err == nil {
-		go writeChangeEvent()
+		go writeChangeEvent(t.Name)
 	}
 
 	return
-}
-
-var watchers []chan []*Task
-var watcherLock sync.Mutex = sync.Mutex{}
-
-func WatchChange(ch chan []*Task) {
-	if ch == nil {
-		panic("ch cannot be nil")
-	}
-
-	watcherLock.Lock()
-	defer watcherLock.Unlock()
-
-	for _, w := range watchers {
-		if w == ch {
-			return
-		}
-	}
-
-	watchers = append(watchers, ch)
-	// chTaskChange = ch
-}
-
-func RemoveWatch(ch chan []*Task) {
-	watcherLock.Lock()
-	defer watcherLock.Unlock()
-
-	for i, w := range watchers {
-		if w == ch {
-			if i == len(watchers)-1 {
-				watchers = watchers[:i]
-			} else {
-				watchers = append(watchers[:i], watchers[i+1:]...)
-			}
-
-			log.Println("remove watch: ", w)
-			break
-		}
-	}
-}
-
-//call this function after modify task file directly, like trash task.
-func UpdateFiles() {
-	writeChangeEvent()
-}
-
-func writeChangeEvent() {
-	tks := GetTasks()
-
-	watcherLock.Lock()
-	copyWatchers := make([]chan []*Task, len(watchers))
-	copy(copyWatchers, watchers)
-	watcherLock.Unlock()
-
-	for _, w := range copyWatchers {
-		select {
-		case w <- tks:
-			break
-		case <-time.After(time.Second):
-			log.Printf("writeChangeEvent timeout: %v\n", w)
-			break
-		}
-	}
 }

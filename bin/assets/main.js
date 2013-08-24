@@ -116,7 +116,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			$scope.waiting = true;
 			if ($scope.new_url.indexOf('lixian.vip.xunlei.com') != -1 ||
 				$scope.new_url.indexOf('youtube.com') != -1 ||
-				/.*dmg|.*zip|.*rar/.test($scope.new_url)) {
+				/.*dmg|.*zip|.*rar|.*exe/.test($scope.new_url)) {
 				$http.post('/new/', $scope.new_url).success(function(resp) {
 					if (!resp) {
 						// $scope.new_url = '';
