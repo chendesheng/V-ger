@@ -51,17 +51,6 @@ type Task struct {
 	Autoshutdown bool
 }
 
-func RemoveTask(name string) error {
-	err := os.Remove(taskInfoFileName(name))
-	if err != nil {
-		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
-		return err
-	}
-
-	writeChangeEvent(name)
-
-	return nil
-}
 func SetAutoshutdown(name string, onOrOff bool) {
 	if t, err := GetTask(name); err == nil {
 		t.Autoshutdown = onOrOff

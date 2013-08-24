@@ -6,7 +6,17 @@ import (
 	"testing"
 )
 
-func testSaveTask(t *testing.T) {
+func removeTask(name string) error {
+	err := os.Remove(taskInfoFileName(name))
+	if err != nil {
+		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
+		return err
+	}
+
+	return nil
+}
+
+func TestTaskDir(t *testing.T) {
 	tk := &Task{}
 	tk.Name = "hello"
 	SaveTask(tk)
@@ -16,7 +26,7 @@ func testSaveTask(t *testing.T) {
 		t.Errorf("not equal tk is %v, tk2 is %v", tk, tk2)
 	}
 
-	RemoveTask(tk.Name)
+	removeTask(tk.Name)
 
 	_, err := GetTask(tk.Name)
 	if err == nil {
@@ -24,19 +34,7 @@ func testSaveTask(t *testing.T) {
 	}
 }
 
-func TestTaskDir(t *testing.T) {
-	TaskDir = ""
-	testSaveTask(t)
-
-	TaskDir = "abc"
-	testSaveTask(t)
-
-	os.Remove(TaskDir)
-}
-
 func TestGetTasks(t *testing.T) {
-	TaskDir = "abc"
-
 	tk := &Task{}
 	tk.Name = "hello"
 	SaveTask(tk)
@@ -50,40 +48,23 @@ func TestGetTasks(t *testing.T) {
 		t.Errorf("length must equals 2 now equals %d", len(ts))
 	}
 
-	RemoveTask(tk.Name)
-	RemoveTask("hello")
-	os.Remove(TaskDir)
+	removeTask(tk.Name)
+	removeTask("hello")
 }
 
 func TestWatchTasksChange(t *testing.T) {
-	TaskDir = "abc"
-
-	ch := make(chan []*Task)
+	ch := make(chan *Task)
 	WatchChange(ch)
 	WatchChange(ch)
 
 	go func() {
-		tks := <-ch
-		if len(tks) != 1 {
-			t.Errorf("length of tasks must be 1 now %d", len(tks))
+		tk := <-ch
+		if tk.Name != "hello" {
+			t.Errorf("Except hello now %s", tk.Name)
 		}
-		if tks[0].Name != "hello" {
-			t.Errorf("Except hello now %s", tks[0].Name)
-		}
-		tks = <-ch
-		if len(tks) != 2 {
-			t.Errorf("length of tasks must be 2 now %d", len(tks))
-		}
-		tks = <-ch
-		if len(tks) != 1 {
-			t.Errorf("length of tasks must be 1 now %d", len(tks))
-		}
-		if tks[0].Name != "hello1" {
-			t.Errorf("Except hello1 now %s", tks[0].Name)
-		}
-		tks = <-ch
-		if len(tks) != 0 {
-			t.Errorf("Except 0 but %d", len(tks))
+		tk = <-ch
+		if tk.Name != "hello1" {
+			t.Errorf("Except hello1 now %s", tk.Name)
 		}
 	}()
 
@@ -97,10 +78,9 @@ func TestWatchTasksChange(t *testing.T) {
 
 	GetTasks()
 
-	RemoveTask("hello")
-	RemoveTask("hello1")
-
-	os.Remove(TaskDir)
+	RemoveWatch(ch)
+	removeTask("hello1")
+	removeTask("hello")
 }
 
 //TODO
@@ -109,9 +89,8 @@ func TestMultiWatcher(t *testing.T) {
 }
 
 func TestGetDownloadingTask(t *testing.T) {
-	TaskDir = "abc"
 	tk := &Task{}
-	tk.Name = "hello"
+	tk.Name = "hello3"
 	tk.Status = "Downloading"
 	SaveTask(tk)
 
@@ -130,6 +109,9 @@ func TestGetDownloadingTask(t *testing.T) {
 		t.Errorf("Except <nil> but %v", tk3)
 	}
 
-	RemoveTask(tk.Name)
+	removeTask(tk.Name)
+}
+
+func TestCleanup(t *testing.T) {
 	os.Remove(TaskDir)
 }
