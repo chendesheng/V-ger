@@ -383,7 +383,7 @@ func downloadBlock(url string, b *block, quit <-chan bool) (chan []byte, io.Clos
 	return result, resp.Body, nil
 }
 
-func GetDownloadInfo(url string) (realURL string, name string, size int64, err error) {
+func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
 	DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		temp := req.URL.String()
@@ -395,9 +395,8 @@ func GetDownloadInfo(url string) (realURL string, name string, size int64, err e
 
 	resp, err := DownloadClient.Do(req)
 	if err != nil {
-		log.Println(err.Error() + " Try again after one second")
-		// panic(err)
-		time.After(time.Second)
+		log.Println(err.Error() + " Try one more time")
+
 		resp, err = DownloadClient.Do(req)
 		if err != nil {
 			log.Println(err)
@@ -418,7 +417,7 @@ func GetDownloadInfo(url string) (realURL string, name string, size int64, err e
 		err = fmt.Errorf("Broken resource\n")
 	}
 
-	realURL = url
+	finalUrl = url
 	return
 }
 

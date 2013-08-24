@@ -135,7 +135,13 @@ func download(t *task.Task, control chan int, quit chan bool) {
 		f := openOrCreateFileRW(getFilePath(t.Name), t.DownloadedSize)
 		defer f.Close()
 
-		progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), control, quit)
+		url, _, _, err := GetDownloadInfo(t.URL)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Print("final url: ", url)
+		progress := doDownload(url, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), control, quit)
 
 		handleProgress(progress, t, quit)
 	}

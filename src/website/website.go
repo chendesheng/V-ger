@@ -129,17 +129,16 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	var name string
+	name := ""
 	if len(r.URL.String()) > 4 {
 		name, _ = url.QueryUnescape(r.URL.String()[5:])
-	} else {
-		name = ""
 	}
+
 	input, _ := ioutil.ReadAll(r.Body)
 
 	if url := string(input); url != "" {
 
-		url, name2, size, err := download.GetDownloadInfo(url)
+		_, name2, size, err := download.GetDownloadInfo(url)
 		if err != nil {
 			writeError(w, err)
 			return
