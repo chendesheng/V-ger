@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B02D3D9C17C9FCF300B92F6F /* WebViewExt.m in Sources */ = {isa = PBXBuildFile; fileRef = B02D3D9B17C9FCF300B92F6F /* WebViewExt.m */; };
 		B06C7A681776BC5000EF60C7 /* Vger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B06C7A671776BC5000EF60C7 /* Vger-Info.plist */; };
 		B0743C6B16EAEE5500FF9AB3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0743C6A16EAEE5500FF9AB3 /* Cocoa.framework */; };
 		B0743C7516EAEE5500FF9AB3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0743C7316EAEE5500FF9AB3 /* InfoPlist.strings */; };
@@ -19,6 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B02D3D9B17C9FCF300B92F6F /* WebViewExt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebViewExt.m; sourceTree = "<group>"; };
 		B06C7A671776BC5000EF60C7 /* Vger-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Vger-Info.plist"; sourceTree = "<group>"; };
 		B0743C6616EAEE5500FF9AB3 /* V'ger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "V'ger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0743C6A16EAEE5500FF9AB3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -96,6 +98,7 @@
 				B0743C7D16EAEE5500FF9AB3 /* VAppDelegate.m */,
 				B0743C7F16EAEE5500FF9AB3 /* MainMenu.xib */,
 				B0743C7116EAEE5500FF9AB3 /* Supporting Files */,
+				B02D3D9B17C9FCF300B92F6F /* WebViewExt.m */,
 			);
 			path = VgerClient;
 			sourceTree = "<group>";
@@ -181,6 +184,7 @@
 			files = (
 				B0743C7716EAEE5500FF9AB3 /* main.m in Sources */,
 				B0743C7E16EAEE5500FF9AB3 /* VAppDelegate.m in Sources */,
+				B02D3D9C17C9FCF300B92F6F /* WebViewExt.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

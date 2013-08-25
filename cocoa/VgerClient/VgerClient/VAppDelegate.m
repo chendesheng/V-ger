@@ -38,4 +38,38 @@
 - (void)webView:(WebView *)sender didFailProvisionalLoadWithError:(NSError *)error forFrame:(WebFrame *)frame {
     [[self web] setMainFrameURL:@"http://127.0.0.1:9527"];
 }
+- (BOOL)performKeyEquivalent:(NSEvent *)theEvent
+{
+    if ( [theEvent modifierFlags] & NSCommandKeyMask)
+    {
+        NSString *chars = [theEvent charactersIgnoringModifiers];
+        
+        if ([chars isEqualToString:@"x"])
+        {
+            [_web cut:_web];
+            return YES;
+        }
+        
+        if ([chars isEqualToString:@"c"])
+        {
+            [_web copy:_web];
+            return YES;
+        }
+        
+        if ([chars isEqualToString:@"v"])
+        {
+            [_web paste:_web];
+            return YES;
+        }
+        
+    }
+    
+    return [_web performKeyEquivalent:theEvent];
+}
+
+//- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame {
+//    NSScrollView *mainScrollView = sender.mainFrame.frameView.documentView.enclosingScrollView;
+//    [mainScrollView setVerticalScrollElasticity:NSScrollElasticityNone];
+//    [mainScrollView setHorizontalScrollElasticity:NSScrollElasticityNone];
+//}
 @end
