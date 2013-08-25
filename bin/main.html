@@ -75,53 +75,55 @@
 				<span ng-show="waiting" id="waiting"></span>
 			</div>
 		</form>
-
-		<div id="bt-files-overlay" class="overlay" ng-show="bt_files.length > 0">
-			<div id="bt-files" class="popup">
-				<button class="close" ng-click="bt_files=[]"></button>
-				<h3>Select a file ({{bt_files.length}} files total)</h3>
-				<ul>
-					<li ng-repeat="file in bt_files | orderBy:-Size">
-						<span class="status">[{{get_bt_file_status(file.Percent)}}]</span>
-						<span class="name">{{file.Name}}</span>
-						<span class="size">{{file.Size}}</span>
-						<input type="button" value="Download" ng-disabled="file.Percent<100" ng-hide="file.loading" ng-click="download_bt_files(file)"/>
-						<span class="loading" ng-show="file.loading"></span>
-					</li>
-				</ul>
+		
+		<div id="box-overlay" style="display:none;" ng-show="bt_files.length > 0||nosubtitles||subtitles.length > 0||alerts.length>0">
+			<div id="bt-files-overlay" class="overlay" ng-show="bt_files.length > 0">
+				<div id="bt-files" class="popup">
+					<button class="close" ng-click="bt_files=[]"></button>
+					<h3>Select a file ({{bt_files.length}} files total)</h3>
+					<ul>
+						<li ng-repeat="file in bt_files | orderBy:-Size">
+							<span class="status">[{{get_bt_file_status(file.Percent)}}]</span>
+							<span class="name">{{file.Name}}</span>
+							<span class="size">{{file.Size}}</span>
+							<input type="button" value="Download" ng-disabled="file.Percent<100" ng-hide="file.loading" ng-click="download_bt_files(file)"/>
+							<span class="loading" ng-show="file.loading"></span>
+						</li>
+					</ul>
+				</div>
 			</div>
-		</div>
 
 
-		<div id="nosubtitles-overlay" class="overlay" ng-show="nosubtitles">
-			<div class="popup">
-				<button class="close" ng-click="nosubtitles=false"></button>
-				<h3>No subtitles for '{{subtitles_movie_name}}'</h3>
-				<div class="bottom"><input type="button" value="Search in Addic7ed" ng-click="addic7ed_subtitles()"/></div>
+			<div id="nosubtitles-overlay" class="overlay" ng-show="nosubtitles">
+				<div class="popup">
+					<button class="close" ng-click="nosubtitles=false"></button>
+					<h3>No subtitles for '{{subtitles_movie_name}}'</h3>
+					<div class="bottom"><input type="button" value="Search in Addic7ed" ng-click="addic7ed_subtitles()"/></div>
+				</div>
 			</div>
-		</div>
 
-		<div id="subtitles-overlay" class="overlay" ng-show="subtitles.length > 0">
-			<div id="subtitles" class="popup">
-				<button class="close" ng-click="subtitles=[]"></button>
-				<h3>Subtitles for '{{subtitles_movie_name}}'</h3>
-				<ul>
-					<li ng-repeat="sub in subtitles | orderBy:-Size">
-						<span class="{{sub.Source}} icon"></span>
-						<span class="name" title="{{sub.FullDescription}}">{{sub.Description}}</span>
-						<input type="button" value="Download" ng-hide="sub.loading" ng-click="download_subtitles(sub)"/>
-						<span class="loading" ng-show="sub.loading"></span>
-					</li>
-				</ul>
+			<div id="subtitles-overlay" class="overlay" ng-show="subtitles.length > 0">
+				<div id="subtitles" class="popup">
+					<button class="close" ng-click="subtitles=[]"></button>
+					<h3>Subtitles for '{{subtitles_movie_name}}'</h3>
+					<ul>
+						<li ng-repeat="sub in subtitles | orderBy:-Size">
+							<span class="{{sub.Source}} icon"></span>
+							<span class="name" title="{{sub.FullDescription}}">{{sub.Description}}</span>
+							<input type="button" value="Download" ng-hide="sub.loading" ng-click="download_subtitles(sub)"/>
+							<span class="loading" ng-show="sub.loading"></span>
+						</li>
+					</ul>
+				</div>
 			</div>
-		</div>
 
 
-		<div class="overlay" ng-repeat="a in alerts" ng-show="alerts.length>0">
-			<div class="popup alert">
-				<button class="close" ng-click="pop_alert()"></button>
-				<h3>{{a.title}}</h3>
-				<div class="content">{{a.content}}</div>
+			<div class="overlay" ng-repeat="a in alerts" ng-show="alerts.length>0">
+				<div class="popup alert">
+					<button class="close" ng-click="pop_alert()"></button>
+					<h3>{{a.title}}</h3>
+					<div class="content">{{a.content}}</div>
+				</div>
 			</div>
 		</div>
 	</div>
