@@ -106,8 +106,6 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("trash \"%s\".\n", name)
 
 	task.DeleteTask(name)
-
-	log.Println("end trash")
 }
 
 func resumeHandler(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +138,11 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 		_, name2, size, err := download.GetDownloadInfo(url)
 		if err != nil {
-			writeError(w, err)
+			_, name2, size, err := download.GetDownloadInfo(url)
+
+			if err != nil {
+				writeError(w, err)
+			}
 			return
 		}
 
@@ -249,7 +251,7 @@ func progressHandler(ws *websocket.Conn) {
 	io.WriteString(ws, string(text))
 
 	ch := make(chan *task.Task)
-	log.Println("website watch task change ", ch)
+	// log.Println("website watch task change ", ch)
 	task.WatchChange(ch)
 	defer task.RemoveWatch(ch)
 

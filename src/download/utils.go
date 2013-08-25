@@ -2,7 +2,6 @@ package download
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,26 +29,25 @@ func addRangeHeader(req *http.Request, from, to int64) {
 		req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", from, to))
 	}
 }
-func openOrCreateFileRW(path string, position int64) *os.File {
-	log.Print("open or create file " + path)
+func openOrCreateFileRW(path string, position int64) (*os.File, error) {
+	// log.Print("open or create file " + path)
 
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	offset, err := f.Seek(position, 0)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	if offset != position {
-		fmt.Println("\nerror offset")
-		os.Exit(1)
+		return nil, fmt.Errorf("\nerror offset")
 	}
-	return f
+	return f, nil
 }
 func getFileInfo(header http.Header) (name string, size int64) {
-	log.Printf("%v\n", header)
+	// log.Printf("%v\n", header)
 	if len(header["Content-Disposition"]) > 0 {
 		contentDisposition := header["Content-Disposition"][0]
 		regexFile := regexp.MustCompile(`filename="([^"]+)"`)

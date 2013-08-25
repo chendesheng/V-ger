@@ -69,7 +69,7 @@ func MoveFileToTrash(dir, name string) error {
 		f.Close()
 	}
 
-	log.Println("trash file ", name)
+	// log.Println("trash file ", name)
 
 	u, err := user.Current()
 	if err != nil {

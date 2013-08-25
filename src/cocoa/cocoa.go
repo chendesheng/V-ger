@@ -119,6 +119,9 @@ func Start() {
 			switch cmd.name {
 			case "statusItem":
 				prop := cmd.arguments.([]string)
+				if len(prop) == 0 {
+					break
+				}
 
 				statusItem.SetTitle(prop[0])
 

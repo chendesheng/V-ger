@@ -14,6 +14,10 @@ var regCleanName *regexp.Regexp = regexp.MustCompile("(?i)720p|[[]720p[]]|x[.]26
 func cleanMovieName2(name string) string {
 	name = cleanMovieName1(name)
 	name = string(regCleanName.ReplaceAll([]byte(name), []byte("")))
+	index := strings.LastIndex(name, "..")
+	if index > 0 {
+		name = name[:index]
+	}
 	name = strings.Replace(name, ".", " ", -1)
 	name = strings.TrimSpace(name)
 

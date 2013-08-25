@@ -39,7 +39,7 @@ func RemoveWatch(ch chan *Task) {
 				watchers = append(watchers[:i], watchers[i+1:]...)
 			}
 
-			log.Println("remove watch: ", w)
+			// log.Println("remove watch: ", w)
 			break
 		}
 	}

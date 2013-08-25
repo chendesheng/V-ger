@@ -31,6 +31,19 @@ func newDataBlock(from, to int64) *block {
 func doDownload(url string, w io.Writer, from, to int64,
 	maxSpeed int64, control chan int, quit chan bool) chan int64 {
 
+	for {
+		finalUrl, _, _, err := GetDownloadInfo(url)
+		if err == nil {
+			url = finalUrl
+			break
+		}
+
+		select {
+		case <-quit:
+		default:
+		}
+	}
+
 	input := make(chan *block)
 	output := make(chan *block)
 
@@ -167,8 +180,7 @@ func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan in
 	fmt.Println("writeOutput end")
 }
 
-func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit <-chan bool) {
-
+func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(r)
@@ -182,51 +194,72 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 				// close(output)
 				return
 			}
-
-		tryDownloadBlock:
-			for {
-				//fmt.Printf("downloadBlock %s %v\n", url, b)
-				// downloadBlockQuit := make(chan bool)
-				chanRes, closer, err := downloadBlock(url, b, quit)
-				// chTimeout := time.After(time.Second * 10)
-				select {
-				// case <-chTimeout:
-				// 	fmt.Println("download block timeout")
-				// 	downloadBlockQuit <- true
-				// 	break
-				case data := <-chanRes:
-					if int64(len(data)) != (b.to - b.from) {
-						break
-					}
-					if err != nil {
-						break
-					}
-					b.data = data
-					// fmt.Printf("write downloadBlock %v\n", b)
-					select {
-					case output <- b:
-						break tryDownloadBlock
-					case <-quit:
-						return
-					}
-				case <-quit:
-					fmt.Println("downloadRoutine quit close")
-					// downloadBlockQuit <- true
-					closer.Close()
-					return
-				}
-			}
+			downloadBlock(url, b, output, quit)
 		case <-quit:
 			fmt.Println("downloadRoutine quit")
 			return
 		}
 	}
 }
-func createDownloadRoutine(url string, output chan<- *block, quit <-chan bool) chan<- *block {
+func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
+	times := 0
+	for {
+		times++
+		if times > 5 {
+			close(quit) //quit if more than 5 times
+			return
+		}
+
+		from, to := b.from, b.to
+		req := createDownloadRequest(url, from, to-1)
+
+		DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return fmt.Errorf("No redirect allowed here")
+		}
+
+		resp, err := DownloadClient.Do(req)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		select {
+		case data, ok := <-readAsync(resp.Body, to-from, quit):
+			if ok {
+				b.data = data
+				select {
+				case output <- b:
+					return
+				case <-quit:
+					return
+				}
+			}
+			break
+		case <-quit:
+			return
+		case <-time.After(time.Second * 30):
+			log.Println("network read timeout")
+			break
+		}
+	}
+}
+func readAsync(r io.Reader, size int64, quit chan bool) chan []byte {
+	result := make(chan []byte)
+	go func(ch chan []byte, size int64, quit chan bool) {
+		//Always read more bytes to avoid buffer glow.
+		buffer := bytes.NewBuffer(make([]byte, 0, size+bytes.MinRead))
+		buffer.ReadFrom(r)
+		select {
+		case ch <- buffer.Bytes():
+		case <-quit:
+		}
+	}(result, size, quit)
+
+	return result
+}
+func createDownloadRoutine(url string, output chan<- *block, quit chan bool) chan<- *block {
 	input := make(chan *block)
-	go func(url string, input <-chan *block, output chan<- *block, quit <-chan bool) {
-		downloadRoutine(url, input, output, quit)
-	}(url, input, output, quit)
+	go downloadRoutine(url, input, output, quit)
 	return input
 }
 func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, from int64, to int64) {
@@ -268,7 +301,7 @@ func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, fro
 		}
 	}
 }
-func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit <-chan bool, from, to int64) {
+func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
 	disorderOutput := make(chan *block)
 	chan1 := createDownloadRoutine(url, disorderOutput, quit)
 	chan2 := createDownloadRoutine(url, disorderOutput, quit)
@@ -277,9 +310,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 	chan5 := createDownloadRoutine(url, disorderOutput, quit)
 	// chan6 := createDownloadRoutine(url, disorderOutput, quit)
 
-	go func(input <-chan *block, output chan<- *block, quit <-chan bool, from, to int64) {
-		sortOutput(input, output, quit, from, to)
-	}(disorderOutput, output, quit, from, to)
+	go sortOutput(disorderOutput, output, quit, from, to)
 
 	for {
 		select {
@@ -314,72 +345,6 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 	}
 
 }
-func downloadBlock(url string, b *block, quit <-chan bool) (chan []byte, io.Closer, error) {
-	from, to := b.from, b.to
-	req := createDownloadRequest(url, from, to-1)
-
-	result := make(chan []byte)
-	resp, err := DownloadClient.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		go func() { result <- make([]byte, 0) }()
-		return result, nil, err
-	}
-
-	go func(quit <-chan bool, resp *http.Response) {
-		defer func() {
-			if resp != nil && resp.Body != nil {
-				resp.Body.Close()
-			}
-		}()
-
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Println(r)
-				go func() { result <- make([]byte, 0) }()
-			}
-		}()
-
-		//Always read more bytes to avoid buffer glow.
-		buffer := bytes.NewBuffer(make([]byte, 0, to-from+bytes.MinRead))
-		// log.Println(to - from)
-
-		chFinish := make(chan bool)
-		go func(ch chan bool) {
-			buffer.ReadFrom(resp.Body)
-			select {
-			case ch <- true:
-				break
-			case <-time.After(time.Second * 10):
-				break
-			case <-quit:
-				break
-			}
-		}(chFinish)
-
-		select {
-		case <-chFinish:
-			break
-		case <-quit:
-			break
-		case <-time.After(time.Second * 30):
-			panic("network read timeout")
-			return
-		}
-
-		// fmt.Println("read from buffer end")
-
-		select {
-		case result <- buffer.Bytes():
-			// fmt.Println("write result end")
-			break
-		case <-quit:
-			fmt.Println("downloadblock inner quit")
-			return
-		}
-	}(quit, resp)
-	return result, resp.Body, nil
-}
 
 func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
@@ -394,14 +359,7 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 	resp, err := DownloadClient.Do(req)
 
 	if err != nil {
-
-		log.Println(err.Error() + " Try one more time")
-
-		resp, err = DownloadClient.Do(req)
-		if err != nil {
-			log.Println(err)
-			return "", "", 0, err
-		}
+		return "", "", 0, err
 	}
 	defer resp.Body.Close()
 
@@ -415,7 +373,7 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 	name = strings.TrimLeft(name, ".")
 
 	if name == "" && size == 0 {
-		err = fmt.Errorf("Broken resource\n")
+		err = fmt.Errorf("Broken resource")
 	}
 
 	finalUrl = url

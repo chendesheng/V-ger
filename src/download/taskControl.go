@@ -33,6 +33,10 @@ func (tc *taskControl) limitSpeed(speed int) error {
 }
 
 func ensureQuit(quit chan bool) {
+	defer func() {
+		recover()
+	}()
+
 	select {
 	case <-quit:
 		// Since no one write to quit channel,
@@ -80,7 +84,7 @@ func monitorTask() {
 			}
 		} else {
 			if t.Status == "Downloading" {
-				log.Printf("download task %v\n", t)
+				log.Printf("start download: %v\n", t.Name)
 
 				control := make(chan int)
 				quit := make(chan bool, 50)
@@ -132,16 +136,20 @@ func Start() {
 
 func download(t *task.Task, control chan int, quit chan bool) {
 	if t.DownloadedSize < t.Size {
-		f := openOrCreateFileRW(getFilePath(t.Name), t.DownloadedSize)
-		defer f.Close()
-
-		url, _, _, err := GetDownloadInfo(t.URL)
+		f, err := openOrCreateFileRW(getFilePath(t.Name), t.DownloadedSize)
 		if err != nil {
-			log.Println(err)
 			return
 		}
-		log.Print("final url: ", url)
-		progress := doDownload(url, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), control, quit)
+
+		defer f.Close()
+
+		// url, _, _, err := GetDownloadInfo(t.URL)
+		// if err != nil {
+		// 	log.Println(err)
+		// 	return
+		// }
+		// log.Print("final url: ", url)
+		progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), control, quit)
 
 		handleProgress(progress, t, quit)
 	}
@@ -154,13 +162,26 @@ func download(t *task.Task, control chan int, quit chan bool) {
 	if t.Status == "Deleted" {
 		return
 	}
-
 	if t.DownloadedSize >= t.Size {
 		log.Println(t.Name, " Finished")
 
 		t.Status = "Finished"
 		task.SaveTask(t)
+
+		return
 	}
+
+	if t.Status == "Downloading" {
+		log.Println("restart downloading: ", t.Name)
+		t.Status = "Stopped"
+		task.SaveTask(t)
+
+		t.Status = "Downloading"
+		task.SaveTask(t)
+
+		return
+	}
+
 }
 
 func getFilePath(name string) string {
