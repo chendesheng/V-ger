@@ -10,65 +10,64 @@
 	<script type="text/javascript" src="/assets/date.js"></script>
 </head>
 <body>
-	<!--for debug-->
-	<input type="button" id="refresh-tasks" value="Refresh" style="display:none;" />
-
-	<h1>V'ger</h1>
-	<h2>Speed is Fun!</h2>
 	<div id="tasks" ng-controller="tasks_ctrl">
-		<ul id="tasks-list">
-	       <li ng-repeat="task in tasks | orderBy:'StartTime':1" class="task">
-	       		<div class="task-infoes">
-	       			<div class="left-actions">
-		       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped' || task.Status=='Playing'"></button>
-		       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
-		       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
-		       		</div>
-	       			<div><span class="name"><span ng-show="task.Status=='Queued'">[Waiting] </span><a ng-click="$event.preventDefault();send_open(task);" href="{{task.URL}}">{{task.Name}}</a></span></div>
-					
-					<div class="progress-box">
-				       	<div class="progress" ng-hide="task.Status=='Finished'">
-				       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
+
+		<div class="box-tasks-list">
+			<h1>V'ger</h1>
+			<h2>Speed is Fun!</h2>
+			<ul id="tasks-list">
+		       <li ng-repeat="task in tasks | orderBy:'StartTime':1" class="task">
+		       		<div class="task-infoes">
+		       			<div class="left-actions">
+			       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped' || task.Status=='Playing'"></button>
+			       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
+			       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
+			       		</div>
+		       			<div><span class="name"><span ng-show="task.Status=='Queued'">[Waiting] </span><a ng-click="$event.preventDefault();send_open(task);" href="{{task.URL}}">{{task.Name}}</a></span></div>
+						
+						<div class="progress-box">
+					       	<div class="progress" ng-hide="task.Status=='Finished'">
+					       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
+							</div>
 						</div>
-					</div>
 
-		       		<div class="row-3rd">
-		       			<input type="button" ng-click="search_subtitles(task.Name)" value="Subtitles"/>
-		       			<input type="button" ng-click="send_play(task)" value="Play Online" ng-show="task.Status!='Finished'"/>
-		       			<select ng-hide="task.Status=='Finished'" ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
-		       				<option value="0">No limit</option>
-		       				<option value="50">Up to 50K</option>
-		       				<option value="100">Up to 100K</option>
-		       				<option value="150">Up to 150K</option>
-		       				<option value="200">Up to 200K</option>
-		       				<option value="300">Up to 300K</option>
-		       				<option value="500">Up to 500K</option>
-		       			</select>
+			       		<div class="row-3rd">
+			       			<input type="button" ng-click="search_subtitles(task.Name)" value="Subtitles"/>
+			       			<input type="button" ng-click="send_play(task)" value="Play Online" ng-show="task.Status!='Finished'"/>
+			       			<select ng-hide="task.Status=='Finished'" ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
+			       				<option value="0">No limit</option>
+			       				<option value="50">Up to 50K</option>
+			       				<option value="100">Up to 100K</option>
+			       				<option value="150">Up to 150K</option>
+			       				<option value="200">Up to 200K</option>
+			       				<option value="300">Up to 300K</option>
+			       				<option value="500">Up to 500K</option>
+			       			</select>
 
-		       			<span ng-hide="task.Status=='Finished'">
-			       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
-			       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
-		       			</span>
+			       			<span ng-hide="task.Status=='Finished'">
+				       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
+				       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
+			       			</span>
 
-		       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
-		       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(2)}}KB/s</span>
-<!-- 
-			       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-			       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span> -->
+			       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
+			       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(2)}}KB/s</span>
+							<!-- 
+				       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
+				       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span> -->
 
-		       		</div>
+			       		</div>
 
-	       			<!-- <div>
-			       		<span style="display:none;">[{{task.StartDate.format()}}]</span>
-			       		<span style="display:none;" class="elapsed">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-			       	</div> -->
+		       			<!-- <div>
+				       		<span style="display:none;">[{{task.StartDate.format()}}]</span>
+				       		<span style="display:none;" class="elapsed">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
+				       	</div> -->
 
-	       			<button class="close" ng-click="move_to_trash(task)" title="Trash"></button>
-		     
+		       			<button class="close" ng-click="move_to_trash(task)" title="Trash"></button>
+		       		<div>
+		       </li>
+			</ul>
+		</div>
 
-	       		<div>
-	       </li>
-		</ul>
 		<form  ng-submit="go()">
 			<div id="start-download" ui-event="{drop:'upload_torrent($event)'}" ondragover="return;">
 				<textarea ui-keypress="{enter: '$event.preventDefault();go();'}" autofocus ng-model="new_url" type="text" id="new-url" placeHolder="Input anything you want"></textarea>
