@@ -394,7 +394,9 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 	}
 
 	resp, err := DownloadClient.Do(req)
+
 	if err != nil {
+
 		log.Println(err.Error() + " Try one more time")
 
 		resp, err = DownloadClient.Do(req)
@@ -403,6 +405,7 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 			return "", "", 0, err
 		}
 	}
+	defer resp.Body.Close()
 
 	name, size = getFileInfo(resp.Header)
 	if name == "" {
@@ -418,24 +421,6 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 	}
 
 	finalUrl = url
+
 	return
-}
-
-func SingleRoutineDownload(url string, w io.Writer, from, to int64) error {
-	req := createDownloadRequest(url, from, to-1)
-
-	resp, err := DownloadClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println(r)
-		}
-	}()
-
-	io.Copy(w, resp.Body)
-
-	return nil
 }
