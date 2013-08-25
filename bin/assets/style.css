@@ -528,14 +528,14 @@ h3 {
 	/*position: relative;*/
 	display: block;
 } 
-.popup li.ng-enter {
+/*.popup li.ng-enter {
 	display: block;
 }
 
 .popup li.ng-leave {
 	display: none;
 }
- 
+ */
 /*.task.ng-enter.ng-enter-active .task-infoes, 
 .task.ng-leave .task-infoes {
 	opacity: 1;

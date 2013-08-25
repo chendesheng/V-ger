@@ -325,5 +325,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 );
 
 window.onload = function() {
-	document.getElementById('box-overlay').style.display = '';
+	setTimeout(function() {
+		document.getElementById('box-overlay').style.display = '';
+	}, 500);
 }
