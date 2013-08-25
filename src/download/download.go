@@ -40,9 +40,7 @@ func doDownload(url string, w io.Writer, from, to int64,
 
 	progress := make(chan int64)
 
-	go func() {
-		writeOutput(w, from, output, progress, quit)
-	}()
+	go writeOutput(w, from, output, progress, quit)
 
 	return progress
 }

@@ -13,4 +13,5 @@
 
 @property (assign) IBOutlet NSWindow *window;
 @property (assign) IBOutlet WebView *web;
+- (IBAction)refreshClick:(id)sender;
 @end
