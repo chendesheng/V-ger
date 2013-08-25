@@ -40,6 +40,17 @@
             return YES;
         }
         
+        if ([chars isEqualToString:@"z"])
+        {
+            [[self undoManager] undo];
+            return YES;
+        }
+        
+        if ([chars isEqualToString:@"y"])
+        {
+            [[self undoManager] redo];
+            return YES;
+        }
     }
     
     return [super performKeyEquivalent:theEvent];
