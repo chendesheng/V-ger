@@ -138,7 +138,7 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 		_, name2, size, err := download.GetDownloadInfo(url)
 		if err != nil {
-			_, name2, size, err := download.GetDownloadInfo(url)
+			_, name2, size, err = download.GetDownloadInfo(url)
 
 			if err != nil {
 				writeError(w, err)
