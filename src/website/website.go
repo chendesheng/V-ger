@@ -465,7 +465,7 @@ func Run() {
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 	http.HandleFunc("/thunder/torrent", thunderTorrentHandler)
 
-	http.HandleFunc("/subtitles/search/", subtitlesSearchHandler)
+	http.Handle("/subtitles/search/", websocket.Handler(subtitlesSearchHandler))
 	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
 
 	http.HandleFunc("/app/status", appStatusHandler)

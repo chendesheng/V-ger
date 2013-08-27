@@ -2,7 +2,7 @@ package subtitles
 
 import (
 	"github.com/peterbourgon/html"
-	"log"
+	// "log"
 	"net/url"
 	"regexp"
 	"strings"
@@ -23,29 +23,35 @@ func yyetsParseSub(n *html.Node) Subtitle {
 
 	sub.Description = regClean.ReplaceAllString(text, "")
 
-	log.Printf("%v\n", sub)
 	sub.Source = "YYets"
 	return sub
 }
-func yyetsSearchSubtitles(name string) []Subtitle {
+func yyetsSearchSubtitles(name string, result chan Subtitle) error {
 	resp, err := Client.Get("http://www.yyets.com/php/search/index?type=subtitle&order=uptime&keyword=" + url.QueryEscape(name))
 	if err != nil {
-		return make([]Subtitle, 0)
+		return err
 	}
 	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	subs := make([]Subtitle, 0)
+
+	count := 0
 	var f func(*html.Node)
 	f = func(n *html.Node) {
 		if n.Data == "ul" {
 			if hasClass(n, "allsearch") {
 				for _, c := range getTag(n, "li") {
-					subs = append(subs, yyetsParseSub(c))
+					s := yyetsParseSub(c)
+					// log.Printf("%v", s)
+					result <- s
+
+					if count++; count > 10 {
+						return
+					}
 				}
 				return
 			}
@@ -57,9 +63,5 @@ func yyetsSearchSubtitles(name string) []Subtitle {
 	}
 	f(doc)
 
-	if len(subs) > 10 {
-		subs = subs[:10]
-	}
-
-	return subs
+	return nil
 }

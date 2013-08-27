@@ -5,7 +5,7 @@ import (
 	"log"
 	"native"
 	"net/http"
-	"os"
+	"path"
 	"task"
 	"time"
 	"util"
@@ -42,7 +42,7 @@ func ensureQuit(quit chan bool) {
 		// Since no one write to quit channel,
 		// the channel must be closed when pass through receive operation.
 		break
-	case <-time.After(time.Millisecond):
+	default:
 		close(quit)
 	}
 }
@@ -136,19 +136,13 @@ func Start() {
 
 func download(t *task.Task, control chan int, quit chan bool) {
 	if t.DownloadedSize < t.Size {
-		f, err := openOrCreateFileRW(getFilePath(t.Name), t.DownloadedSize)
+		f, err := openOrCreateFileRW(path.Join(baseDir, t.Name), t.DownloadedSize)
 		if err != nil {
 			return
 		}
 
 		defer f.Close()
 
-		// url, _, _, err := GetDownloadInfo(t.URL)
-		// if err != nil {
-		// 	log.Println(err)
-		// 	return
-		// }
-		// log.Print("final url: ", url)
 		progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), control, quit)
 
 		handleProgress(progress, t, quit)
@@ -177,13 +171,10 @@ func download(t *task.Task, control chan int, quit chan bool) {
 		task.SaveTask(t)
 
 		t.Status = "Downloading"
+		t.Speed = 0
 		task.SaveTask(t)
 
 		return
 	}
 
-}
-
-func getFilePath(name string) string {
-	return fmt.Sprintf("%s%c%s", baseDir, os.PathSeparator, name)
 }

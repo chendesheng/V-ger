@@ -49,34 +49,40 @@ func getSub(n *html.Node) (Subtitle, error) {
 	}
 	sub.Description = fmt.Sprintf("%s\n%s", getText(a), getSubDesc(getId(n, "sublist_ul")))
 
-	log.Println(sub.URL)
-	log.Println(sub.Description)
 	sub.Source = "Shooter"
 
 	return sub, nil
 }
-func shooterSearch(name string) []Subtitle {
+func shooterSearch(name string, result chan Subtitle) error {
 	loadmain = ""
 
 	resp, err := Client.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
 	if err != nil {
-		return make([]Subtitle, 0)
+		return err
 	}
 	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	subs := make([]Subtitle, 0)
+	count := 0
 	var f func(*html.Node)
 	f = func(n *html.Node) {
 		if n.Data == "div" {
 			if hasId(n, "resultsdiv") {
 				for _, c := range getClass(n, "subitem") {
-					if s, err := getSub(c); err == nil {
-						subs = append(subs, s)
+					s, err := getSub(c)
+					if err == nil {
+						// log.Printf("%v", s)
+						result <- s
+						if count++; count > 10 {
+							return
+						}
+					} else {
+						log.Println(err)
+						return
 					}
 				}
 				return
@@ -89,7 +95,7 @@ func shooterSearch(name string) []Subtitle {
 	}
 	f(doc)
 
-	return subs
+	return nil
 }
 
 //figure out file name from url while input name is empty
@@ -213,15 +219,13 @@ var loadmain string
 func getDownloadUrl(webPageURL string) (string, error) {
 	webPageURL = "http://www.shooter.cn" + webPageURL
 
-	subId := getSubId(webPageURL)
-	log.Println(subId)
+	getSubId(webPageURL)
 
 	pageHtml, err := sendGet(webPageURL, nil)
 	if err != nil {
 		return "", err
 	}
 	fileId := getFileId(pageHtml)
-	log.Println(fileId)
 
 	if loadmain == "" {
 		var err error

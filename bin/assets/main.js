@@ -20,7 +20,9 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			}
 
 			function onMessage(evt) {
-				ondata(JSON.parse(evt.data));
+				$scope.$apply(function() {
+					ondata(JSON.parse(evt.data));
+				});
 			}
 
 			function onError(evt) {
@@ -45,31 +47,30 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					item.StartDate = new Date(Date.parse(item.StartDate))
 				};
 
-				$scope.$apply(function() {
-					var collection = {};
-					for (var i = data.length - 1; i >= 0; i--) {
-						var item = data[i]
-						if (item.Status != "Deleted") {
-							collection[item.Name] = item;
-						}
-					};
-					var tasks = $scope.tasks;
-					for (var i = tasks.length - 1; i >= 0; i--) {
-						var task = tasks[i];
-						var source = collection[task.Name];
-						if (source) {
-							angular.forEach(source, function(val, key) {
-								task[key] = val;
-							});
-							delete collection[task.Name];
-						} else {
-							tasks.splice(i, 1);
-						}
+				var collection = {};
+				for (var i = data.length - 1; i >= 0; i--) {
+					var item = data[i]
+					if (item.Status != "Deleted") {
+						collection[item.Name] = item;
 					}
-					angular.forEach(collection, function(val, key) {
-						tasks.push(val)
-					});
+				};
+				var tasks = $scope.tasks;
+				for (var i = tasks.length - 1; i >= 0; i--) {
+					var task = tasks[i];
+					var source = collection[task.Name];
+					if (source) {
+						angular.forEach(source, function(val, key) {
+							task[key] = val;
+						});
+						delete collection[task.Name];
+					} else {
+						tasks.splice(i, 1);
+					}
+				}
+				angular.forEach(collection, function(val, key) {
+					tasks.push(val)
 				});
+				
 			}, monitor_process);
 		}
 		monitor_process();
@@ -190,26 +191,30 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.subtitles_movie_name = '';
 
 		$scope.search_subtitles = function(name) {
+			$scope.subtitles = [];
 			$scope.subtitles_movie_name = name;
-			$http.get('/subtitles/search/' + name).success(function(data) {
-				if (data.length == 0) {
-					$scope.nosubtitles = true;
-					$scope.waiting = false;
-					return
-				}
+
+			monitor('/subtitles/search/' + name, function(data) {
 				$scope.nosubtitles = false;
-				for (var i = data.length - 1; i >= 0; i--) {
-					var item = data[i];
-					item.loading = false;
+				data.loading = false;
 
-					//truncate description
-					item.FullDescription = item.Description;
-					var description = item.Description;
-					if (description.length > 73)
-						item.Description = description.substr(0, 35) + '...' + description.substr(description.length - 35, 35);
+				//truncate description
+				data.FullDescription = data.Description;
+				var description = data.Description;
+				if (description.length > 73)
+					data.Description = description.substr(0, 35) + '...' + description.substr(description.length - 35, 35);
 
-				};
-				$scope.subtitles = data;
+				$scope.subtitles.push(data);
+				$scope.waiting = true;
+			}, function() {
+				if ($scope.subtitles.length == 0) {
+					$scope.nosubtitles = true;
+				}
+				$scope.waiting = false;
+			}, function() {
+				if ($scope.subtitles.length == 0) {
+					$scope.nosubtitles = true;
+				}
 				$scope.waiting = false;
 			});
 		};

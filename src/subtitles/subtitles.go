@@ -5,10 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
-	"time"
 )
 
 var Client *http.Client
@@ -42,36 +40,32 @@ func readBody(resp *http.Response) string {
 		log.Fatal(err)
 	}
 
-	dumpBytes, _ := httputil.DumpResponse(resp, true)
-	log.Println(string(dumpBytes))
-
 	text := string(bytes)
 	return text
 }
 
-func SearchSubtitles(name string) []Subtitle {
-	// return yyetsSearchSubtitles(name)
-	// return shooterSearch(name)
-	yyetsSubs := make(chan []Subtitle)
+func SearchSubtitles(name string, result chan Subtitle) {
+	yyetsFinish := make(chan bool)
 	go func() {
-		print("start search yyets ", name)
-		begin := time.Now()
-
-		yyetsSubs <- yyetsSearchSubtitles(name)
-
-		log.Printf("yyets takes %v", time.Now().Sub(begin))
-	}()
-	shooterSubs := make(chan []Subtitle)
-	go func() {
-		print("start search shooter ", name)
-		begin := time.Now()
-
-		shooterSubs <- shooterSearch(name)
-
-		log.Printf("shooter takes %v", time.Now().Sub(begin))
+		err := yyetsSearchSubtitles(name, result)
+		if err != nil {
+			log.Println(err)
+		}
+		close(yyetsFinish)
 	}()
 
-	return append(<-yyetsSubs, <-shooterSubs...)
+	shooterFinish := make(chan bool)
+	go func() {
+		err := shooterSearch(name, result)
+		if err != nil {
+			log.Println(err)
+		}
+		close(shooterFinish)
+	}()
+
+	<-yyetsFinish
+	<-shooterFinish
+	close(result)
 }
 func QuickDownload(url, path string) (bool, error) {
 	resp, err := Client.Get(url)

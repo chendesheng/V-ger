@@ -32,7 +32,7 @@ func ResumeTask(name string) error {
 		} else {
 			t.Status = "Queued"
 		}
-
+		t.Speed = 0
 		return SaveTask(t)
 	}
 
