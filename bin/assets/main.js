@@ -70,7 +70,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				angular.forEach(collection, function(val, key) {
 					tasks.push(val)
 				});
-				
+
 			}, monitor_process);
 		}
 		monitor_process();
@@ -120,7 +120,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				/.*dmg|.*zip|.*rar|.*exe/.test($scope.new_url)) {
 				$http.post('/new/', $scope.new_url).success(function(resp) {
 					if (!resp) {
-						// $scope.new_url = '';
+						$scope.new_url = '';
 					}
 					$scope.waiting = false;
 					resp && $scope.push_alert(resp);
@@ -333,4 +333,35 @@ window.onload = function() {
 	setTimeout(function() {
 		document.getElementById('box-overlay').style.display = '';
 	}, 500);
+	var ele = document.getElementById('new-url');
+	ele.value = getCookie('input');
+	ele.select();
+}
+
+function getCookie(c_name) {
+	var c_value = document.cookie;
+	var c_start = c_value.indexOf(" " + c_name + "=");
+	if (c_start == -1) {
+		c_start = c_value.indexOf(c_name + "=");
+	}
+	if (c_start == -1) {
+		c_value = null;
+	} else {
+		c_start = c_value.indexOf("=", c_start) + 1;
+		var c_end = c_value.indexOf(";", c_start);
+		if (c_end == -1) {
+			c_end = c_value.length;
+		}
+		c_value = unescape(c_value.substring(c_start, c_end));
+	}
+	return c_value;
+}
+function setCookie(c_name, value, exdays) {
+	var exdate = new Date();
+	exdate.setDate(exdate.getDate() + exdays);
+	var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
+	document.cookie = c_name + "=" + c_value;
+}
+window.onbeforeunload = function() {
+	setCookie('input', document.getElementById('new-url').value, 10000)
 }
