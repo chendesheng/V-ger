@@ -74,6 +74,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			}, monitor_process);
 		}
 		monitor_process();
+		$scope.new_url = document.getElementById('new-url').value;
 
 
 		$scope.parse_duration = function(dur) {
@@ -138,8 +139,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 						var item = data[i];
 						item.loading = false;
 
-						var j = item.name.lastIndexOf('\/');
-						item.name = item.name.substring(j + 1);
+						var j = item.Name.lastIndexOf('\/');
+						item.Name = item.Name.substring(j + 1);
 					}
 					if (data.length == 1 && data[0].Percent == 100) {
 						$scope.waiting = true;
@@ -326,17 +327,21 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.pop_alert = function() {
 			$scope.alerts.pop();
 		}
+
+		window.onload = function() {
+			setTimeout(function() {
+				document.getElementById('box-overlay').style.display = '';
+			}, 500);
+			var ele = document.getElementById('new-url');
+			ele.value = getCookie('input');
+			ele.select();
+
+			$scope.new_url = ele.value;
+		}
 	}
+
 );
 
-window.onload = function() {
-	setTimeout(function() {
-		document.getElementById('box-overlay').style.display = '';
-	}, 500);
-	var ele = document.getElementById('new-url');
-	ele.value = getCookie('input');
-	ele.select();
-}
 
 function getCookie(c_name) {
 	var c_value = document.cookie;
@@ -356,6 +361,7 @@ function getCookie(c_name) {
 	}
 	return c_value;
 }
+
 function setCookie(c_name, value, exdays) {
 	var exdate = new Date();
 	exdate.setDate(exdate.getDate() + exdays);
