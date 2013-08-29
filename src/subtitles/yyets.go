@@ -2,7 +2,7 @@ package subtitles
 
 import (
 	"github.com/peterbourgon/html"
-	// "log"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -27,7 +27,7 @@ func yyetsParseSub(n *html.Node) Subtitle {
 	return sub
 }
 func yyetsSearchSubtitles(name string, result chan Subtitle) error {
-	resp, err := Client.Get("http://www.yyets.com/php/search/index?type=subtitle&order=uptime&keyword=" + url.QueryEscape(name))
+	resp, err := http.Get("http://www.yyets.com/php/search/index?type=subtitle&order=uptime&keyword=" + url.QueryEscape(name))
 	if err != nil {
 		return err
 	}

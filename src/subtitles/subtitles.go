@@ -9,8 +9,6 @@ import (
 	"os"
 )
 
-var Client *http.Client
-
 type Subtitle struct {
 	URL         string
 	Description string
@@ -25,7 +23,7 @@ func sendGet(url string, params *url.Values) (string, error) {
 	if params != nil {
 		url = url + "?" + params.Encode()
 	}
-	resp, err := Client.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
 	}
@@ -68,7 +66,7 @@ func SearchSubtitles(name string, result chan Subtitle) {
 	close(result)
 }
 func QuickDownload(url, path string) (bool, error) {
-	resp, err := Client.Get(url)
+	resp, err := http.Get(url)
 	// bytes, err := httputil.DumpResponse(resp, false)
 	// fmt.Println(string(bytes))
 	if err != nil {

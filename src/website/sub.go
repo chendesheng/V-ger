@@ -18,9 +18,9 @@ import (
 )
 
 func subtitlesSearchHandler(ws *websocket.Conn) {
-	print("subtitlesSearchHandler")
 	r := ws.Request()
 	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
+	log.Printf("search subtitle for '%s'", movieName)
 
 	result := make(chan subtitles.Subtitle)
 	go subtitles.SearchSubtitles(util.CleanMovieName(movieName), result)
@@ -42,7 +42,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok, err := subtitles.QuickDownload(url, path.Join(config["dir"], movieName+path.Ext(name))); !ok {
+	if ok, err := subtitles.QuickDownload(url, path.Join(util.ReadConfig("dir"), movieName+path.Ext(name))); !ok {
 		w.Write([]byte(err.Error()))
 		return
 	}

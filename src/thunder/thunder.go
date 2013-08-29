@@ -8,6 +8,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
 	"strings"
@@ -16,9 +17,35 @@ import (
 	"regexp"
 	// "io"
 	// "os"
+	"util"
 )
 
-var Client *http.Client
+func init() {
+	config := util.ReadAllConfigs()
+
+	if http.DefaultClient.Jar == nil {
+		jar, _ := cookiejar.New(nil)
+
+		cookie := http.Cookie{
+			Name:    "gdriveid",
+			Value:   config["gdriveid"],
+			Domain:  "xunlei.com",
+			Expires: time.Now().AddDate(100, 0, 0),
+		}
+		cookies := []*http.Cookie{&cookie}
+		url, _ := url.Parse("http://vip.lixian.xunlei.com")
+		jar.SetCookies(url, cookies)
+
+		http.DefaultClient.Jar = jar
+	}
+
+	err := Login(config["thunder-user"], config["thunder-password"])
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println("Thunder login success.")
+	}
+}
 
 func NewTask(taskURL string) ([]ThunderTask, error) {
 	log.Println("thunder new task: ", taskURL)
@@ -85,7 +112,7 @@ func uploadTorrent(torrent []byte, userId string) error {
 	findex := strings.Join(selectionList, "_")
 	size := strings.Join(sizelist, "_")
 
-	sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
+	_, err = sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
 		&url.Values{
 			"callback": {"jsonp"},
 			"t":        {time.Now().String()},
@@ -103,14 +130,17 @@ func uploadTorrent(torrent []byte, userId string) error {
 			"o_taskid":   {"0"},
 			"class_id":   {"0"},
 		})
-	return nil
+	return err
 }
 func taskCommit(userId string, taskURL string, taskType int) error {
-	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_check",
+	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_check",
 		&url.Values{
 			"callback": {"fun"},
 			"url":      {taskURL},
 		})
+	if err != nil {
+		return err
+	}
 
 	cid, gcid, size, t := parseTaskCheck(text)
 	// if cid == "" {
@@ -152,10 +182,13 @@ func uploadTorrentFile(torrent []byte) (string, error) {
 }
 func btTaskCommit(userId string, taskURL string) error {
 
-	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/url_query", &url.Values{
+	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/url_query", &url.Values{
 		"u":        {taskURL},
 		"callback": {"queryUrl"},
 	})
+	if err != nil {
+		return err
+	}
 
 	cid, tsize, btname, size, findex := parseUrlQueryResult(text)
 
@@ -163,7 +196,7 @@ func btTaskCommit(userId string, taskURL string) error {
 	// 	return fmt.Errorf("Commit bt task error, try again later.")
 	// }
 
-	sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
+	_, err = sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
 		&url.Values{
 			"callback": {"jsonp"},
 			"t":        {time.Now().String()},
@@ -182,10 +215,10 @@ func btTaskCommit(userId string, taskURL string) error {
 			"class_id":   {"0"},
 		})
 
-	return nil
+	return err
 }
 func getNewlyCreateTask(userId string) ([]ThunderTask, error) {
-	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/showtask_unfresh",
+	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/showtask_unfresh",
 		&url.Values{
 			"callback": {"jsonp1"},
 			"t":        {time.Now().String()},
@@ -193,6 +226,9 @@ func getNewlyCreateTask(userId string) ([]ThunderTask, error) {
 			"page":     {"1"},
 			"tasknum":  {"1"},
 		})
+	if err != nil {
+		return nil, err
+	}
 
 	info := parseNewlyCreateTask(text)
 
@@ -207,10 +243,12 @@ func getNewlyCreateTask(userId string) ([]ThunderTask, error) {
 		}, nil
 	}
 
-	return getBtTaskList(userId, info["id"].(string), info["cid"].(string))
+	tks, err := getBtTaskList(userId, info["id"].(string), info["cid"].(string))
+	log.Printf("Newly create bt tasks: %v", tks)
+	return tks, err
 }
 func getBtTaskList(userId string, id string, cid string) ([]ThunderTask, error) {
-	text := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/fill_bt_list",
+	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/fill_bt_list",
 		&url.Values{
 			"uid":      {userId},
 			"callback": {"fill_bt_list"},
@@ -219,12 +257,15 @@ func getBtTaskList(userId string, id string, cid string) ([]ThunderTask, error) 
 			"infoid":   {cid},
 			"p":        {"1"},
 		})
+	if err != nil {
+		return nil, err
+	}
 	return parseBtTaskList(text)
 }
 
 func getCookieValue(name string) string {
 	url, _ := url.Parse("http://vip.lixian.xunlei.com")
-	for _, c := range Client.Jar.Cookies(url) {
+	for _, c := range http.DefaultClient.Jar.Cookies(url) {
 		if c.Name == name {
 			return c.Value
 		}
@@ -260,14 +301,14 @@ func getTaskType(url string) (int, []byte) {
 	} else if strings.Index(url, "thunder://") != -1 {
 		return 0, nil
 	} else {
-		Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			temp := req.URL.String()
 			if temp != "" {
 				url = temp
 			}
 			return nil
 		}
-		resp, err := Client.Get(url)
+		resp, err := http.Get(url)
 		if err != nil {
 			return 0, nil
 		}
@@ -287,34 +328,30 @@ func getTaskType(url string) (int, []byte) {
 	}
 	return 0, nil
 }
-func sendPost(url string, params *url.Values, data *url.Values) string {
+func sendPost(url string, params *url.Values, data *url.Values) (string, error) {
 	if params != nil {
 		url = url + "?" + params.Encode()
 	}
-	resp, err := Client.PostForm(url, *data)
+	resp, err := http.PostForm(url, *data)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	text := readBody(resp)
-	log.Println(text)
-	return text
+	return text, nil
 }
-func sendGet(url string, params *url.Values) string {
+func sendGet(url string, params *url.Values) (string, error) {
 	if params != nil {
 		url = url + "?" + params.Encode()
 	}
-	resp, err := Client.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	text := readBody(resp)
 
-	log.Println("Request Get:", url)
-	log.Println("Response:", text)
-
-	return text
+	return text, nil
 }
 func readBody(resp *http.Response) string {
 	bytes, err := ioutil.ReadAll(resp.Body)
@@ -324,7 +361,9 @@ func readBody(resp *http.Response) string {
 	}
 
 	dumpBytes, _ := httputil.DumpResponse(resp, true)
-	log.Println(string(dumpBytes))
+	if len(dumpBytes) > 0 {
+		log.Println(string(dumpBytes))
+	}
 
 	text := string(bytes)
 	return text
@@ -332,7 +371,7 @@ func readBody(resp *http.Response) string {
 
 //download small files like .torrent or .srt file
 func quickDownload(url string) ([]byte, error) {
-	Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+	http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		temp := req.URL.String()
 		if temp != "" {
 			url = temp
@@ -340,7 +379,7 @@ func quickDownload(url string) ([]byte, error) {
 		return nil
 	}
 
-	resp, err := Client.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +406,7 @@ func postFile(filename string, filebytes []byte, target_url string) (*http.Respo
 	writer.WriteField("interfrom", "task")
 	writer.Close()
 
-	resp, err := Client.Post(target_url, writer.FormDataContentType(), buffer)
+	resp, err := http.Post(target_url, writer.FormDataContentType(), buffer)
 
 	return resp, err
 }

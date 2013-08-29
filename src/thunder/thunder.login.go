@@ -16,16 +16,19 @@ func doubleMD5(p string) string {
 	return singleMd5(singleMd5(p))
 }
 
-func Login(user string, password string) {
-	sendGet("http://login.xunlei.com/check",
+func Login(user string, password string) error {
+	_, err := sendGet("http://login.xunlei.com/check",
 		&url.Values{
 			"u": {user},
 		})
+	if err != nil {
+		return err
+	}
 
 	verifyCode := strings.Split(getCookieValue("check_result"), ":")[1]
 	passwordMd5 := singleMd5(doubleMD5(password) + strings.ToUpper(verifyCode))
 
-	sendPost("http://login.xunlei.com/sec2login/", nil,
+	_, err = sendPost("http://login.xunlei.com/sec2login/", nil,
 		&url.Values{
 			"login_enable": {"1"},
 			"login_hour":   {"720"},
@@ -33,6 +36,9 @@ func Login(user string, password string) {
 			"u":            {user},
 			"p":            {passwordMd5},
 		})
+	if err != nil {
+		return err
+	}
 
-	fmt.Println("Thunder login success.")
+	return nil
 }

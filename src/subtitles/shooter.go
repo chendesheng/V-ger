@@ -56,7 +56,7 @@ func getSub(n *html.Node) (Subtitle, error) {
 func shooterSearch(name string, result chan Subtitle) error {
 	loadmain = ""
 
-	resp, err := Client.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
+	resp, err := http.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
 	if err != nil {
 		return err
 	}
@@ -121,8 +121,6 @@ func getSubId(webPageURL string) string {
 	return webPageURL[i : len(webPageURL)-4]
 }
 func setSubIdAndFileIdCookie(subId string, fileId string) {
-	client := Client
-
 	cookie := http.Cookie{
 		Name:    "sub" + subId,
 		Value:   "1",
@@ -137,7 +135,7 @@ func setSubIdAndFileIdCookie(subId string, fileId string) {
 	}
 	cookies := []*http.Cookie{&cookie, &cookie2}
 	url, _ := url.Parse("http://www.shooter.com")
-	client.Jar.SetCookies(url, cookies)
+	http.DefaultClient.Jar.SetCookies(url, cookies)
 }
 func decryptUrl(encryptedUrl string) string {
 	a := encryptedUrl

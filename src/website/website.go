@@ -13,7 +13,6 @@ import (
 	"mime"
 	"native"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"os/exec"
@@ -21,36 +20,12 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"subtitles"
+	// "subtitles"
 	"task"
 	"thunder"
 	"time"
 	"util"
 )
-
-var config map[string]string
-
-func init() {
-	config = util.ReadAllConfigs()
-
-	jar, _ := cookiejar.New(nil)
-	client := &http.Client{
-		Jar: jar,
-	}
-	cookie := http.Cookie{
-		Name:    "gdriveid",
-		Value:   config["gdriveid"],
-		Domain:  "xunlei.com",
-		Expires: time.Now().AddDate(100, 0, 0),
-	}
-	cookies := []*http.Cookie{&cookie}
-	url, _ := url.Parse("http://vip.lixian.xunlei.com")
-	client.Jar.SetCookies(url, cookies)
-
-	download.DownloadClient = client
-	thunder.Client = client
-	subtitles.Client = client
-}
 
 func pick(arr []string, emptyMessage string) (int, string) {
 	if len(arr) == 0 {
@@ -95,7 +70,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 func openHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("open \"%s\".\n", name)
-	cmd := exec.Command("open", path.Join(config["dir"], name))
+	cmd := exec.Command("open", path.Join(util.ReadConfig("dir"), name))
 	cmd.Start()
 
 	w.Write([]byte(``))
@@ -178,7 +153,7 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
 	url := string(input)
 
-	thunder.Login(config["thunder-user"], config["thunder-password"])
+	// thunder.Login(config["thunder-user"], config["thunder-password"])
 	files, err := thunder.NewTask(url)
 	if err == nil {
 		text, _ := json.Marshal(files)
@@ -205,7 +180,7 @@ func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	input, _ := ioutil.ReadAll(f)
 
-	thunder.Login(config["thunder-user"], config["thunder-password"])
+	// thunder.Login(config["thunder-user"], config["thunder-password"])
 
 	files, err := thunder.NewTaskWithTorrent(input)
 	if err == nil {
@@ -292,6 +267,8 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("open \"%s\".\n", name)
 
+	config := util.ReadAllConfigs()
+
 	playerPath := config["video-player"]
 
 	ps := exec.Command("ps", "-e", "-opid,comm")
@@ -319,6 +296,7 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeError(w http.ResponseWriter, err error) {
+	log.Print(err)
 	w.Write([]byte(err.Error()))
 }
 func videoHandler(w http.ResponseWriter, r *http.Request) {
@@ -487,7 +465,7 @@ func Run() {
 	// 	download.ResumeNextQueuedTask()
 	// }
 
-	server := config["server"]
+	server := util.ReadConfig("server")
 
 	log.Print("server ", server, " started.")
 	err := http.ListenAndServe(server, nil)

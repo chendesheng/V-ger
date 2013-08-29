@@ -107,7 +107,6 @@ func parseNewlyCreateTask(text string) map[string]interface{} {
 
 		var r interface{}
 		json.Unmarshal([]byte(jsonStr), &r)
-
 		return r.(map[string]interface{})
 	} else {
 		log.Println("parseNewlyCreateTask")

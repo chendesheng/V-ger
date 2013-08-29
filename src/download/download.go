@@ -213,11 +213,11 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 		from, to := b.from, b.to
 		req := createDownloadRequest(url, from, to-1)
 
-		DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			return fmt.Errorf("No redirect allowed here")
 		}
 
-		resp, err := DownloadClient.Do(req)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -348,7 +348,7 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 
 func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
-	DownloadClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+	http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		temp := req.URL.String()
 		if temp != "" {
 			url = temp
@@ -356,7 +356,7 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 		return nil
 	}
 
-	resp, err := DownloadClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
 		return "", "", 0, err

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"native"
-	"net/http"
+	// "net/http"
 	"path"
 	"task"
 	"time"
@@ -47,7 +47,6 @@ func ensureQuit(quit chan bool) {
 	}
 }
 
-var DownloadClient *http.Client
 var baseDir string = util.ReadConfig("dir")
 var taskControls map[string]taskControl = make(map[string]taskControl)
 
