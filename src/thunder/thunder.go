@@ -25,17 +25,6 @@ func init() {
 
 	if http.DefaultClient.Jar == nil {
 		jar, _ := cookiejar.New(nil)
-
-		cookie := http.Cookie{
-			Name:    "gdriveid",
-			Value:   config["gdriveid"],
-			Domain:  "xunlei.com",
-			Expires: time.Now().AddDate(100, 0, 0),
-		}
-		cookies := []*http.Cookie{&cookie}
-		url, _ := url.Parse("http://vip.lixian.xunlei.com")
-		jar.SetCookies(url, cookies)
-
 		http.DefaultClient.Jar = jar
 	}
 
@@ -68,6 +57,7 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 			return nil, err
 		}
 	}
+
 	return getNewlyCreateTask(userId)
 }
 func NewTaskWithTorrent(torrent []byte) ([]ThunderTask, error) {

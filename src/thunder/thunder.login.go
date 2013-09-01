@@ -3,8 +3,12 @@ package thunder
 import (
 	"crypto/md5"
 	"fmt"
+	"log"
+	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
+	"time"
 )
 
 func singleMd5(s string) string {
@@ -40,5 +44,39 @@ func Login(user string, password string) error {
 		return err
 	}
 
+	//gdriveid
+	_, err = sendGet("http://dynamic.lixian.vip.xunlei.com/login?from=0", &url.Values{})
+	if err != nil {
+		return err
+	}
+
+	html, err := sendGet("http://dynamic.cloud.vip.xunlei.com/user_task",
+		&url.Values{
+			"userid": {getCookieValue("userid")},
+			"st":     {"4"},
+		})
+	if err != nil {
+		return err
+	}
+
+	gdriveidReg := regexp.MustCompile(`input type="hidden" id="cok" value="([^"]+)"`)
+	matches := gdriveidReg.FindStringSubmatch(html)
+	if matches == nil {
+		return fmt.Errorf("Can't find gdriveid.")
+	}
+
+	gdriveid := matches[1]
+
+	log.Print("gdriveid: ", gdriveid)
+
+	cookie := http.Cookie{
+		Name:    "gdriveid",
+		Value:   gdriveid,
+		Domain:  "xunlei.com",
+		Expires: time.Now().AddDate(100, 0, 0),
+	}
+	cookies := []*http.Cookie{&cookie}
+	url, _ := url.Parse("http://vip.lixian.xunlei.com")
+	http.DefaultClient.Jar.SetCookies(url, cookies)
 	return nil
 }
