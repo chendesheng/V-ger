@@ -21,19 +21,21 @@ import (
 )
 
 func init() {
-	config := util.ReadAllConfigs()
 
 	if http.DefaultClient.Jar == nil {
 		jar, _ := cookiejar.New(nil)
 		http.DefaultClient.Jar = jar
 	}
 
-	err := Login(config["thunder-user"], config["thunder-password"])
-	if err != nil {
-		log.Println(err)
-	} else {
-		log.Println("Thunder login success.")
-	}
+	go func() {
+		config := util.ReadAllConfigs()
+		err := Login(config["thunder-user"], config["thunder-password"])
+		if err != nil {
+			log.Println(err)
+		} else {
+			log.Println("Thunder login success.")
+		}
+	}()
 }
 
 func NewTask(taskURL string) ([]ThunderTask, error) {
