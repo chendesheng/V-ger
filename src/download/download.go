@@ -15,17 +15,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"os"
 	"time"
 )
-
-func init() {
-	if http.DefaultClient.Jar == nil {
-		jar, _ := cookiejar.New(nil)
-		http.DefaultClient.Jar = jar
-	}
-}
 
 type block struct {
 	from, to int64
@@ -46,6 +38,7 @@ func doDownload(url string, w io.Writer, from, to int64,
 		case <-quit:
 			return nil
 		default:
+			time.Sleep(time.Second * 2)
 		}
 	}
 
@@ -210,10 +203,6 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 		from, to := b.from, b.to
 		req := createDownloadRequest(url, from, to-1)
 
-		http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			return fmt.Errorf("No redirect allowed here")
-		}
-
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
@@ -265,7 +254,7 @@ func createDownloadRoutine(url string, output chan<- *block, quit chan bool) cha
 }
 func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, from int64, to int64) {
 	dbmap := make(map[int64]*block)
-	var nextOutputFrom = from
+	nextOutputFrom := from
 	for {
 		select {
 		case db, _ := <-input:
@@ -349,24 +338,18 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 
 func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
-	http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		temp := req.URL.String()
-		if temp != "" {
-			url = temp
-		}
-		return nil
-	}
 
 	resp, err := http.DefaultClient.Do(req)
-
 	if err != nil {
 		return "", "", 0, err
 	}
 	defer resp.Body.Close()
 
+	finalUrl = resp.Request.URL.String()
+
 	name, size = getFileInfo(resp.Header)
 	if name == "" {
-		name = getFileName(url)
+		name = getFileName(finalUrl)
 	}
 
 	reg := regexp.MustCompile("[/]")
@@ -376,8 +359,6 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 	if name == "" && size == 0 {
 		err = fmt.Errorf("Broken resource")
 	}
-
-	finalUrl = url
 
 	return
 }

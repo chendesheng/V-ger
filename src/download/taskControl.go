@@ -48,7 +48,7 @@ func ensureQuit(quit chan bool) {
 }
 
 var baseDir string = util.ReadConfig("dir")
-var taskControls map[string]taskControl = make(map[string]taskControl)
+var taskControls map[string]*taskControl = make(map[string]*taskControl)
 
 func monitorTask() {
 	ch := make(chan *task.Task)
@@ -83,16 +83,14 @@ func monitorTask() {
 			}
 		} else {
 			if t.Status == "Downloading" {
-				log.Printf("start download: %v\n", t.Name)
-
-				control := make(chan int64)
-				quit := make(chan bool, 50)
-				taskControls[t.Name] = taskControl{quit, control, t}
-
 				if t.DownloadedSize == 0 {
 					native.SendNotification("V'ger task begin", t.Name)
 				}
-				go download(t, control, quit)
+
+				control := make(chan int64)
+				tc := &taskControl{nil, control, t}
+				taskControls[t.Name] = tc
+				go download(tc)
 			}
 		}
 
@@ -122,10 +120,9 @@ func Start() {
 			hasDownloading = true
 
 			control := make(chan int64)
-			quit := make(chan bool)
-			taskControls[t.Name] = taskControl{quit, control, t}
-
-			go download(t, control, quit)
+			tc := &taskControl{nil, control, t}
+			taskControls[t.Name] = tc
+			go download(tc)
 		}
 	}
 	if !hasDownloading {
@@ -133,49 +130,48 @@ func Start() {
 	}
 }
 
-func download(t *task.Task, control chan int64, quit chan bool) {
-	if t.DownloadedSize < t.Size {
-		f, err := openOrCreateFileRW(path.Join(baseDir, t.Name), t.DownloadedSize)
-		if err != nil {
-			return
-		}
-
-		defer f.Close()
-
-		progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), control, quit)
-		if progress != nil {
-			handleProgress(progress, t, quit)
-		}
+func download(tc *taskControl) {
+	t := tc.t
+	if t.DownloadedSize >= t.Size {
+		return
 	}
 
-	t, err := task.GetTask(t.Name)
+	f, err := openOrCreateFileRW(path.Join(baseDir, t.Name), t.DownloadedSize)
 	if err != nil {
 		return
 	}
+	defer f.Close()
 
-	if t.Status == "Deleted" {
-		return
+	for t.Status == "Downloading" {
+		tc.quit = make(chan bool)
+
+		if t.DownloadedSize < t.Size {
+
+			progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), tc.maxSpeed, tc.quit)
+			if progress != nil {
+				handleProgress(progress, t, tc.quit)
+			}
+
+		}
+
+		var err error
+		t, err = task.GetTask(t.Name)
+		tc.t = t
+
+		if err != nil {
+			log.Print(err)
+			return
+		}
+		if t.Status == "Deleted" {
+			return
+		}
+		if t.DownloadedSize >= t.Size {
+			log.Println(t.Name, " Finished")
+
+			t.Status = "Finished"
+			task.SaveTask(t)
+
+			return
+		}
 	}
-	if t.DownloadedSize >= t.Size {
-		log.Println(t.Name, " Finished")
-
-		t.Status = "Finished"
-		task.SaveTask(t)
-
-		return
-	}
-
-	if t.Status == "Downloading" {
-		log.Println("restart downloading: ", t.Name)
-
-		t.Status = "Stopped"
-		task.SaveTask(t)
-
-		t.Status = "Downloading"
-		t.Speed = 0
-		task.SaveTask(t)
-
-		return
-	}
-
 }

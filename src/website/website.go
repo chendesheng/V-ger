@@ -452,19 +452,6 @@ func Run() {
 
 	http.HandleFunc("/cocoatest/", cocoaTestHandler)
 
-	//resume downloading tasks
-	// tasks := task.GetTasks()
-	// hasDownloading := false
-	// for _, t := range tasks {
-	// 	if t.Status == "Downloading" {
-	// 		hasDownloading = true
-	// 		download.ResumeDownload(t.Name)
-	// 	}
-	// }
-	// if !hasDownloading {
-	// 	download.ResumeNextQueuedTask()
-	// }
-
 	server := util.ReadConfig("server")
 
 	log.Print("server ", server, " started.")

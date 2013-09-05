@@ -16,20 +16,8 @@ import (
 	"regexp"
 	// "io"
 	// "os"
-	"util"
+	// "util"
 )
-
-func init() {
-	go func() {
-		config := util.ReadAllConfigs()
-		err := Login(config["thunder-user"], config["thunder-password"])
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Println("Thunder login success.")
-		}
-	}()
-}
 
 func NewTask(taskURL string) ([]ThunderTask, error) {
 	log.Println("thunder new task: ", taskURL)
