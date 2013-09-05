@@ -8,7 +8,6 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
-	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
 	"strings"
@@ -21,12 +20,6 @@ import (
 )
 
 func init() {
-
-	if http.DefaultClient.Jar == nil {
-		jar, _ := cookiejar.New(nil)
-		http.DefaultClient.Jar = jar
-	}
-
 	go func() {
 		config := util.ReadAllConfigs()
 		err := Login(config["thunder-user"], config["thunder-password"])

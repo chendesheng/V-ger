@@ -15,9 +15,17 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"os"
 	"time"
 )
+
+func init() {
+	if http.DefaultClient.Jar == nil {
+		jar, _ := cookiejar.New(nil)
+		http.DefaultClient.Jar = jar
+	}
+}
 
 type block struct {
 	from, to int64
