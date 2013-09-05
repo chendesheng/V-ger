@@ -1,6 +1,7 @@
 package download
 
 import (
+	"math"
 	"fmt"
 	// "log"
 	"task"
@@ -73,10 +74,14 @@ func handleProgress(progress chan int64, t *task.Task, quit <-chan bool) {
 			elapsedTime += time.Second * 2
 
 			sr.add(part)
-			part = 0
+			if part == 0 {
+				sr.add(0) //accelerate speed down to zero
+			} else {
+				part = 0
+			}
 
 			sum := sr.totalSize()
-			speed = float64(sum) * float64(time.Second) / float64(time.Since(sr.start)) / 1024
+			speed = math.Floor(float64(sum) * float64(time.Second) / float64(time.Since(sr.start)) / 1024 + 0.5)
 			_, est := calcProgress(total, size, speed)
 			saveProgress(t.Name, speed, total, elapsedTime, est)
 

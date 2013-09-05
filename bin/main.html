@@ -50,7 +50,7 @@
 			       			</span>
 
 			       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
-			       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(2)}}KB/s</span>
+			       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(0)}}KB/s</span>
 							<!-- 
 				       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
 				       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span> -->
