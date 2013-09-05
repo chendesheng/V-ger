@@ -20,6 +20,13 @@ import (
 )
 
 func NewTask(taskURL string) ([]ThunderTask, error) {
+	err := Login()
+	if err != nil {
+		return nil, err
+	} else {
+		log.Println("Thunder login success.")
+	}
+
 	log.Println("thunder new task: ", taskURL)
 
 	taskType, torrent := getTaskType(taskURL)

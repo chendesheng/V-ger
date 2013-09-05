@@ -29,10 +29,10 @@ func init() {
 		http.DefaultClient.Jar = jar
 	}
 
-	err := thunder.Login(config["thunder-user"], config["thunder-password"])
-	if err != nil {
-		log.Println(err)
-	} else {
-		log.Println("Thunder login success.")
-	}
+	go func() {
+		err := thunder.Login()
+		if err != nil {
+			log.Print(err)
+		}
+	}()
 }

@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"util"
 )
 
 func singleMd5(s string) string {
@@ -20,7 +21,17 @@ func doubleMD5(p string) string {
 	return singleMd5(singleMd5(p))
 }
 
-func Login(user string, password string) error {
+var isLogined = false
+
+func Login() error {
+	if isLogined {
+		return nil
+	}
+
+	config := util.ReadAllConfigs()
+	user := config["thunder-user"]
+	password := config["thunder-password"]
+
 	_, err := sendGet("http://login.xunlei.com/check",
 		&url.Values{
 			"u": {user},
@@ -78,5 +89,9 @@ func Login(user string, password string) error {
 	cookies := []*http.Cookie{&cookie}
 	url, _ := url.Parse("http://vip.lixian.xunlei.com")
 	http.DefaultClient.Jar.SetCookies(url, cookies)
+
+	isLogined = true
+
+	log.Println("Thunder login success.")
 	return nil
 }
