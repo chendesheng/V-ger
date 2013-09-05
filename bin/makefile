@@ -13,3 +13,6 @@ all:
 	cp main.html ~/Library/Vger/main.html
 	cp ./assets/main.js ~/Library/Vger/assets/main.js
 	cp ./assets/style.css ~/Library/Vger/assets/style.css
+window:
+	go install client
+	cp client ./GoCocoa.app/Contents/MacOS/GoCocoa

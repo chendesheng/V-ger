@@ -82,7 +82,7 @@ func ResumeNextTask() error {
 	return nil
 }
 
-func LimitSpeed(name string, speed int) error {
+func LimitSpeed(name string, speed int64) error {
 	t, err := GetTask(name)
 	if err != nil {
 		return err

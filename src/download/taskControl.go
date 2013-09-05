@@ -13,7 +13,7 @@ import (
 
 type taskControl struct {
 	quit     chan bool
-	maxSpeed chan int
+	maxSpeed chan int64
 	t        *task.Task
 }
 
@@ -21,7 +21,7 @@ func (tc *taskControl) stopDownload() {
 	ensureQuit(tc.quit)
 }
 
-func (tc *taskControl) limitSpeed(speed int) error {
+func (tc *taskControl) limitSpeed(speed int64) error {
 	select {
 	case tc.maxSpeed <- speed:
 		break
@@ -71,7 +71,7 @@ func monitorTask() {
 				delete(taskControls, t.Name)
 
 				if t.Autoshutdown {
-					go native.Shutdown(t.Name)
+					native.Shutdown(t.Name)
 				} else {
 					go native.SendNotification("V'ger Task Finished", t.Name)
 					task.ResumeNextTask()
@@ -85,7 +85,7 @@ func monitorTask() {
 			if t.Status == "Downloading" {
 				log.Printf("start download: %v\n", t.Name)
 
-				control := make(chan int)
+				control := make(chan int64)
 				quit := make(chan bool, 50)
 				taskControls[t.Name] = taskControl{quit, control, t}
 
@@ -121,7 +121,7 @@ func Start() {
 		if t.Status == "Downloading" {
 			hasDownloading = true
 
-			control := make(chan int)
+			control := make(chan int64)
 			quit := make(chan bool)
 			taskControls[t.Name] = taskControl{quit, control, t}
 
@@ -133,7 +133,7 @@ func Start() {
 	}
 }
 
-func download(t *task.Task, control chan int, quit chan bool) {
+func download(t *task.Task, control chan int64, quit chan bool) {
 	if t.DownloadedSize < t.Size {
 		f, err := openOrCreateFileRW(path.Join(baseDir, t.Name), t.DownloadedSize)
 		if err != nil {
@@ -143,8 +143,9 @@ func download(t *task.Task, control chan int, quit chan bool) {
 		defer f.Close()
 
 		progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), control, quit)
-
-		handleProgress(progress, t, quit)
+		if progress != nil {
+			handleProgress(progress, t, quit)
+		}
 	}
 
 	t, err := task.GetTask(t.Name)
@@ -166,6 +167,7 @@ func download(t *task.Task, control chan int, quit chan bool) {
 
 	if t.Status == "Downloading" {
 		log.Println("restart downloading: ", t.Name)
+
 		t.Status = "Stopped"
 		task.SaveTask(t)
 

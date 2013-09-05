@@ -2,12 +2,12 @@ package main
 
 import (
 	"download"
-	"native"
+	// "native"
 	"website"
 )
 
 func main() {
 	go download.Start()
-	go website.Run()
-	native.Start()
+	website.Run()
+	// native.Start()
 }

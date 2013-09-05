@@ -7,25 +7,59 @@ import (
 	"time"
 )
 
+type segment struct {
+	t    time.Time
+	size int64
+}
+type segRing struct {
+	segs  []*segment
+	i     int
+	start time.Time
+}
+
+func newSegRing(n int) segRing {
+	if n <= 0 {
+		panic(fmt.Errorf("Init size must greater than zero."))
+	}
+
+	r := make([]*segment, 0)
+	for i := 0; i < n; i++ {
+		r = append(r, &segment{time.Now(), 0})
+	}
+	return segRing{r, 0, time.Now()}
+}
+
+func (sr *segRing) add(size int64) {
+	sr.i++
+	if sr.i == len(sr.segs) {
+		sr.i = 0
+	}
+
+	s := sr.segs[sr.i]
+	sr.start = s.t
+	s.t = time.Now()
+	s.size = size
+}
+func (sr *segRing) totalSize() int64 {
+	total := int64(0)
+	for _, s := range sr.segs {
+		total += s.size
+	}
+	return total
+}
+func (sr *segRing) currentSegStart() time.Time {
+	return sr.segs[sr.i].t
+}
+
 func handleProgress(progress chan int64, t *task.Task, quit <-chan bool) {
-	// log.Printf("start handle progress: %v\n", *t)
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
-	timer := time.NewTicker(time.Second * 2)
+	timer := time.NewTicker(time.Millisecond * 1500)
 
 	speed := float64(0)
-	partsCount := 15
-	parts := make([]int64, partsCount)
-	checkTimes := make([]time.Time, partsCount)
-	for i := 0; i < partsCount; i++ {
-		parts[i] = 0
-		checkTimes[i] = time.Now()
-	}
 	part := int64(0)
-	cnt := 0
-	// est := time.Duration(0)
-	lastCheck := time.Now()
-	live := 0
+	sr := newSegRing(12)
+
 	for {
 		select {
 		case length, ok := <-progress:
@@ -33,44 +67,23 @@ func handleProgress(progress chan int64, t *task.Task, quit <-chan bool) {
 				saveProgress(t.Name, speed, total, elapsedTime, 0)
 				return
 			}
-			// fmt.Println("progress ", total)
 			total += length
 			part += length
-
-			if time.Since(checkTimes[cnt]) > time.Second || total == size {
-				cnt++
-				cnt = cnt % partsCount
-
-				lastCheck = checkTimes[cnt]
-				checkTimes[cnt] = time.Now()
-				parts[cnt] = part
-				part = 0
-			}
-			live = 0
 		case <-timer.C:
 			elapsedTime += time.Second * 2
 
-			if live > 10 {
-				speed = 0
-			} else {
-				sum := int64(0)
-				for _, p := range parts {
-					sum += p
-				}
+			sr.add(part)
+			part = 0
 
-				speed = float64(sum) * float64(time.Second) / float64(time.Since(lastCheck)) / 1024
-			}
-
+			sum := sr.totalSize()
+			speed = float64(sum) * float64(time.Second) / float64(time.Since(sr.start)) / 1024
 			_, est := calcProgress(total, size, speed)
-
 			saveProgress(t.Name, speed, total, elapsedTime, est)
 
 			if total == size {
 				fmt.Println("progress return")
 				return
 			}
-
-			live++
 		case <-quit:
 			fmt.Println("progress quit")
 			return

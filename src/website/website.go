@@ -206,7 +206,7 @@ func limitHandler(w http.ResponseWriter, r *http.Request) {
 	speed, _ := strconv.Atoi(string(input))
 	fmt.Printf("download \"%s\" limit speed %dKB/s.\n", name, speed)
 
-	if err := task.LimitSpeed(name, speed); err != nil {
+	if err := task.LimitSpeed(name, int64(speed)); err != nil {
 		writeError(w, err)
 	}
 }

@@ -42,7 +42,7 @@ type Task struct {
 	DownloadedSize int64
 	ElapsedTime    time.Duration
 
-	LimitSpeed int
+	LimitSpeed int64
 	Speed      float64
 	Status     string
 	NameHash   string

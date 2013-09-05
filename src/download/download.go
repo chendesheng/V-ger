@@ -24,12 +24,8 @@ type block struct {
 	data     []byte
 }
 
-func newDataBlock(from, to int64) *block {
-	return &block{from, to, make([]byte, 0)}
-}
-
 func doDownload(url string, w io.Writer, from, to int64,
-	maxSpeed int64, control chan int, quit chan bool) chan int64 {
+	maxSpeed int64, control chan int64, quit chan bool) chan int64 {
 
 	for {
 		finalUrl, _, _, err := GetDownloadInfo(url)
@@ -40,6 +36,7 @@ func doDownload(url string, w io.Writer, from, to int64,
 
 		select {
 		case <-quit:
+			return nil
 		default:
 		}
 	}
@@ -57,7 +54,7 @@ func doDownload(url string, w io.Writer, from, to int64,
 
 	return progress
 }
-func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int, quit <-chan bool) {
+func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int64, quit <-chan bool) {
 	blockSize := int64(100 * 1024)
 	if maxSpeed > 0 {
 		blockSize = maxSpeed * 1024
@@ -67,24 +64,22 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 	if to > size {
 		to = size
 	}
-	r := time.Duration(0)
 
 	//small blocksize after start,
-	//change to a larger blocksize after 30 seconds
-	changeBlockSize := time.NewTimer(time.Second * 10)
+	//change to a larger blocksize after 15 seconds
+	changeBlockSize := time.NewTimer(time.Second * 15)
 	for {
 		b := time.Now()
 		select {
-		case cmd := <-control:
+		case maxSpeed := <-control:
 			fmt.Println("set max speed")
-			maxSpeed = int64(cmd)
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
 				blockSize = int64(100 * 1024)
 				changeBlockSize.Reset(time.Second * 15)
 			}
-		case input <- newDataBlock(from, to):
+		case input <- &block{from, to, nil}:
 			if to == size {
 				fmt.Println("return input")
 				close(input)
@@ -98,13 +93,7 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 				if maxSpeed > 0 {
 					d := time.Now().Sub(b)
 					if d < time.Second {
-						time.Sleep(time.Second - d - r)
-						r -= time.Second
-						if r < 0 {
-							r = 0
-						}
-					} else {
-						r = d - time.Second
+						time.Sleep(time.Second - d)
 					}
 				}
 			}
@@ -223,9 +212,11 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 			continue
 		}
 
+		result := make(chan []byte)
+		go readFrom(resp.Body, to-from, quit, result)
 		select {
-		case data, ok := <-readAsync(resp.Body, to-from, quit):
-			if ok {
+		case data := <-result:
+			if int64(len(data)) == to-from {
 				b.data = data
 				select {
 				case output <- b:
@@ -243,19 +234,21 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 		}
 	}
 }
-func readAsync(r io.Reader, size int64, quit chan bool) chan []byte {
-	result := make(chan []byte)
-	go func(ch chan []byte, size int64, quit chan bool) {
-		//Always read more bytes to avoid buffer glow.
-		buffer := bytes.NewBuffer(make([]byte, 0, size+bytes.MinRead))
-		buffer.ReadFrom(r)
-		select {
-		case ch <- buffer.Bytes():
-		case <-quit:
-		}
-	}(result, size, quit)
-
-	return result
+func readFrom(r io.Reader, size int64, quit chan bool, result chan []byte) {
+	//Always read more bytes to avoid buffer glow.
+	buffer := bytes.NewBuffer(make([]byte, 0, size+bytes.MinRead))
+	_, err := buffer.ReadFrom(r)
+	var bytes []byte
+	if err != nil {
+		bytes = nil
+		log.Print(err)
+	} else {
+		bytes = buffer.Bytes()
+	}
+	select {
+	case result <- bytes:
+	case <-quit:
+	}
 }
 func createDownloadRoutine(url string, output chan<- *block, quit chan bool) chan<- *block {
 	input := make(chan *block)

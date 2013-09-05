@@ -76,9 +76,6 @@ var chUI chan uiCommand
 // func SendNotification(title string, infoText string) {
 // 	chUI <- uiCommand{"sendNotification", []string{title, infoText}}
 // }
-// func TrashFile(dir string, name string) {
-// 	chUI <- uiCommand{"trashFile", []string{dir, name}}
-// }
 
 func Start() {
 	runtime.LockOSThread()
