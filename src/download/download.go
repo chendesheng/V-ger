@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"native"
+	// "net"
 	"path/filepath"
 	"regexp"
 	"strings"
-	// "util"
+	"util"
 	// "sort"
-	// "runtime"
+	"runtime"
 	// "strconv"
 	// "errors"
 	"io"
@@ -18,6 +19,20 @@ import (
 	"os"
 	"time"
 )
+
+var taskRestartTimeout time.Duration
+var networkTimeout time.Duration
+
+func init() {
+	networkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
+	taskRestartTimeout = time.Duration(util.ReadIntConfig("task-restart-timeout")) * time.Second
+
+	// http.DefaultTransport.(*http.Transport).Dial = func(network, addr string) (net.Conn, error) {
+	// 	c, err := net.Dial(network, addr)
+	// 	log.Printf("%v", c)
+	// 	return c, err
+	// }
+}
 
 type block struct {
 	from, to int64
@@ -193,20 +208,19 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 }
 func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 	for {
-		from, to := b.from, b.to
-		req := createDownloadRequest(url, from, to-1)
+		req := createDownloadRequest(url, b.from, b.to-1)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println(err)
-			continue
-		}
+		} else {
+			size := b.to - b.from
 
-		result := make(chan []byte)
-		go readFrom(resp.Body, to-from, quit, result)
-		select {
-		case data := <-result:
-			if int64(len(data)) == to-from {
+			data, err := readWithTimeout(req, resp, size, quit)
+			if err != nil {
+				log.Print(err)
+			}
+			if err == nil && int64(len(data)) == size {
 				b.data = data
 				select {
 				case output <- b:
@@ -215,31 +229,42 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 					return
 				}
 			}
-			break
+		}
+
+		select {
 		case <-quit:
 			return
-		case <-time.After(time.Second * 30):
-			log.Println("network read timeout")
-			break
+		default:
+			runtime.Gosched()
 		}
 	}
 }
-func readFrom(r io.Reader, size int64, quit chan bool, result chan []byte) {
-	//Always read more bytes to avoid buffer glow.
+
+func readWithTimeout(req *http.Request, resp *http.Response, size int64, quit chan bool) ([]byte, error) {
 	buffer := bytes.NewBuffer(make([]byte, 0, size+bytes.MinRead))
-	_, err := buffer.ReadFrom(r)
-	var bytes []byte
+	finish := make(chan error)
+	go func() {
+		select {
+		case <-time.After(networkTimeout): //cancelRequest if time.After before close(finish)
+			cancelRequest(req)
+		case <-quit:
+			cancelRequest(req)
+			return
+		case <-finish: //close(finish) before time.After
+			return
+		}
+	}()
+
+	_, err := buffer.ReadFrom(resp.Body)
+	close(finish)
+
 	if err != nil {
-		bytes = nil
-		log.Print(err)
+		return nil, err
 	} else {
-		bytes = buffer.Bytes()
-	}
-	select {
-	case result <- bytes:
-	case <-quit:
+		return buffer.Bytes(), nil
 	}
 }
+
 func createDownloadRoutine(url string, output chan<- *block, quit chan bool) chan<- *block {
 	input := make(chan *block)
 	go downloadRoutine(url, input, output, quit)
@@ -286,6 +311,7 @@ func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, fro
 }
 func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
 	disorderOutput := make(chan *block)
+
 	chan1 := createDownloadRoutine(url, disorderOutput, quit)
 	chan2 := createDownloadRoutine(url, disorderOutput, quit)
 	chan3 := createDownloadRoutine(url, disorderOutput, quit)
@@ -315,15 +341,14 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 			case chan4 <- b:
 			case chan5 <- b:
 			// case chan6 <- b:
-			case <-time.After(time.Second * 20):
+			case <-time.After(taskRestartTimeout):
+				fmt.Println("close quit")
 				close(quit)
 				return
 			case <-quit:
 				fmt.Println("currentDownload quit")
 				return
 			}
-			// fmt.Println("write to downloadRoutine")
-			// chan1 <- b
 		case <-quit:
 			fmt.Println("currentDownload quit2")
 			return

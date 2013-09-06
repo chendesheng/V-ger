@@ -19,6 +19,9 @@ func createDownloadRequest(urlString string, from, to int64) *http.Request {
 	addRangeHeader(req, from, to)
 	return req
 }
+func cancelRequest(req *http.Request) {
+	http.DefaultTransport.(*http.Transport).CancelRequest(req)
+}
 func addRangeHeader(req *http.Request, from, to int64) {
 	if from == to || (from <= 0 && to < 0) {
 		return
