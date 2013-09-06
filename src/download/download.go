@@ -192,14 +192,7 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 	}
 }
 func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
-	times := 0
 	for {
-		times++
-		if times > 5 {
-			close(quit) //quit if more than 5 times
-			return
-		}
-
 		from, to := b.from, b.to
 		req := createDownloadRequest(url, from, to-1)
 
@@ -322,6 +315,9 @@ func concurrentDownload(url string, input <-chan *block, output chan<- *block, q
 			case chan4 <- b:
 			case chan5 <- b:
 			// case chan6 <- b:
+			case <-time.After(time.Second * 20):
+				close(quit)
+				return
 			case <-quit:
 				fmt.Println("currentDownload quit")
 				return
