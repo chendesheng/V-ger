@@ -3,21 +3,17 @@ package download
 import (
 	"bytes"
 	"fmt"
-	"native"
-	// "net"
-	"path/filepath"
-	"regexp"
-	"strings"
-	"util"
-	// "sort"
-	"runtime"
-	// "strconv"
-	// "errors"
 	"io"
 	"log"
+	"native"
 	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"strings"
 	"time"
+	"util"
 )
 
 var taskRestartTimeout time.Duration
@@ -39,42 +35,9 @@ type block struct {
 	data     []byte
 }
 
-func doDownload(url string, w io.Writer, from, to int64,
-	maxSpeed int64, control chan int64, quit chan bool) chan int64 {
-
-	for {
-		finalUrl, _, _, err := GetDownloadInfo(url)
-		if err == nil {
-			url = finalUrl
-			break
-		}
-
-		select {
-		case <-quit:
-			return nil
-		default:
-			time.Sleep(time.Second * 2)
-		}
-	}
-
-	input := make(chan *block)
-	output := make(chan *block)
-
-	go generateBlock(input, from, to, maxSpeed, control, quit)
-
-	go concurrentDownload(url, input, output, quit, from, to)
-
-	progress := make(chan int64)
-
-	go writeOutput(w, from, output, progress, quit)
-
-	return progress
-}
-func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, control chan int64, quit <-chan bool) {
-	blockSize := int64(100 * 1024)
-	if maxSpeed > 0 {
-		blockSize = maxSpeed * 1024
-	}
+func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int64, from, size int64, quit <-chan bool) {
+	log.Printf("generate block output: %v", output)
+	blockSize := int64(400 * 1024)
 
 	to := from + blockSize
 	if to > size {
@@ -84,68 +47,87 @@ func generateBlock(input chan<- *block, from, size int64, maxSpeed int64, contro
 	//small blocksize after start,
 	//change to a larger blocksize after 15 seconds
 	changeBlockSize := time.NewTimer(time.Second * 15)
+	startCnt := 5
+	log.Printf("output %v", output)
+	maxSpeed := int64(0)
 	for {
-		b := time.Now()
+		if startCnt < 0 {
+			select {
+			case _, ok := <-input:
+				if !ok {
+					return
+				}
+			case <-quit:
+				return
+			}
+		} else {
+			startCnt--
+		}
+
+		// b := time.Now()
 		select {
-		case maxSpeed := <-control:
-			fmt.Println("set max speed")
+		case maxSpeed = <-chBlockSize:
+			// maxSpeed = 0
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
 				blockSize = int64(100 * 1024)
 				changeBlockSize.Reset(time.Second * 15)
 			}
-		case input <- &block{from, to, nil}:
+		case output <- &block{from, to, nil}:
 			if to == size {
-				fmt.Println("return input")
-				close(input)
-				return
+				fmt.Println("return generate block ", size)
+				close(output)
+				for {
+					select {
+					case _, ok := <-input:
+						if !ok {
+							return
+						}
+					case <-quit:
+						return
+					}
+				}
 			} else {
 				from = to
 				to = from + blockSize
 				if to > size {
 					to = size
 				}
-				if maxSpeed > 0 {
-					d := time.Now().Sub(b)
-					if d < time.Second {
-						time.Sleep(time.Second - d)
-					}
-				}
 			}
 		case <-changeBlockSize.C:
 			if maxSpeed == 0 {
-				blockSize = 200 * 1024
+				blockSize = 400 * 1024
 			}
 			changeBlockSize.Stop()
 		case <-quit:
-			close(input)
-			fmt.Println("input quit")
+			close(output)
+			fmt.Println("quit generate block")
 			return
 		}
 	}
 }
-func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan int64, quit chan bool) {
+func writeOutput(w io.Writer, input <-chan *block, output chan *block, quit chan bool) {
 	defer func() {
-		fmt.Println("close progress")
-		close(progress)
+		fmt.Println("close write output")
+		close(output)
 	}()
 
 	pathErrNotifyTimes := 0
 	for {
 		select {
-		case db, ok := <-output:
+		case b, ok := <-input:
 			if !ok {
 				return
 			}
 			for {
 
-				_, err := w.Write(db.data)
-				db.data = nil
+				_, err := w.Write(b.data)
+				b.data = nil
 
 				if err == nil {
 					select {
-					case progress <- db.to - db.from:
+					case output <- b:
 						break
 					case <-quit:
 						return
@@ -186,17 +168,12 @@ func writeOutput(w io.Writer, from int64, output <-chan *block, progress chan in
 }
 
 func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println(r)
-		}
-	}()
 	for {
 		select {
 		case b, ok := <-input:
 			if !ok {
 				fmt.Println("downloadRoutine finish")
-				// close(output)
+				close(output)
 				return
 			}
 			downloadBlock(url, b, output, quit)
@@ -265,26 +242,19 @@ func readWithTimeout(req *http.Request, resp *http.Response, size int64, quit ch
 	}
 }
 
-func createDownloadRoutine(url string, output chan<- *block, quit chan bool) chan<- *block {
-	input := make(chan *block)
-	go downloadRoutine(url, input, output, quit)
-	return input
-}
-func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, from int64, to int64) {
+func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, from int64) {
 	dbmap := make(map[int64]*block)
 	nextOutputFrom := from
 	for {
 		select {
-		case db, _ := <-input:
-			if db == nil {
-				break
+		case db, ok := <-input:
+			if db != nil {
+				dbmap[db.from] = db
 			}
-
-			dbmap[db.from] = db
 
 			// log.Println(len(dbmap))
 			for {
-				if d, ok := dbmap[nextOutputFrom]; ok {
+				if d, exist := dbmap[nextOutputFrom]; exist {
 					// fmt.Printf("sort output %d-%d\n", d.from, d.to)
 					select {
 					case output <- d:
@@ -298,9 +268,9 @@ func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, fro
 					break
 				}
 			}
-			if nextOutputFrom == to {
+
+			if !ok {
 				close(output)
-				fmt.Println("sortOutput finish")
 				return
 			}
 		case <-quit:
@@ -309,48 +279,78 @@ func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, fro
 		}
 	}
 }
-func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit chan bool, from, to int64) {
-	disorderOutput := make(chan *block)
+func concurrentDownload(url string, input <-chan *block, output chan<- *block, quit chan bool) {
+	log.Printf("concurrentDownload download input %v", input)
+	output1 := make(chan *block)
+	output2 := make(chan *block)
+	output3 := make(chan *block)
+	output4 := make(chan *block)
+	output5 := make(chan *block)
 
-	chan1 := createDownloadRoutine(url, disorderOutput, quit)
-	chan2 := createDownloadRoutine(url, disorderOutput, quit)
-	chan3 := createDownloadRoutine(url, disorderOutput, quit)
-	chan4 := createDownloadRoutine(url, disorderOutput, quit)
-	chan5 := createDownloadRoutine(url, disorderOutput, quit)
-	// chan6 := createDownloadRoutine(url, disorderOutput, quit)
-
-	go sortOutput(disorderOutput, output, quit, from, to)
+	go downloadRoutine(url, input, output1, quit)
+	go downloadRoutine(url, input, output2, quit)
+	go downloadRoutine(url, input, output3, quit)
+	go downloadRoutine(url, input, output4, quit)
+	go downloadRoutine(url, input, output5, quit)
 
 	for {
 		select {
-		case b, ok := <-input:
+		case b, ok := <-output1:
 			if !ok {
-				fmt.Println("concurrentDownload finish")
-				close(chan1)
-				close(chan2)
-				close(chan3)
-				close(chan4)
-				close(chan5)
-				// close(chan6)
-				return
+				output1 = nil
+			} else {
+				select {
+				case output <- b:
+				case <-quit:
+				}
 			}
-			select {
-			case chan1 <- b:
-			case chan2 <- b:
-			case chan3 <- b:
-			case chan4 <- b:
-			case chan5 <- b:
-			// case chan6 <- b:
-			case <-time.After(taskRestartTimeout):
-				fmt.Println("close quit")
-				close(quit)
-				return
-			case <-quit:
-				fmt.Println("currentDownload quit")
-				return
+		case b, ok := <-output2:
+			if !ok {
+				output2 = nil
+			} else {
+				select {
+				case output <- b:
+				case <-quit:
+				}
 			}
+		case b, ok := <-output3:
+			if !ok {
+				output3 = nil
+			} else {
+				select {
+				case output <- b:
+				case <-quit:
+				}
+			}
+		case b, ok := <-output4:
+			if !ok {
+				output4 = nil
+			} else {
+				select {
+				case output <- b:
+				case <-quit:
+				}
+			}
+		case b, ok := <-output5:
+			if !ok {
+				output5 = nil
+			} else {
+				select {
+				case output <- b:
+				case <-quit:
+				}
+			}
+		case <-time.After(taskRestartTimeout):
+			fmt.Println("close quit")
+			close(quit)
+			return
 		case <-quit:
-			fmt.Println("currentDownload quit2")
+			fmt.Println("currentDownload quit")
+			return
+		}
+		if output1 == nil && output2 == nil && output3 == nil &&
+			output4 == nil && output5 == nil {
+			close(output)
 			return
 		}
 	}

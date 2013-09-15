@@ -101,8 +101,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				resp && $scope.push_alert(resp);
 			});
 		}
-		$scope.send_limit = function(task) {
-			$http.post('/limit/' + task.Name, task.LimitSpeed).success(function(resp) {
+		$scope.send_limit = function($event) {
+			$http.get('/limit/'+$event.target.value).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		};

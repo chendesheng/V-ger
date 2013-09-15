@@ -8,7 +8,7 @@ import (
 func StartNewTask(name string, url string, size int64) error {
 	t := newTask(name, url, size)
 
-	if numOfDownloadingTasks() == 0 {
+	if numOfDownloadingTasks() < 2 {
 		t.Status = "Downloading"
 	} else {
 		t.Status = "Queued"
@@ -27,7 +27,7 @@ func ResumeTask(name string) error {
 		return nil
 	} else {
 
-		if numOfDownloadingTasks() == 0 {
+		if numOfDownloadingTasks() < 2 {
 			t.Status = "Downloading"
 		} else {
 			t.Status = "Queued"
@@ -99,5 +99,6 @@ func numOfDownloadingTasks() int {
 			n++
 		}
 	}
+	fmt.Println("num of downloading tasks ", n)
 	return n
 }

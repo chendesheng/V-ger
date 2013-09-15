@@ -31,7 +31,9 @@ func init() {
 
 	//set timeout
 	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
-	http.DefaultTransport.(*http.Transport).ResponseHeaderTimeout = networkTimeout
+	transport := http.DefaultTransport.(*http.Transport)
+	transport.ResponseHeaderTimeout = networkTimeout
+	transport.MaxIdleConnsPerHost = 2
 
 	go func() {
 		err := thunder.Login()

@@ -1,87 +1,114 @@
 package download
 
 import (
-	"math"
 	"fmt"
 	// "log"
+	"math"
 	"task"
 	"time"
 )
 
 type segment struct {
-	t    time.Time
-	size int64
+	d time.Duration //takes 'd' time, download 'l' byte
+	l int64
 }
+
 type segRing struct {
-	segs  []*segment
-	i     int
-	start time.Time
+	segs     []*segment
+	i        int
+	lastTime time.Time
 }
 
 func newSegRing(n int) segRing {
 	if n <= 0 {
-		panic(fmt.Errorf("Init size must greater than zero."))
+		panic(fmt.Errorf("Init length must greater than zero."))
 	}
 
 	r := make([]*segment, 0)
 	for i := 0; i < n; i++ {
-		r = append(r, &segment{time.Now(), 0})
+		r = append(r, &segment{0, 0})
 	}
 	return segRing{r, 0, time.Now()}
 }
-
-func (sr *segRing) add(size int64) {
+func (sr *segRing) increase() {
 	sr.i++
 	if sr.i == len(sr.segs) {
 		sr.i = 0
 	}
+}
+func (sr *segRing) add(l int64) {
+	d := time.Now().Sub(sr.lastTime)
+	sr.lastTime = time.Now()
 
 	s := sr.segs[sr.i]
-	sr.start = s.t
-	s.t = time.Now()
-	s.size = size
-}
-func (sr *segRing) totalSize() int64 {
-	total := int64(0)
-	for _, s := range sr.segs {
-		total += s.size
+	prel := s.l
+
+	sr.increase()
+
+	s = sr.segs[sr.i]
+	s.d = d
+	s.l = l
+
+	if prel == 0 && l == 0 { //accelerate speed down to zero
+		sr.increase()
+		s = sr.segs[sr.i]
+		s.d = 0
+		s.l = 0
 	}
-	return total
 }
-func (sr *segRing) currentSegStart() time.Time {
-	return sr.segs[sr.i].t
+func (sr *segRing) total() (time.Duration, int64) {
+	var totalLength int64
+	var totalDurtion time.Duration
+	for _, s := range sr.segs {
+		totalDurtion += s.d
+		totalLength += s.l
+	}
+	return totalDurtion, totalLength
 }
 
-func handleProgress(progress chan int64, t *task.Task, quit <-chan bool) {
+func handleProgress(progress chan *block, output chan *block, t *task.Task, quit <-chan bool) {
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
-	timer := time.NewTicker(time.Millisecond * 1500)
+	timer := time.NewTicker(time.Millisecond * 1000)
 
 	speed := float64(0)
 	part := int64(0)
-	sr := newSegRing(12)
+	sr := newSegRing(40)
 
 	for {
 		select {
-		case length, ok := <-progress:
+		case b, ok := <-progress:
 			if !ok {
-				saveProgress(t.Name, speed, total, elapsedTime, 0)
+				saveProgress(t.Name, 0, total, elapsedTime, 0)
+				if output != nil {
+					close(output)
+				}
 				return
 			}
+
+			length := b.to - b.from
 			total += length
 			part += length
-		case <-timer.C:
-			elapsedTime += time.Second * 2
 
-			sr.add(part)
-			if part == 0 {
-				sr.add(0) //accelerate speed down to zero
-			} else {
-				part = 0
+			if output != nil {
+				go func() {
+					select {
+					case output <- b:
+					case <-quit:
+						return
+					}
+				}()
 			}
+			sr.add(length)
 
-			sum := sr.totalSize()
-			speed = math.Floor(float64(sum) * float64(time.Second) / float64(time.Since(sr.start)) / 1024 + 0.5)
+		case <-timer.C:
+			elapsedTime += time.Millisecond * 1000
+
+			sr.add(0)
+
+			totalDurtion, totalLength := sr.total()
+			// fmt.Printf("totalDurtion %s, totalLength %d\n", totalDurtion, totalLength)
+			speed = math.Floor(float64(totalLength)*float64(time.Second)/float64(totalDurtion)/1024.0 + 0.5)
 			_, est := calcProgress(total, size, speed)
 			saveProgress(t.Name, speed, total, elapsedTime, est)
 

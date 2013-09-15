@@ -12,24 +12,12 @@ import (
 )
 
 type taskControl struct {
-	quit     chan bool
-	maxSpeed chan int64
-	t        *task.Task
+	quit chan bool
+	t    *task.Task
 }
 
 func (tc *taskControl) stopDownload() {
 	ensureQuit(tc.quit)
-}
-
-func (tc *taskControl) limitSpeed(speed int64) error {
-	select {
-	case tc.maxSpeed <- speed:
-		break
-	case <-time.After(time.Second * 5):
-		return fmt.Errorf("Limit speed operation timeout")
-	}
-
-	return nil
 }
 
 func ensureQuit(quit chan bool) {
@@ -77,18 +65,21 @@ func monitorTask() {
 					task.ResumeNextTask()
 				}
 			}
-			if t.LimitSpeed != tc.t.LimitSpeed {
-				tc.limitSpeed(t.LimitSpeed)
-				tc.t = t
-			}
+
+			// if t.LimitSpeed != maxSpeed {
+			// 	maxSpeed = t.LimitSpeed
+			// 	blockSize = maxSpeed
+
+			// 	tc.limitSpeed(maxSpeed)
+			// 	tc.t = t
+			// }
 		} else {
 			if t.Status == "Downloading" {
 				if t.DownloadedSize == 0 {
 					native.SendNotification("V'ger task begin", t.Name)
 				}
 
-				control := make(chan int64)
-				tc := &taskControl{nil, control, t}
+				tc := &taskControl{nil, t}
 				taskControls[t.Name] = tc
 				go download(tc)
 			}
@@ -119,8 +110,7 @@ func Start() {
 		if t.Status == "Downloading" {
 			hasDownloading = true
 
-			control := make(chan int64)
-			tc := &taskControl{nil, control, t}
+			tc := &taskControl{nil, t}
 			taskControls[t.Name] = tc
 			go download(tc)
 		}
@@ -146,12 +136,7 @@ func download(tc *taskControl) {
 		tc.quit = make(chan bool)
 
 		if t.DownloadedSize < t.Size {
-
-			progress := doDownload(t.URL, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), tc.maxSpeed, tc.quit)
-			if progress != nil {
-				handleProgress(progress, t, tc.quit)
-			}
-
+			doDownload(t, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), tc.quit)
 		}
 
 		var err error

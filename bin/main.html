@@ -15,6 +15,17 @@
 		<div class="box-tasks-list">
  			<h1>V'ger</h1>
 			<h2>Speed is Fun!</h2> 
+			<div>
+				<select class="action-limit" ui-event="{change:'send_limit($event)'}">
+	   				<option value="0">No limit</option>
+	   				<option value="50">Up to 50K</option>
+	   				<option value="100">Up to 100K</option>
+	   				<option value="150">Up to 150K</option>
+	   				<option value="200">Up to 200K</option>
+	   				<option value="300">Up to 300K</option>
+	   				<option value="500">Up to 500K</option>
+				</select>
+			</div>
 			<ul id="tasks-list">
 		       <li ng-repeat="task in tasks | orderBy:'StartTime':1" class="task">
 		       		<div class="task-infoes">
@@ -34,15 +45,6 @@
 			       		<div class="row-3rd">
 			       			<input type="button" ng-click="search_subtitles(task.Name)" value="Subtitles"/>
 			       			<input type="button" ng-click="send_play(task)" value="Play Online" ng-show="task.Status!='Finished'"/>
-			       			<select ng-hide="task.Status=='Finished'" ng-model="task.LimitSpeed" class="action-limit" ng-change="send_limit(task)">
-			       				<option value="0">No limit</option>
-			       				<option value="50">Up to 50K</option>
-			       				<option value="100">Up to 100K</option>
-			       				<option value="150">Up to 150K</option>
-			       				<option value="200">Up to 200K</option>
-			       				<option value="300">Up to 300K</option>
-			       				<option value="500">Up to 500K</option>
-			       			</select>
 
 			       			<span ng-hide="task.Status=='Finished'">
 				       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />

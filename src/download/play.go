@@ -24,7 +24,5 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 
 	play_quit = make(chan bool)
 
-	control := make(chan int64)
-	progress := doDownload(t.URL, w, from, to, 0, control, play_quit)
-	handleProgress(progress, t, play_quit)
+	doDownload(t, w, from, to, 0, play_quit)
 }

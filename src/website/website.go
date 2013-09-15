@@ -201,12 +201,11 @@ func stopHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("stop download finish")
 }
 func limitHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[7:])
-	input, _ := ioutil.ReadAll(r.Body)
+	input, _ := url.QueryUnescape(r.URL.String()[7:])
 	speed, _ := strconv.Atoi(string(input))
-	fmt.Printf("download \"%s\" limit speed %dKB/s.\n", name, speed)
+	fmt.Printf("limit speed %dKB/s.\n", speed)
 
-	if err := task.LimitSpeed(name, int64(speed)); err != nil {
+	if err := download.LimitSpeed(int64(speed)); err != nil {
 		writeError(w, err)
 	}
 }
@@ -243,14 +242,6 @@ func progressHandler(ws *websocket.Conn) {
 			return
 		}
 	}
-}
-
-type command struct {
-	ack    chan bool
-	result chan string
-
-	name string
-	arg  string
 }
 
 func assetsHandler(w http.ResponseWriter, r *http.Request) {
