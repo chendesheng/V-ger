@@ -169,6 +169,23 @@ func writeOutput(w io.Writer, input <-chan *block, output chan *block, quit chan
 
 func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
 	for {
+		finalUrl, _, _, err := GetDownloadInfo(url)
+		if err == nil {
+			url = finalUrl
+			break
+		}
+
+		select {
+		case <-quit:
+			return
+		default:
+			time.Sleep(time.Second * 2)
+		}
+	}
+
+	log.Print("download routine begin: ", url)
+
+	for {
 		select {
 		case b, ok := <-input:
 			if !ok {

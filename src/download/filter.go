@@ -4,7 +4,7 @@ import (
 	"io"
 	"log"
 	"task"
-	"time"
+	// "time"
 )
 
 type filter interface {
@@ -81,20 +81,20 @@ func activeFilters(filters []filter) {
 func doDownload(t *task.Task, w io.Writer, from, to int64,
 	maxSpeed int64, quit chan bool) {
 	url := t.URL
-	for {
-		finalUrl, _, _, err := GetDownloadInfo(url)
-		if err == nil {
-			url = finalUrl
-			break
-		}
+	// for {
+	// 	finalUrl, _, _, err := GetDownloadInfo(url)
+	// 	if err == nil {
+	// 		url = finalUrl
+	// 		break
+	// 	}
 
-		select {
-		case <-quit:
-			return
-		default:
-			time.Sleep(time.Second * 2)
-		}
-	}
+	// 	select {
+	// 	case <-quit:
+	// 		return
+	// 	default:
+	// 		time.Sleep(time.Second * 2)
+	// 	}
+	// }
 
 	gf := &generateFilter{
 		aFilter{nil, make(chan *block), quit},
