@@ -34,10 +34,6 @@
 				</select>
 			</li>
 			<li>
-				<label for="">Shutdown after finish</label>
-				<input type="checkbox" ng-model="config['shutdown-after-finish']" ng-click="set_autoshutdown()">
-			</li>
-			<li>
 				<label for="">Simultaneous</label>
 				<select ng-model="config['simultaneous-downloads']" ui-event="{change:'send_simultaneous_downloads($event)'}">
 					<option value="1">1</option>
@@ -46,6 +42,10 @@
 					<option value="4">4</option>
 					<option value="5">5</option>
 				</select>
+			</li>
+			<li>
+				<label for="">Shutdown after finish</label>
+				<input type="checkbox" ng-model="config['shutdown-after-finish']" ng-click="set_autoshutdown()">
 			</li>
 		</ul>
 	</div>

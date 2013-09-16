@@ -136,6 +136,8 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		} else if err := task.StartNewTask(name, url, size); err != nil {
 			writeError(w, err)
+		} else {
+			native.SendNotification("V'ger add task", name)
 		}
 	}
 }

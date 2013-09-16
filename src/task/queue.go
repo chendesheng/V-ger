@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	// "native"
 	"time"
 	"util"
 )
@@ -31,11 +32,13 @@ func ResumeTask(name string) error {
 	return nil
 }
 
-func startOrQueueTask(t *Task) {
+func startOrQueueTask(t *Task) bool {
 	if numOfDownloadingTasks() < util.ReadIntConfig("simultaneous-downloads") {
 		t.Status = "Downloading"
+		return true
 	} else {
 		t.Status = "Queued"
+		return false
 	}
 }
 
