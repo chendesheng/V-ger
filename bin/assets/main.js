@@ -39,6 +39,14 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 
 		$scope.tasks = [];
+		$scope.config = {
+			'max-speed': '0'
+		};
+		$http.get('/config').success(function(resp) {
+			$scope.config = resp;
+			var v = $scope.config['shutdown-after-finish'];
+			$scope.config['shutdown-after-finish'] = (v == 'true');
+		})
 
 		function monitor_process() {
 			monitor('/progress', function(data) {
@@ -102,10 +110,14 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			});
 		}
 		$scope.send_limit = function($event) {
-			$http.get('/limit/'+$event.target.value).success(function(resp) {
+			$http.get('/limit/' + $event.target.value).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		};
+		$scope.send_simultaneous_downloads = function() {
+			$http.post('/config/simultaneous', $scope.config['simultaneous-downloads'])
+				.success(function () {});
+		}
 		$scope.send_play = function(task) {
 			$http.get('/play/' + task.Name).success(function(resp) {
 				resp && $scope.push_alert(resp);
@@ -181,8 +193,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				});
 		};
 
-		$scope.set_autoshutdown = function(task) {
-			$http.post('/autoshutdown/' + task.Name, task.Autoshutdown ? 'on' : 'off')
+		$scope.set_autoshutdown = function() {
+			$http.post('/autoshutdown', $scope.config['shutdown-after-finish']?'true':'false')
 				.success(function() {});
 		};
 

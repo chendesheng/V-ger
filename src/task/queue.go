@@ -3,6 +3,7 @@ package task
 import (
 	"fmt"
 	"time"
+	"util"
 )
 
 func StartNewTask(name string, url string, size int64) error {
@@ -26,8 +27,7 @@ func ResumeTask(name string) error {
 	} else if t.Status == "Downloading" {
 		return nil
 	} else {
-
-		if numOfDownloadingTasks() < 2 {
+		if numOfDownloadingTasks() < util.ReadIntConfig("simultaneous-downloads") {
 			t.Status = "Downloading"
 		} else {
 			t.Status = "Queued"
@@ -63,7 +63,7 @@ func StopTask(name string) error {
 	return nil
 }
 
-func ResumeNextTask() error {
+func ResumeNextTask() (error, bool) {
 	tasks := GetTasks()
 
 	var nextTask *Task
@@ -76,10 +76,10 @@ func ResumeNextTask() error {
 	}
 	if nextTask != nil {
 		nextTask.Status = "Downloading"
-		return SaveTask(nextTask)
+		return SaveTask(nextTask), true
+	} else {
+		return nil, false
 	}
-
-	return nil
 }
 
 func LimitSpeed(name string, speed int64) error {

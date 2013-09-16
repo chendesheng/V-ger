@@ -9,24 +9,48 @@
 	<script type="text/javascript" src="/assets/main.js"></script>
 	<script type="text/javascript" src="/assets/date.js"></script>
 </head>
-<body>
-	<div id="tasks" ng-controller="tasks_ctrl">
+<body ng-controller="tasks_ctrl">
+
+	<div id="tasks">
 
 		<div class="box-tasks-list">
  			<h1>V'ger</h1>
 			<h2>Speed is Fun!</h2> 
-			<div>
-				<select class="action-limit" ui-event="{change:'send_limit($event)'}">
-	   				<option value="0">No limit</option>
-	   				<option value="50">Up to 50K</option>
-	   				<option value="100">Up to 100K</option>
-	   				<option value="150">Up to 150K</option>
-	   				<option value="200">Up to 200K</option>
-	   				<option value="300">Up to 300K</option>
-	   				<option value="500">Up to 500K</option>
-				</select>
-			</div>
 			<ul id="tasks-list">
+			<li>
+				
+	<div id="configs">
+		<ul>
+			<li>
+				<label for="">Speed</label>
+				<select  ng-model="config['max-speed']" class="action-limit" ui-event="{change:'send_limit($event)'}">
+	   				<option value="0">No limit</option>
+	   				<option value="50">50K</option>
+	   				<option value="100">100K</option>
+	   				<option value="150">150K</option>
+	   				<option value="200">200K</option>
+	   				<option value="300">300K</option>
+	   				<option value="500">500K</option>
+				</select>
+			</li>
+			<li>
+				<label for="">Shutdown after finish</label>
+				<input type="checkbox" ng-model="config['shutdown-after-finish']" ng-click="set_autoshutdown()">
+			</li>
+			<li>
+				<label for="">Simultaneous</label>
+				<select ng-model="config['simultaneous-downloads']" ui-event="{change:'send_simultaneous_downloads($event)'}">
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+				</select>
+			</li>
+		</ul>
+	</div>
+	
+			</li>
 		       <li ng-repeat="task in tasks | orderBy:'StartTime':1" class="task">
 		       		<div class="task-infoes">
 		       			<div class="left-actions">
@@ -38,18 +62,18 @@
 						
 						<div class="progress-box">
 					       	<div class="progress" ng-hide="task.Status=='Finished'">
-					       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*500).toFixed(0)}}px;"></div>
+					       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*450).toFixed(0)}}px;"></div>
 							</div>
 						</div>
 
 			       		<div class="row-3rd">
-			       			<input type="button" ng-click="search_subtitles(task.Name)" value="Subtitles"/>
-			       			<input type="button" ng-click="send_play(task)" value="Play Online" ng-show="task.Status!='Finished'"/>
+			       			<input type="button" ng-click="search_subtitles(task.Name)" value="S"/>
+			       			<input type="button" ng-click="send_play(task)" value="P" ng-show="task.Status!='Finished'"/>
 
-			       			<span ng-hide="task.Status=='Finished'">
+			       			<!-- <span ng-hide="task.Status=='Finished'">
 				       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
 				       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
-			       			</span>
+			       			</span> -->
 
 			       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
 			       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(0)}}KB/s</span>
@@ -73,7 +97,7 @@
 		<form  ng-submit="go()">
 			<div id="start-download" ui-event="{drop:'upload_torrent($event)'}" ondragover="return;">
 				<textarea ui-keypress="{enter: '$event.preventDefault();go();'}" autofocus ng-model="new_url" type="text" id="new-url" placeHolder="Input anything you want"></textarea>
-				<input id="new-task" type="submit" ng-hide="waiting" value="GO"/>
+				<input id="new-task" type="submit" ng-hide="waiting" value="Go"/>
 				<span ng-show="waiting" id="waiting"></span>
 			</div>
 		</form>

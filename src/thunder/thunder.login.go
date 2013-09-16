@@ -24,6 +24,8 @@ func doubleMD5(p string) string {
 var isLogined = false
 
 func Login() error {
+	setCookie("gdriveid", util.ReadConfig("gdriveid"))
+
 	if isLogined {
 		return nil
 	}
@@ -80,18 +82,23 @@ func Login() error {
 
 	log.Print("gdriveid: ", gdriveid)
 
+	setCookie("gdriveid", gdriveid)
+	util.SaveConfig("gdriveid", gdriveid)
+
+	isLogined = true
+
+	log.Println("Thunder login success.")
+	return nil
+}
+
+func setCookie(name, value string) {
 	cookie := http.Cookie{
-		Name:    "gdriveid",
-		Value:   gdriveid,
+		Name:    name,
+		Value:   value,
 		Domain:  "xunlei.com",
 		Expires: time.Now().AddDate(100, 0, 0),
 	}
 	cookies := []*http.Cookie{&cookie}
 	url, _ := url.Parse("http://vip.lixian.xunlei.com")
 	http.DefaultClient.Jar.SetCookies(url, cookies)
-
-	isLogined = true
-
-	log.Println("Thunder login success.")
-	return nil
 }

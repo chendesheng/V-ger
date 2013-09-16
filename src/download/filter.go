@@ -11,61 +11,14 @@ type filter interface {
 	active()
 }
 
-type aFilter struct {
+type basicFilter struct {
 	input  chan *block
 	output chan *block
 	quit   chan bool
 }
 
-func (f *aFilter) connect(next *aFilter) {
+func (f *basicFilter) connect(next *basicFilter) {
 	next.input = f.output
-}
-
-type generateFilter struct {
-	aFilter
-	from        int64
-	to          int64
-	chBlockSize chan int64
-}
-
-func (gf *generateFilter) active() {
-	generateBlock(gf.input, gf.output, gf.chBlockSize, gf.from, gf.to, gf.quit)
-}
-
-type downloadFilter struct {
-	aFilter
-	url string
-}
-
-func (df *downloadFilter) active() {
-	concurrentDownload(df.url, df.input, df.output, df.quit)
-}
-
-type writeFilter struct {
-	aFilter
-	w io.Writer
-}
-
-func (wf *writeFilter) active() {
-	writeOutput(wf.w, wf.input, wf.output, wf.quit)
-}
-
-type progressFilter struct {
-	aFilter
-	t *task.Task
-}
-
-func (pf *progressFilter) active() {
-	handleProgress(pf.input, pf.output, pf.t, pf.quit)
-}
-
-type sortFilter struct {
-	aFilter
-	from int64
-}
-
-func (sf *sortFilter) active() {
-	sortOutput(sf.input, sf.output, sf.quit, sf.from)
 }
 
 func activeFilters(filters []filter) {
@@ -79,56 +32,44 @@ func activeFilters(filters []filter) {
 }
 
 func doDownload(t *task.Task, w io.Writer, from, to int64,
-	maxSpeed int64, quit chan bool) {
+	maxSpeed int64, chMaxSpeed chan int64, quit chan bool) {
 	url := t.URL
-	// for {
-	// 	finalUrl, _, _, err := GetDownloadInfo(url)
-	// 	if err == nil {
-	// 		url = finalUrl
-	// 		break
-	// 	}
-
-	// 	select {
-	// 	case <-quit:
-	// 		return
-	// 	default:
-	// 		time.Sleep(time.Second * 2)
-	// 	}
-	// }
 
 	gf := &generateFilter{
-		aFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan *block), quit},
 		from,
 		to,
-		make(chan int64),
+		maxSpeed,
+		chMaxSpeed,
 	}
 
 	df := &downloadFilter{
-		aFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan *block), quit},
 		url,
+		5,
 	}
 
 	sf := &sortFilter{
-		aFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan *block), quit},
 		from,
 	}
 
 	wf := &writeFilter{
-		aFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan *block), quit},
 		w,
 	}
 
 	pf := &progressFilter{
-		aFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan *block), quit},
 		t,
 	}
 
-	gf.connect(&df.aFilter)
-	lf.connect(&gf.aFilter, &df.aFilter, quit, gf.chBlockSize)
-	df.connect(&sf.aFilter)
-	sf.connect(&wf.aFilter)
-	wf.connect(&pf.aFilter)
-	pf.connect(&gf.aFilter) //circle
+	// gf.connect(&df.basicFilter)
+	go lf.connect(&gf.basicFilter, &df.basicFilter) //will block unless lf is actived
+	df.connect(&sf.basicFilter)
+	sf.connect(&wf.basicFilter)
+	wf.connect(&pf.basicFilter)
+	pf.connect(&gf.basicFilter) //circle
 
 	activeFilters([]filter{gf, lf, df, sf, wf, pf})
 

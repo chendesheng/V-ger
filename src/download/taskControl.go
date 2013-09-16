@@ -12,8 +12,9 @@ import (
 )
 
 type taskControl struct {
-	quit chan bool
-	t    *task.Task
+	quit       chan bool
+	t          *task.Task
+	chMaxSpeed chan int64
 }
 
 func (tc *taskControl) stopDownload() {
@@ -58,28 +59,22 @@ func monitorTask() {
 			if t.Status == "Finished" {
 				delete(taskControls, t.Name)
 
-				if t.Autoshutdown {
-					native.Shutdown(t.Name)
-				} else {
-					go native.SendNotification("V'ger Task Finished", t.Name)
-					task.ResumeNextTask()
+				go native.SendNotification("V'ger Task Finished", t.Name)
+				if _, ok := task.ResumeNextTask(); !ok {
+					if !task.HasDownloadingOrPlaying() {
+						if util.ReadBoolConfig("shutdown-after-finish") {
+							native.Shutdown(t.Name)
+						}
+					}
 				}
 			}
-
-			// if t.LimitSpeed != maxSpeed {
-			// 	maxSpeed = t.LimitSpeed
-			// 	blockSize = maxSpeed
-
-			// 	tc.limitSpeed(maxSpeed)
-			// 	tc.t = t
-			// }
 		} else {
 			if t.Status == "Downloading" {
 				if t.DownloadedSize == 0 {
 					native.SendNotification("V'ger task begin", t.Name)
 				}
 
-				tc := &taskControl{nil, t}
+				tc := &taskControl{nil, t, nil}
 				taskControls[t.Name] = tc
 				go download(tc)
 			}
@@ -110,7 +105,7 @@ func Start() {
 		if t.Status == "Downloading" {
 			hasDownloading = true
 
-			tc := &taskControl{nil, t}
+			tc := &taskControl{nil, t, nil}
 			taskControls[t.Name] = tc
 			go download(tc)
 		}
@@ -134,9 +129,11 @@ func download(tc *taskControl) {
 
 	for t.Status == "Downloading" {
 		tc.quit = make(chan bool)
+		tc.chMaxSpeed = make(chan int64)
 
 		if t.DownloadedSize < t.Size {
-			doDownload(t, f, t.DownloadedSize, t.Size, int64(t.LimitSpeed), tc.quit)
+			doDownload(t, f, t.DownloadedSize, t.Size, int64(util.ReadIntConfig("max-speed")), tc.chMaxSpeed, tc.quit)
+			log.Print("download return")
 		}
 
 		var err error

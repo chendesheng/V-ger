@@ -205,17 +205,28 @@ func limitHandler(w http.ResponseWriter, r *http.Request) {
 	speed, _ := strconv.Atoi(string(input))
 	fmt.Printf("limit speed %dKB/s.\n", speed)
 
+	util.SaveConfig("max-speed", input)
+
 	if err := download.LimitSpeed(int64(speed)); err != nil {
 		writeError(w, err)
 	}
 }
-func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[14:])
+func configHandler(w http.ResponseWriter, r *http.Request) {
+	configs := util.ReadAllConfigs()
+	text, _ := json.Marshal(configs)
+	w.Write([]byte(text))
+}
+func configSimultaneousHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
-	autoshutdown := string(input)
-	fmt.Printf("Autoshutdown task \"%s\" %s.", name, autoshutdown)
+	util.SaveConfig("simultaneous-downloads", string(input))
+}
+func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
+	// name, _ := url.QueryUnescape(r.URL.String()[14:])
+	input, _ := ioutil.ReadAll(r.Body)
 
-	task.SetAutoshutdown(name, autoshutdown == "on")
+	util.SaveConfig("shutdown-after-finish", string(input))
+	// fmt.Printf("Autoshutdown task \"%s\" %s.", name, autoshutdown)
+	// task.SetAutoshutdown(name, autoshutdown == "on")
 }
 
 func progressHandler(ws *websocket.Conn) {
@@ -262,25 +273,7 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 
 	playerPath := config["video-player"]
 
-	ps := exec.Command("ps", "-e", "-opid,comm")
-	output, _ := ps.Output()
-	for i, s := range strings.Split(string(output), "\n") {
-		if i == 0 || len(s) == 0 {
-			continue
-		}
-
-		f := strings.Fields(s)
-		pid, _ := strconv.Atoi(f[0])
-		processPath := f[1]
-
-		if strings.Index(processPath, playerPath) != -1 {
-			log.Print("Kill process: " + processPath)
-
-			p, _ := os.FindProcess(pid)
-			p.Kill()
-			break
-		}
-	}
+	util.KillProcess(playerPath)
 
 	cmd := exec.Command("open", playerPath, "--args", "http://"+config["server"]+"/video/"+name)
 	cmd.Start()
@@ -427,8 +420,10 @@ func Run() {
 
 	http.HandleFunc("/new/", newTaskHandler)
 	http.HandleFunc("/limit/", limitHandler)
+	http.HandleFunc("/config", configHandler)
+	http.HandleFunc("/config/simultaneous", configSimultaneousHandler)
 	http.HandleFunc("/trash/", trashHandler)
-	http.HandleFunc("/autoshutdown/", setAutoShutdownHandler)
+	http.HandleFunc("/autoshutdown", setAutoShutdownHandler)
 	// http.HandleFunc("/queue/", queueHandler)
 
 	http.HandleFunc("/thunder/new", thunderNewHandler)

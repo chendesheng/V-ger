@@ -104,7 +104,7 @@ func Start() {
 		pool.Release()
 		pool = NewNSAutoreleasePool()
 
-		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(0.05),
+		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(0.02),
 			"kCFRunLoopDefaultMode", true)
 
 		app.SendEvent(event)

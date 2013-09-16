@@ -227,12 +227,23 @@ h1,h2 {
 #tasks li {
 	padding: 0px 0;
 }
+h1, h2 {
+	margin: 10px 0;
+}
+#tasks-list {
+	margin-top: 0;
+}
 #tasks-list .task-infoes {
 	padding: 15px 0;
 	height: 50px;
 }
-#tasks-list li:hover {
-	background-color: #fff;
+#tasks-list li .close {
+	/*background-color: #fff;*/
+	display: none;
+}
+#tasks-list li:hover .close {
+	/*background-color: #fff;*/
+	display: block;
 }
 #tasks ul {
 	padding: 0;
@@ -374,7 +385,7 @@ h3 {
 	white-space: nowrap;
 }
 .task-infoes {
-	width: 550px;
+	width: 500px;
 	/*height: 40px;*/
 	padding-left:20px;
 	display: block;
@@ -400,7 +411,7 @@ h3 {
 }
 
 .task-infoes .progress {
-	width: 500px;
+	width: 450px;
 	/*margin: 2px 0 0 0;*/
 	height: 2px;
 	background-color: #383022;
@@ -579,4 +590,17 @@ h3 {
 .Shooter {
 	background: url('/assets/shooter.ico');
 	vertical-align: middle;
+}
+#configs {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	font-size: smaller;
+}
+.row-3rd input[type=button] {
+	font-size: 11px;
+	height: 20px;
+	margin: 0;
+	padding: 0;
+	width: 20px;
 }

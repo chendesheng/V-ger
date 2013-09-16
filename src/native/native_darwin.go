@@ -51,8 +51,10 @@ func SendNotification(title, infoText string) error {
 	// center := NSDefaultUserNotificationCenter()
 	// center.DeliverNotification(notification)
 
+	util.KillProcess("VgerHelper.app")
+
 	wd, _ := os.Getwd()
-	vgerHelper := path.Join(wd, "vgerhelper.app")
+	vgerHelper := path.Join(wd, "VgerHelper.app")
 	cmd := exec.Command("open", vgerHelper, "--args", "notification", util.ReadConfig("server"), title, infoText)
 	if err := cmd.Run(); err != nil {
 		log.Println(err)
@@ -94,8 +96,10 @@ func MoveFileToTrash(dir, name string) error {
 }
 
 func Shutdown(reason string) error {
+	util.KillProcess("VgerHelper.app")
+
 	wd, _ := os.Getwd()
-	vgerHelper := path.Join(wd, "vgerhelper.app")
+	vgerHelper := path.Join(wd, "VgerHelper.app")
 	cmd := exec.Command("open", vgerHelper, "--args", "shutdown", reason)
 	if err := cmd.Run(); err != nil {
 		log.Println(err)

@@ -129,6 +129,7 @@ func GetDownloadingTask() (*Task, bool) {
 func HasDownloadingOrPlaying() bool {
 	for _, t := range GetTasks() {
 		if t.Status == "Downloading" || t.Status == "Playing" {
+			log.Printf("has downloading or playing %v", t)
 			return true
 		}
 	}

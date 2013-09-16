@@ -33,3 +33,14 @@ func ReadIntConfig(key string) (res int) {
 	}
 	return
 }
+
+func ReadBoolConfig(key string) (res bool) {
+	return ReadConfig(key) == "true"
+}
+
+func SaveConfig(name, value string) {
+	ReadAllConfigs()
+	configCache[name] = value
+
+	WriteJson("config.json", configCache)
+}

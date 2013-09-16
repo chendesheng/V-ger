@@ -6,7 +6,17 @@ import (
 	"math"
 	"task"
 	"time"
+	"util"
 )
+
+type progressFilter struct {
+	basicFilter
+	t *task.Task
+}
+
+func (pf *progressFilter) active() {
+	handleProgress(pf.input, pf.output, pf.t, pf.quit)
+}
 
 type segment struct {
 	d time.Duration //takes 'd' time, download 'l' byte
@@ -66,15 +76,17 @@ func (sr *segRing) total() (time.Duration, int64) {
 	return totalDurtion, totalLength
 }
 
-func handleProgress(progress chan *block, output chan *block, t *task.Task, quit <-chan bool) {
+func handleProgress(progress chan *block, output chan *block, t *task.Task, quit chan bool) {
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 
 	timer := time.NewTicker(time.Millisecond * 1000)
 
+	taskRestartTimeout := time.Duration(util.ReadIntConfig("task-restart-timeout")) * time.Second
+
 	speed := float64(0)
-	part := int64(0)
 	sr := newSegRing(40)
 
+	lastTotal := total
 	for {
 		select {
 		case b, ok := <-progress:
@@ -88,7 +100,6 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 
 			length := b.to - b.from
 			total += length
-			part += length
 
 			if output != nil {
 				go func() {
@@ -100,7 +111,6 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 				}()
 			}
 			sr.add(length)
-
 		case <-timer.C:
 			elapsedTime += time.Millisecond * 1000
 
@@ -115,6 +125,12 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 			if total == size {
 				fmt.Println("progress return")
 				return
+			}
+		case <-time.After(taskRestartTimeout):
+			if lastTotal != total {
+				lastTotal = total
+			} else {
+				close(quit)
 			}
 		case <-quit:
 			fmt.Println("progress quit")

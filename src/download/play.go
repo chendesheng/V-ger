@@ -24,5 +24,5 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 
 	play_quit = make(chan bool)
 
-	doDownload(t, w, from, to, 0, play_quit)
+	doDownload(t, w, from, to, 0, nil, play_quit)
 }
