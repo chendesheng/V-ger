@@ -220,7 +220,21 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 }
 func configSimultaneousHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
-	util.SaveConfig("simultaneous-downloads", string(input))
+	cnt, _ := strconv.Atoi(string(input))
+	if cnt > 0 {
+		oldcnt := util.ReadIntConfig("simultaneous-downloads")
+		for i := cnt; i < oldcnt; i++ {
+			task.QueueDownloadingTask()
+		}
+
+		for i := oldcnt; i < cnt; i++ {
+			task.ResumeNextTask()
+		}
+
+		util.SaveConfig("simultaneous-downloads", string(input))
+	} else {
+		writeError(w, fmt.Errorf("Simultaneous must greater than zero."))
+	}
 }
 func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 	// name, _ := url.QueryUnescape(r.URL.String()[14:])

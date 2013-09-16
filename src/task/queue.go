@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"log"
 	// "native"
 	"time"
 	"util"
@@ -104,4 +105,25 @@ func numOfDownloadingTasks() int {
 	}
 	fmt.Println("num of downloading tasks ", n)
 	return n
+}
+
+func QueueDownloadingTask() error {
+	tasks := GetTasks()
+	log.Print(tasks)
+
+	var latestDownloadTask *Task
+	startTime := (time.Time{}).Unix()
+	for _, t := range tasks {
+		if t.Status == "Downloading" && t.StartTime > startTime {
+			startTime = t.StartTime
+			latestDownloadTask = t
+		}
+	}
+	if latestDownloadTask != nil {
+		latestDownloadTask.Status = "Queued"
+		log.Print("2queue task ", latestDownloadTask.Name)
+		return SaveTask(latestDownloadTask)
+	}
+
+	return nil
 }

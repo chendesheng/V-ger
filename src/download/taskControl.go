@@ -48,7 +48,8 @@ func monitorTask() {
 		if tc, ok := taskControls[t.Name]; ok {
 			// log.Printf("monitor task %v\n", t)
 
-			if t.Status == "Stopped" {
+			if t.Status == "Stopped" || t.Status == "Queued" {
+				log.Print("queued task ", t.Name)
 				tc.stopDownload()
 				delete(taskControls, t.Name)
 			}
