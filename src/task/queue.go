@@ -9,11 +9,7 @@ import (
 func StartNewTask(name string, url string, size int64) error {
 	t := newTask(name, url, size)
 
-	if numOfDownloadingTasks() < 2 {
-		t.Status = "Downloading"
-	} else {
-		t.Status = "Queued"
-	}
+	startOrQueueTask(t)
 
 	return SaveTask(t)
 }
@@ -27,16 +23,20 @@ func ResumeTask(name string) error {
 	} else if t.Status == "Downloading" {
 		return nil
 	} else {
-		if numOfDownloadingTasks() < util.ReadIntConfig("simultaneous-downloads") {
-			t.Status = "Downloading"
-		} else {
-			t.Status = "Queued"
-		}
+		startOrQueueTask(t)
 		t.Speed = 0
 		return SaveTask(t)
 	}
 
 	return nil
+}
+
+func startOrQueueTask(t *Task) {
+	if numOfDownloadingTasks() < util.ReadIntConfig("simultaneous-downloads") {
+		t.Status = "Downloading"
+	} else {
+		t.Status = "Queued"
+	}
 }
 
 func DeleteTask(name string) error {

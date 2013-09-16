@@ -58,7 +58,11 @@
 			       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
 			       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
 			       		</div>
-		       			<div><span class="name"><span ng-show="task.Status=='Queued'">[Waiting] </span><a ng-click="$event.preventDefault();send_open(task);" href="{{task.URL}}">{{task.Name}}</a></span></div>
+		       			<div>
+		       				<div class="name">
+		       					<span ng-show="task.Status=='Queued'">[Waiting] </span><a title="{{task.Name}}" ng-click="$event.preventDefault();send_open(task);" href="{{task.URL}}">{{task.Name}}</a>
+		       				</div>
+		       			</div>
 						
 						<div class="progress-box">
 					       	<div class="progress" ng-hide="task.Status=='Finished'">

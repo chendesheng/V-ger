@@ -511,6 +511,11 @@ h3 {
 }
 .name {
 	cursor: default;
+	overflow: hidden;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 450px;
 }
 .name a {
 	color: inherit;
