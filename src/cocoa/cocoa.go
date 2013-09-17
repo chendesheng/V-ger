@@ -9,8 +9,9 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"sync"
 	"task"
-	"time"
+	// "time"
 	"util"
 )
 
@@ -38,51 +39,48 @@ func (delegate *AppDelegate) MenuClick(sender uintptr) {
 	}
 }
 
-// func (delegate *AppDelegate) DidActivateNotification(notification objc.Object) {
-// 	log.Print("DidActivateNotification")
-// }
-
-type uiCommand struct {
-	name      string
-	arguments interface{}
+type statusItemData struct {
+	sync.RWMutex
+	title   string
+	tooltip string
 }
 
-func timerStart(chUI chan uiCommand) {
+var currentStatusItem statusItemData = statusItemData{sync.RWMutex{}, "V'ger", "Speed is fun!"}
+
+func timerStart() {
 	watch := make(chan *task.Task)
 
 	log.Println("status bar watch task change: ", watch)
 	task.WatchChange(watch)
 
 	for t := range watch {
-		var properties []string
+		var title string
+		var tooltip string
 		if t.Status == "Downloading" {
-			properties = []string{fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
-				float64(t.DownloadedSize)/float64(t.Size)*100.0),
-				fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)}
+			title = fmt.Sprintf("%s %.1f%%", util.CleanMovieName(t.Name),
+				float64(t.DownloadedSize)/float64(t.Size)*100.0)
+			tooltip = fmt.Sprintf("%.2f KB/s %s", t.Speed, t.Est)
 		} else if t.Status == "Playing" {
-			properties = []string{fmt.Sprintf("%s %.1f KB/s", util.CleanMovieName(t.Name), t.Speed), ""}
+			title = fmt.Sprintf("%s %.1f KB/s", util.CleanMovieName(t.Name), t.Speed)
+			tooltip = ""
 		} else {
 			if !task.HasDownloadingOrPlaying() {
-				properties = []string{"V'ger"}
+				title = "V'ger"
+				tooltip = "Speed is fun!"
 			}
 		}
 
-		chUI <- uiCommand{"statusItem", properties}
+		currentStatusItem.Lock()
+		currentStatusItem.title = title
+		currentStatusItem.tooltip = tooltip
+		currentStatusItem.Unlock()
 	}
 }
-
-var chUI chan uiCommand
-
-// func SendNotification(title string, infoText string) {
-// 	chUI <- uiCommand{"sendNotification", []string{title, infoText}}
-// }
 
 func Start() {
 	runtime.LockOSThread()
 
 	pool := NewNSAutoreleasePool()
-
-	// InstallNSBundleHook()
 
 	delegate := objc.GetClass("GOAppDelegate").Alloc().Init()
 
@@ -94,67 +92,27 @@ func Start() {
 	statusItem.SetHighlightMode(true)
 	statusItem.SetTarget(delegate.Pointer())
 	statusItem.SetAction(objc.GetSelector("menuClick:"))
-	statusItem.SetTitle("V'ger")
+	statusItem.SetTitle(currentStatusItem.title)
+	statusItem.SetToolTip(currentStatusItem.tooltip)
 
-	chUI = make(chan uiCommand)
-
-	go timerStart(chUI)
+	go timerStart()
 
 	for {
 		pool.Release()
 		pool = NewNSAutoreleasePool()
 
-		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(0.02),
+		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(1),
 			"kCFRunLoopDefaultMode", true)
 
 		app.SendEvent(event)
-		// app.UpdateWindows()
 
-		t := time.After(time.Millisecond * 100)
-		select {
-		case cmd := <-chUI:
-			switch cmd.name {
-			case "statusItem":
-				prop := cmd.arguments.([]string)
-				if len(prop) == 0 {
-					break
-				}
+		currentStatusItem.RLock()
+		title := currentStatusItem.title
+		tooltip := currentStatusItem.tooltip
+		currentStatusItem.RUnlock()
 
-				statusItem.SetTitle(prop[0])
-
-				if len(prop) > 1 {
-					statusItem.SetToolTip(prop[1])
-				} else {
-					statusItem.SetToolTip("")
-				}
-				break
-			// case "sendNotification":
-			// 	args := cmd.arguments.([]string)
-			// 	title := args[0]
-			// 	infoText := args[1]
-
-			// 	notification := NSUserNotification{objc.GetClass("NSUserNotification").Alloc().Init()}
-			// 	notification.SetTitle(title)
-			// 	notification.SetInformativeText(infoText)
-			// 	notification.SetSoundName(NSUserNotificationDefaultSoundName)
-			// 	notification.SetHasActionButton(true)
-			// 	notification.SetActionButtonTitle("Open")
-
-			// 	center := NSDefaultUserNotificationCenter()
-			// 	center.DeliverNotification(notification)
-
-			// 	break
-			// case "trashFile":
-			// 	prop := cmd.arguments.([]string)
-			// 	NSTrashFile(prop[0], prop[1])
-			default:
-				log.Printf("unknown cmd %v", cmd)
-				break
-			}
-			break
-		case <-t:
-			break
-		}
+		statusItem.SetTitle(title)
+		statusItem.SetToolTip(tooltip)
 	}
 
 	statusItem.Release()

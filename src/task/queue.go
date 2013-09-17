@@ -2,8 +2,6 @@ package task
 
 import (
 	"fmt"
-	"log"
-	// "native"
 	"time"
 	"util"
 )
@@ -109,7 +107,6 @@ func numOfDownloadingTasks() int {
 
 func QueueDownloadingTask() error {
 	tasks := GetTasks()
-	log.Print(tasks)
 
 	var latestDownloadTask *Task
 	startTime := (time.Time{}).Unix()
@@ -121,7 +118,7 @@ func QueueDownloadingTask() error {
 	}
 	if latestDownloadTask != nil {
 		latestDownloadTask.Status = "Queued"
-		log.Print("2queue task ", latestDownloadTask.Name)
+
 		return SaveTask(latestDownloadTask)
 	}
 
