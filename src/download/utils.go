@@ -53,7 +53,7 @@ func getFileInfo(header http.Header) (name string, size int64) {
 	// log.Printf("%v\n", header)
 	if len(header["Content-Disposition"]) > 0 {
 		contentDisposition := header["Content-Disposition"][0]
-		regexFile := regexp.MustCompile(`filename="([^"]+)"`)
+		regexFile := regexp.MustCompile(`filename="?([^"]+)"?`)
 
 		if match := regexFile.FindStringSubmatch(contentDisposition); len(match) > 1 {
 			name = match[1]
