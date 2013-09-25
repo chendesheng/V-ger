@@ -222,12 +222,14 @@ func configSimultaneousHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
 	cnt, _ := strconv.Atoi(string(input))
 	if cnt > 0 {
-		oldcnt := util.ReadIntConfig("simultaneous-downloads")
-		for i := cnt; i < oldcnt; i++ {
+		// oldcnt := util.ReadIntConfig("simultaneous-downloads")
+		downloadingCnt := task.NumOfDownloadingTasks()
+
+		for i := cnt; i < downloadingCnt; i++ {
 			task.QueueDownloadingTask()
 		}
 
-		for i := oldcnt; i < cnt; i++ {
+		for i := downloadingCnt; i < cnt; i++ {
 			task.ResumeNextTask()
 		}
 
