@@ -2,7 +2,7 @@ package download
 
 import (
 	"fmt"
-	// "log"
+	"log"
 	"math"
 	"task"
 	"time"
@@ -130,6 +130,7 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 			if lastTotal != total {
 				lastTotal = total
 			} else {
+				log.Print("close quit after timeout")
 				close(quit)
 			}
 		case <-quit:

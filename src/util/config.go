@@ -44,3 +44,13 @@ func SaveConfig(name, value string) {
 
 	WriteJson("config.json", configCache)
 }
+
+func ToggleBoolConfig(name string) bool {
+	if ReadBoolConfig(name) {
+		SaveConfig(name, "false")
+		return false
+	} else {
+		SaveConfig(name, "true")
+		return true
+	}
+}

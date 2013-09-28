@@ -12,14 +12,14 @@ import (
 
 type writeFilter struct {
 	basicFilter
-	w io.Writer
+	w io.WriterAt
 }
 
 func (wf *writeFilter) active() {
 	writeOutput(wf.w, wf.input, wf.output, wf.quit)
 }
 
-func writeOutput(w io.Writer, input <-chan *block, output chan *block, quit chan bool) {
+func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, quit chan bool) {
 	pathErrNotifyTimes := 0
 	for {
 		select {
@@ -31,7 +31,7 @@ func writeOutput(w io.Writer, input <-chan *block, output chan *block, quit chan
 			}
 			for {
 
-				_, err := w.Write(b.data)
+				_, err := w.WriteAt(b.data, b.from)
 				b.data = nil
 
 				if err == nil {

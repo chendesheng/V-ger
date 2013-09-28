@@ -1,7 +1,7 @@
 package native
 
 import (
-	"cocoa"
+	// "cocoa"
 	"strings"
 	// "encoding/utf8"
 	// "github.com/mkrautz/objc"
@@ -35,7 +35,6 @@ func init() {
 // 	uiCh = ch
 // }
 func Start() {
-	cocoa.Start()
 }
 
 func SendNotification(title, infoText string) error {

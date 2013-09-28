@@ -24,5 +24,13 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 
 	play_quit = make(chan bool)
 
-	doDownload(t, w, from, to, 0, nil, play_quit)
+	doDownload(t, writerAtWrap{w}, from, to, 0, nil, play_quit)
+} 
+
+type writerAtWrap struct {
+	w io.Writer
+}
+
+func (w writerAtWrap) WriteAt(p []byte, off int64) (int, error) {
+	return w.w.Write(p)
 }

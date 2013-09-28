@@ -32,7 +32,7 @@ func ResumeTask(name string) error {
 }
 
 func startOrQueueTask(t *Task) bool {
-	if numOfDownloadingTasks() < util.ReadIntConfig("simultaneous-downloads") {
+	if NumOfDownloadingTasks() < util.ReadIntConfig("simultaneous-downloads") {
 		t.Status = "Downloading"
 		return true
 	} else {
@@ -94,7 +94,7 @@ func LimitSpeed(name string, speed int64) error {
 	}
 }
 
-func numOfDownloadingTasks() int {
+func NumOfDownloadingTasks() int {
 	n := 0
 	for _, t := range GetTasks() {
 		if t.Status == "Downloading" {

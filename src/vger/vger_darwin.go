@@ -1,13 +1,13 @@
 package main
 
 import (
+	"cocoa"
 	"download"
-	"native"
 	"website"
 )
 
 func main() {
 	go download.Start()
 	go website.Run()
-	native.Start()
+	cocoa.Start()
 }

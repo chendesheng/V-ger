@@ -31,7 +31,7 @@ func activeFilters(filters []filter) {
 	filters[lastIndex].active()
 }
 
-func doDownload(t *task.Task, w io.Writer, from, to int64,
+func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	maxSpeed int64, chMaxSpeed chan int64, quit chan bool) {
 	url := t.URL
 
