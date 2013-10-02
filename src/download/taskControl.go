@@ -60,7 +60,7 @@ func monitorTask() {
 			if t.Status == "Finished" {
 				delete(taskControls, t.Name)
 
-				go native.SendNotification("V'ger Task Finished", t.Name)
+				native.SendNotification("V'ger Task Finished", t.Name)
 				if _, ok := task.ResumeNextTask(); !ok {
 					if !task.HasDownloadingOrPlaying() {
 						if util.ReadBoolConfig("shutdown-after-finish") {

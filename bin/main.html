@@ -1,5 +1,6 @@
 <html ng-app="vger">
 <head>
+	<meta name="viewport" content="width=600, user-scalable=false;">
 	<title>V'ger</title>
 	<link href="/assets/angular-ui.css" rel="stylesheet" type="text/css"></link>
 	<link href="/assets/style.css" rel="stylesheet" type="text/css">
@@ -13,44 +14,44 @@
 
 	<div id="tasks">
 
-		<div class="box-tasks-list">
+		<div class="box-tasks-list" style="-webkit-overflow-scrolling:touch">
  			<h1>V'ger</h1>
 			<h2>Speed is Fun!</h2> 
-			<ul id="tasks-list">
-			<li>
-				
-	<div id="configs" style="display:none;">
-		<ul>
-			<li>
-				<label for="">Speed</label>
-				<select  ng-model="config['max-speed']" class="action-limit" ui-event="{change:'send_limit($event)'}">
-	   				<option value="0">No limit</option>
-	   				<option value="50">50K</option>
-	   				<option value="100">100K</option>
-	   				<option value="150">150K</option>
-	   				<option value="200">200K</option>
-	   				<option value="300">300K</option>
-	   				<option value="500">500K</option>
-				</select>
-			</li>
-			<li>
-				<label for="">Simultaneous</label>
-				<select ng-model="config['simultaneous-downloads']" ui-event="{change:'send_simultaneous_downloads($event)'}">
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="3">3</option>
-					<option value="4">4</option>
-					<option value="5">5</option>
-				</select>
-			</li>
-			<li>
-				<label for="">Shutdown after finish</label>
-				<input type="checkbox" ng-model="config['shutdown-after-finish']" ng-click="set_autoshutdown()">
-			</li>
-		</ul>
-	</div>
-	
-			</li>
+			<ul id="tasks-list" >
+				<li>
+								
+					<div id="configs" style="display:none;">
+						<ul>
+							<li>
+								<label for="">Speed</label>
+								<select  ng-model="config['max-speed']" class="action-limit" ui-event="{change:'send_limit($event)'}">
+					   				<option value="0">No limit</option>
+					   				<option value="50">50K</option>
+					   				<option value="100">100K</option>
+					   				<option value="150">150K</option>
+					   				<option value="200">200K</option>
+					   				<option value="300">300K</option>
+					   				<option value="500">500K</option>
+								</select>
+							</li>
+							<li>
+								<label for="">Simultaneous</label>
+								<select ng-model="config['simultaneous-downloads']" ui-event="{change:'send_simultaneous_downloads($event)'}">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
+									<option value="5">5</option>
+								</select>
+							</li>
+							<li>
+								<label for="">Shutdown after finish</label>
+								<input type="checkbox" ng-model="config['shutdown-after-finish']" ng-click="set_autoshutdown()">
+							</li>
+						</ul>
+					</div>
+		
+				</li>
 		       <li ng-repeat="task in tasks | orderBy:'StartTime':1" class="task">
 		       		<div class="task-infoes">
 		       			<div class="left-actions">

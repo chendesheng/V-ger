@@ -113,8 +113,11 @@ func parseNewlyCreateTask(text string) map[string]interface{} {
 		panic(fmt.Errorf("Parse unexpected response: %s", text))
 	}
 }
-func parseTaskCheck(text string) (cid string, gcid string, size string, t string) {
-	args := parseJsFuncArgs(text)
+func parseTaskCheck(text string) (cid string, gcid string, size string, t string, err error) {
+	args, err := parseJsFuncArgs(text)
+	if err != nil {
+		return "", "", "", "", err
+	}
 
 	cid = args[0]
 	gcid = args[1]
@@ -123,13 +126,21 @@ func parseTaskCheck(text string) (cid string, gcid string, size string, t string
 
 	return
 }
-func parseJsFuncArgs(text string) []string {
+func parseJsFuncArgs(text string) ([]string, error) {
 	regex, _ := regexp.Compile(`\(([^)]+)\)`)
-	args := strings.Split(regex.FindStringSubmatch(text)[1], ",")
+	res := regex.FindStringSubmatch(text)
+	if len(res) < 2 {
+		if len(text) == 0 {
+			text = "<empty>"
+		}
+		return nil, fmt.Errorf("Parse unexpected response: %s", text)
+	}
+
+	args := strings.Split(res[1], ",")
 
 	trimStringSlice(&args, " '")
 
-	return args
+	return args, nil
 }
 func trimStringSlice(strs *[]string, cutset string) {
 	for i, s := range *strs {

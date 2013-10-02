@@ -122,7 +122,11 @@ func taskCommit(userId string, taskURL string, taskType int) error {
 		return err
 	}
 
-	cid, gcid, size, t := parseTaskCheck(text)
+	cid, gcid, size, t, err := parseTaskCheck(text)
+	if err != nil {
+		log.Print(err)
+		return err
+	}
 	// if cid == "" {
 	// 	return fmt.Errorf("Commit task error, try again later")
 	// }

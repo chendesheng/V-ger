@@ -8,6 +8,14 @@ import (
 func CleanMovieName(name string) string {
 	return cleanMovieName2(name)
 }
+func CleanMovieNameWithMaxLen(name string, maxLen int) string {
+	name = cleanMovieName2(name)
+	if len(name) < maxLen {
+		return name
+	} else {
+		return name[:maxLen]
+	}
+}
 
 var regCleanName *regexp.Regexp = regexp.MustCompile("(?i)720p|[[]720p[]]|x[.]264|BluRay|DTS|x264|1080p|H[.]264|AC3|[.]ENG|[.]BD|Rip|H264|HDTV|-IMMERSE|-DIMENSION|xvid|[[]PublicHD[]]|[.]Rus|Chi_Eng|DD5[.]1|HR-HDTV|[.]AAC|[0-9]+x[0-9]+|blu-ray|Remux|dxva|dvdscr|WEB-DL")
 

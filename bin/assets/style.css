@@ -191,7 +191,7 @@ input[type=text], textarea {
 	/*border: solid 1px #797979 !important;*/
 	width: 100%;
 	border: none;
-	height:100px;
+	height:70px;
 	resize:none;
 	spellcheck:false;
 	border-top: solid 1px #424242;
@@ -199,12 +199,17 @@ input[type=text], textarea {
 	outline: none;
 	padding: 10px;
 }
-
+@media screen and (max-device-width: 600px){
+  body{
+    /*-webkit-text-size-adjust: 120%;*/
+    font-size: 20px;
+  }
+}
 #new-task {
 	font-size: 1.2em;
 	position: absolute;
 	right: 45px;
-	top: 35px;
+	top: 20px;
 	height: 29px;
 	display: block;
 }
@@ -253,7 +258,7 @@ h1, h2 {
 }
 #tasks {
 	/*padding-bottom: 105px;*/
-	padding-bottom: 100px;
+	padding-bottom: 70px;
 	height:100%;
 	width:100%;
 	box-sizing: border-box;
@@ -368,8 +373,8 @@ h3 {
 	height: 29px;
 	display: inline-block;
 	position: absolute;
-	top:35px;
-	right:55px;
+	top: 20px;
+	right: 55px;
 }
 .queued {
 	background: url('/assets/queued.png') no-repeat;
