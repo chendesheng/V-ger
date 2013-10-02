@@ -18,3 +18,4 @@ backup
 test
 *.safariextz
 gdb
+client
