@@ -9,7 +9,7 @@ import (
 	"net/http"
 	// "os"
 	// "path/filepath"
-	"regexp"
+	// "regexp"
 	// "runtime"
 	"strings"
 	"time"
@@ -44,13 +44,12 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 		name = getFileName(finalUrl)
 	}
 
-	reg := regexp.MustCompile("[/]")
-	name = reg.ReplaceAllString(name, "")
+	name = strings.Replace(name, "/", "|", -1)
+	name = strings.Replace(name, "\\", "|", -1)
 	name = strings.TrimLeft(name, ".")
 
 	if name == "" && size == 0 {
 		err = fmt.Errorf("Broken resource")
 	}
-
 	return
 }
