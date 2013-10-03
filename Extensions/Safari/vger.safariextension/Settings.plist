@@ -4,7 +4,7 @@
 <array>
 	<dict>
 		<key>DefaultValue</key>
-		<string>http://localhost:9527</string>
+		<string>http://192.168.1.111:9527</string>
 		<key>Key</key>
 		<string>server</string>
 		<key>Title</key>

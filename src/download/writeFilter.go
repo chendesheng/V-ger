@@ -30,11 +30,12 @@ func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, quit ch
 				return
 			}
 			for {
-
 				_, err := w.WriteAt(b.data, b.from)
-				b.data = nil
 
 				if err == nil {
+					pathErrNotifyTimes = 0
+
+					b.data = nil
 					select {
 					case output <- b:
 						break
@@ -43,16 +44,13 @@ func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, quit ch
 					}
 					break
 				} else if perr, ok := err.(*os.PathError); ok {
-					log.Print(err)
-
 					if pathErrNotifyTimes == 0 { //only report once
 						native.SendNotification("Error write "+filepath.Base(perr.Path), perr.Err.Error())
 					}
-					pathErrNotifyTimes++
-					if pathErrNotifyTimes > 100 {
-						log.Fatal(err)
-						return
+					if pathErrNotifyTimes%300 == 0 { //write error log every 10 mins
+						log.Print(err)
 					}
+					pathErrNotifyTimes++
 
 					select {
 					case <-quit:
