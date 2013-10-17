@@ -1,0 +1,303 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B02E4F821805AD3C0077FDF8 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B02E4F811805AD3C0077FDF8 /* Cocoa.framework */; };
+		B02E4F8C1805AD3C0077FDF8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B02E4F8A1805AD3C0077FDF8 /* InfoPlist.strings */; };
+		B02E4F8E1805AD3C0077FDF8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B02E4F8D1805AD3C0077FDF8 /* main.m */; };
+		B02E4F921805AD3C0077FDF8 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = B02E4F901805AD3C0077FDF8 /* Credits.rtf */; };
+		B02E4F951805AD3C0077FDF8 /* VgerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B02E4F941805AD3C0077FDF8 /* VgerAppDelegate.m */; };
+		B02E4F981805AD3C0077FDF8 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B02E4F961805AD3C0077FDF8 /* MainMenu.xib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B02E4F7D1805AD3C0077FDF8 /* V'ger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "V'ger.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B02E4F811805AD3C0077FDF8 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		B02E4F841805AD3C0077FDF8 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		B02E4F851805AD3C0077FDF8 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		B02E4F861805AD3C0077FDF8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		B02E4F891805AD3C0077FDF8 /* V'ger-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "V'ger-Info.plist"; sourceTree = "<group>"; };
+		B02E4F8B1805AD3C0077FDF8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B02E4F8D1805AD3C0077FDF8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B02E4F8F1805AD3C0077FDF8 /* V'ger-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "V'ger-Prefix.pch"; sourceTree = "<group>"; };
+		B02E4F911805AD3C0077FDF8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		B02E4F931805AD3C0077FDF8 /* VgerAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VgerAppDelegate.h; sourceTree = "<group>"; };
+		B02E4F941805AD3C0077FDF8 /* VgerAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VgerAppDelegate.m; sourceTree = "<group>"; };
+		B02E4F971805AD3C0077FDF8 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B02E4F7A1805AD3C0077FDF8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B02E4F821805AD3C0077FDF8 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B02E4F721805AD3C0077FDF8 = {
+			isa = PBXGroup;
+			children = (
+				B02E4F871805AD3C0077FDF8 /* V'ger */,
+				B02E4F801805AD3C0077FDF8 /* Frameworks */,
+				B02E4F7E1805AD3C0077FDF8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B02E4F7E1805AD3C0077FDF8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B02E4F7D1805AD3C0077FDF8 /* V'ger.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B02E4F801805AD3C0077FDF8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B02E4F811805AD3C0077FDF8 /* Cocoa.framework */,
+				B02E4F831805AD3C0077FDF8 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B02E4F831805AD3C0077FDF8 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B02E4F841805AD3C0077FDF8 /* AppKit.framework */,
+				B02E4F851805AD3C0077FDF8 /* CoreData.framework */,
+				B02E4F861805AD3C0077FDF8 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		B02E4F871805AD3C0077FDF8 /* V'ger */ = {
+			isa = PBXGroup;
+			children = (
+				B02E4F931805AD3C0077FDF8 /* VgerAppDelegate.h */,
+				B02E4F941805AD3C0077FDF8 /* VgerAppDelegate.m */,
+				B02E4F961805AD3C0077FDF8 /* MainMenu.xib */,
+				B02E4F881805AD3C0077FDF8 /* Supporting Files */,
+			);
+			path = "V'ger";
+			sourceTree = "<group>";
+		};
+		B02E4F881805AD3C0077FDF8 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				B02E4F891805AD3C0077FDF8 /* V'ger-Info.plist */,
+				B02E4F8A1805AD3C0077FDF8 /* InfoPlist.strings */,
+				B02E4F8D1805AD3C0077FDF8 /* main.m */,
+				B02E4F8F1805AD3C0077FDF8 /* V'ger-Prefix.pch */,
+				B02E4F901805AD3C0077FDF8 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B02E4F7C1805AD3C0077FDF8 /* V'ger */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B02E4F9B1805AD3C0077FDF8 /* Build configuration list for PBXNativeTarget "V'ger" */;
+			buildPhases = (
+				B02E4F791805AD3C0077FDF8 /* Sources */,
+				B02E4F7A1805AD3C0077FDF8 /* Frameworks */,
+				B02E4F7B1805AD3C0077FDF8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "V'ger";
+			productName = "V'ger";
+			productReference = B02E4F7D1805AD3C0077FDF8 /* V'ger.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B02E4F741805AD3C0077FDF8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = Vger;
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = me;
+			};
+			buildConfigurationList = B02E4F771805AD3C0077FDF8 /* Build configuration list for PBXProject "V'ger" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = B02E4F721805AD3C0077FDF8;
+			productRefGroup = B02E4F7E1805AD3C0077FDF8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B02E4F7C1805AD3C0077FDF8 /* V'ger */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B02E4F7B1805AD3C0077FDF8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B02E4F8C1805AD3C0077FDF8 /* InfoPlist.strings in Resources */,
+				B02E4F921805AD3C0077FDF8 /* Credits.rtf in Resources */,
+				B02E4F981805AD3C0077FDF8 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B02E4F791805AD3C0077FDF8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B02E4F8E1805AD3C0077FDF8 /* main.m in Sources */,
+				B02E4F951805AD3C0077FDF8 /* VgerAppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B02E4F8A1805AD3C0077FDF8 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B02E4F8B1805AD3C0077FDF8 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		B02E4F901805AD3C0077FDF8 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B02E4F911805AD3C0077FDF8 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		B02E4F961805AD3C0077FDF8 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B02E4F971805AD3C0077FDF8 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		B02E4F991805AD3C0077FDF8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B02E4F9A1805AD3C0077FDF8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		B02E4F9C1805AD3C0077FDF8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "V'ger/V'ger-Prefix.pch";
+				INFOPLIST_FILE = "V'ger/V'ger-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		B02E4F9D1805AD3C0077FDF8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "V'ger/V'ger-Prefix.pch";
+				INFOPLIST_FILE = "V'ger/V'ger-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B02E4F771805AD3C0077FDF8 /* Build configuration list for PBXProject "V'ger" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B02E4F991805AD3C0077FDF8 /* Debug */,
+				B02E4F9A1805AD3C0077FDF8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B02E4F9B1805AD3C0077FDF8 /* Build configuration list for PBXNativeTarget "V'ger" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B02E4F9C1805AD3C0077FDF8 /* Debug */,
+				B02E4F9D1805AD3C0077FDF8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B02E4F741805AD3C0077FDF8 /* Project object */;
+}

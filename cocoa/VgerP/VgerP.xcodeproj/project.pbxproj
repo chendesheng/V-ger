@@ -1,0 +1,303 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B0F8F50E18057DD900BE1AB7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0F8F50D18057DD900BE1AB7 /* Cocoa.framework */; };
+		B0F8F51818057DD900BE1AB7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0F8F51618057DD900BE1AB7 /* InfoPlist.strings */; };
+		B0F8F51A18057DD900BE1AB7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B0F8F51918057DD900BE1AB7 /* main.m */; };
+		B0F8F51E18057DD900BE1AB7 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = B0F8F51C18057DD900BE1AB7 /* Credits.rtf */; };
+		B0F8F52118057DD900BE1AB7 /* VgerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B0F8F52018057DD900BE1AB7 /* VgerAppDelegate.m */; };
+		B0F8F52418057DD900BE1AB7 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0F8F52218057DD900BE1AB7 /* MainMenu.xib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B0F8F50918057DD900BE1AB7 /* VgerP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VgerP.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0F8F50D18057DD900BE1AB7 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		B0F8F51018057DD900BE1AB7 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		B0F8F51118057DD900BE1AB7 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		B0F8F51218057DD900BE1AB7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		B0F8F51518057DD900BE1AB7 /* VgerP-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VgerP-Info.plist"; sourceTree = "<group>"; };
+		B0F8F51718057DD900BE1AB7 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B0F8F51918057DD900BE1AB7 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B0F8F51B18057DD900BE1AB7 /* VgerP-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VgerP-Prefix.pch"; sourceTree = "<group>"; };
+		B0F8F51D18057DD900BE1AB7 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		B0F8F51F18057DD900BE1AB7 /* VgerAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VgerAppDelegate.h; sourceTree = "<group>"; };
+		B0F8F52018057DD900BE1AB7 /* VgerAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VgerAppDelegate.m; sourceTree = "<group>"; };
+		B0F8F52318057DD900BE1AB7 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B0F8F50618057DD900BE1AB7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0F8F50E18057DD900BE1AB7 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B0F8F4FE18057DD900BE1AB7 = {
+			isa = PBXGroup;
+			children = (
+				B0F8F51318057DD900BE1AB7 /* VgerP */,
+				B0F8F50C18057DD900BE1AB7 /* Frameworks */,
+				B0F8F50A18057DD900BE1AB7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B0F8F50A18057DD900BE1AB7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B0F8F50918057DD900BE1AB7 /* VgerP.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B0F8F50C18057DD900BE1AB7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B0F8F50D18057DD900BE1AB7 /* Cocoa.framework */,
+				B0F8F50F18057DD900BE1AB7 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B0F8F50F18057DD900BE1AB7 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B0F8F51018057DD900BE1AB7 /* AppKit.framework */,
+				B0F8F51118057DD900BE1AB7 /* CoreData.framework */,
+				B0F8F51218057DD900BE1AB7 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		B0F8F51318057DD900BE1AB7 /* VgerP */ = {
+			isa = PBXGroup;
+			children = (
+				B0F8F51F18057DD900BE1AB7 /* VgerAppDelegate.h */,
+				B0F8F52018057DD900BE1AB7 /* VgerAppDelegate.m */,
+				B0F8F52218057DD900BE1AB7 /* MainMenu.xib */,
+				B0F8F51418057DD900BE1AB7 /* Supporting Files */,
+			);
+			path = VgerP;
+			sourceTree = "<group>";
+		};
+		B0F8F51418057DD900BE1AB7 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				B0F8F51518057DD900BE1AB7 /* VgerP-Info.plist */,
+				B0F8F51618057DD900BE1AB7 /* InfoPlist.strings */,
+				B0F8F51918057DD900BE1AB7 /* main.m */,
+				B0F8F51B18057DD900BE1AB7 /* VgerP-Prefix.pch */,
+				B0F8F51C18057DD900BE1AB7 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B0F8F50818057DD900BE1AB7 /* VgerP */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B0F8F52718057DD900BE1AB7 /* Build configuration list for PBXNativeTarget "VgerP" */;
+			buildPhases = (
+				B0F8F50518057DD900BE1AB7 /* Sources */,
+				B0F8F50618057DD900BE1AB7 /* Frameworks */,
+				B0F8F50718057DD900BE1AB7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VgerP;
+			productName = VgerP;
+			productReference = B0F8F50918057DD900BE1AB7 /* VgerP.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B0F8F50018057DD900BE1AB7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = Vger;
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = me;
+			};
+			buildConfigurationList = B0F8F50318057DD900BE1AB7 /* Build configuration list for PBXProject "VgerP" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = B0F8F4FE18057DD900BE1AB7;
+			productRefGroup = B0F8F50A18057DD900BE1AB7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B0F8F50818057DD900BE1AB7 /* VgerP */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B0F8F50718057DD900BE1AB7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0F8F51818057DD900BE1AB7 /* InfoPlist.strings in Resources */,
+				B0F8F51E18057DD900BE1AB7 /* Credits.rtf in Resources */,
+				B0F8F52418057DD900BE1AB7 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B0F8F50518057DD900BE1AB7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0F8F51A18057DD900BE1AB7 /* main.m in Sources */,
+				B0F8F52118057DD900BE1AB7 /* VgerAppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B0F8F51618057DD900BE1AB7 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0F8F51718057DD900BE1AB7 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		B0F8F51C18057DD900BE1AB7 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0F8F51D18057DD900BE1AB7 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		B0F8F52218057DD900BE1AB7 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0F8F52318057DD900BE1AB7 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		B0F8F52518057DD900BE1AB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B0F8F52618057DD900BE1AB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		B0F8F52818057DD900BE1AB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VgerP/VgerP-Prefix.pch";
+				INFOPLIST_FILE = "VgerP/VgerP-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		B0F8F52918057DD900BE1AB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VgerP/VgerP-Prefix.pch";
+				INFOPLIST_FILE = "VgerP/VgerP-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B0F8F50318057DD900BE1AB7 /* Build configuration list for PBXProject "VgerP" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0F8F52518057DD900BE1AB7 /* Debug */,
+				B0F8F52618057DD900BE1AB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B0F8F52718057DD900BE1AB7 /* Build configuration list for PBXNativeTarget "VgerP" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0F8F52818057DD900BE1AB7 /* Debug */,
+				B0F8F52918057DD900BE1AB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B0F8F50018057DD900BE1AB7 /* Project object */;
+}
