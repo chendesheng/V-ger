@@ -29,7 +29,7 @@ func init() {
 		http.DefaultClient.Jar = jar
 	}
 
-	util.SaveConfig("shutdown-after-finish", false)
+	util.SaveConfig("shutdown-after-finish", "false")
 
 	//set timeout
 	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
