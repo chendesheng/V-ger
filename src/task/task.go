@@ -49,6 +49,9 @@ type Task struct {
 	Est        time.Duration
 
 	Autoshutdown bool
+
+	Subs        []string
+	LastPlaying time.Duration
 }
 
 func SetAutoshutdown(name string, onOrOff bool) {

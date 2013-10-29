@@ -19,3 +19,9 @@ test
 *.safariextz
 gdb
 client
+*.avi
+*.mp4
+*.mkv
+*.wav
+*.srt
+*.log
