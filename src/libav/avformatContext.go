@@ -117,3 +117,10 @@ func (ctx *AVFormatContext) SeekFile(stream AVStream, t time.Duration, flags int
 func (ctx *AVFormatContext) Duration() int64 {
 	return int64(ctx.ptr.duration)
 }
+
+const (
+	AVSEEK_FLAG_BACKWARD = 1 << iota ///< seek backward
+	AVSEEK_FLAG_BYTE                 ///< seeking based on position in bytes
+	AVSEEK_FLAG_ANY                  ///< seek to any frame, even non-keyframes
+	AVSEEK_FLAG_FRAME                ///< seeking based on frame number
+)

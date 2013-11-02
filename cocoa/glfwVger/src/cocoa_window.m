@@ -49,11 +49,21 @@ static void setModeCursor(_GLFWwindow* window, int mode)
         [[NSCursor arrowCursor] set];
         
         [window->ns.trackView setHidden:NO];
+        
+        NSRect frame = [window->ns.subview frame];
+        frame.origin.y = 60;
+        [window->ns.subview setFrameOrigin:frame.origin];
+        [window->ns.subview setNeedsDisplay:YES];
     }
     else {
         [(NSCursor*) _glfw.ns.cursor set];
 
         [window->ns.trackView setHidden:YES];
+        
+        NSRect frame = [window->ns.subview frame];
+        frame.origin.y = 20;
+        [window->ns.subview setFrameOrigin:frame.origin];
+        [window->ns.subview setNeedsDisplay:YES];
     }
 }
 
@@ -1014,30 +1024,44 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
 //    [[window->ns.view layer] masksToBounds];
     
     
-    subtitles *subView = [[subtitles alloc] initWithFrame:NSMakeRect(0, 0, frame.size.width, 100)];
-    [subView setEditable:NO];
-    [subView setSelectable:NO];
-    [subView setBackgroundColor:[NSColor clearColor]];
-    [subView setAlignment:NSCenterTextAlignment];
-    [subView setFontSize:35.0];
+    subtitles *subView = [[subtitles alloc] initWithFrame:NSMakeRect(0, 0, frame.size.width, 0)];
     [window->ns.view addSubview:subView];
     [subView setAutoresizingMask:NSViewWidthSizable];
 
     window->ns.subview = subView;
-    // [window->ns.view setAutoresizesSubviews:YES];
-    // [subtitles setAutoresizingMask:NSViewWidthSizable];
-    // [subtitles scaleUnitSquareToSize:NSMakeSize(1.5,1.5)];//double
-    startupView *startup = [[startupView alloc] initWithFrame:NSMakeRect(0, 0, frame.size.width, frame.size.height)];
-    [startup setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-    [window->ns.view addSubview:startup];
     
-    window->ns.startupView = startup;
+    
+    subtitles *subWithPosition = [[subtitles alloc] initWithFrame:NSMakeRect(100, 100, 100, 0)];
+//    [subWithPosition setHidden:YES];
+//    SubItem item;
+//    item.str = "hello";
+//    item.color = 0xffffff;
+//    [subWithPosition setFontSize:30];
+//    [subWithPosition setText:&item length:1];
+    [window->ns.view addSubview:subWithPosition];
+    window->ns.subWithPosition = subWithPosition;
+    
     
     trackView *track = [[trackView alloc] initWithFrame:NSMakeRect(0, 0, frame.size.width, 50.0)];
     [track setAutoresizingMask:NSViewWidthSizable];
     [window->ns.view addSubview:track];
     
     window->ns.trackView = track;
+
+    
+    // [window->ns.view setAutoresizesSubviews:YES];
+    // [subtitles setAutoresizingMask:NSViewWidthSizable];
+    // [subtitles scaleUnitSquareToSize:NSMakeSize(1.5,1.5)];//double
+    startupView *startup = [[startupView alloc] initWithFrame:NSMakeRect(0, 20, frame.size.width, frame.size.height)];
+    [startup setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+    [window->ns.view addSubview:startup];
+    
+    window->ns.startupView = startup;
+        
+    
+    
+    NSLog(@"platform create window");
+    
     return GL_TRUE;
 }
 
@@ -1207,9 +1231,22 @@ void _glfwPlatformSetNeedsDisplay(_GLFWwindow* window, int b)
     [window->ns.view setNeedsDisplay:(b!=0)];
 }
 
-void _glfwPlatformShowText(_GLFWwindow *window, SubItem *items, int len)
+void _glfwPlatformShowText(_GLFWwindow *window, SubItem *items, int len, int withPosition, float x, float y)
 {
-    [window->ns.subview setText:items length:len];
+    if (withPosition) {
+        if (len == 0) {
+            [window->ns.subWithPosition setHidden:YES];
+        } else {
+//            NSLog(@"%s %d %lf %lf", items[0].str, len, x*1280, y*720);
+            [window->ns.subWithPosition setText:items length:len];
+            [window->ns.subWithPosition setFrameOrigin:NSMakePoint(x*1280, y*720)];
+//            [window->ns.subWithPosition setHidden:NO];
+            [window->ns.subWithPosition setNeedsDisplay:YES];
+        }
+    } else {
+//        NSLog(@"%s %d %lf %lf", items[0].str, len, x*1280, y*720);
+        [window->ns.subview setText:items length:len];
+    }
 }
 
 void _glfwPlatformShowLeftTime(_GLFWwindow *window, char *time, char *leftTime, float percent)

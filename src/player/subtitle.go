@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"io/ioutil"
 	"log"
 	. "player/clock"
@@ -131,17 +131,16 @@ func (s *subtitle) playWithQuit(quit chan bool) {
 			continue
 		}
 		if s.c.WaitUtilWithQuit(from, quit) {
+			s.w.PostEvent(Event{DrawSub, &srt.SubItem{}})
 			return
 		}
 
-		fmt.Printf("play subtitle %v, from: %s, to: %s\n", item.Content, from.String(), to.String())
-
-		s.w.PostEvent(Event{DrawSub, item.Content})
+		s.w.PostEvent(Event{DrawSub, item})
 
 		nextFrom := to
 		nextPos := s.position()
 		if nextPos < len(s.items) {
-			nextFrom = s.items[nextPos].From
+			nextFrom = s.items[nextPos].From + offset
 		}
 
 		go func(to, nextFrom time.Duration) { //overlap time, it's really nice with goroutine.
@@ -149,11 +148,9 @@ func (s *subtitle) playWithQuit(quit chan bool) {
 				return
 			}
 
-			if s.c.WaitUtilWithQuit(to-50*time.Millisecond, quit) {
-				return
-			}
+			s.c.WaitUtilWithQuit(to-50*time.Millisecond, quit)
 
-			s.w.PostEvent(Event{DrawSub, make([]srt.AttributedString, 0)})
+			s.w.PostEvent(Event{DrawSub, &srt.SubItem{}})
 		}(to, nextFrom)
 	}
 }

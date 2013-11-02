@@ -50,14 +50,37 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	// avformat_seek_file
 	// av_rescale
 	if m.v != nil && len(subFile) > 0 {
+		println("play subtitle:", subFile)
 		m.s = NewSubtitle(subFile, m.v.window)
 		// m.v.a = m.a
 	}
 
-	// ctx.SeekFile(audioStream, start, 8)
-	// ctx.SeekFile(videoStream, start, 8)
-	ctx.SeekFrame(audioStream, start, 0)
-	ctx.SeekFrame(videoStream, start, 0)
+	// b := time.Now()
+
+	ctx.SeekFile(audioStream, start, AVSEEK_FLAG_FRAME)
+	ctx.SeekFile(videoStream, start, AVSEEK_FLAG_FRAME)
+
+	packet := AVPacket{}
+	for ctx.ReadFrame(&packet) >= 0 {
+		if packet.StreamIndex() == videoStream.Index() {
+			pts := time.Duration(float64(packet.Pts()) * videoStream.Timebase().Q2D() * (float64(time.Second)))
+
+			if m.v.codecCtx.DecodeVideo(m.v.frame, &packet) {
+				packet.Free()
+				if start-pts < 10*time.Millisecond {
+					break
+				}
+			} else {
+				packet.Free()
+			}
+		}
+	}
+
+	// println(time.Since(b).String())
+	// ctx.SeekFrame(audioStream, start, 0)
+	// ctx.SeekFrame(videoStream, start, 0)
+
+	// seekVideo(ctx, videoStream, audioStream, start)
 
 	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
 

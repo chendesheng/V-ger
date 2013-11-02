@@ -299,3 +299,29 @@ President reagan:
 		return
 	}
 }
+
+func TestParsePosition(t *testing.T) {
+	text := `1
+00:00:00,001 --> 00:00:04,336
+{\pos(1.12,20.4)}President reagan:`
+	items := Parse(text)
+	if items[0].Content[0].Content != "President reagan:" {
+		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
+	}
+	if !(items[0].UsePosition && items[0].X == 1 && items[0].Y == 20) {
+		t.Errorf("parse position faild except (1,20) but (%d, %d)", items[0].X, items[0].Y)
+	}
+}
+
+func TestParsePosition2(t *testing.T) {
+	text := `1
+00:00:00,001 --> 00:00:04,336
+{\an8}President reagan:`
+	items := Parse(text)
+	if items[0].Content[0].Content != "President reagan:" {
+		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
+	}
+	// if !(items[0].UsePosition && items[0].X == 1 && items[0].Y == 20) {
+	// 	t.Errorf("parse position faild except (1,20) but (%d, %d)", items[0].X, items[0].Y)
+	// }
+}

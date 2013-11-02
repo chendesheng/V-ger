@@ -3,7 +3,6 @@ config.json
 *.sublime-project
 *.sublime-workspace
 bin/vger
-bin/vger.log
 .DS_Store
 .project
 *~
@@ -25,3 +24,5 @@ client
 *.wav
 *.srt
 *.log
+bin/player
+unar

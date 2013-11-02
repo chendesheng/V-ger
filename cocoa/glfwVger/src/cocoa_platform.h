@@ -69,6 +69,7 @@ typedef struct _GLFWwindowNS
     id              subview;
     id              startupView;
     id              trackView;
+    id              subWithPosition;
     unsigned int    modifierFlags;
 } _GLFWwindowNS;
 

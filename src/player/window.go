@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "fmt"
 	"github.com/go-gl/gl"
 	"log"
 	// . "player/clock"
@@ -159,7 +160,12 @@ func (w *Window) timerTick() {
 		if e.Kind == Draw {
 			w.SetNeedsDisplay(true)
 		} else if e.Kind == DrawSub {
-			w.ShowText(e.Data.([]srt.AttributedString))
+			s := e.Data.(*srt.SubItem)
+			width, height := w.GetFramebufferSize()
+
+			// fmt.Print("show sub:", s.UsePosition, s.X, s.Y, "\n")
+
+			w.ShowText(s.Content, false, s.X/float64(width), 1-s.Y/float64(height))
 		} else if e.Kind == DrawLeftTime {
 			arg := e.Data.(TrackStatus)
 			w.ShowLeftTime(arg.time, arg.left, arg.percent)

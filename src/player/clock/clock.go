@@ -177,6 +177,7 @@ func (c *Clock) AfterWithQuit(d time.Duration, quit chan bool) bool {
 
 	select {
 	case <-time.After(d):
+		break
 	case <-quit:
 		return true
 	}
@@ -186,6 +187,7 @@ func (c *Clock) AfterWithQuit(d time.Duration, quit chan bool) bool {
 }
 
 func (c *Clock) WaitUtilWithQuit(t time.Duration, quit chan bool) bool {
+	// println("wait until", t.String())
 	now := c.getTime()
 
 	if t > now {

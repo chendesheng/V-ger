@@ -3,8 +3,8 @@ package util
 import (
 	"io/ioutil"
 	"os"
-	// "path"
-	"strings"
+	"path"
+	// "strings"
 )
 
 func MakeSurePathExists(path string) error {
@@ -23,6 +23,15 @@ func IsPathExists(path string) bool {
 	}
 }
 
-func CheckExt(filename string, ext string) bool {
-	return filename[strings.LastIndex(filename, "."):] == ("." + ext)
+func CheckExt(filename string, exts ...string) bool {
+	ext := path.Ext(filename)[1:]
+	println("ext:", ext)
+
+	for _, e := range exts {
+		if e == ext {
+			return true
+		}
+	}
+
+	return false
 }

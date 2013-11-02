@@ -701,9 +701,9 @@ GLFWAPI void glfwPlatformSetNeedsDisplay(GLFWwindow* window, int b)
     _glfwPlatformSetNeedsDisplay((_GLFWwindow *)window, b);
 }
 
-GLFWAPI void glfwPlatformShowText(GLFWwindow* window, SubItem* items, int len)
+GLFWAPI void glfwPlatformShowText(GLFWwindow* window, SubItem* items, int len, int withPosition, float x, float y)
 {
-    _glfwPlatformShowText((_GLFWwindow *)window, items, len);
+    _glfwPlatformShowText((_GLFWwindow *)window, items, len, withPosition, x, y);
 }
 
 GLFWAPI void glfwPlatformShowLeftTime(GLFWwindow *window, char *time, char *leftTime, float percent)

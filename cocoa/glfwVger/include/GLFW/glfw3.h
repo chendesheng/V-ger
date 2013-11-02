@@ -2197,7 +2197,7 @@ typedef struct SubItem {
     unsigned int color;
 } SubItem;
     
-GLFWAPI void glfwPlatformShowText(GLFWwindow* window, SubItem* items, int len);
+GLFWAPI void glfwPlatformShowText(GLFWwindow* window, SubItem* items, int len, int withPosition, float x, float y);
     
 GLFWAPI void glfwPlatformShowLeftTime(GLFWwindow *window, char *time, char *leftTime, float percent);
     

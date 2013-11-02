@@ -17,6 +17,9 @@ import (
 type SubItem struct {
 	From, To time.Duration
 	Content  []AttributedString
+
+	UsePosition bool
+	Position
 }
 
 type SubItems []*SubItem
@@ -44,6 +47,13 @@ type AttributedString struct {
 func linebreak(r rune) bool {
 	return r == '\r' || r == '\n'
 }
+
+type Position struct {
+	X, Y float64
+}
+
+var PreDefinedPosition [10]Position
+
 func Parse(str string) []*SubItem {
 	lines := strings.FieldsFunc(str, linebreak)
 
@@ -56,9 +66,12 @@ func Parse(str string) []*SubItem {
 		if ok, from, to := parseTime(lines[0]); ok {
 			// println("line after parseTime:", lines[0])
 			lines = lines[1:]
+
+			usePos, pos, text := parsePosition(lines[0])
+			lines[0] = text
 			content := parseContent(&lines)
 			// log.Print("content:", content)
-			items = append(items, &SubItem{from, to, content})
+			items = append(items, &SubItem{from, to, content, usePos, pos})
 		} else {
 			panic("parse error")
 		}
@@ -134,6 +147,26 @@ func toColor(c string) uint {
 		}
 	} else {
 		return 0xffffff
+	}
+}
+func parsePosition(text string) (bool, Position, string) {
+	regPos := regexp.MustCompile(`^\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
+	matches := regPos.FindStringSubmatch(text)
+	println(text)
+
+	if matches == nil {
+		regPos2 := regexp.MustCompile(`^\{\\an([0-9])\}`)
+		matches := regPos2.FindStringSubmatch(text)
+		if matches == nil {
+			return false, Position{0, 0}, text
+		} else {
+			i, _ := strconv.Atoi(matches[1])
+			return false, PreDefinedPosition[i], text[len(matches[0]):]
+		}
+	} else {
+		x, _ := strconv.Atoi(matches[1])
+		y, _ := strconv.Atoi(matches[2])
+		return true, Position{float64(x), float64(y)}, text[len(matches[0]):]
 	}
 }
 func parseTag(nodes []*html.Node, as AttributedString, res *[]AttributedString) {

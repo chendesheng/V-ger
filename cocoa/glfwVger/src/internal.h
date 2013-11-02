@@ -681,7 +681,7 @@ void _glfwFreeGammaArrays(GLFWgammaramp* ramp);
 
 void _glfwPlatformSetNeedsDisplay(_GLFWwindow *window, int b);
 
-void _glfwPlatformShowText(_GLFWwindow* window, SubItem* items, int len);
+void _glfwPlatformShowText(_GLFWwindow* window, SubItem* items, int len, int withPosition, float x, float y);
 
 void _glfwPlatformShowLeftTime(_GLFWwindow *window, char *time, char *leftTime, float percent);
 void _showOrHideStartUpView(_GLFWwindow *window, int b);

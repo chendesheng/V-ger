@@ -12,6 +12,21 @@
 
 int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 
+- (id)initWithFrame:(NSRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code here.
+        [self setEditable:NO];
+        [self setSelectable:NO];
+        [self setBackgroundColor:[NSColor clearColor]];
+        [self setAlignment:NSCenterTextAlignment];
+        [self setFontSize:35.0];
+    }
+    
+    return self;
+}
+
 - (void)setFontSize:(CGFloat)size
 {
     self->_fontSize = size;
@@ -72,13 +87,15 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         NSColor *color = [NSColor colorWithDeviceRed:red green:green blue:blue alpha:1];
         
         NSShadow *shadow = [[NSShadow alloc] init];
-        [shadow setShadowColor:color];
-        [shadow setShadowBlurRadius:10];
+        [shadow setShadowColor:[NSColor blackColor]];
+        [shadow setShadowBlurRadius:6];
         
         NSAttributedString *str = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:item.str] attributes:@{NSFontAttributeName:font,NSBackgroundColorAttributeName:[NSColor clearColor],
                                               NSForegroundColorAttributeName:color,
                                                        NSShadowAttributeName:shadow}];
-        
+//        ,
+//    NSStrokeWidthAttributeName:@-4.0,
+//    NSStrokeColorAttributeName:[NSColor blackColor]
         
         [attrStr appendAttributedString:str];
     }
@@ -87,10 +104,9 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
     
     CGFloat width = self.frame.size.width;
     CGFloat height = [self sizeForWidth:width height:FLT_MAX].height;
-    
+//
 //    NSLog(@"height:%lf", height);
     [self setFrameSize:NSMakeSize(width, height)];
-    [self setFrameOrigin:NSMakePoint(0, 20)];
 }
 
 

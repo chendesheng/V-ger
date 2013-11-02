@@ -9,13 +9,18 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	// "os/exec"
+	"os"
+	"os/exec"
 	"path"
 	// "regexp"
 	"strings"
 	"subtitles"
 	"util"
 )
+
+func init() {
+	util.MakeSurePathExists(path.Join(util.ReadConfig("dir"), "subs"))
+}
 
 func subtitlesSearchHandler(ws *websocket.Conn) {
 	r := ws.Request()
@@ -42,8 +47,22 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok, err := subtitles.QuickDownload(url, path.Join(util.ReadConfig("dir"), movieName+path.Ext(name))); !ok {
+	subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
+	util.MakeSurePathExists(subFileDir)
+
+	subFile := path.Join(subFileDir, name)
+	if ok, err := subtitles.QuickDownload(url, subFile); !ok {
 		w.Write([]byte(err.Error()))
 		return
+	}
+
+	if util.CheckExt(name, "rar", "zip") {
+		cmd := exec.Command("./unar", subFile, "-f")
+
+		if err := cmd.Run(); err != nil {
+			w.Write([]byte(err.Error()))
+		} else {
+			os.Remove(subFile)
+		}
 	}
 }
