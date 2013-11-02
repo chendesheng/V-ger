@@ -117,7 +117,17 @@ func abs(i int64) int64 {
 
 	return i
 }
-
+func (a *audio) flushBuffer() {
+	for {
+		select {
+		case <-a.ch:
+			println("skip package")
+		default:
+			println("flush return")
+			return
+		}
+	}
+}
 func (a *audio) initsdl() {
 	codecCtx := a.codecCtx
 
@@ -326,8 +336,11 @@ func (a *audio) getAudioDelay(packet *AVPacket, framePts uint64) {
 	// 	size := (pts - now) / float64(time.Second) * a.codecCtx.SimpleRate() * a.codecCtx.Channels()
 	// }
 	// a.c.WaitUtil(pts)
-
-	a.c.SetTime(pts)
+	// println("settime:", pts.String())
+	now := a.c.GetTime()
+	if now < pts+300*time.Millisecond && now > pts-300*time.Millisecond {
+		a.c.SetTime(pts)
+	}
 	// a.audioClockTime = time.Now()
 
 }

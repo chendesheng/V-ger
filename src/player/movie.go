@@ -3,6 +3,7 @@ package main
 import (
 	// "fmt"
 	. "libav"
+	"player/glfw"
 	// "log"
 	. "player/clock"
 	"time"
@@ -55,26 +56,7 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 		// m.v.a = m.a
 	}
 
-	// b := time.Now()
-
-	ctx.SeekFile(audioStream, start, AVSEEK_FLAG_FRAME)
-	ctx.SeekFile(videoStream, start, AVSEEK_FLAG_FRAME)
-
-	packet := AVPacket{}
-	for ctx.ReadFrame(&packet) >= 0 {
-		if packet.StreamIndex() == videoStream.Index() {
-			pts := time.Duration(float64(packet.Pts()) * videoStream.Timebase().Q2D() * (float64(time.Second)))
-
-			if m.v.codecCtx.DecodeVideo(m.v.frame, &packet) {
-				packet.Free()
-				if start-pts < 10*time.Millisecond {
-					break
-				}
-			} else {
-				packet.Free()
-			}
-		}
-	}
+	Seek(ctx, audioStream, videoStream, m.s, start)
 
 	// println(time.Since(b).String())
 	// ctx.SeekFrame(audioStream, start, 0)
@@ -99,8 +81,49 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	m.c.Reset()
 	m.c.SetTime(start)
 
-	if m.s != nil {
-		m.s.seek(start)
+	if m.v != nil {
+		m.v.window.AddEventHandler(func(e Event) { //run in main thread, safe to operate ui elements
+			switch e.Kind {
+			case KeyPress:
+				switch e.Data.(glfw.Key) {
+				case glfw.KeyLeft:
+					println("key left pressed")
+					m.c.AddTime(-10 * time.Second)
+					break
+				case glfw.KeyRight:
+					println("key right pressed")
+					m.c.AddTime(10 * time.Second)
+					break
+				}
+				break
+			}
+		})
+	}
+}
+func Seek(ctx AVFormatContext, audioStream, videoStream AVStream, s *subtitle, start time.Duration) {
+	ctx.SeekFile(audioStream, start, AVSEEK_FLAG_FRAME)
+	ctx.SeekFile(videoStream, start, AVSEEK_FLAG_FRAME)
+
+	packet := AVPacket{}
+	frame := AllocFrame()
+	codecCtx := videoStream.Codec()
+	for ctx.ReadFrame(&packet) >= 0 {
+		if packet.StreamIndex() == videoStream.Index() {
+			pts := time.Duration(float64(packet.Pts()) * videoStream.Timebase().Q2D() * (float64(time.Second)))
+
+			if codecCtx.DecodeVideo(frame, &packet) {
+				packet.Free()
+				if start-pts < 10*time.Millisecond {
+					break
+				}
+			} else {
+				packet.Free()
+			}
+		}
+	}
+
+	if s != nil {
+		s.seek(start)
 	}
 }
 func (m *movie) decode() {
@@ -121,6 +144,27 @@ func (m *movie) decode() {
 				pt.Dup()
 				p := *pt
 				m.a.ch <- &p
+			}
+		}
+
+		now := m.c.GetTime()
+		vc := time.Duration(m.v.videoClock * (float64(time.Second)))
+		// if now > vc+time.Second {
+		// 	Seek(ctx, m.a.stream, m.v.stream, now)
+		// 	m.v.frame = AllocFrame()
+		// 	m.a.flushBuffer()
+		// 	println("after seek")
+		// } else
+		if now < vc-time.Second || now > vc+time.Second {
+			// ctx.SeekFile(m.v.stream, now, AVSEEK_FLAG_FRAME|AVSEEK_FLAG_BACKWARD)
+			// ctx.SeekFile(m.a.stream, now, AVSEEK_FLAG_FRAME|AVSEEK_FLAG_BACKWARD)
+
+			Seek(ctx, m.a.stream, m.v.stream, m.s, now)
+			m.v.frame = AllocFrame()
+			m.a.flushBuffer()
+			println("after seek back")
+			if m.s != nil {
+				go m.s.play()
 			}
 		}
 	}

@@ -17,7 +17,7 @@ import (
 
 // var filename = flag.String("file", "", "file name")
 // var filename = flag.String("file", "", "file name")
-var taskName = flag.String("task", "the.walking.dead.s04e03.720p.hdtv.x264-killers.mkv", "vger-task file name")
+var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)

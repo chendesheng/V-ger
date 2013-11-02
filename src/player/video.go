@@ -132,6 +132,7 @@ func (v *video) decode(packet *AVPacket) {
 		pts = 0
 	}
 	pts *= stream.Timebase().Q2D()
+	// println("pts:", pts)
 	packet.Free()
 	if frameFinished {
 		// println(time.Since(b).String())

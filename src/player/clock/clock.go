@@ -81,12 +81,17 @@ func (c *Clock) getTime() time.Duration {
 }
 
 func (c *Clock) SetTime(t time.Duration) {
-	// println("clock SetTime ", t.String())
-
 	c.Lock()
 	defer c.Unlock()
 
 	c.base = time.Now().Add(-t)
+}
+
+func (c *Clock) AddTime(d time.Duration) {
+	c.Lock()
+	defer c.Unlock()
+	println("clock base:", c.base.String())
+	c.base = c.base.Add(-d)
 }
 
 func (c *Clock) Pause() {

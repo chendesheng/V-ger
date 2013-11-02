@@ -93,11 +93,15 @@ func (s *subtitle) increasePosition() {
 	s.pos += 1
 }
 func (s *subtitle) seek(t time.Duration) {
+	s.Lock()
+	defer s.Unlock()
+
+	close(s.quit)
 	for i, item := range s.items {
 		to := item.To + time.Duration(s.offset)*time.Second
 		if to > t {
 			log.Print("seek to ", to.String(), " i: ", i, " Content:", item.Content)
-			s.setPosition(i)
+			s.pos = i
 			return
 		}
 	}

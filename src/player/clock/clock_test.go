@@ -64,3 +64,12 @@ func TestSetTime(t *testing.T) {
 		t.Error("wrong current time:", diff.String())
 	}
 }
+func TestAddTime(t *testing.T) {
+	c := NewClock(time.Hour)
+	c.SetTime(10 * time.Second)
+	c.AddTime(time.Second)
+	diff := c.GetTime() - 11*time.Second
+	if absAndCheck(diff) {
+		t.Error("wrong current time:", diff.String())
+	}
+}

@@ -112,6 +112,7 @@ func (ctx *AVFormatContext) SeekFile(stream AVStream, t time.Duration, flags int
 	C.avformat_seek_file(ctx.ptr, C.int(stream.Index()), 0, C.int64_t(seek_target), C.int64_t(seek_target), C.int(flags))
 
 	C.avcodec_flush_buffers(stream.Codec().ptr)
+
 }
 
 func (ctx *AVFormatContext) Duration() int64 {
