@@ -29,10 +29,6 @@
 		B0A17DA4181CB0FF00451047 /* subtitles.m in Sources */ = {isa = PBXBuildFile; fileRef = B0A17DA2181CB0FF00451047 /* subtitles.m */; };
 		B0A17DAF181D281900451047 /* startupView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0A17DAD181D281900451047 /* startupView.h */; };
 		B0A17DB0181D281900451047 /* startupView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0A17DAE181D281900451047 /* startupView.m */; };
-		B0A17DB3181D2E3300451047 /* trackView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0A17DB1181D2E3300451047 /* trackView.h */; };
-		B0A17DB4181D2E3300451047 /* trackView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0A17DB2181D2E3300451047 /* trackView.m */; };
-		B0A17DB7181D756300451047 /* trackControl.h in Headers */ = {isa = PBXBuildFile; fileRef = B0A17DB5181D756200451047 /* trackControl.h */; };
-		B0A17DB8181D756300451047 /* trackControl.m in Sources */ = {isa = PBXBuildFile; fileRef = B0A17DB6181D756200451047 /* trackControl.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,10 +55,6 @@
 		B0A17DA2181CB0FF00451047 /* subtitles.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = subtitles.m; sourceTree = "<group>"; };
 		B0A17DAD181D281900451047 /* startupView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = startupView.h; sourceTree = "<group>"; };
 		B0A17DAE181D281900451047 /* startupView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = startupView.m; sourceTree = "<group>"; };
-		B0A17DB1181D2E3300451047 /* trackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = trackView.h; sourceTree = "<group>"; };
-		B0A17DB2181D2E3300451047 /* trackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = trackView.m; sourceTree = "<group>"; };
-		B0A17DB5181D756200451047 /* trackControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = trackControl.h; sourceTree = "<group>"; };
-		B0A17DB6181D756200451047 /* trackControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = trackControl.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,10 +141,6 @@
 				B0A17DA2181CB0FF00451047 /* subtitles.m */,
 				B0A17DAD181D281900451047 /* startupView.h */,
 				B0A17DAE181D281900451047 /* startupView.m */,
-				B0A17DB1181D2E3300451047 /* trackView.h */,
-				B0A17DB2181D2E3300451047 /* trackView.m */,
-				B0A17DB5181D756200451047 /* trackControl.h */,
-				B0A17DB6181D756200451047 /* trackControl.m */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -175,8 +163,6 @@
 				B095485C1811E46C0020FE78 /* nsgl_platform.h in Headers */,
 				B0A17DA3181CB0FF00451047 /* subtitles.h in Headers */,
 				B0A17DAF181D281900451047 /* startupView.h in Headers */,
-				B0A17DB3181D2E3300451047 /* trackView.h in Headers */,
-				B0A17DB7181D756300451047 /* trackControl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,8 +228,6 @@
 				B095485E1811E46C0020FE78 /* window.c in Sources */,
 				B0A17DA4181CB0FF00451047 /* subtitles.m in Sources */,
 				B0A17DB0181D281900451047 /* startupView.m in Sources */,
-				B0A17DB4181D2E3300451047 /* trackView.m in Sources */,
-				B0A17DB8181D756300451047 /* trackControl.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

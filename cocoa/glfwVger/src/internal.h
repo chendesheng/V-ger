@@ -237,6 +237,7 @@ struct _GLFWwindow
         GLFWcharfun             character;
         GLFWtimerfun            timer;
         GLFWdrawfun             draw;
+        trackPositionChangedFun trackPositionChanged;
     } callbacks;
 
     // This is defined in the window API's platform.h

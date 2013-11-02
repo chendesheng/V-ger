@@ -684,6 +684,14 @@ GLFWAPI GLFWdrawfun glfwSetDrawCallback(GLFWwindow* handle,
     return cbfun;
 }
 
+trackPositionChangedFun setTrackPositionChangedCallback(GLFWwindow* handle, trackPositionChangedFun fn)
+{
+    _GLFWwindow* window = (_GLFWwindow*)handle;
+    _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
+    _GLFW_SWAP_POINTERS(window->callbacks.trackPositionChanged, fn);
+    return fn;
+}
+
 GLFWAPI void glfwPollEvents(void)
 {
     _GLFW_REQUIRE_INIT();

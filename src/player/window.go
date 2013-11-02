@@ -27,6 +27,7 @@ const (
 	KeyPress
 	DrawSub
 	DrawLeftTime
+	TrackPositionChanged
 )
 
 type Window struct {
@@ -94,6 +95,9 @@ func NewWindow(width, height int, title string) *Window {
 	})
 	w.SetDrawCallback(func(win *glfw.Window) {
 		w.fireEvent(Event{Draw, nil})
+	})
+	w.SetTrackPositionChangedCallback(func(win *glfw.Window, percent float64) {
+		w.fireEvent(Event{TrackPositionChanged, percent})
 	})
 
 	w.SetNeedsDisplay(true)

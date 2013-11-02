@@ -94,7 +94,16 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 					println("key right pressed")
 					m.c.AddTime(10 * time.Second)
 					break
+				case glfw.KeyUp:
+					m.c.AddTime(time.Minute)
+					break
+				case glfw.KeyDown:
+					m.c.AddTime(-time.Minute)
+					break
 				}
+				break
+			case TrackPositionChanged:
+				m.c.GotoPercent(e.Data.(float64))
 				break
 			}
 		})

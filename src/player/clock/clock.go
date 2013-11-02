@@ -87,6 +87,14 @@ func (c *Clock) SetTime(t time.Duration) {
 	c.base = time.Now().Add(-t)
 }
 
+func (c *Clock) GotoPercent(percent float64) {
+	c.Lock()
+	defer c.Unlock()
+
+	t := time.Duration(float64(c.totalTime) * percent)
+	c.base = time.Now().Add(-t)
+}
+
 func (c *Clock) AddTime(d time.Duration) {
 	c.Lock()
 	defer c.Unlock()

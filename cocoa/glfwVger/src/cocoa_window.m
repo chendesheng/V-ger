@@ -29,7 +29,206 @@
 // Needed for _NSGetProgname
 #include "startupView.h"
 #include <crt_externs.h>
-#include "trackView.h"
+
+
+
+@interface trackControl : NSView
+{
+@public
+    NSString *leftString;
+    NSString *rightString;
+    CGFloat percent;
+    _GLFWwindow *window;
+}
+@end
+
+@implementation trackControl
+
+-(void)drawRoundedRect:(NSRect)rect radius:(CGFloat)r{
+    NSBezierPath *textViewSurround = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:r yRadius:r];
+    [textViewSurround fill];
+}
+-(void)drawRect:(NSRect)dirtyRect
+{
+    //    NSLog(@"draw control");
+    
+    CGFloat position = (dirtyRect.size.width-120)*(self->percent);
+    CGFloat barHeight = 4;
+    CGFloat knotHeight = 14;
+    CGFloat knotWidth = 5;
+    
+    [[NSColor colorWithCalibratedRed:255 green:255 blue:255 alpha:0.3] setFill];
+    NSRectFill(dirtyRect);
+    
+    CGFloat x = 8;
+    if ([self->leftString length]<=5) {
+        x = 22;
+    }
+    [self->leftString drawAtPoint:NSMakePoint(x, 18) withAttributes:@{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]}];
+    
+    [self->rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-60+4, 18) withAttributes:@{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]}];
+    
+    [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.5] set];
+    [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, dirtyRect.size.width-120, barHeight) radius:2];
+    
+    NSShadow* theShadow = [[NSShadow alloc] init];
+    [theShadow setShadowOffset:NSMakeSize(0, 0)];
+    [theShadow setShadowBlurRadius:1.0];
+    
+    // Use a partially transparent color for shapes that overlap.
+    [theShadow setShadowColor:[[NSColor blackColor]
+                               colorWithAlphaComponent:0.5]];
+    
+    [theShadow set];
+    
+    [[NSColor colorWithCalibratedRed:255 green:255 blue:255 alpha:1] setFill];
+    
+    [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, position, barHeight) radius:2];
+    
+    [[NSColor colorWithCalibratedRed:255 green:255 blue:255 alpha:1] setFill];
+    [self drawRoundedRect:NSMakeRect(position-knotWidth/2+60, (dirtyRect.size.height-knotHeight)/2, knotWidth, knotHeight) radius:1.5];
+    
+    [super drawRect:dirtyRect];
+}
+- (void)mouseDown:(NSEvent *)event
+{
+    NSPoint pt = [self convertPoint:[event locationInWindow] fromView:nil];
+    if (pt.x >= 60 && pt.x <= self.frame.size.width-60) {
+        if (pt.y >= 10 && pt.y <= self.frame.size.height-10) {
+            self->percent = (pt.x-60)/(self.frame.size.width-120);
+            [self setNeedsDisplay:YES];
+            
+            self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent);
+        }
+    }
+}
+@end
+
+
+@interface trackView : NSView
+{
+    CALayer *backgroundLayer;
+    trackControl *control;
+}
+
+-(void)updateStatus:(NSString *)time leftTime:(NSString *)leftTime percent:(float)percent;
+-(void)setWindow:(_GLFWwindow*)window;
+@end
+
+@implementation trackView
+
+- (id)initWithFrame:(NSRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code here.
+        self->backgroundLayer = [CALayer layer];
+        [self setLayer:self->backgroundLayer];
+        [self setWantsLayer:YES];
+        CIFilter *blurFilter = [CIFilter filterWithName:@"CIGaussianBlur" keysAndValues:@"inputRadius", [NSNumber numberWithFloat:20.0], nil];
+        //[blurFilter setDefaults];
+        
+        [self->backgroundLayer setMasksToBounds:YES];
+        
+        [self layer].backgroundFilters = [NSArray arrayWithObject:blurFilter];
+        
+        self->control = [[trackControl alloc] initWithFrame:NSMakeRect(0, 0, frame.size.width, frame.size.height)];
+        self->control->leftString = @"--:--:--";
+        self->control->rightString = @"--:--:--";
+        self->control->percent = 0;
+        [self->control setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+        [self addSubview:self->control];
+        
+        self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawOnSetNeedsDisplay;
+    }
+    
+    return self;
+}
+-(void)setWindow:(_GLFWwindow*)window
+{
+    self->control->window = window;
+}
+-(void)setHidden:(BOOL)flag
+{
+    if (flag == YES)
+    {
+        //        [self setLayer:NULL];
+        [self setFrameSize:NSMakeSize(self.frame.size.width, 0)];
+    }
+    else
+    {
+        [self setFrameSize:NSMakeSize(self.frame.size.width, 50)];
+    }
+    [self->control setNeedsDisplay:YES];
+    [super setHidden:flag];
+}
+-(void)updateStatus:(NSString *)time leftTime:(NSString *)leftTime percent:(float)percent
+{
+    [self->control->leftString autorelease];
+    self->control->leftString = time;
+    [self->control->leftString retain];
+    
+    [self->control->rightString autorelease];
+    self->control->rightString = leftTime;
+    [self->control->rightString retain];
+    
+    self->control->percent = percent;
+    
+    //    NSLog(@"%@ %@ %lf", time, leftTime, percent);
+    [self->control setNeedsDisplay:YES];
+}
+//- (void)drawRect:(NSRect)dirtyRect
+//{
+//    NSString *str = @"00:00:00";
+//
+//    NSFontManager *fontManager = [NSFontManager sharedFontManager];
+//    NSFont *font = [fontManager fontWithFamily:@"Georgia"
+//                                        traits:NSUnboldFontMask
+//                                        weight:0
+//                                          size:13];
+//
+//    [str drawAtPoint:NSMakePoint(10, 10) withAttributes:@{NSFontAttributeName : font, NSForegroundColorAttributeName:[NSColor blackColor]}];
+//    [super drawRect:dirtyRect];
+//}
+
+- (void)mouseDragged:(NSEvent *)event
+{
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+}
+
+- (void)mouseMoved:(NSEvent *)event
+{
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+}
+
+- (void)rightMouseDragged:(NSEvent *)event
+{
+}
+
+- (void)rightMouseUp:(NSEvent *)event
+{
+}
+
+- (void)otherMouseDown:(NSEvent *)event
+{
+}
+
+- (void)otherMouseDragged:(NSEvent *)event
+{
+}
+
+- (void)otherMouseUp:(NSEvent *)event
+{
+}
+@end
+
+
 
 
 // Center the cursor in the view of the window
@@ -1047,18 +1246,17 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
     [window->ns.view addSubview:track];
     
     window->ns.trackView = track;
-
+    [track setWindow:window];
     
     // [window->ns.view setAutoresizesSubviews:YES];
     // [subtitles setAutoresizingMask:NSViewWidthSizable];
     // [subtitles scaleUnitSquareToSize:NSMakeSize(1.5,1.5)];//double
-    startupView *startup = [[startupView alloc] initWithFrame:NSMakeRect(0, 20, frame.size.width, frame.size.height)];
+    startupView *startup = [[startupView alloc] initWithFrame:NSMakeRect(0, 0, frame.size.width, frame.size.height)];
     [startup setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
     [window->ns.view addSubview:startup];
     
     window->ns.startupView = startup;
         
-    
     
     NSLog(@"platform create window");
     
