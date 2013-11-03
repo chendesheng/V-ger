@@ -16,6 +16,11 @@ type TrackStatus struct {
 	percent float64
 }
 
+type TrackPositionChangedEventData struct {
+	percent float64
+	typ     int
+}
+
 type Event struct {
 	Kind int
 	Data interface{}
@@ -96,8 +101,8 @@ func NewWindow(width, height int, title string) *Window {
 	w.SetDrawCallback(func(win *glfw.Window) {
 		w.fireEvent(Event{Draw, nil})
 	})
-	w.SetTrackPositionChangedCallback(func(win *glfw.Window, percent float64) {
-		w.fireEvent(Event{TrackPositionChanged, percent})
+	w.SetTrackPositionChangedCallback(func(win *glfw.Window, percent float64, typ int) {
+		w.fireEvent(Event{TrackPositionChanged, TrackPositionChangedEventData{percent, typ}})
 	})
 
 	w.SetNeedsDisplay(true)
@@ -213,8 +218,6 @@ func (w *Window) DrawClear(imgWidth, imgHeight int) {
 }
 
 func (w *Window) Draw(img []byte, imgWidth, imgHeight int) {
-	// println("draw:", len(img))
-
 	w.Texture.Bind(gl.TEXTURE_2D)
 
 	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, int(imgWidth), int(imgHeight), gl.RGB,

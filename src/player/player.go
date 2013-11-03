@@ -120,7 +120,7 @@ func main() {
 				log.Fatal(err)
 			}
 
-			t.LastPlaying = m.c.GetTime()
+			t.LastPlaying = m.c.GetSeekTime()
 
 			task.SaveTask(t)
 		}

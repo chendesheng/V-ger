@@ -789,7 +789,7 @@ typedef void (* GLFWmonitorfun)(GLFWmonitor*,int);
 typedef void (* GLFWtimerfun)(GLFWwindow*);
 typedef void (* GLFWdrawfun)(GLFWwindow*);
 
-typedef void (* trackPositionChangedFun)(GLFWwindow*, double percent);
+typedef void (* trackPositionChangedFun)(GLFWwindow*, double percent, int type);
 
 trackPositionChangedFun setTrackPositionChangedCallback(GLFWwindow*, trackPositionChangedFun fn);
 

@@ -103,7 +103,42 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 				}
 				break
 			case TrackPositionChanged:
-				m.c.GotoPercent(e.Data.(float64))
+				data := e.Data.(TrackPositionChangedEventData)
+				switch data.typ {
+				case 0:
+					m.c.GotoPercent(data.percent)
+					m.c.Pause()
+					break
+				case 2:
+					println("mouse up:", data.percent)
+					m.c.Resume()
+					m.c.GotoPercent(data.percent)
+					
+					break
+				case 1:
+					m.c.GotoPercent(data.percent)
+					t := m.c.GetSeekTime()
+					m.ctx.SeekFile(m.v.stream, t, AVSEEK_FLAG_FRAME)
+					// packet := AVPacket{}
+					// frame := AllocFrame()
+					// codecCtx := m.v.stream.Codec()
+					// for ctx.ReadFrame(&packet) >= 0 {
+					// 	if packet.StreamIndex() == m.v.stream.Index() {
+					// 		pts := time.Duration(float64(packet.Pts()) * m.v.stream.Timebase().Q2D() * (float64(time.Second)))
+
+					// 		if codecCtx.DecodeVideo(frame, &packet) {
+					// 			packet.Free()
+					// 			if t-pts < 10*time.Millisecond {
+					// 				break
+					// 			}
+					// 		} else {
+					// 			packet.Free()
+					// 		}
+					// 	}
+					// }
+					m.drawCurrentFrame()
+					break
+				}
 				break
 			}
 		})
@@ -135,6 +170,37 @@ func Seek(ctx AVFormatContext, audioStream, videoStream AVStream, s *subtitle, s
 		s.seek(start)
 	}
 }
+func (m *movie) drawCurrentFrame() {
+	ctx := m.ctx
+	v := m.v
+
+	packet := AVPacket{}
+
+	frame := v.frame
+	for ctx.ReadFrame(&packet) >= 0 {
+		if v.stream.Index() == packet.StreamIndex() {
+			codecCtx := v.codecCtx
+
+			frameFinished := codecCtx.DecodeVideo(frame, &packet)
+			packet.Free()
+
+			if frameFinished {
+				frame.Flip(v.height)
+				swsCtx := SwsGetCachedContext(v.width, v.height, codecCtx.PixelFormat(),
+					v.width, v.height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
+
+				swsCtx.Scale(frame, v.pictureRGB)
+				obj := v.pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
+				v.setPic(picture{obj, 0})
+				v.window.SetNeedsDisplay(true)
+				break
+			}
+		} else {
+			packet.Free()
+		}
+	}
+}
+
 func (m *movie) decode() {
 	packet := AVPacket{}
 	ctx := m.ctx

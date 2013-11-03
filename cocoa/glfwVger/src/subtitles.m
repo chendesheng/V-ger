@@ -78,7 +78,7 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         }
         NSFontManager *fontManager = [NSFontManager sharedFontManager];
         NSFont *font = [fontManager fontWithFamily:@"Palatino"
-                                                  traits:mask|NSBoldFontMask
+                                                  traits:mask
                                                   weight:0
                                                     size:self->_fontSize];
         CGFloat red = item.color&0xff0000;

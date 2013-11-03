@@ -25,6 +25,10 @@ func (c *Clock) GetTime() time.Duration {
 	return c.getTime()
 }
 
+func (c *Clock) GetSeekTime() time.Duration {
+	return c.getTime()
+}
+
 func addZero(i int) string {
 	if i < 10 {
 		return fmt.Sprint("0", i)
@@ -69,15 +73,15 @@ func (c *Clock) getTime() time.Duration {
 	c.Lock()
 	defer c.Unlock()
 
-	if c.status == "paused" {
-		return c.pausedTime
-	} else {
-		t := time.Since(c.base)
-		if t > c.totalTime {
-			t = c.totalTime
-		}
-		return t
+	// if c.status == "paused" {
+	// 	return c.pausedTime
+	// } else {
+	t := time.Since(c.base)
+	if t > c.totalTime {
+		t = c.totalTime
 	}
+	return t
+	// }
 }
 
 func (c *Clock) SetTime(t time.Duration) {

@@ -93,14 +93,78 @@
 - (void)mouseDown:(NSEvent *)event
 {
     NSPoint pt = [self convertPoint:[event locationInWindow] fromView:nil];
-    if (pt.x >= 60 && pt.x <= self.frame.size.width-60) {
-        if (pt.y >= 10 && pt.y <= self.frame.size.height-10) {
-            self->percent = (pt.x-60)/(self.frame.size.width-120);
-            [self setNeedsDisplay:YES];
+    NSRect bound = NSMakeRect(60, 10, self.frame.size.width-120, self.frame.size.height-20);
+    
+    if (NSPointInRect(pt, bound)) {
+        self->percent = (pt.x-bound.origin.x)/bound.size.width;
+        [self setNeedsDisplay:YES];
             
-            self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent);
-        }
+        self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent, 0);
+            
+        bool keepOn = YES;
+            
+        while (keepOn) {
+            event = [[self window] nextEventMatchingMask: NSLeftMouseUpMask |
+                            NSLeftMouseDraggedMask];
+                
+            switch ([event type]) {
+                case NSLeftMouseDragged:
+                    pt = [self convertPoint:[event locationInWindow] fromView:nil];
+                    if (pt.x < bound.origin.x) {
+                        pt.x = bound.origin.x;
+                    } else if (pt.x > bound.origin.x+bound.size.width) {
+                        pt.x = bound.origin.x+bound.size.width;
+                    }
+                    self->percent = (pt.x-bound.origin.x)/bound.size.width;
+                    [self setNeedsDisplay:YES];
+                    self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent, 1);
+                    break;
+                case NSLeftMouseUp:
+                    [self setNeedsDisplay:YES];
+                    self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent, 2);
+                    keepOn = NO;
+                    break;
+                default:
+                    /* Ignore any other kind of event. */
+                    break;
+            }
+        }        
     }
+}
+- (void)mouseDragged:(NSEvent *)event
+{
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+}
+
+- (void)mouseMoved:(NSEvent *)event
+{
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+}
+
+- (void)rightMouseDragged:(NSEvent *)event
+{
+}
+
+- (void)rightMouseUp:(NSEvent *)event
+{
+}
+
+- (void)otherMouseDown:(NSEvent *)event
+{
+}
+
+- (void)otherMouseDragged:(NSEvent *)event
+{
+}
+
+- (void)otherMouseUp:(NSEvent *)event
+{
 }
 @end
 

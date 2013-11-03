@@ -107,7 +107,7 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 			break
 		}
 	})
-	v.window.SetCursorAutoHide()
+	// v.window.SetCursorAutoHide()
 }
 
 func (v *video) decode(packet *AVPacket) {
