@@ -113,7 +113,7 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 					println("mouse up:", data.percent)
 					m.c.Resume()
 					m.c.GotoPercent(data.percent)
-					
+
 					break
 				case 1:
 					m.c.GotoPercent(data.percent)

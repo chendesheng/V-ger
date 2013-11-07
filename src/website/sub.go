@@ -55,9 +55,9 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-
+	println(name)
 	if util.CheckExt(name, "rar", "zip") {
-		cmd := exec.Command("./unar", subFile, "-f")
+		cmd := exec.Command("./unar", subFile, "-f", "-o", subFileDir)
 
 		if err := cmd.Run(); err != nil {
 			w.Write([]byte(err.Error()))
