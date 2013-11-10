@@ -9,6 +9,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"player/gui"
 	"runtime"
 	"task"
 	"time"
@@ -132,9 +133,8 @@ func main() {
 		}
 
 		for {
-
-			arg := TrackStatus{m.v.c.GetTimeString(), m.v.c.GetLeftTimeString(), m.v.c.GetPercent()}
-			m.v.window.PostEvent(Event{DrawLeftTime, arg})
+			arg := gui.PlayProgressInfo{m.v.c.GetTimeString(), m.v.c.GetLeftTimeString(), m.v.c.GetPercent()}
+			m.v.window.PostEvent(gui.Event{gui.DrawLeftTime, arg})
 
 			m.v.c.After(time.Second)
 		}

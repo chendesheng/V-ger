@@ -81,11 +81,11 @@ int _glfwPlatformInit(void)
     changeToResourcesDirectory();
 #endif
 
-    _glfw.ns.eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
-    if (!_glfw.ns.eventSource)
-        return GL_FALSE;
+//    _glfw.ns.eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
+//    if (!_glfw.ns.eventSource)
+//        return GL_FALSE;
 
-    CGEventSourceSetLocalEventsSuppressionInterval(_glfw.ns.eventSource, 0.0);
+//    CGEventSourceSetLocalEventsSuppressionInterval(_glfw.ns.eventSource, 0.0);
 
     if (!_glfwInitContextAPI())
         return GL_FALSE;
@@ -97,11 +97,11 @@ int _glfwPlatformInit(void)
 
 void _glfwPlatformTerminate(void)
 {
-    if (_glfw.ns.eventSource)
-    {
-        CFRelease(_glfw.ns.eventSource);
-        _glfw.ns.eventSource = NULL;
-    }
+//    if (_glfw.ns.eventSource)
+//    {
+//        CFRelease(_glfw.ns.eventSource);
+//        _glfw.ns.eventSource = NULL;
+//    }
 
     [NSApp setDelegate:nil];
     [_glfw.ns.delegate release];

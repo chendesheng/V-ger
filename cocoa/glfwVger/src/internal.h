@@ -383,8 +383,7 @@ void _glfwPlatformSetTime(double time);
 /*! @ingroup platform
  */
 int _glfwPlatformCreateWindow(_GLFWwindow* window,
-                              const _GLFWwndconfig* wndconfig,
-                              const _GLFWfbconfig* fbconfig);
+                              const _GLFWwndconfig* wndconfig);
 
 /*! @ingroup platform
  */

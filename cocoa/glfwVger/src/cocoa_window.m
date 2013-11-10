@@ -484,31 +484,31 @@ static NSRect convertRectToBacking(_GLFWwindow* window, NSRect contentRect)
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    _GLFWwindow* window;
+//    _GLFWwindow* window;
+//
+//    for (window = _glfw.windowListHead;  window;  window = window->next)
+//        _glfwInputWindowCloseRequest(window);
 
-    for (window = _glfw.windowListHead;  window;  window = window->next)
-        _glfwInputWindowCloseRequest(window);
-
-    return NSTerminateCancel;
+    return NSTerminateNow;
 }
 
 - (void)applicationDidHide:(NSNotification *)notification
 {
-    _GLFWwindow* window;
-
-    for (window = _glfw.windowListHead;  window;  window = window->next)
-        _glfwInputWindowVisibility(window, GL_FALSE);
+//    _GLFWwindow* window;
+//
+//    for (window = _glfw.windowListHead;  window;  window = window->next)
+//        _glfwInputWindowVisibility(window, GL_FALSE);
 }
 
 - (void)applicationDidUnhide:(NSNotification *)notification
 {
-    _GLFWwindow* window;
-
-    for (window = _glfw.windowListHead;  window;  window = window->next)
-    {
-        if ([window->ns.object isVisible])
-            _glfwInputWindowVisibility(window, GL_TRUE);
-    }
+//    _GLFWwindow* window;
+//
+//    for (window = _glfw.windowListHead;  window;  window = window->next)
+//    {
+//        if ([window->ns.object isVisible])
+//            _glfwInputWindowVisibility(window, GL_TRUE);
+//    }
 }
 @end
 
@@ -1157,20 +1157,20 @@ static GLboolean initializeAppKit(void)
 static GLboolean createWindow(_GLFWwindow* window,
                               const _GLFWwndconfig* wndconfig)
 {
-    // NSLog(@"createWindow");
+    NSLog(@"createWindow1");
 
     unsigned int styleMask = 0;
 
-    if (wndconfig->monitor || !wndconfig->decorated)
-        styleMask = NSBorderlessWindowMask;
-    else
-    {
+//    if (wndconfig->monitor || !wndconfig->decorated)
+//        styleMask = NSBorderlessWindowMask;
+//    else
+//    {
         styleMask = NSTitledWindowMask | NSClosableWindowMask |
                     NSMiniaturizableWindowMask;
 
-        if (wndconfig->resizable)
+//        if (wndconfig->resizable)
             styleMask |= NSResizableWindowMask;
-    }
+//    }
 //    styleMask = NSBorderlessWindowMask;
 
     window->ns.object = [[GLFWWindow alloc]
@@ -1208,15 +1208,15 @@ static GLboolean createWindow(_GLFWwindow* window,
     [window->ns.object setAcceptsMouseMovedEvents:YES];
     [window->ns.object center];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-    if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_7) {
+//#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+//    if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_7) {
         [window->ns.object setRestorable:NO];
 
-        if (wndconfig->resizable) {
+//        if (wndconfig->resizable) {
             [window->ns.object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-        }
-    }
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
+//        }
+//    }
+//#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
     NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/60.0 
                             target:window->ns.view
@@ -1239,8 +1239,7 @@ static GLboolean createWindow(_GLFWwindow* window,
 //////////////////////////////////////////////////////////////////////////
 
 int _glfwPlatformCreateWindow(_GLFWwindow* window,
-                              const _GLFWwndconfig* wndconfig,
-                              const _GLFWfbconfig* fbconfig)
+                              const _GLFWwndconfig* wndconfig)
 {
     if (!initializeAppKit())
         return GL_FALSE;
@@ -1274,8 +1273,8 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
     if (!createWindow(window, wndconfig))
         return GL_FALSE;
 
-    if (!_glfwCreateContext(window, wndconfig, fbconfig))
-        return GL_FALSE;
+//    if (!_glfwCreateContext(window, wndconfig, fbconfig))
+//        return GL_FALSE;
 
 
     // [window->nsgl.context setView:window->ns.view];

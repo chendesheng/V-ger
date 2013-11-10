@@ -6,8 +6,9 @@ import (
 	. "libav"
 	"log"
 	"path/filepath"
-	"player/glfw"
+	// "player/glfw"
 	// "runtime"
+	"player/gui"
 	"sync"
 	"time"
 )
@@ -30,7 +31,7 @@ type video struct {
 
 	ch chan picture
 
-	window *Window
+	window *gui.Window
 	status string
 
 	pic picture
@@ -92,21 +93,47 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 	v.videoPktPts = AV_NOPTS_VALUE
 	v.ch = make(chan picture)
 
-	v.window = NewWindow(v.width, v.height, filepath.Base(filename))
-	v.window.AddEventHandler(func(e Event) { //run in main thread, safe to operate ui elements
-		switch e.Kind {
-		case Draw:
-			v.draw()
+	v.window = gui.NewWindow(filepath.Base(filename), v.width, v.height)
+
+	//run in main thread, safe to operate ui elements
+	v.window.FuncDraw = append(v.window.FuncDraw, func() {
+		v.draw()
+	})
+	v.window.FuncKeyDown = append(v.window.FuncKeyDown, func(keycode int) {
+		switch keycode {
+		case gui.KEY_SPACE:
+			v.c.Toggle()
 			break
-		case KeyPress:
-			switch e.Data.(glfw.Key) {
-			case glfw.KeySpace:
-				v.c.Toggle()
-				break
-			}
+		case gui.KEY_LEFT:
+			println("key left pressed")
+			v.c.AddTime(-10 * time.Second)
+			break
+		case gui.KEY_RIGHT:
+			println("key right pressed")
+			v.c.AddTime(10 * time.Second)
+			break
+		case gui.KEY_UP:
+			v.c.AddTime(time.Minute)
+			break
+		case gui.KEY_DOWN:
+			v.c.AddTime(-time.Minute)
 			break
 		}
 	})
+	// (func(e Event) {
+	// 	switch e.Kind {
+	// 	case Draw:
+	// 		v.draw()
+	// 		break
+	// 	case KeyPress:
+	// 		switch e.Data.(glfw.Key) {
+	// 		case glfw.KeySpace:
+	// 			v.c.Toggle()
+	// 			break
+	// 		}
+	// 		break
+	// 	}
+	// })
 	// v.window.SetCursorAutoHide()
 }
 
@@ -167,7 +194,7 @@ func (v *video) decode(packet *AVPacket) {
 		pic := picture{obj, time.Duration(pts * (float64(time.Second)))}
 		v.setPic(pic)
 		v.c.WaitUtil(pic.pts)
-		v.window.PostEvent(Event{Draw, nil})
+		v.window.PostEvent(gui.Event{gui.Draw, nil})
 	}
 }
 
@@ -191,7 +218,7 @@ func (v *video) draw() {
 		v.window.Draw(pic.Bytes(), v.width, v.height)
 	} else {
 		println("DrawClear")
-		v.window.DrawClear(v.width, v.height)
+		// v.window.DrawClear(v.width, v.height)
 	}
 }
 
@@ -212,6 +239,6 @@ func (v *video) play() {
 	// 	}
 	// }()
 
-	v.window.EventLoop()
+	gui.PollEvents()
 	return
 }

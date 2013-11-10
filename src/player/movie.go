@@ -3,7 +3,7 @@ package main
 import (
 	// "fmt"
 	. "libav"
-	"player/glfw"
+	// "player/glfw"
 	// "log"
 	. "player/clock"
 	"time"
@@ -82,63 +82,40 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	m.c.SetTime(start)
 
 	if m.v != nil {
-		m.v.window.AddEventHandler(func(e Event) { //run in main thread, safe to operate ui elements
-			switch e.Kind {
-			case KeyPress:
-				switch e.Data.(glfw.Key) {
-				case glfw.KeyLeft:
-					println("key left pressed")
-					m.c.AddTime(-10 * time.Second)
-					break
-				case glfw.KeyRight:
-					println("key right pressed")
-					m.c.AddTime(10 * time.Second)
-					break
-				case glfw.KeyUp:
-					m.c.AddTime(time.Minute)
-					break
-				case glfw.KeyDown:
-					m.c.AddTime(-time.Minute)
-					break
-				}
+		m.v.window.FuncOnProgressChanged = append(m.v.window.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
+			switch typ {
+			case 0:
+				m.c.GotoPercent(percent)
+				m.c.Pause()
 				break
-			case TrackPositionChanged:
-				data := e.Data.(TrackPositionChangedEventData)
-				switch data.typ {
-				case 0:
-					m.c.GotoPercent(data.percent)
-					m.c.Pause()
-					break
-				case 2:
-					println("mouse up:", data.percent)
-					m.c.Resume()
-					m.c.GotoPercent(data.percent)
+			case 2:
+				println("mouse up:", percent)
+				m.c.Resume()
+				m.c.GotoPercent(percent)
 
-					break
-				case 1:
-					m.c.GotoPercent(data.percent)
-					t := m.c.GetSeekTime()
-					m.ctx.SeekFile(m.v.stream, t, AVSEEK_FLAG_FRAME)
-					// packet := AVPacket{}
-					// frame := AllocFrame()
-					// codecCtx := m.v.stream.Codec()
-					// for ctx.ReadFrame(&packet) >= 0 {
-					// 	if packet.StreamIndex() == m.v.stream.Index() {
-					// 		pts := time.Duration(float64(packet.Pts()) * m.v.stream.Timebase().Q2D() * (float64(time.Second)))
+				break
+			case 1:
+				m.c.GotoPercent(percent)
+				t := m.c.GetSeekTime()
+				m.ctx.SeekFile(m.v.stream, t, AVSEEK_FLAG_FRAME)
+				// packet := AVPacket{}
+				// frame := AllocFrame()
+				// codecCtx := m.v.stream.Codec()
+				// for ctx.ReadFrame(&packet) >= 0 {
+				// 	if packet.StreamIndex() == m.v.stream.Index() {
+				// 		pts := time.Duration(float64(packet.Pts()) * m.v.stream.Timebase().Q2D() * (float64(time.Second)))
 
-					// 		if codecCtx.DecodeVideo(frame, &packet) {
-					// 			packet.Free()
-					// 			if t-pts < 10*time.Millisecond {
-					// 				break
-					// 			}
-					// 		} else {
-					// 			packet.Free()
-					// 		}
-					// 	}
-					// }
-					m.drawCurrentFrame()
-					break
-				}
+				// 		if codecCtx.DecodeVideo(frame, &packet) {
+				// 			packet.Free()
+				// 			if t-pts < 10*time.Millisecond {
+				// 				break
+				// 			}
+				// 		} else {
+				// 			packet.Free()
+				// 		}
+				// 	}
+				// }
+				m.drawCurrentFrame()
 				break
 			}
 		})
@@ -192,7 +169,7 @@ func (m *movie) drawCurrentFrame() {
 				swsCtx.Scale(frame, v.pictureRGB)
 				obj := v.pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
 				v.setPic(picture{obj, 0})
-				v.window.SetNeedsDisplay(true)
+				v.window.RefreshContent()
 				break
 			}
 		} else {

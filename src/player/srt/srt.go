@@ -116,6 +116,8 @@ func toColor(c string) uint {
 		//...
 	}
 
+	defaultColor := uint(0)
+
 	if c[0] == '#' {
 		if len(c) == 4 {
 			c = c[1:]
@@ -135,7 +137,7 @@ func toColor(c string) uint {
 		if len(c) == 6 {
 			bytes, err := hex.DecodeString(c)
 			if err != nil {
-				return 0xffffff
+				return defaultColor
 			}
 
 			// println("test")
@@ -143,16 +145,16 @@ func toColor(c string) uint {
 			// println(bytes[0], bytes[1], bytes[2])
 			return uint(bytes[2]) + (uint(bytes[1]) << 8) + (uint(bytes[0]) << 16)
 		} else {
-			return 0xffffff
+			return defaultColor
 		}
 	} else {
-		return 0xffffff
+		return defaultColor
 	}
 }
 func parsePosition(text string) (bool, Position, string) {
 	regPos := regexp.MustCompile(`^\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
 	matches := regPos.FindStringSubmatch(text)
-	println(text)
+	// println(text)
 
 	if matches == nil {
 		regPos2 := regexp.MustCompile(`^\{\\an([0-9])\}`)

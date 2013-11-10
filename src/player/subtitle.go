@@ -5,7 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	. "player/clock"
-	"player/glfw"
+	// "player/glfw"
+	"player/gui"
 	"player/srt"
 	// "strings"
 	"sync"
@@ -15,7 +16,7 @@ import (
 type subtitle struct {
 	sync.Locker
 
-	w *Window
+	w *gui.Window
 
 	items []*srt.SubItem
 	pos   int
@@ -26,7 +27,7 @@ type subtitle struct {
 	quit   chan bool
 }
 
-func NewSubtitle(file string, w *Window) *subtitle {
+func NewSubtitle(file string, w *gui.Window) *subtitle {
 	var err error
 	bytes, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -46,27 +47,23 @@ func NewSubtitle(file string, w *Window) *subtitle {
 	s.w = w
 
 	log.Print("sub items:", len(s.items))
-	w.AddEventHandler(func(e Event) { //run in main thread, safe to operate ui elements
-		switch e.Kind {
-		case KeyPress:
-			switch e.Data.(glfw.Key) {
-			case glfw.KeyMinus:
-				println("key minus pressed")
-				s.addOffset(-1000 * time.Millisecond)
-				break
-			case glfw.KeyEqual:
-				println("key equal pressed")
-				s.addOffset(1000 * time.Millisecond)
-				break
-			case glfw.KeyLeftBracket:
-				println("left bracket pressed")
-				s.addOffset(-200 * time.Millisecond)
-				break
-			case glfw.KeyRightBracket:
-				println("right bracket pressed")
-				s.addOffset(200 * time.Millisecond)
-				break
-			}
+	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) { //run in main thread, safe to operate ui elements
+		switch keycode {
+		case gui.KEY_MINUS:
+			println("key minus pressed")
+			s.addOffset(-1000 * time.Millisecond)
+			break
+		case gui.KEY_EQUAL:
+			println("key equal pressed")
+			s.addOffset(1000 * time.Millisecond)
+			break
+		case gui.KEY_LEFT_BRACKET:
+			println("left bracket pressed")
+			s.addOffset(-200 * time.Millisecond)
+			break
+		case gui.KEY_RIGHT_BRACKET:
+			println("right bracket pressed")
+			s.addOffset(200 * time.Millisecond)
 			break
 		}
 	})
@@ -135,11 +132,11 @@ func (s *subtitle) playWithQuit(quit chan bool) {
 			continue
 		}
 		if s.c.WaitUtilWithQuit(from, quit) {
-			s.w.PostEvent(Event{DrawSub, &srt.SubItem{}})
+			s.w.PostEvent(gui.Event{gui.DrawSub, &srt.SubItem{}})
 			return
 		}
 
-		s.w.PostEvent(Event{DrawSub, item})
+		s.w.PostEvent(gui.Event{gui.DrawSub, item})
 
 		nextFrom := to
 		nextPos := s.position()
@@ -154,7 +151,7 @@ func (s *subtitle) playWithQuit(quit chan bool) {
 
 			s.c.WaitUtilWithQuit(to-50*time.Millisecond, quit)
 
-			s.w.PostEvent(Event{DrawSub, &srt.SubItem{}})
+			s.w.PostEvent(gui.Event{gui.DrawSub, &srt.SubItem{}})
 		}(to, nextFrom)
 	}
 }

@@ -1,19 +1,9 @@
-//
-//  subtitles.m
-//  glfwVger
-//
-//  Created by Roy Chen on 10/27/13.
-//  Copyright (c) 2013 me. All rights reserved.
-//
-
-#include "internal.h"
-#import "subtitles.h"
-@implementation subtitles
+#import "textView.h"
+@implementation TextView
 
 int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 
-- (id)initWithFrame:(NSRect)frame
-{
+- (id)initWithFrame:(NSRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code here.
@@ -22,13 +12,13 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         [self setBackgroundColor:[NSColor clearColor]];
         [self setAlignment:NSCenterTextAlignment];
         [self setFontSize:35.0];
+        self->originalWindowWidth = 1280;//fontsize 35 in 1280 pixel
     }
     
     return self;
 }
 
-- (void)setFontSize:(CGFloat)size
-{
+- (void)setFontSize:(CGFloat)size {
     self->_fontSize = size;
 }
 - (NSSize)sizeForWidth:(float)width
@@ -63,8 +53,24 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 	return answer ;
 }
 
-- (void)setText:(SubItem*)items length:(int)len
-{
+- (CGFloat)CalcFontsize {
+    CGFloat ratio = ([[self window] frame].size.width)/(self->originalWindowWidth);
+    NSLog(@"radio:%lf", ratio);
+
+    CGFloat s = self->_fontSize*ratio;
+
+    if (s > 50) {
+        s = 50;
+    }
+
+    if (s < 10) {
+        s = 10;
+    }
+
+    return s;
+}
+
+- (void)setText:(SubItem*)items length:(int)len {
     NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] init];
     for (int i=0; i < len; i++) {
         SubItem item = items[i];
@@ -80,7 +86,7 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         NSFont *font = [fontManager fontWithFamily:@"Palatino"
                                                   traits:mask
                                                   weight:0
-                                                    size:self->_fontSize];
+                                                    size:[self CalcFontsize]];
         CGFloat red = item.color&0xff0000;
         CGFloat green = item.color&0x00ff00;
         CGFloat blue = item.color&0x0000ff;
@@ -90,9 +96,11 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         [shadow setShadowColor:[NSColor colorWithDeviceRed:(255-red) green:(255-green) blue:(255-blue) alpha:1]];
         [shadow setShadowBlurRadius:6];
         
-        NSAttributedString *str = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:item.str] attributes:@{NSFontAttributeName:font,NSBackgroundColorAttributeName:[NSColor clearColor],
-                                              NSForegroundColorAttributeName:color,
-                                                       NSShadowAttributeName:shadow}];
+        NSAttributedString *str = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:item.str] 
+            attributes:@{NSFontAttributeName:font,
+              NSBackgroundColorAttributeName:[NSColor clearColor],
+              NSForegroundColorAttributeName:color,
+                       NSShadowAttributeName:shadow}];
 //        ,
 //    NSStrokeWidthAttributeName:@-4.0,
 //    NSStrokeColorAttributeName:[NSColor blackColor]
@@ -106,71 +114,30 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
     CGFloat height = [self sizeForWidth:width height:FLT_MAX].height;
 //
 //    NSLog(@"height:%lf", height);
-    [self setFrameSize:NSMakeSize(width, height)];
+    NSPoint pt = [self frame].origin;
+    [self setFrame:NSMakeRect(pt.x,pt.y,width, height)];
 }
 
 
-- (void)mouseDown:(NSEvent *)event
-{
-    NSLog(@"mouseDown");
+- (void)mouseDown:(NSEvent *)event {
     if (self.superview != NULL) {
-        NSLog(@"mouseDown1");
         [self.superview mouseDown:event];
     }
 }
 
-- (void)mouseDragged:(NSEvent *)event
-{
+- (void)mouseDragged:(NSEvent *)event {
     if (self.superview != NULL)
         [self.superview mouseDragged:event];
 }
 
-- (void)mouseUp:(NSEvent *)event
-{
+- (void)mouseUp:(NSEvent *)event {
     if (self.superview != NULL)
         [self.superview mouseUp:event];
 }
 
-- (void)mouseMoved:(NSEvent *)event
-{
+- (void)mouseMoved:(NSEvent *)event {
     if (self.superview != NULL)
         [self.superview mouseMoved:event];
-}
-
-- (void)rightMouseDown:(NSEvent *)event
-{
-    if (self.superview != NULL)
-        [self.superview rightMouseDown:event];
-}
-
-- (void)rightMouseDragged:(NSEvent *)event
-{
-    if (self.superview != NULL)
-        [self.superview rightMouseDragged:event];
-}
-
-- (void)rightMouseUp:(NSEvent *)event
-{
-    if (self.superview != NULL)
-        [self.superview rightMouseUp:event];
-}
-
-- (void)otherMouseDown:(NSEvent *)event
-{
-    if (self.superview != NULL)
-        [self.superview otherMouseDown:event];
-}
-
-- (void)otherMouseDragged:(NSEvent *)event
-{
-    if (self.superview != NULL)
-        [self.superview otherMouseDragged:event];
-}
-
-- (void)otherMouseUp:(NSEvent *)event
-{
-    if (self.superview != NULL)
-        [self.superview otherMouseUp:event];
 }
 
 @end

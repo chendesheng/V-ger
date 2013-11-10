@@ -104,7 +104,7 @@ typedef struct _GLFWlibraryNS
         double      resolution;
     } timer;
 
-    CGEventSourceRef eventSource;
+//    CGEventSourceRef eventSource;
     id              delegate;
     id              autoreleasePool;
     id              cursor;
@@ -138,9 +138,9 @@ typedef struct _GLFWmonitorNS
 // OpenGL support
 int _glfwInitContextAPI(void);
 void _glfwTerminateContextAPI(void);
-int _glfwCreateContext(_GLFWwindow* window,
-                       const _GLFWwndconfig* wndconfig,
-                       const _GLFWfbconfig* fbconfig);
+//int _glfwCreateContext(_GLFWwindow* window,
+//                       const _GLFWwndconfig* wndconfig,
+//                       const _GLFWfbconfig* fbconfig);
 void _glfwDestroyContext(_GLFWwindow* window);
 
 #endif // _cocoa_platform_h_
