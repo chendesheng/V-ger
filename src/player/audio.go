@@ -120,7 +120,8 @@ func abs(i int64) int64 {
 func (a *audio) flushBuffer() {
 	for {
 		select {
-		case <-a.ch:
+		case pkt := <-a.ch:
+			pkt.Free()
 			println("skip package")
 		default:
 			println("flush return")
@@ -289,6 +290,7 @@ func (a *audio) resampleFrame(frame AVFrame) AVObject {
 		println("error initializing libavresample")
 		return AVObject{}
 	}
+	defer resampleCtx.Close()
 
 	osize := GetBytesPerSample(AV_SAMPLE_FMT_S16)
 	outSize, outLinesize := AVSampleGetBufferSize(a.codecCtx.Channels(), frame.NbSamples(), frame.Format())
@@ -303,7 +305,6 @@ func (a *audio) resampleFrame(frame AVFrame) AVObject {
 		println("avresample_convert() failed")
 		return AVObject{}
 	}
-	resampleCtx.Close()
 	tmpOut.SetSize(outSamples * osize * 2)
 	return tmpOut //must free after copy to buffer
 }
@@ -338,7 +339,7 @@ func (a *audio) getAudioDelay(packet *AVPacket, framePts uint64) {
 	// a.c.WaitUtil(pts)
 	// println("settime:", pts.String())
 	now := a.c.GetTime()
-	if now < pts+300*time.Millisecond && now > pts-300*time.Millisecond {
+	if now < pts+time.Second && now > pts-time.Second {
 		a.c.SetTime(pts)
 	}
 	// a.audioClockTime = time.Now()

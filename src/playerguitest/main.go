@@ -6,7 +6,7 @@ import (
 
 func main() {
 	w := NewWindow("hello", 1280, 720)
-	w.Show()
-
+	// w.ShowText(strs, withPosition, x, y)
+	w.HideStartupView()
 	PollEvents()
 }

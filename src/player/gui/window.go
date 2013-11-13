@@ -155,14 +155,12 @@ func (w *Window) Draw(img []byte, imgWidth, imgHeight int) {
 	gl.TexCoord2d(0, 1)
 	gl.Vertex2d(-1, 1)
 	gl.End()
-	// gl.Color3f(1.0, 0.85, 0.35)
-	// gl.Begin(gl.TRIANGLES)
-	// {
-	// 	gl.Vertex3f(0.0, 0.6, 0.0)
-	// 	gl.Vertex3f(-0.2, -0.3, 0.0)
-	// 	gl.Vertex3f(0.2, -0.3, 0.0)
-	// }
-	// gl.End()
+
+	w.HideStartupView()
+}
+
+func (w *Window) HideStartupView() {
+	C.windowHideStartupView(w.ptr)
 }
 
 //run immediately

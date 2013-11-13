@@ -10,6 +10,7 @@ package libav
 import "C"
 import (
 	"errors"
+	"math"
 	"reflect"
 	"time"
 	"unsafe"
@@ -105,14 +106,16 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 
 	C.avcodec_flush_buffers(stream.Codec().ptr)
 }
-func (ctx *AVFormatContext) SeekFile(stream AVStream, t time.Duration, flags int) {
-	timeBase := stream.ptr.time_base
+func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
+	// timeBase := stream.ptr.time_base
 
-	seek_target := C.av_rescale(C.int64_t(t/time.Millisecond), C.int64_t(timeBase.den), C.int64_t(timeBase.num)) / 1000
-	C.avformat_seek_file(ctx.ptr, C.int(stream.Index()), 0, C.int64_t(seek_target), C.int64_t(seek_target), C.int(flags))
+	seek_target := float64(t) / float64(time.Second) * AV_TIME_BASE
 
-	C.avcodec_flush_buffers(stream.Codec().ptr)
+	// seek_target := C.av_rescale(C.int64_t(t/time.Millisecond), C.int64_t(timeBase.den), C.int64_t(timeBase.num)) / 1000
 
+	ret := int(C.avformat_seek_file(ctx.ptr, -1, C.int64_t(math.MinInt64), C.int64_t(seek_target), C.int64_t(math.MaxInt64), C.int(flags)))
+
+	return ret
 }
 
 func (ctx *AVFormatContext) Duration() int64 {

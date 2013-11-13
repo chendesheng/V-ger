@@ -7,10 +7,7 @@
 #import "textView.h"
 #import "blurView.h"
 #import "progressView.h"
-void test() {
-	NSLog(@"test1");
-}
-
+#import "startupView.h"
 
 void initialize() {
     if (NSApp)
@@ -63,6 +60,12 @@ void* newWindow(char* title, int width, int height) {
 
     [v setProgressView:pv];
 
+    StartupView* sv = [[StartupView alloc] initWithFrame:[v frame]];
+    [v addSubview:sv];
+
+    [v setStartupView:sv];
+
+
     NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/60.0 
                             target:w
                           selector:@selector(timerTick:)
@@ -98,7 +101,7 @@ void pollEvents() {
 		pool = [[NSAutoreleasePool alloc] init];
 
 	    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-	                                        untilDate:[NSDate distantPast]
+	                                        untilDate:[NSDate distantFuture]
 	                                        inMode:NSDefaultRunLoopMode
 	                                        dequeue:YES];
 	    [NSApp sendEvent:event];
@@ -128,4 +131,8 @@ void showWindowProgress(void* ptr, char* left, char* right, double percent) {
 void showText(void* ptr, SubItem* items, int length, double x, double y) {
     Window* w = (Window*)ptr;
     [[w contentView] showText:items length:length x:x y:y];
+}
+void windowHideStartupView(void* ptr) {
+    Window* w = (Window*)ptr;
+    [[w contentView] hideStartupView];
 }

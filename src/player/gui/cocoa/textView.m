@@ -140,4 +140,11 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         [self.superview mouseMoved:event];
 }
 
+- (BOOL)canBecomeKeyView {
+    return NO;
+}
+
+- (BOOL)acceptsFirstResponder {
+    return NO;
+}
 @end

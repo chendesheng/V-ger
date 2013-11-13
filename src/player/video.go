@@ -120,21 +120,6 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 			break
 		}
 	})
-	// (func(e Event) {
-	// 	switch e.Kind {
-	// 	case Draw:
-	// 		v.draw()
-	// 		break
-	// 	case KeyPress:
-	// 		switch e.Data.(glfw.Key) {
-	// 		case glfw.KeySpace:
-	// 			v.c.Toggle()
-	// 			break
-	// 		}
-	// 		break
-	// 	}
-	// })
-	// v.window.SetCursorAutoHide()
 }
 
 func (v *video) decode(packet *AVPacket) {
@@ -160,7 +145,6 @@ func (v *video) decode(packet *AVPacket) {
 	}
 	pts *= stream.Timebase().Q2D()
 	// println("pts:", pts)
-	packet.Free()
 	if frameFinished {
 		// println(time.Since(b).String())
 		// b = time.Now()
@@ -186,10 +170,6 @@ func (v *video) decode(packet *AVPacket) {
 
 		// b := time.Now()
 		obj := pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
-		// println(time.Since(b).String())
-		// println("length:", len(tmp))
-		// v.ch <- picture{obj, time.Duration(pts * (float64(time.Second)))}
-		// v.ch <- picture{append(make([]byte, 0), pictureRGB.DataAt(0)[:codecCtx.Width()*codecCtx.Height()*3]...), time.Duration(pts * (float64(time.Second)))}
 
 		pic := picture{obj, time.Duration(pts * (float64(time.Second)))}
 		v.setPic(pic)

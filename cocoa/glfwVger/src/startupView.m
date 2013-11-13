@@ -8,7 +8,7 @@
 
 #import "StartupView.h"
 
-@implementation startupView
+@implementation StartupView
 
 - (id)initWithFrame:(NSRect)frame
 {

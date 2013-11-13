@@ -1,6 +1,6 @@
 #import "startupView.h"
 
-@implementation startupView
+@implementation StartupView
 
 - (id)initWithFrame:(NSRect)frame
 {

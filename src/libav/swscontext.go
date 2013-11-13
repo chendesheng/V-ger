@@ -7,9 +7,13 @@ type SwsContext struct {
 	ptr *C.struct_SwsContext
 }
 
+var cachedContext SwsContext
+
 func SwsGetCachedContext(w int, h int, pixFmt int, outw int, outh int, outPixFmt int, flags int) SwsContext {
-	return SwsContext{ptr: C.sws_getCachedContext(nil, C.int(w), C.int(h), int32(pixFmt), C.int(outw),
-		C.int(outh), int32(outPixFmt), C.int(flags), nil, nil, nil)}
+	cachedContext.ptr = C.sws_getCachedContext(cachedContext.ptr, C.int(w), C.int(h), int32(pixFmt), C.int(outw),
+		C.int(outh), int32(outPixFmt), C.int(flags), nil, nil, nil)
+
+	return cachedContext
 }
 
 func (ctx *SwsContext) Scale(frame1 AVFrame, frame2 AVPicture) {

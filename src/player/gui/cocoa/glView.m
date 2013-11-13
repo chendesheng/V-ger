@@ -41,6 +41,8 @@
 
 - (void)prepareOpenGL{
     // [[self openGLContext] makeCurrentContext];
+    GLint swapInt = 1;
+    [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 }
 
 -(void)dealloc {
@@ -145,7 +147,7 @@
         
         NSRect frame = [self->textView frame];
         frame.origin.y = 60;
-        [self->textView setFrameOrigin:frame.origin];
+        [self->textView setFrame:frame];
         [self->textView setNeedsDisplay:YES];
     }
     else {
@@ -153,7 +155,7 @@
         
         NSRect frame = [self->textView frame];
         frame.origin.y = 20;
-        [self->textView setFrameOrigin:frame.origin];
+        [self->textView setFrame:frame];
         [self->textView setNeedsDisplay:YES];
     }
 }
@@ -185,16 +187,12 @@
 
 - (void)drawRect:(NSRect)dirtyRect {
     onDraw((void*)[self window]);
-    // glClearColor(0, 0, 0, 1);
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // glColor3f(1.0f, 0.85f, 0.35f);
-    // glBegin(GL_TRIANGLES);
-    // {
-    //     glVertex3f(  0.0,  0.6, 0.0);
-    //     glVertex3f( -0.2, -0.3, 0.0);
-    //     glVertex3f(  0.2, -0.3 ,0.0);
-    // }
-    // glEnd();
     [[self openGLContext] flushBuffer];
+}
+-(void)setStartupView:(StartupView*)sv {
+    self->startupView = sv;
+}
+-(void)hideStartupView {
+    [self->startupView setHidden:YES];
 }
 @end

@@ -1,5 +1,5 @@
 #import <Cocoa/Cocoa.h>
 
-@interface startupView : NSView
+@interface StartupView : NSView
 
 @end

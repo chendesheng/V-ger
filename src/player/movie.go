@@ -56,7 +56,7 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 		// m.v.a = m.a
 	}
 
-	Seek(ctx, audioStream, videoStream, m.s, start)
+	Seek(ctx, videoStream, m.s, start)
 
 	// println(time.Since(b).String())
 	// ctx.SeekFrame(audioStream, start, 0)
@@ -93,11 +93,21 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 				m.c.Resume()
 				m.c.GotoPercent(percent)
 
+				if m.a != nil {
+					codec := m.a.stream.Codec()
+					codec.FlushBuffer()
+				}
 				break
 			case 1:
 				m.c.GotoPercent(percent)
 				t := m.c.GetSeekTime()
-				m.ctx.SeekFile(m.v.stream, t, AVSEEK_FLAG_FRAME)
+				m.ctx.SeekFile(t, 0)
+
+				if m.v != nil {
+					codec := m.v.stream.Codec()
+					codec.FlushBuffer()
+					m.drawCurrentFrame()
+				}
 				// packet := AVPacket{}
 				// frame := AllocFrame()
 				// codecCtx := m.v.stream.Codec()
@@ -115,15 +125,27 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 				// 		}
 				// 	}
 				// }
-				m.drawCurrentFrame()
+
 				break
 			}
 		})
 	}
 }
-func Seek(ctx AVFormatContext, audioStream, videoStream AVStream, s *subtitle, start time.Duration) {
-	ctx.SeekFile(audioStream, start, AVSEEK_FLAG_FRAME)
-	ctx.SeekFile(videoStream, start, AVSEEK_FLAG_FRAME)
+func Seek(ctx AVFormatContext, videoStream AVStream, s *subtitle, start time.Duration) {
+	// res := ctx.SeekFile(audioStream, start, 0)
+	// if res < 0 {
+	// 	println("audio seek file fail")
+
+	// 	// ctx.SeekFrame(audioStream, start, 0)
+	// }
+
+	res := ctx.SeekFile(start, 0)
+	println("video seek file res:", res)
+	if res < 0 {
+		println("video seek file fail")
+
+		// ctx.SeekFrame(videoStream, start, 0)
+	}
 
 	packet := AVPacket{}
 	frame := AllocFrame()
@@ -131,6 +153,7 @@ func Seek(ctx AVFormatContext, audioStream, videoStream AVStream, s *subtitle, s
 	for ctx.ReadFrame(&packet) >= 0 {
 		if packet.StreamIndex() == videoStream.Index() {
 			pts := time.Duration(float64(packet.Pts()) * videoStream.Timebase().Q2D() * (float64(time.Second)))
+			// println(pts.String())
 
 			if codecCtx.DecodeVideo(frame, &packet) {
 				packet.Free()
@@ -150,6 +173,9 @@ func Seek(ctx AVFormatContext, audioStream, videoStream AVStream, s *subtitle, s
 func (m *movie) drawCurrentFrame() {
 	ctx := m.ctx
 	v := m.v
+	if v == nil {
+		return
+	}
 
 	packet := AVPacket{}
 
@@ -183,35 +209,27 @@ func (m *movie) decode() {
 	ctx := m.ctx
 
 	for ctx.ReadFrame(&packet) >= 0 {
-
+		streamIndex := packet.StreamIndex()
 		if m.v != nil {
-			if m.v.stream.Index() == packet.StreamIndex() {
+			if m.v.stream.Index() == streamIndex {
 				m.v.decode(&packet)
+				packet.Free()
 			}
 		}
 
 		if m.a != nil {
-			if m.a.stream.Index() == packet.StreamIndex() {
-				pt := &packet
-				pt.Dup()
-				p := *pt
-				m.a.ch <- &p
+			if m.a.stream.Index() == streamIndex {
+				pkt := packet
+				pkt.Dup()
+				m.a.ch <- &pkt
 			}
 		}
 
 		now := m.c.GetTime()
 		vc := time.Duration(m.v.videoClock * (float64(time.Second)))
-		// if now > vc+time.Second {
-		// 	Seek(ctx, m.a.stream, m.v.stream, now)
-		// 	m.v.frame = AllocFrame()
-		// 	m.a.flushBuffer()
-		// 	println("after seek")
-		// } else
-		if now < vc-time.Second || now > vc+time.Second {
-			// ctx.SeekFile(m.v.stream, now, AVSEEK_FLAG_FRAME|AVSEEK_FLAG_BACKWARD)
-			// ctx.SeekFile(m.a.stream, now, AVSEEK_FLAG_FRAME|AVSEEK_FLAG_BACKWARD)
 
-			Seek(ctx, m.a.stream, m.v.stream, m.s, now)
+		if now < vc-2*time.Second || now > vc+2*time.Second {
+			Seek(ctx, m.v.stream, m.s, now)
 			m.v.frame = AllocFrame()
 			m.a.flushBuffer()
 			println("after seek back")

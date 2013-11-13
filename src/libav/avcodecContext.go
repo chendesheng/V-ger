@@ -110,3 +110,7 @@ func (ctx *AVCodecContext) DecodeVideo(frame AVFrame, packet *AVPacket) bool {
 func (ctx *AVCodecContext) Timebase() AVRational {
 	return AVRational(ctx.ptr.time_base)
 }
+
+func (ctx *AVCodecContext) FlushBuffer() {
+	C.avcodec_flush_buffers(ctx.ptr)
+}
