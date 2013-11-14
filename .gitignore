@@ -26,3 +26,4 @@ client
 *.log
 bin/player
 unar
+*.o
