@@ -321,29 +321,11 @@ func (a *audio) getAudioDelay(packet *AVPacket, framePts uint64) {
 	t *= a.stream.Timebase().Q2D()
 
 	pts := time.Duration(t * float64(time.Second))
-	// println("pts:", pts.String())
 
-	// now := a.c.GetTime()
-	// println("now:", now.String())
-
-	// println("delay time:", (pts - now).String())
-	// return pts - now // / float64(time.Second) * float64(a.codecCtx.SimpleRate()) * float64(a.codecCtx.Channels()))
-	// if pts < now {
-	// 	//skip samples
-	// 	size :=
-
-	// } else if now < pts {
-	// 	//wait samples
-	// 	size := (pts - now) / float64(time.Second) * a.codecCtx.SimpleRate() * a.codecCtx.Channels()
-	// }
-	// a.c.WaitUtil(pts)
-	// println("settime:", pts.String())
 	now := a.c.GetTime()
 	if now < pts+time.Second && now > pts-time.Second {
 		a.c.SetTime(pts)
 	}
-	// a.audioClockTime = time.Now()
-
 }
 
 func (a *audio) decode(packet *AVPacket) {

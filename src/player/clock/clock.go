@@ -16,6 +16,8 @@ type Clock struct {
 	wait chan bool
 
 	totalTime time.Duration
+
+	seeking bool
 }
 
 //will be blocked if clock is paused
@@ -27,6 +29,38 @@ func (c *Clock) GetTime() time.Duration {
 
 func (c *Clock) GetSeekTime() time.Duration {
 	return c.getTime()
+}
+
+func (c *Clock) IsSeeking() bool {
+	c.Lock()
+	defer c.Unlock()
+
+	return c.seeking
+}
+
+func (c *Clock) StartSeek(percent float64) {
+	c.Lock()
+	defer c.Unlock()
+
+	t := time.Duration(float64(c.totalTime) * percent)
+	c.base = time.Now().Add(-t)
+	c.seeking = true
+}
+
+func (c *Clock) StartSeekTo(diff time.Duration) {
+	c.Lock()
+	defer c.Unlock()
+
+	c.base = c.base.Add(-diff)
+	c.seeking = true
+}
+
+func (c *Clock) EndSeek(t time.Duration) {
+	c.Lock()
+	defer c.Unlock()
+
+	c.base = time.Now().Add(-t)
+	c.seeking = false
 }
 
 func addZero(i int) string {

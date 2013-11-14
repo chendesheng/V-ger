@@ -14,13 +14,14 @@ import (
 	"task"
 	"time"
 	"util"
-	"website"
+	// "website"
 )
 
 // var filename = flag.String("file", "", "file name")
 // var filename = flag.String("file", "", "file name")
-// var taskName = flag.String("task", "Sleepy.Hollow.S01E04.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
-var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+var taskName = flag.String("task", "Sleepy.Hollow.S01E04.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+
+// var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
@@ -142,7 +143,7 @@ func main() {
 		}
 	}()
 
-	go website.Run()
+	// go website.Run()
 
 	// m.v.play()
 	m.play()

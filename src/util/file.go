@@ -35,3 +35,14 @@ func CheckExt(filename string, exts ...string) bool {
 
 	return false
 }
+
+func GetFileSize(file string) int64 {
+	if f, err := os.OpenFile(file, os.O_RDONLY, 0666); err == nil {
+		defer f.Close()
+		if info, err := f.Stat(); err == nil {
+			return info.Size()
+		}
+
+	}
+	return 0
+}

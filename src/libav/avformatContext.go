@@ -110,6 +110,9 @@ func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
 	// timeBase := stream.ptr.time_base
 
 	seek_target := float64(t) / float64(time.Second) * AV_TIME_BASE
+	if (flags & AVSEEK_FLAG_BYTE) == AVSEEK_FLAG_BYTE {
+		seek_target = float64(t)
+	}
 
 	// seek_target := C.av_rescale(C.int64_t(t/time.Millisecond), C.int64_t(timeBase.den), C.int64_t(timeBase.num)) / 1000
 
@@ -120,6 +123,10 @@ func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
 
 func (ctx *AVFormatContext) Duration() int64 {
 	return int64(ctx.ptr.duration)
+}
+
+func (ctx *AVFormatContext) StartTime() time.Duration {
+	return time.Duration((float64(ctx.ptr.start_time) / float64(AV_TIME_BASE)) * float64(time.Second))
 }
 
 const (

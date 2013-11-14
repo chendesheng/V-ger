@@ -43,7 +43,7 @@ type picture struct {
 	pts time.Duration
 }
 
-func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename string) {
+func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename string, start time.Duration) {
 	codecCtx := stream.Codec()
 	v.codecCtx = &codecCtx
 
@@ -59,6 +59,8 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 		log.Println("open decoder error code ", errCode)
 		return
 	}
+
+	v.videoClock = float64(start / time.Second)
 
 	codecCtx.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
 		ret := ctx.DefaultGetBuffer(frame)
@@ -106,17 +108,17 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 			break
 		case gui.KEY_LEFT:
 			println("key left pressed")
-			v.c.AddTime(-10 * time.Second)
+			v.c.StartSeekTo(-10 * time.Second)
 			break
 		case gui.KEY_RIGHT:
 			println("key right pressed")
-			v.c.AddTime(10 * time.Second)
+			v.c.StartSeekTo(10 * time.Second)
 			break
 		case gui.KEY_UP:
-			v.c.AddTime(time.Minute)
+			v.c.StartSeekTo(time.Minute)
 			break
 		case gui.KEY_DOWN:
-			v.c.AddTime(-time.Minute)
+			v.c.StartSeekTo(-time.Minute)
 			break
 		}
 	})

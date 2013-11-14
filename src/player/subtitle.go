@@ -93,7 +93,9 @@ func (s *subtitle) seek(t time.Duration) {
 	s.Lock()
 	defer s.Unlock()
 
+	println("close quit")
 	close(s.quit)
+	s.quit = make(chan bool)
 	for i, item := range s.items {
 		to := item.To + time.Duration(s.offset)*time.Second
 		if to > t {
@@ -108,6 +110,7 @@ func (s *subtitle) addOffset(delta time.Duration) {
 	s.Lock()
 	s.offset += delta
 	close(s.quit)
+	s.quit = make(chan bool)
 	s.pos = 0
 	s.Unlock()
 
@@ -156,6 +159,5 @@ func (s *subtitle) playWithQuit(quit chan bool) {
 	}
 }
 func (s *subtitle) play() {
-	s.quit = make(chan bool)
 	s.playWithQuit(s.quit)
 }

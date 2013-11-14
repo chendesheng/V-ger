@@ -136,3 +136,7 @@ void windowHideStartupView(void* ptr) {
     Window* w = (Window*)ptr;
     [[w contentView] hideStartupView];
 }
+void windowToggleFullScreen(void* ptr) {
+    Window* w = (Window*)ptr;
+    [w toggleFullScreen:nil];
+}

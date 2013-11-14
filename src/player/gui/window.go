@@ -77,11 +77,7 @@ func NewWindow(title string, width, height int) *Window {
 	ptr := unsafe.Pointer(C.newWindow(ctitle, C.int(width), C.int(height)))
 
 	w := &Window{
-		ptr:           ptr,
-		FuncDraw:      make([]func(), 0),
-		FuncTimerTick: make([]func(), 0),
-		FuncKeyDown:   make([]func(int), 0),
-
+		ptr:      ptr,
 		chEvents: make(chan Event),
 	}
 
@@ -106,6 +102,12 @@ func NewWindow(title string, width, height int) *Window {
 	w.texture = texture
 
 	// w.RefreshContent()
+
+	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) {
+		if keycode == KEY_ESCAPE {
+			C.windowToggleFullScreen(w.ptr)
+		}
+	})
 
 	return w
 }
