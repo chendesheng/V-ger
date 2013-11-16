@@ -18,11 +18,12 @@ type video struct {
 
 	formatCtx AVFormatContext
 	codecCtx  *AVCodecContext
-	stream    AVStream
+	swsCtx    SwsContext
 
-	frame       AVFrame
-	pictureRGB  AVPicture
-	pictureSize int
+	stream AVStream
+
+	frame      AVFrame
+	pictureRGB AVPicture
 
 	videoPktPts uint64
 	videoClock  float64
@@ -39,8 +40,8 @@ type video struct {
 	c *Clock
 }
 type picture struct {
-	AVObject
-	pts time.Duration
+	bytes []byte
+	pts   time.Duration
 }
 
 func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename string, start time.Duration) {
@@ -82,18 +83,32 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 	})
 	// println("source pix format:", codecCtx.PixelFormat())
 
-	pictureRGB := AVPicture{}
-	// pictureRGB := pictureRGB.AVPicture()
-	pictureRGB.Alloc(AV_PIX_FMT_RGB24, v.width, v.height)
+	numBytes := AVPictureGetSize(AV_PIX_FMT_RGB24, v.width, v.height)
+
+	picFrame := AllocFrame()
+	pictureRGB := picFrame.Picture()
+	pictureRGBBuffer := AVObject{}
+	pictureRGBBuffer.Malloc(numBytes)
+	pictureRGB.Fill(pictureRGBBuffer, AV_PIX_FMT_RGB24, v.width, v.height)
+	v.pictureRGB = pictureRGB
 
 	v.formatCtx = formatCtx
 	v.stream = stream
 	v.frame = AllocFrame()
-	v.pictureRGB = pictureRGB
-	numBytes := AVPictureGetSize(AV_PIX_FMT_RGB24, v.width, v.height)
-	v.pictureSize = numBytes
 	v.videoPktPts = AV_NOPTS_VALUE
 	v.ch = make(chan picture)
+
+	width := v.width
+	if width%4 != 0 {
+		/*
+			It's a trick for some videos with weired width (like 1278x720), but don't known why it works.
+			I got this trick from here:
+				http://forum.doom9.org/showthread.php?t=169036
+		*/
+		width += 1
+	}
+	v.swsCtx = SwsGetContext(width, v.height, codecCtx.PixelFormat(),
+		v.width, v.height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
 
 	v.window = gui.NewWindow(filepath.Base(filename), v.width, v.height)
 
@@ -163,17 +178,23 @@ func (v *video) decode(packet *AVPacket) {
 		v.videoClock += frameDelay
 
 		frame.Flip(v.height)
-		swsCtx := SwsGetCachedContext(v.width, v.height, codecCtx.PixelFormat(),
-			v.width, v.height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
-		swsCtx.Scale(frame, pictureRGB)
+
+		// println("pixel format:", codecCtx.PixelFormat())
+		// println("width:", v.width, "height:", v.height)
+
+		v.swsCtx.Scale(frame, pictureRGB)
+
+		// println("after scale")
 
 		// tmp := make([]byte, v.pictureSize)
 		// copy(tmp, pictureRGB.DataAt(0)[:v.pictureSize])
 
 		// b := time.Now()
-		obj := pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
+		// obj := pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
 
-		pic := picture{obj, time.Duration(pts * (float64(time.Second)))}
+		// pictureRGB.SaveToPPMFile("a.ppm", v.width, v.height)
+
+		pic := picture{pictureRGB.RGBBytes(v.width, v.height), time.Duration(pts * (float64(time.Second)))}
 		v.setPic(pic)
 		v.c.WaitUtil(pic.pts)
 		v.window.PostEvent(gui.Event{gui.Draw, nil})
@@ -183,7 +204,7 @@ func (v *video) decode(packet *AVPacket) {
 func (v *video) setPic(pic picture) {
 	v.Lock()
 	defer v.Unlock()
-	v.pic.Free()
+	// v.pic.Free()
 	v.pic = pic
 }
 
@@ -196,8 +217,8 @@ func (v *video) getPic() picture {
 
 func (v *video) draw() {
 	pic := v.getPic()
-	if !pic.IsNil() {
-		v.window.Draw(pic.Bytes(), v.width, v.height)
+	if len(pic.bytes) > 0 {
+		v.window.Draw(pic.bytes, v.width, v.height)
 	} else {
 		println("DrawClear")
 		// v.window.DrawClear(v.width, v.height)

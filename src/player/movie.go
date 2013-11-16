@@ -56,7 +56,7 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 		// m.v.a = m.a
 	}
 
-	SeekFrame(ctx, videoStream, audioStream, m.s, start)
+	start = SeekFrame(ctx, videoStream, audioStream, m.s, start)
 
 	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
 
@@ -202,12 +202,12 @@ func (m *movie) drawCurrentFrame() {
 
 			if frameFinished {
 				frame.Flip(v.height)
-				swsCtx := SwsGetCachedContext(v.width, v.height, codecCtx.PixelFormat(),
-					v.width, v.height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
 
-				swsCtx.Scale(frame, v.pictureRGB)
-				obj := v.pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
-				v.setPic(picture{obj, 0})
+				v.swsCtx.Scale(frame, v.pictureRGB)
+				// obj := v.pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
+				// v.setPic(picture{obj, 0})
+				pic := picture{v.pictureRGB.RGBBytes(v.width, v.height), 0}
+				v.setPic(pic)
 				v.window.RefreshContent()
 				break
 			}

@@ -88,10 +88,19 @@ func NewWindow(title string, width, height int) *Window {
 	C.showWindow(ptr)
 	C.makeWindowCurrentContext(ptr) //must make current context before do texture bind or we will get a all white window
 
+	if width%4 != 0 {
+		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
+	}
+
 	texture := gl.GenTexture()
 	texture.Bind(gl.TEXTURE_2D)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0,
 		gl.RGB, gl.UNSIGNED_BYTE, make([]byte, width*height*3)) //alloc memory
 
@@ -116,6 +125,8 @@ func (w *Window) Draw(img []byte, imgWidth, imgHeight int) {
 	// for _, b := range img[:1000] {
 	// 	println(b)
 	// }
+	// imgWidth = 1280
+	// println("width:", imgWidth, "height:", imgHeight)
 
 	w.texture.Bind(gl.TEXTURE_2D)
 
@@ -139,8 +150,8 @@ func (w *Window) Draw(img []byte, imgWidth, imgHeight int) {
 
 	gl.Viewport(x, y, vwidth, vheight)
 
-	gl.ClearColor(0, 255, 0, 1)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
+	// gl.ClearColor(0, 255, 0, 1)
+	// gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 

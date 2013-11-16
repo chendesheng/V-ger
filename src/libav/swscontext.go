@@ -7,13 +7,18 @@ type SwsContext struct {
 	ptr *C.struct_SwsContext
 }
 
-var cachedContext SwsContext
+// var cachedContext SwsContext
 
-func SwsGetCachedContext(w int, h int, pixFmt int, outw int, outh int, outPixFmt int, flags int) SwsContext {
-	cachedContext.ptr = C.sws_getCachedContext(cachedContext.ptr, C.int(w), C.int(h), int32(pixFmt), C.int(outw),
-		C.int(outh), int32(outPixFmt), C.int(flags), nil, nil, nil)
+// func SwsGetCachedContext(w int, h int, pixFmt int, outw int, outh int, outPixFmt int, flags int) SwsContext {
+// 	cachedContext.ptr = C.sws_getCachedContext(cachedContext.ptr, C.int(w), C.int(h), int32(pixFmt), C.int(outw),
+// 		C.int(outh), int32(outPixFmt), C.int(flags), nil, nil, nil)
 
-	return cachedContext
+// 	return cachedContext
+// }
+
+func SwsGetContext(w, h int, pixFmt int, outw, outh int, outPixFmt int, flags int) SwsContext {
+	return SwsContext{ptr: C.sws_getContext(C.int(w), C.int(h), int32(pixFmt), C.int(outw),
+		C.int(outh), int32(outPixFmt), C.int(flags), nil, nil, nil)}
 }
 
 func (ctx *SwsContext) Scale(frame1 AVFrame, frame2 AVPicture) {
@@ -22,5 +27,15 @@ func (ctx *SwsContext) Scale(frame1 AVFrame, frame2 AVPicture) {
 }
 
 const (
-	SWS_BICUBIC = 4
+	SWS_FAST_BILINEAR = 1 << iota
+	SWS_BILINEAR
+	SWS_BICUBIC
+	SWS_X
+	SWS_POINT
+	SWS_AREA
+	SWS_BICUBLIN
+	SWS_GAUSS
+	SWS_SINC
+	SWS_LANCZOS
+	SWS_SPLINE
 )
