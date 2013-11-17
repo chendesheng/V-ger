@@ -111,6 +111,7 @@ func NewWindow(title string, width, height int) *Window {
 	gl.Enable(gl.TEXTURE_2D)
 	gl.Disable(gl.DEPTH_TEST) //disable 3d
 	gl.ShadeModel(gl.SMOOTH)
+	gl.ClearColor(0, 0, 0, 1)
 
 	w.texture = texture
 
@@ -153,6 +154,7 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 
 	gl.Viewport(x, y, vwidth, vheight)
 
+	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 

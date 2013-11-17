@@ -2,7 +2,10 @@
 #import "windowDelegate.h"
 #import "gui.h"
 
-@interface Window : NSWindow {}
+@interface Window : NSWindow {
+@public
+	NSSize customAspectRatio;
+}
 
 - (id)initWithTitle:(NSString*)title width:(int)w height:(int)h;
 - (void)setContentViewNeedsDisplay:(BOOL)b;

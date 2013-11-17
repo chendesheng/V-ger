@@ -325,3 +325,27 @@ func TestParsePosition2(t *testing.T) {
 	// 	t.Errorf("parse position faild except (1,20) but (%d, %d)", items[0].X, items[0].Y)
 	// }
 }
+
+func TestParseMulti(t *testing.T) {
+	text := `2478
+01:56:59,333 --> 01:57:01,963
+9141
+
+2479
+01:57:03,464 --> 01:57:06,234
+11462份申请`
+	items := Parse(text)
+	if items[0].Content[0].Content != "9141" {
+		t.Error("first content should be '9141' but", items[0].Content[0].Content)
+	}
+	if items[1].Content[0].Content != "11462份申请" {
+		t.Error("first content should be '11462份申请' but", items[0].Content[0].Content)
+	}
+}
+
+func TestParsePanic(t *testing.T) {
+	bytes, _ := ioutil.ReadFile("c.srt")
+	str := string(bytes)
+
+	Parse(str)
+}

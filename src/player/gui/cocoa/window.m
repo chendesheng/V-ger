@@ -13,7 +13,8 @@
       	defer:NO];
 
     [self setTitle:title];
-    [self setContentAspectRatio:NSMakeSize(w, h)];
+    // [self setContentAspectRatio:NSMakeSize(w, h)];
+    self->customAspectRatio = NSMakeSize(w, h);
     [self setOpaque:YES];
     [self setHasShadow:YES];
     [self setContentMinSize:NSMakeSize(500, 500*h/w)];
@@ -22,7 +23,7 @@
     [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 
     [self center];
-    
+
     return self;
 }
 
@@ -42,4 +43,6 @@
     [NSOpenGLContext clearCurrentContext];
     [[[self contentView] openGLContext] makeCurrentContext];
 }
+
+
 @end

@@ -28,3 +28,9 @@ bin/player
 unar
 *.o
 *.ppm
+*.a
+*.o
+
+*.a
+
+src/player/gui/cocoa/gui.o

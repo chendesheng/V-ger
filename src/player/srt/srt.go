@@ -2,9 +2,9 @@ package srt
 
 import (
 	"encoding/hex"
-	"fmt"
+	// "fmt"
+	"log"
 	"sort"
-	// "log"
 	// "io/ioutil"
 	"bytes"
 	"github.com/peterbourgon/html"
@@ -57,6 +57,7 @@ func Parse(str string) []*SubItem {
 			// log.Print("content:", content)
 			items = append(items, &SubItem{from, to, content, usePos, pos})
 		} else {
+			log.Println("parse time error:", lines[0])
 			panic("parse error")
 		}
 	}
@@ -71,21 +72,41 @@ func parseContent(lines *[]string) []AttributedString {
 		line := (*lines)[i]
 		// println("line:", line)
 
-		_, err := strconv.Atoi(line)
-		if err == nil {
+		// _, err := strconv.Atoi(line)
+		// if err == nil {
+		// 	break
+		// }
+
+		ok, _, _ := parseTime(line)
+		if ok {
 			break
 		}
 	}
+	content := ""
+	if i == 0 {
+		*lines = nil
+	} else if i == len(*lines) {
+		content = strings.Join((*lines)[:i], "\n")
+		*lines = nil
+	} else {
+		if i > 1 {
+			content = strings.Join((*lines)[:i-1], "\n")
+		}
+		*lines = (*lines)[i:]
+	}
 
 	// log.Print("i:",i)
-
-	content := strings.Join((*lines)[:i], "\n")
-	if i+1 < len(*lines) {
-		*lines = (*lines)[i+1:]
-	} else {
-		// *lines = make([]string,0)
-		*lines = nil
-	}
+	// if i+1 < len(*lines) {
+	// 	println("parseContent:", i)
+	// 	content := ""
+	// 	if i > 1 {
+	// 		content = strings.Join((*lines)[:i-1], "\n")
+	// 	}
+	// 	*lines = (*lines)[i:]
+	// } else {
+	// 	// *lines = make([]string,0)
+	// 	*lines = nil
+	// }
 
 	return parseAttributedString(content)
 	// return content
@@ -204,7 +225,7 @@ func parseTime(line string) (bool, time.Duration, time.Duration) {
 		// fmt.Printf("%v", matches)
 		return true, convertTime(matches[1:5]), convertTime(matches[5:9])
 	} else {
-		fmt.Printf("error")
+		// fmt.Printf("error")
 		return false, 0, 0
 	}
 }
