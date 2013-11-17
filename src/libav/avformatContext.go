@@ -12,6 +12,7 @@ import (
 	"errors"
 	"math"
 	"reflect"
+	"sync"
 	"time"
 	"unsafe"
 )
@@ -19,6 +20,8 @@ import (
 type AVFormatContext struct {
 	ptr *C.AVFormatContext
 }
+
+var frameLock sync.Mutex = sync.Mutex{}
 
 func (ctx *AVFormatContext) OpenInput(filename string) {
 	cfilename := C.CString(filename)
@@ -89,10 +92,16 @@ func (ctx *AVFormatContext) Stream(i int) AVStream {
 	return AVStream{ptr: streams[i]}
 }
 func (ctx *AVFormatContext) ReadFrame(packet *AVPacket) int {
+	frameLock.Lock()
+	defer frameLock.Unlock()
+
 	return int(C.av_read_frame(ctx.ptr, &packet.cAVPacket))
 }
 
 func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags int) {
+	frameLock.Lock()
+	defer frameLock.Unlock()
+
 	timeBase := stream.ptr.time_base
 
 	seek_pos := t / time.Second * C.AV_TIME_BASE

@@ -7,29 +7,18 @@ package gui
 import "C"
 import (
 	"github.com/go-gl/gl"
-	"player/srt"
 	"unsafe"
+
+	. "player/shared"
 )
 
-type Event struct {
-	Kind int
-	Data interface{}
-}
-type EventHandlerFunc func(Event)
-
 const (
-	Draw = iota
+	draw = iota
 	KeyPress
 	DrawSub
 	DrawLeftTime
 	TrackPositionChanged
 )
-
-type PlayProgressInfo struct {
-	Left    string
-	Right   string
-	Percent float64
-}
 
 var windows map[unsafe.Pointer]*Window
 
@@ -46,16 +35,25 @@ type Window struct {
 	FuncOnFullscreenChanged []func(bool)
 	FuncOnProgressChanged   []func(int, float64)
 
-	chEvents chan Event
-
 	texture gl.Texture
+
+	ChanDraw         chan []byte
+	ChanShowText     chan *SubItem
+	ChanShowProgress chan *PlayProgressInfo
+
+	img []byte
+
+	originalWidth  int
+	originalHeight int
 }
 
 // func (w *Window) Show() {
 // 	C.showWindow(w.ptr)
 // }
 
-func (w *Window) RefreshContent() {
+func (w *Window) RefreshContent(img []byte) {
+	w.img = img
+
 	C.refreshWindowContent(w.ptr)
 }
 
@@ -77,8 +75,14 @@ func NewWindow(title string, width, height int) *Window {
 	ptr := unsafe.Pointer(C.newWindow(ctitle, C.int(width), C.int(height)))
 
 	w := &Window{
-		ptr:      ptr,
-		chEvents: make(chan Event),
+		ptr: ptr,
+
+		ChanDraw:         make(chan []byte),
+		ChanShowProgress: make(chan *PlayProgressInfo),
+		ChanShowText:     make(chan *SubItem),
+
+		originalWidth:  width,
+		originalHeight: height,
 	}
 
 	println("window:", ptr)
@@ -121,11 +125,10 @@ func NewWindow(title string, width, height int) *Window {
 	return w
 }
 
-func (w *Window) Draw(img []byte, imgWidth, imgHeight int) {
-	// for _, b := range img[:1000] {
-	// 	println(b)
-	// }
-	// imgWidth = 1280
+func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
+	if len(img) == 0 {
+		return
+	}
 	// println("width:", imgWidth, "height:", imgHeight)
 
 	w.texture.Bind(gl.TEXTURE_2D)
@@ -150,8 +153,6 @@ func (w *Window) Draw(img []byte, imgWidth, imgHeight int) {
 
 	gl.Viewport(x, y, vwidth, vheight)
 
-	// gl.ClearColor(0, 255, 0, 1)
-	// gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 
@@ -176,12 +177,6 @@ func (w *Window) HideStartupView() {
 	C.windowHideStartupView(w.ptr)
 }
 
-//run immediately
-//must not call in main thread (deadlock)
-func (w *Window) PostEvent(e Event) {
-	w.chEvents <- e
-}
-
 func (w *Window) ShowProgress(left string, right string, percent float64) {
 	cleft := C.CString(left)
 	defer C.free(unsafe.Pointer(cleft))
@@ -191,7 +186,9 @@ func (w *Window) ShowProgress(left string, right string, percent float64) {
 
 	C.showWindowProgress(w.ptr, cleft, cright, C.double(percent))
 }
-func (w *Window) ShowText(strs []srt.AttributedString, withPosition bool, x, y float64) {
+func (w *Window) ShowText(s *SubItem) {
+	strs := s.Content
+
 	items := make([]C.SubItem, 0)
 	for _, str := range strs {
 		cstr := C.CString(str.Content)
@@ -210,16 +207,13 @@ func (w *Window) ShowText(strs []srt.AttributedString, withPosition bool, x, y f
 	// 	t = 1
 	// }
 
-	C.showText(w.ptr, p, C.int(len(items)), C.double(x), C.double(y))
+	C.showText(w.ptr, p, C.int(len(items)), 0, 0)
 }
 
 //export goOnDraw
 func goOnDraw(ptr unsafe.Pointer) {
 	w := windows[ptr]
-
-	for _, fn := range w.FuncDraw {
-		fn()
-	}
+	w.draw(w.img, w.originalWidth, w.originalHeight)
 }
 
 //export goOnTimerTick
@@ -227,23 +221,22 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	w := windows[ptr]
 
 	select {
-	case e := <-w.chEvents:
-		if e.Kind == Draw {
-			w.RefreshContent()
-		} else if e.Kind == DrawSub {
-			s := e.Data.(*srt.SubItem)
-			width, height := w.GetWindowSize()
-
-			// fmt.Print("show sub:", s.UsePosition, s.X, s.Y, "\n")
-
-			w.ShowText(s.Content, false, s.X/float64(width), 1-s.Y/float64(height))
-		} else if e.Kind == DrawLeftTime {
-			arg := e.Data.(PlayProgressInfo)
-			w.ShowProgress(arg.Left, arg.Right, arg.Percent)
-		}
-		break
+	case img := <-w.ChanDraw:
+		w.RefreshContent(img)
 	default:
-		break
+	}
+
+	select {
+	case p := <-w.ChanShowProgress:
+		w.ShowProgress(p.Left, p.Right, p.Percent)
+	default:
+	}
+
+	select {
+	case s := <-w.ChanShowText:
+		// width, height := w.GetWindowSize()
+		w.ShowText(s)
+	default:
 	}
 }
 

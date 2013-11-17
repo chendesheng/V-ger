@@ -6,6 +6,9 @@ import (
 	// "player/glfw"
 	// "log"
 	. "player/clock"
+	// . "player/shared"
+
+	"player/gui"
 	"time"
 	// "util"
 )
@@ -18,6 +21,8 @@ type movie struct {
 	c   *Clock
 
 	width, height float64
+
+	chSeek chan time.Duration
 }
 
 func (m *movie) open(file string, subFile string, start time.Duration) {
@@ -34,6 +39,8 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	ctx.DumpFormat()
 
 	m.ctx = ctx
+
+	m.chSeek = make(chan time.Duration)
 
 	videoStream := ctx.VideoStream()
 
@@ -76,25 +83,45 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	m.c.SetTime(start)
 
 	if m.v != nil {
+		m.v.window.FuncKeyDown = append(m.v.window.FuncKeyDown, func(keycode int) {
+			switch keycode {
+			case gui.KEY_SPACE:
+				m.c.Toggle()
+				break
+			case gui.KEY_LEFT:
+				println("key left pressed")
+
+				m.c.Pause()
+				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() - 10*time.Second))
+				break
+			case gui.KEY_RIGHT:
+				println("key right pressed")
+
+				m.c.Pause()
+				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() + 10*time.Second))
+				break
+			case gui.KEY_UP:
+				m.c.Pause()
+				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() + time.Minute))
+				break
+			case gui.KEY_DOWN:
+				m.c.Pause()
+				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() - time.Minute))
+				break
+			}
+		})
 		m.v.window.FuncOnProgressChanged = append(m.v.window.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
 			switch typ {
 			case 0:
-				m.c.GotoPercent(percent)
 				m.c.Pause()
 				break
 			case 2:
 				println("mouse up:", percent)
-				m.c.Resume()
-				m.c.StartSeek(percent)
-
-				if m.a != nil {
-					codec := m.a.stream.Codec()
-					codec.FlushBuffer()
-				}
+				t := m.c.CalcTime(percent)
+				m.c.ResumeWithTime(m.SeekTo(t))
 				break
 			case 1:
-				m.c.GotoPercent(percent)
-				t := m.c.GetSeekTime()
+				t := m.c.CalcTime(percent)
 				// m.ctx.SeekFile(t, 0)
 				m.ctx.SeekFrame(m.v.stream, t, AVSEEK_FLAG_FRAME)
 
@@ -104,21 +131,46 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 					m.drawCurrentFrame()
 				}
 
+				if m.s != nil {
+					m.v.window.ShowText(m.s.seek(t))
+				}
+
 				break
 			}
 		})
 	}
 }
-func SeekFrame(ctx AVFormatContext, videoStream AVStream, audioStream AVStream, s *subtitle, t time.Duration) time.Duration {
-	if s != nil {
-		s.seek(t)
+func (m *movie) SeekTo(t time.Duration) time.Duration {
+	timeAfterSeek := SeekFrame(m.ctx, m.v.stream, m.a.stream, m.s, t)
+
+	println("seek to", timeAfterSeek.String())
+
+	if m.a != nil {
+		m.a.flushBuffer()
 	}
 
-	ctx.SeekFrame(audioStream, t, AVSEEK_FLAG_FRAME)
+	if m.s != nil {
+		go m.s.play()
+	}
+
+	return timeAfterSeek
+}
+
+func SeekFrame(ctx AVFormatContext, videoStream AVStream, audioStream AVStream, s *subtitle, t time.Duration) time.Duration {
+	//seek audio is very very slow, it takes 30 seconds to seek to about 28m in movie (720p)
+	// b := time.Now()
+	// ctx.SeekFrame(audioStream, t, AVSEEK_FLAG_FRAME)
+	// println(time.Since(b).String())
+
 	ctx.SeekFrame(videoStream, t, AVSEEK_FLAG_FRAME)
 
 	frame := AllocFrame()
 	ret, _ := readOneFrame(ctx, videoStream, frame)
+
+	if s != nil {
+		s.seek(ret)
+	}
+
 	return ret
 	// return dropVideoFrames(ctx, videoStream, t, frame)
 	// return dropFrames(ctx, audioStream, t, frame)
@@ -183,6 +235,8 @@ func tabs(t time.Duration) time.Duration {
 	}
 	return t
 }
+
+//only call from UI thread
 func (m *movie) drawCurrentFrame() {
 	ctx := m.ctx
 	v := m.v
@@ -204,11 +258,8 @@ func (m *movie) drawCurrentFrame() {
 				frame.Flip(v.height)
 
 				v.swsCtx.Scale(frame, v.pictureRGB)
-				// obj := v.pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
-				// v.setPic(picture{obj, 0})
-				pic := picture{v.pictureRGB.RGBBytes(v.width, v.height), 0}
-				v.setPic(pic)
-				v.window.RefreshContent()
+
+				v.window.RefreshContent(v.pictureRGB.RGBBytes(v.width, v.height))
 				break
 			}
 		} else {
@@ -222,9 +273,12 @@ func (m *movie) decode() {
 	ctx := m.ctx
 
 	for ctx.ReadFrame(&packet) >= 0 {
+		m.c.WaitUtilRunning()
+
 		streamIndex := packet.StreamIndex()
 		if m.v != nil {
 			if m.v.stream.Index() == streamIndex {
+				// println("decode video")
 				m.v.decode(&packet)
 				packet.Free()
 			}
@@ -232,24 +286,13 @@ func (m *movie) decode() {
 
 		if m.a != nil {
 			if m.a.stream.Index() == streamIndex {
+				// println("decode audio")
 				pkt := packet
 				pkt.Dup()
 				m.a.ch <- &pkt
 			}
 		}
 
-		if m.c.IsSeeking() {
-			now := m.c.GetTime()
-
-			timeAfterSeek := SeekFrame(ctx, m.v.stream, m.a.stream, m.s, now)
-			m.c.EndSeek(timeAfterSeek)
-
-			m.a.flushBuffer()
-			println("after seek back")
-			if m.s != nil {
-				go m.s.play()
-			}
-		}
 	}
 
 	m.stop()
@@ -269,9 +312,6 @@ func (m *movie) play() {
 }
 
 func (m *movie) stop() {
-	if m.v != nil {
-		close(m.v.ch)
-	}
 	if m.a != nil {
 		close(m.a.ch)
 	}

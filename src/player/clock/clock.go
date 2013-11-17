@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	. "player/shared"
 )
 
 type Clock struct {
@@ -27,76 +29,38 @@ func (c *Clock) GetTime() time.Duration {
 	return c.getTime()
 }
 
+func (c *Clock) CalcTime(percent float64) time.Duration {
+	t := time.Duration(float64(c.totalTime) * percent)
+	return t
+}
+
+func (c *Clock) CalcPlayProgress(percent float64) *PlayProgressInfo {
+	t := c.CalcTime(percent)
+	leftT := c.totalTime - t
+
+	return &PlayProgressInfo{formatTime(t), formatTime(leftT), percent}
+}
+
 func (c *Clock) GetSeekTime() time.Duration {
 	return c.getTime()
 }
 
-func (c *Clock) IsSeeking() bool {
-	c.Lock()
-	defer c.Unlock()
-
-	return c.seeking
-}
-
-func (c *Clock) StartSeek(percent float64) {
-	c.Lock()
-	defer c.Unlock()
-
-	t := time.Duration(float64(c.totalTime) * percent)
-	c.base = time.Now().Add(-t)
-	c.seeking = true
-}
-
-func (c *Clock) StartSeekTo(diff time.Duration) {
-	c.Lock()
-	defer c.Unlock()
-
-	c.base = c.base.Add(-diff)
-	c.seeking = true
-}
-
-func (c *Clock) EndSeek(t time.Duration) {
-	c.Lock()
-	defer c.Unlock()
-
-	c.base = time.Now().Add(-t)
-	c.seeking = false
-}
-
-func addZero(i int) string {
-	if i < 10 {
-		return fmt.Sprint("0", i)
-	} else {
-		return fmt.Sprint(i)
-	}
-}
-
-func (c *Clock) GetLeftTimeString() string {
-	left := c.totalTime - c.GetTime()
-
-	h := addZero(int(left.Hours()))
-	m := addZero(int(left.Minutes()) % 60)
-	s := addZero(int(left.Seconds()) % 60)
-
-	if h == "00" {
-		return fmt.Sprintf("-%s:%s", m, s)
+func formatTime(t time.Duration) string {
+	sign := ""
+	if t < 0 {
+		t = -t
+		sign = "-"
 	}
 
-	return fmt.Sprintf("-%s:%s:%s", h, m, s)
-}
+	h := int(t.Hours())
+	m := int(t.Minutes()) % 60
+	s := int(t.Seconds()) % 60
 
-func (c *Clock) GetTimeString() string {
-	time := c.GetTime()
-
-	h := addZero(int(time.Hours()))
-	m := addZero(int(time.Minutes()) % 60)
-	s := addZero(int(time.Seconds()) % 60)
-
-	if h == "00" {
-		return fmt.Sprintf("%s:%s", m, s)
+	if h == 0 {
+		return fmt.Sprintf("%s%02d:%02d", sign, m, s)
 	}
 
-	return fmt.Sprintf("%s:%s:%s", h, m, s)
+	return fmt.Sprintf("%s%02d:%02d:%02d", sign, h, m, s)
 }
 
 func (c *Clock) GetPercent() float64 {
@@ -122,14 +86,6 @@ func (c *Clock) SetTime(t time.Duration) {
 	c.Lock()
 	defer c.Unlock()
 
-	c.base = time.Now().Add(-t)
-}
-
-func (c *Clock) GotoPercent(percent float64) {
-	c.Lock()
-	defer c.Unlock()
-
-	t := time.Duration(float64(c.totalTime) * percent)
 	c.base = time.Now().Add(-t)
 }
 
@@ -173,10 +129,21 @@ func (c *Clock) Resume() {
 	}
 }
 
+func (c *Clock) ResumeWithTime(t time.Duration) {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.status == "paused" {
+		c.status = "running"
+		c.base = time.Now().Add(-t)
+		close(c.wait)
+	}
+}
+
 func (c *Clock) resume() {
+	close(c.wait)
 	c.base = time.Now().Add(-c.pausedTime)
 	c.status = "running"
-	close(c.wait)
 }
 
 func (c *Clock) Reset() {

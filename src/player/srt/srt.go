@@ -12,15 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	. "player/shared"
 )
-
-type SubItem struct {
-	From, To time.Duration
-	Content  []AttributedString
-
-	UsePosition bool
-	Position
-}
 
 type SubItems []*SubItem
 
@@ -38,18 +32,8 @@ func (s SubItems) Swap(i, j int) {
 	s[j] = t
 }
 
-type AttributedString struct {
-	Content string
-	Style   int //0 -normal, 1 -italic, 2 -bold, 3 italic and bold
-	Color   uint
-}
-
 func linebreak(r rune) bool {
 	return r == '\r' || r == '\n'
-}
-
-type Position struct {
-	X, Y float64
 }
 
 var PreDefinedPosition [10]Position

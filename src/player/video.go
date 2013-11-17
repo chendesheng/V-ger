@@ -9,13 +9,11 @@ import (
 	// "player/glfw"
 	// "runtime"
 	"player/gui"
-	"sync"
+	// "sync"
 	"time"
 )
 
 type video struct {
-	sync.RWMutex
-
 	formatCtx AVFormatContext
 	codecCtx  *AVCodecContext
 	swsCtx    SwsContext
@@ -30,18 +28,10 @@ type video struct {
 
 	width, height int
 
-	ch chan picture
-
 	window *gui.Window
 	status string
 
-	pic picture
-
 	c *Clock
-}
-type picture struct {
-	bytes []byte
-	pts   time.Duration
 }
 
 func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename string, start time.Duration) {
@@ -96,7 +86,7 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 	v.stream = stream
 	v.frame = AllocFrame()
 	v.videoPktPts = AV_NOPTS_VALUE
-	v.ch = make(chan picture)
+	// v.ch = make(chan picture)
 
 	width := v.width
 	if width%4 != 0 {
@@ -111,32 +101,6 @@ func (v *video) setup(formatCtx AVFormatContext, stream AVStream, filename strin
 		v.width, v.height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
 
 	v.window = gui.NewWindow(filepath.Base(filename), v.width, v.height)
-
-	//run in main thread, safe to operate ui elements
-	v.window.FuncDraw = append(v.window.FuncDraw, func() {
-		v.draw()
-	})
-	v.window.FuncKeyDown = append(v.window.FuncKeyDown, func(keycode int) {
-		switch keycode {
-		case gui.KEY_SPACE:
-			v.c.Toggle()
-			break
-		case gui.KEY_LEFT:
-			println("key left pressed")
-			v.c.StartSeekTo(-10 * time.Second)
-			break
-		case gui.KEY_RIGHT:
-			println("key right pressed")
-			v.c.StartSeekTo(10 * time.Second)
-			break
-		case gui.KEY_UP:
-			v.c.StartSeekTo(time.Minute)
-			break
-		case gui.KEY_DOWN:
-			v.c.StartSeekTo(-time.Minute)
-			break
-		}
-	})
 }
 
 func (v *video) decode(packet *AVPacket) {
@@ -163,8 +127,6 @@ func (v *video) decode(packet *AVPacket) {
 	pts *= stream.Timebase().Q2D()
 	// println("pts:", pts)
 	if frameFinished {
-		// println(time.Since(b).String())
-		// b = time.Now()
 
 		var frameDelay float64
 		if pts != 0 {
@@ -178,70 +140,16 @@ func (v *video) decode(packet *AVPacket) {
 		v.videoClock += frameDelay
 
 		frame.Flip(v.height)
-
-		// println("pixel format:", codecCtx.PixelFormat())
-		// println("width:", v.width, "height:", v.height)
-
 		v.swsCtx.Scale(frame, pictureRGB)
 
-		// println("after scale")
+		t := time.Duration(pts * (float64(time.Second)))
+		v.c.WaitUtil(t)
 
-		// tmp := make([]byte, v.pictureSize)
-		// copy(tmp, pictureRGB.DataAt(0)[:v.pictureSize])
-
-		// b := time.Now()
-		// obj := pictureRGB.Layout(AV_PIX_FMT_RGB24, v.width, v.height)
-
-		// pictureRGB.SaveToPPMFile("a.ppm", v.width, v.height)
-
-		pic := picture{pictureRGB.RGBBytes(v.width, v.height), time.Duration(pts * (float64(time.Second)))}
-		v.setPic(pic)
-		v.c.WaitUtil(pic.pts)
-		v.window.PostEvent(gui.Event{gui.Draw, nil})
-	}
-}
-
-func (v *video) setPic(pic picture) {
-	v.Lock()
-	defer v.Unlock()
-	// v.pic.Free()
-	v.pic = pic
-}
-
-func (v *video) getPic() picture {
-	v.RLock()
-	defer v.RUnlock()
-
-	return v.pic
-}
-
-func (v *video) draw() {
-	pic := v.getPic()
-	if len(pic.bytes) > 0 {
-		v.window.Draw(pic.bytes, v.width, v.height)
-	} else {
-		println("DrawClear")
-		// v.window.DrawClear(v.width, v.height)
+		v.window.ChanDraw <- pictureRGB.RGBBytes(v.width, v.height)
 	}
 }
 
 func (v *video) play() {
-	// go func() {
-	// 	// v.window.PostEvent(Event{Draw, nil})
-	// 	// skip := 0
-	// 	for pic := range v.ch {
-	// 		v.setPic(pic)
-	// 		// now := v.c.GetTime()
-	// 		// if now-pic.pts > 5*time.Millisecond && skip < 10 {
-	// 		// 	skip++
-	// 		// 	continue
-	// 		// }
-	// 		// skip = 0
-	// 		v.c.WaitUtil(pic.pts)
-	// 		v.window.PostEvent(Event{Draw, nil})
-	// 	}
-	// }()
-
 	gui.PollEvents()
 	return
 }

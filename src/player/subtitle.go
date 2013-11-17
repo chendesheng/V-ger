@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	. "player/clock"
+	. "player/shared"
 	// "player/glfw"
 	"player/gui"
 	"player/srt"
@@ -18,7 +19,7 @@ type subtitle struct {
 
 	w *gui.Window
 
-	items []*srt.SubItem
+	items []*SubItem
 	pos   int
 
 	c *Clock
@@ -71,7 +72,6 @@ func NewSubtitle(file string, w *gui.Window) *subtitle {
 }
 
 func (s *subtitle) setPosition(pos int) {
-	// atomic.StoreInt32(&s.pos, int32(pos))
 	s.Lock()
 	defer s.Unlock()
 
@@ -89,7 +89,7 @@ func (s *subtitle) increasePosition() {
 
 	s.pos += 1
 }
-func (s *subtitle) seek(t time.Duration) {
+func (s *subtitle) seek(t time.Duration) *SubItem {
 	s.Lock()
 	defer s.Unlock()
 
@@ -99,11 +99,12 @@ func (s *subtitle) seek(t time.Duration) {
 	for i, item := range s.items {
 		to := item.To + time.Duration(s.offset)*time.Second
 		if to > t {
-			log.Print("seek to ", to.String(), " i: ", i, " Content:", item.Content)
 			s.pos = i
-			return
+			return item
 		}
 	}
+
+	return &SubItem{}
 }
 
 func (s *subtitle) addOffset(delta time.Duration) {
@@ -135,11 +136,11 @@ func (s *subtitle) playWithQuit(quit chan bool) {
 			continue
 		}
 		if s.c.WaitUtilWithQuit(from, quit) {
-			s.w.PostEvent(gui.Event{gui.DrawSub, &srt.SubItem{}})
+			s.w.ChanShowText <- &SubItem{}
 			return
 		}
 
-		s.w.PostEvent(gui.Event{gui.DrawSub, item})
+		s.w.ChanShowText <- item
 
 		nextFrom := to
 		nextPos := s.position()
@@ -154,7 +155,7 @@ func (s *subtitle) playWithQuit(quit chan bool) {
 
 			s.c.WaitUtilWithQuit(to-50*time.Millisecond, quit)
 
-			s.w.PostEvent(gui.Event{gui.DrawSub, &srt.SubItem{}})
+			s.w.ChanShowText <- &SubItem{}
 		}(to, nextFrom)
 	}
 }

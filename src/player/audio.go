@@ -128,6 +128,8 @@ func (a *audio) flushBuffer() {
 			return
 		}
 	}
+	codec := a.stream.Codec()
+	codec.FlushBuffer()
 }
 func (a *audio) initsdl() {
 	codecCtx := a.codecCtx

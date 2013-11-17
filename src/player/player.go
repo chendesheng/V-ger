@@ -9,19 +9,20 @@ import (
 	"flag"
 	"log"
 	"os"
-	"player/gui"
 	"runtime"
 	"task"
 	"time"
 	"util"
+
+	// . "player/shared"
 	// "website"
 )
 
 // var filename = flag.String("file", "", "file name")
 // var filename = flag.String("file", "", "file name")
-var taskName = flag.String("task", "The.Walking.Dead.4x01.30.Days.Without.An.Accident.720p.HDTV.x264-IMMERSE.[tvu.org.ru].mkv", "vger-task file name")
+// var taskName = flag.String("task", "The.Walking.Dead.4x01.30.Days.Without.An.Accident.720p.HDTV.x264-IMMERSE.[tvu.org.ru].mkv", "vger-task file name")
 
-// var taskName = flag.String("task", "Sleepy.Hollow.S01E04.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+var taskName = flag.String("task", "Sleepy.Hollow.S01E04.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
@@ -138,10 +139,10 @@ func main() {
 		}
 
 		for {
-			arg := gui.PlayProgressInfo{m.v.c.GetTimeString(), m.v.c.GetLeftTimeString(), m.v.c.GetPercent()}
-			m.v.window.PostEvent(gui.Event{gui.DrawLeftTime, arg})
+			c := m.v.c
+			m.v.window.ChanShowProgress <- c.CalcPlayProgress(c.GetPercent())
 
-			m.v.c.After(time.Second)
+			c.After(time.Second)
 		}
 	}()
 
