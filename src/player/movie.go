@@ -61,7 +61,7 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 		// m.v.a = m.a
 	}
 
-	start = SeekFrame(ctx, videoStream, audioStream, m.s, start)
+	start = SeekFrame(ctx, videoStream, audioStream, m.s, start, false)
 
 	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
 
@@ -133,13 +133,20 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 					m.v.window.ShowText(m.s.seek(t))
 				}
 
+				m.v.window.ShowProgress(m.c.CalcPlayProgress(percent))
+
 				break
 			}
 		})
 	}
 }
 func (m *movie) SeekTo(t time.Duration) time.Duration {
-	timeAfterSeek := SeekFrame(m.ctx, m.v.stream, m.a.stream, m.s, t)
+	backward := false
+	if t < m.c.GetSeekTime() {
+		backward = true
+	}
+
+	timeAfterSeek := SeekFrame(m.ctx, m.v.stream, m.a.stream, m.s, t, backward)
 
 	println("seek to", timeAfterSeek.String())
 
@@ -154,13 +161,16 @@ func (m *movie) SeekTo(t time.Duration) time.Duration {
 	return timeAfterSeek
 }
 
-func SeekFrame(ctx AVFormatContext, videoStream AVStream, audioStream AVStream, s *subtitle, t time.Duration) time.Duration {
+func SeekFrame(ctx AVFormatContext, videoStream AVStream, audioStream AVStream, s *subtitle, t time.Duration, backward bool) time.Duration {
 	//seek audio is very very slow, it takes 30 seconds to seek to about 28m in movie (720p)
 	// b := time.Now()
 	// ctx.SeekFrame(audioStream, t, AVSEEK_FLAG_FRAME)
 	// println(time.Since(b).String())
-
-	ctx.SeekFrame(videoStream, t, AVSEEK_FLAG_FRAME)
+	flags := AVSEEK_FLAG_FRAME
+	if backward {
+		flags |= AVSEEK_FLAG_BACKWARD
+	}
+	ctx.SeekFrame(videoStream, t, flags)
 
 	frame := AllocFrame()
 	ret, _ := readOneFrame(ctx, videoStream, frame)

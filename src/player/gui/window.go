@@ -179,14 +179,14 @@ func (w *Window) HideStartupView() {
 	C.windowHideStartupView(w.ptr)
 }
 
-func (w *Window) ShowProgress(left string, right string, percent float64) {
-	cleft := C.CString(left)
+func (w *Window) ShowProgress(p *PlayProgressInfo) {
+	cleft := C.CString(p.Left)
 	defer C.free(unsafe.Pointer(cleft))
 
-	cright := C.CString(right)
+	cright := C.CString(p.Right)
 	defer C.free(unsafe.Pointer(cright))
 
-	C.showWindowProgress(w.ptr, cleft, cright, C.double(percent))
+	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent))
 }
 func (w *Window) ShowText(s *SubItem) {
 	strs := s.Content
@@ -230,7 +230,7 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 
 	select {
 	case p := <-w.ChanShowProgress:
-		w.ShowProgress(p.Left, p.Right, p.Percent)
+		w.ShowProgress(p)
 	default:
 	}
 
