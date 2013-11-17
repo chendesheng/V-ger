@@ -2,12 +2,10 @@ package main
 
 import (
 	// "fmt"
-	. "libav"
-	// "player/glfw"
-	// "log"
 	. "player/clock"
+	. "player/libav"
 	// . "player/shared"
-
+	// "log"
 	"player/gui"
 	"time"
 	// "util"

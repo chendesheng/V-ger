@@ -6,8 +6,8 @@ import (
 	. "player/clock"
 
 	// glfw "github.com/go-gl/glfw3"
-	. "libav"
-	"sdl"
+	. "player/libav"
+	"player/sdl"
 	"time"
 	// "unsafe"
 )

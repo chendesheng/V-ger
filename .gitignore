@@ -27,3 +27,4 @@ client
 bin/player
 unar
 *.o
+*.ppm

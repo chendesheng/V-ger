@@ -3,9 +3,9 @@ package main
 import (
 	. "player/clock"
 	// "github.com/go-gl/gl"
-	. "libav"
 	"log"
 	"path/filepath"
+	. "player/libav"
 	// "player/glfw"
 	// "runtime"
 	"player/gui"
