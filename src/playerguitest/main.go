@@ -41,12 +41,7 @@ func main() {
 
 	w := NewWindow("b.ppm", width, height)
 	// w.ShowText(strs, withPosition, x, y)
-	w.FuncDraw = append(w.FuncDraw, func() {
-
-		w.Draw(img, width, height)
-
-		w.HideStartupView()
-	})
-	w.RefreshContent()
+	// w.ChanDraw <- img
+	w.RefreshContent(img)
 	PollEvents()
 }

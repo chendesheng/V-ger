@@ -12,32 +12,6 @@ import (
 	// "unsafe"
 )
 
-type sliceArray [][]byte
-
-func (s sliceArray) append(data []byte) {
-	s = append(s, data)
-}
-func (s sliceArray) readBytes(l int) []byte {
-	ret := make([]byte, 0, l)
-	for l > 0 {
-		if l < len(s[0]) {
-			ret = append(ret, s[0][:l]...)
-			s[0] = s[0][l:]
-			break
-		} else {
-			l -= len(s[0])
-			ret = append(ret, s[0]...)
-			if len(s) > 1 {
-				s = s[1:]
-			} else {
-				s = make([][]byte, 0)
-			}
-		}
-	}
-
-	return ret
-}
-
 type audio struct {
 	formatCtx AVFormatContext
 	codecCtx  *AVCodecContext

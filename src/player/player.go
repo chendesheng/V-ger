@@ -20,11 +20,12 @@ import (
 
 // var filename = flag.String("file", "", "file name")
 // var filename = flag.String("file", "", "file name")
-var taskName = flag.String("task", "The.Walking.Dead.4x01.30.Days.Without.An.Accident.720p.HDTV.x264-IMMERSE.[tvu.org.ru].mkv", "vger-task file name")
+// var taskName = flag.String("task", "The.Walking.Dead.4x01.30.Days.Without.An.Accident.720p.HDTV.x264-IMMERSE.[tvu.org.ru].mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "The.Rainmaker.1997.720p.WEB-DL.DD5.1.H.264-ViGi.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "Sleepy.Hollow.S01E04.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+var taskName = flag.String("task", "Almost.Human.S01E02.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
@@ -90,7 +91,6 @@ func findSubs(base string) []string {
 	}
 }
 func main() {
-	println("start")
 	runtime.LockOSThread()
 
 	if taskName == nil {

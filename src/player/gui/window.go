@@ -98,11 +98,9 @@ func NewWindow(title string, width, height int) *Window {
 
 	texture := gl.GenTexture()
 	texture.Bind(gl.TEXTURE_2D)
-	// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0,
@@ -114,8 +112,6 @@ func NewWindow(title string, width, height int) *Window {
 	gl.ClearColor(0, 0, 0, 1)
 
 	w.texture = texture
-
-	// w.RefreshContent()
 
 	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) {
 		if keycode == KEY_ESCAPE {
@@ -130,6 +126,7 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	if len(img) == 0 {
 		return
 	}
+
 	// println("width:", imgWidth, "height:", imgHeight)
 
 	w.texture.Bind(gl.TEXTURE_2D)

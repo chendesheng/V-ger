@@ -109,8 +109,12 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 			}
 		})
 		m.v.window.FuncOnProgressChanged = append(m.v.window.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
+			lastSeekTime := time.Duration(0)
+
 			switch typ {
 			case 0:
+				lastSeekTime = m.c.GetSeekTime()
+
 				m.c.Pause()
 				break
 			case 2:
@@ -121,7 +125,13 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 			case 1:
 				t := m.c.CalcTime(percent)
 				// m.ctx.SeekFile(t, 0)
-				m.ctx.SeekFrame(m.v.stream, t, AVSEEK_FLAG_FRAME)
+				flags := AVSEEK_FLAG_FRAME
+				if t < lastSeekTime {
+					flags |= AVSEEK_FLAG_BACKWARD
+				}
+				m.ctx.SeekFrame(m.v.stream, t, flags)
+
+				lastSeekTime = t
 
 				if m.v != nil {
 					codec := m.v.stream.Codec()
