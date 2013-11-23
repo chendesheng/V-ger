@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -34,5 +35,8 @@ func ReadJson(path string, object interface{}) error {
 		return err
 	}
 
+	data = bytes.Trim(data, "\u0000") //handle some broken files; happened only once.
+
+	// log.Println(path, ":", data)
 	return json.Unmarshal(data, &object)
 }
