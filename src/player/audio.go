@@ -39,24 +39,24 @@ func (a *audio) setup(formatCtx AVFormatContext, stream AVStream) {
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
 
-	codecCtx.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
-		ret := ctx.DefaultGetBuffer(frame)
+	// codecCtx.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
+	// 	ret := ctx.DefaultGetBuffer(frame)
 
-		pts := AVObject{}
-		pts.Malloc(8)
+	// 	pts := AVObject{}
+	// 	pts.Malloc(8)
 
-		pts.WriteUInt64(a.audioPktPts)
-		frame.SetOpaque(pts)
-		return ret
-	})
-	codecCtx.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
-		if !frame.IsNil() {
-			pts := frame.Opaque()
-			pts.Free()
-		}
+	// 	pts.WriteUInt64(a.audioPktPts)
+	// 	frame.SetOpaque(pts)
+	// 	return ret
+	// })
+	// codecCtx.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
+	// 	if !frame.IsNil() {
+	// 		pts := frame.Opaque()
+	// 		pts.Free()
+	// 	}
 
-		ctx.DefaultReleaseBuffer(frame)
-	})
+	// 	ctx.DefaultReleaseBuffer(frame)
+	// })
 
 	decoder := codecCtx.FindDecoder()
 	if decoder.IsNil() {
@@ -162,13 +162,51 @@ func (a *audio) initsdl() {
 					stream.Write(make([]byte, length))
 					return
 				}
+
+				pts := time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * float64(time.Second))
+				now := a.c.GetTime()
+				diffsize := 0
+				if now < pts+time.Second && now > pts-time.Second &&
+					(now > pts+100*time.Millisecond || now < pts-100*time.Millisecond) {
+					println((pts - now).String())
+					if pts > now {
+						a.c.WaitUtil(pts)
+						// diff := float64(pts-now) / float64(time.Second)
+						// size := int(diff * float64(a.codecCtx.SimpleRate()*
+						// 	a.codecCtx.Channels()*GetBytesPerSample(a.codecCtx.SimpleFormat())))
+						// println("wait:", size)
+
+						// zeroes := make([]byte, size)
+						// for i, _ := range zeroes {
+						// 	zeroes[i] = 0
+						// }
+						// a.audioBuffer = append(a.audioBuffer, zeroes...)
+						// continue
+					} else {
+						diff := float64(now-pts) / float64(time.Second) / 2
+						diffsize = int(diff * float64(a.codecCtx.SimpleRate()*
+							a.codecCtx.Channels()*GetBytesPerSample(a.codecCtx.SimpleFormat())))
+
+						// println("diffsize:", diffsize)
+
+						if diffsize >= len(a.audioBuffer) {
+							diffsize -= len(a.audioBuffer)
+							a.audioBuffer = make([]byte, 0) //skip all
+						} else {
+							diffsize = 0
+							a.audioBuffer = a.audioBuffer[diffsize:]
+						}
+					}
+				}
+
 				packetSize := packet.Size()
 				//decode frame from this packet, there may be many frames in one packet
-				firstFrame := true
+				// firstFrame := true
 				for packetSize > 0 { //continue decode until packet is empty
 					a.c.WaitUtilRunning()
 
 					gotFrame, size := codecCtx.DecodeAudio(frame, packet)
+
 					// println("decode audio read size: ", size)
 					if size < 0 {
 						//skip error frame
@@ -178,36 +216,21 @@ func (a *audio) initsdl() {
 						packetSize -= size
 						// println("decode audio rest size: ", packetSize)
 						if gotFrame {
-							if firstFrame {
-								firstFrame = false
-
-								opaque := frame.Opaque()
-
-								a.getAudioDelay(packet, opaque.UInt64())
-								// println("delay:", delay.String())
-								// if abs(int64(delay)) > int64(100*time.Millisecond) {
-
-								// 	delayBytes := float64(delay) / float64(time.Second) * float64(a.codecCtx.SimpleRate()*a.codecCtx.Channels())
-								// 	if delayBytes > 0 {
-								// 		a.audioBuffer = append(a.audioBuffer, make([]byte, int(delayBytes/1.5))...)
-								// 	} else {
-								// 		println("delay bytes:", delayBytes)
-								// 		if len(a.audioBuffer) > int(delayBytes) {
-								// 			a.audioBuffer = a.audioBuffer[int(delayBytes):]
-								// 		} else {
-								// 			a.audioBuffer = make([]byte, 0)
-								// 		}
-								// 	}
-								// 	// a.audioBuffer = append(a.audioBuffer, make([]byte, delayBytes)...)
-								// }
-							}
-
-							//get sample data from a frame and change pcm format
-							// println("resample frame")
 							data := a.resampleFrame(frame)
-
+							bytes := data.Bytes()
+							if diffsize > 0 {
+								// println("diffsize2:", diffsize)
+								if diffsize < len(bytes) {
+									bytes = bytes[diffsize:]
+									diffsize = 0
+								} else {
+									diffsize -= len(bytes)
+									bytes = make([]byte, 0)
+								}
+								println("diffsize3:", diffsize)
+							}
 							//TODO: we can avoid this copy by use AVObject as buffer directly
-							a.audioBuffer = append(a.audioBuffer, data.Bytes()...)
+							a.audioBuffer = append(a.audioBuffer, bytes...)
 							data.Free()
 						}
 					}
@@ -215,28 +238,6 @@ func (a *audio) initsdl() {
 				packet.Free()
 			}
 		}
-
-		// if math.Abs(float64(delayBytes)) > float64(a.codecCtx.SimpleRate())/10.0 {
-		// println("delayBytes", delayBytes)
-		// if delayBytes < 0 {
-		// 	szBuffer := len(a.audioBuffer)
-		// 	if szBuffer > -delayBytes {
-		// 		a.audioBuffer = a.audioBuffer[-delayBytes:]
-		// 	} else {
-		// 		//skip all buffer
-		// 		a.audioBuffer = make([]byte, 0)
-		// 		delayBytes = szBuffer
-		// 	}
-		// } else {
-		// 	a.audioBuffer = append(a.audioBuffer, make([]byte, delayBytes)...)
-		// 	delayBytes = 0
-		// }
-		// }
-
-		// delay := startTime - time.Duration(glfw.GetTime()*float64(time.Second))
-		// println(delay.String())
-		// <-time.After(delay)
-
 	})
 
 	res, obtained := sdl.OpenAudio(desired)
@@ -285,17 +286,15 @@ func (a *audio) resampleFrame(frame AVFrame) AVObject {
 	return tmpOut //must free after copy to buffer
 }
 
-func (a *audio) getAudioDelay(packet *AVPacket, framePts uint64) {
+func (a *audio) getAudioDelay(packet *AVPacket) {
 	var t float64
-	if packet.Dts() == AV_NOPTS_VALUE && framePts != AV_NOPTS_VALUE {
-		t = float64(framePts)
-	} else if packet.Dts() != AV_NOPTS_VALUE {
-		t = float64(packet.Dts())
-	} else {
+	if packet.Pts() == AV_NOPTS_VALUE {
 		t = 0
+	} else {
+		t = float64(packet.Pts())
 	}
-	t *= a.stream.Timebase().Q2D()
 
+	t *= a.stream.Timebase().Q2D()
 	pts := time.Duration(t * float64(time.Second))
 
 	now := a.c.GetTime()

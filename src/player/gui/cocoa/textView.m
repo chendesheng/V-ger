@@ -55,7 +55,7 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 
 - (CGFloat)CalcFontsize {
     CGFloat ratio = ([[self window] frame].size.width)/(self->originalWindowWidth);
-    NSLog(@"radio:%lf", ratio);
+    // NSLog(@"radio:%lf", ratio);
 
     CGFloat s = self->_fontSize*ratio;
 

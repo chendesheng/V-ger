@@ -91,6 +91,7 @@ func GetTask(name string) (*Task, error) {
 	t := new(Task)
 	err := util.ReadJson(taskInfoFileName(name), t)
 	if err != nil {
+		log.Println("Get task error:", err.Error())
 		return nil, err
 	}
 

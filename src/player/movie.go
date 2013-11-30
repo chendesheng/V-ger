@@ -87,14 +87,10 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 				m.c.Toggle()
 				break
 			case gui.KEY_LEFT:
-				println("key left pressed")
-
 				m.c.Pause()
 				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() - 10*time.Second))
 				break
 			case gui.KEY_RIGHT:
-				println("key right pressed")
-
 				m.c.Pause()
 				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() + 10*time.Second))
 				break
@@ -118,7 +114,6 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 				m.c.Pause()
 				break
 			case 2:
-				println("mouse up:", percent)
 				t := m.c.CalcTime(percent)
 				m.c.ResumeWithTime(m.SeekTo(t))
 				break
