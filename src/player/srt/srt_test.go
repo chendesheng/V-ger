@@ -308,7 +308,7 @@ func TestParsePosition(t *testing.T) {
 	if items[0].Content[0].Content != "President reagan:" {
 		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
 	}
-	if !(items[0].UsePosition && items[0].X == 1 && items[0].Y == 20) {
+	if !(items[0].PositionType == 10 && items[0].X == 1 && items[0].Y == 20) {
 		t.Errorf("parse position faild except (1,20) but (%d, %d)", items[0].X, items[0].Y)
 	}
 }

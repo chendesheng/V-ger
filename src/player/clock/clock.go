@@ -71,15 +71,15 @@ func (c *Clock) getTime() time.Duration {
 	c.Lock()
 	defer c.Unlock()
 
-	// if c.status == "paused" {
-	// 	return c.pausedTime
-	// } else {
-	t := time.Since(c.base)
-	if t > c.totalTime {
-		t = c.totalTime
+	if c.status == "paused" {
+		return c.pausedTime
+	} else {
+		t := time.Since(c.base)
+		if t > c.totalTime {
+			t = c.totalTime
+		}
+		return t
 	}
-	return t
-	// }
 }
 
 func (c *Clock) SetTime(t time.Duration) {

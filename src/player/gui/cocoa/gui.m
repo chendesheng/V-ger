@@ -48,12 +48,12 @@ void* newWindow(char* title, int width, int height) {
 	[w setContentView:v];
 
 
-    TextView* tv = [[TextView alloc] initWithFrame:NSMakeRect(0, 60, width, 0)];
+    TextView* tv = [[TextView alloc] initWithFrame:NSMakeRect(0, 30, width, 0)];
     [v addSubview:tv];
     [tv setAutoresizingMask:NSViewWidthSizable];
     [v setTextView:tv];
 
-    BlurView* bv = [[BlurView alloc] initWithFrame:NSMakeRect(0,0,width,50)];
+    BlurView* bv = [[BlurView alloc] initWithFrame:NSMakeRect(0,0,width,30)];
     [v addSubview:bv];
     [bv setAutoresizingMask:NSViewWidthSizable];
 
@@ -131,9 +131,13 @@ void showWindowProgress(void* ptr, char* left, char* right, double percent) {
     Window* w = (Window*)ptr;
     [[w contentView] showProgress:left right:right percent:percent];
 }
-void showText(void* ptr, SubItem* items, int length, double x, double y) {
+void* showText(void* ptr, SubItem* items, int length, int position, double x, double y) {
     Window* w = (Window*)ptr;
-    [[w contentView] showText:items length:length x:x y:y];
+    return [[w contentView] showText:items length:length position:position x:x y:y];
+}
+void hideText(void* ptrWin, void* ptrText) {
+    Window* w = (Window*)ptrWin;
+    [[w contentView] hideText:ptrText];
 }
 void windowHideStartupView(void* ptr) {
     Window* w = (Window*)ptr;

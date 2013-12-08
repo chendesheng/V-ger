@@ -93,7 +93,7 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         NSColor *color = [NSColor colorWithDeviceRed:red green:green blue:blue alpha:1];
         
         NSShadow *shadow = [[NSShadow alloc] init];
-        [shadow setShadowColor:[NSColor colorWithDeviceRed:(255-red) green:(255-green) blue:(255-blue) alpha:1]];
+        [shadow setShadowColor:[NSColor blackColor]];
         [shadow setShadowBlurRadius:6];
         
         NSAttributedString *str = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:item.str] 
@@ -110,14 +110,13 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
     
     [self.textStorage setAttributedString:attrStr];
     
-    CGFloat width = self.frame.size.width;
-    CGFloat height = [self sizeForWidth:width height:FLT_MAX].height;
+    // CGFloat width = self.frame.size.width;
+    // NSSize sz = [self sizeForWidth:FLT_MAX height:FLT_MAX];
 //
 //    NSLog(@"height:%lf", height);
-    NSPoint pt = [self frame].origin;
-    [self setFrame:NSMakeRect(pt.x,pt.y,width, height)];
+    // NSPoint pt = [self frame].origin;
+    // [self setFrame:NSMakeRect(pt.x,pt.y,sz.width, sz.height)];
 }
-
 
 - (void)mouseDown:(NSEvent *)event {
     if (self.superview != NULL) {

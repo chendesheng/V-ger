@@ -14,8 +14,13 @@ type SubItem struct {
 	From, To time.Duration
 	Content  []AttributedString
 
-	UsePosition bool
+	PositionType int
 	Position
+}
+
+type SubItemArg struct {
+	*SubItem
+	Result chan uintptr
 }
 type Position struct {
 	X, Y float64

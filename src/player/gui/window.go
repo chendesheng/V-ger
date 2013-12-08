@@ -12,14 +12,6 @@ import (
 	. "player/shared"
 )
 
-const (
-	draw = iota
-	KeyPress
-	DrawSub
-	DrawLeftTime
-	TrackPositionChanged
-)
-
 var windows map[unsafe.Pointer]*Window
 
 func init() {
@@ -38,7 +30,8 @@ type Window struct {
 	texture gl.Texture
 
 	ChanDraw         chan []byte
-	ChanShowText     chan *SubItem
+	ChanShowText     chan *SubItemArg
+	ChanHideText     chan uintptr
 	ChanShowProgress chan *PlayProgressInfo
 
 	img []byte
@@ -50,7 +43,9 @@ type Window struct {
 // func (w *Window) Show() {
 // 	C.showWindow(w.ptr)
 // }
-
+func (w *Window) SendRefreshContent(img []byte) {
+	w.ChanDraw <- img
+}
 func (w *Window) RefreshContent(img []byte) {
 	w.img = img
 
@@ -79,7 +74,8 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanDraw:         make(chan []byte),
 		ChanShowProgress: make(chan *PlayProgressInfo),
-		ChanShowText:     make(chan *SubItem),
+		ChanShowText:     make(chan *SubItemArg),
+		ChanHideText:     make(chan uintptr),
 
 		originalWidth:  width,
 		originalHeight: height,
@@ -169,13 +165,15 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	gl.Vertex2d(-1, 1)
 	gl.End()
 
-	w.HideStartupView()
+	w.hideStartupView()
 }
 
-func (w *Window) HideStartupView() {
+func (w *Window) hideStartupView() {
 	C.windowHideStartupView(w.ptr)
 }
-
+func (w *Window) SendShowProgress(p *PlayProgressInfo) {
+	w.ChanShowProgress <- p
+}
 func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cleft := C.CString(p.Left)
 	defer C.free(unsafe.Pointer(cleft))
@@ -185,7 +183,12 @@ func (w *Window) ShowProgress(p *PlayProgressInfo) {
 
 	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent))
 }
-func (w *Window) ShowText(s *SubItem) {
+func (w *Window) SendShowText(s *SubItem) uintptr {
+	res := make(chan uintptr)
+	w.ChanShowText <- &SubItemArg{s, res}
+	return <-res
+}
+func (w *Window) ShowText(s *SubItem) uintptr {
 	strs := s.Content
 
 	items := make([]C.SubItem, 0)
@@ -201,12 +204,13 @@ func (w *Window) ShowText(s *SubItem) {
 		p = (*C.SubItem)(unsafe.Pointer(&items[0]))
 	}
 
-	// var t = C.int(0)
-	// if withPosition {
-	// 	t = 1
-	// }
-
-	C.showText(w.ptr, p, C.int(len(items)), 0, 0)
+	return uintptr(C.showText(w.ptr, p, C.int(len(items)), C.int(s.PositionType), C.double(s.X), C.double(s.Y)))
+}
+func (w *Window) SendHideText(ptr uintptr) {
+	w.ChanHideText <- ptr
+}
+func (w *Window) HideText(ptr uintptr) {
+	C.hideText(w.ptr, unsafe.Pointer(ptr))
 }
 
 //export goOnDraw
@@ -232,9 +236,12 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	}
 
 	select {
-	case s := <-w.ChanShowText:
+	case arg := <-w.ChanShowText:
+		item := arg.SubItem
 		// width, height := w.GetWindowSize()
-		w.ShowText(s)
+		arg.Result <- w.ShowText(item)
+	case ptr := <-w.ChanHideText:
+		w.HideText(ptr)
 	default:
 	}
 }

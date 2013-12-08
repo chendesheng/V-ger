@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	. "player/shared"
+	// "time"
 	// "fmt"
 	"io/ioutil"
 	. "player/gui"
@@ -43,5 +45,67 @@ func main() {
 	// w.ShowText(strs, withPosition, x, y)
 	// w.ChanDraw <- img
 	w.RefreshContent(img)
+
+	str := AttributedString{"hello", 0, 0}
+	strs := make([]AttributedString, 0)
+	strs = append(strs, str)
+
+	w.ShowText(&SubItem{0, 0, strs, 10, Position{50, 700}})
+
+	str = AttributedString{"Hello World1", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+
+	h := w.ShowText(&SubItem{0, 0, strs, 1, Position{0, 0}})
+
+	str = AttributedString{"Hello World2", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 2, Position{0, 0}})
+
+	str = AttributedString{"Hello World3", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 3, Position{0, 0}})
+
+	str = AttributedString{"Hello World4", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 4, Position{0, 0}})
+
+	str = AttributedString{"Hello World5", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 5, Position{0, 0}})
+
+	str = AttributedString{"Hello World6", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 6, Position{0, 0}})
+
+	str = AttributedString{"Hello World7", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 7, Position{0, 0}})
+
+	str = AttributedString{"Hello World8", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 8, Position{0, 0}})
+
+	str = AttributedString{"Hello World9", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h = w.ShowText(&SubItem{0, 0, strs, 9, Position{0, 0}})
+
+	// go func() {
+	// time.Sleep(3 * time.Second)
+	// w.HideText(h)
+	// }()
+	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+		if key == KEY_0 {
+			w.HideText(h)
+		}
+	})
 	PollEvents()
 }

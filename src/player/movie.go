@@ -4,9 +4,9 @@ import (
 	// "fmt"
 	. "player/clock"
 	. "player/libav"
+	. "player/subtitle"
 	// . "player/shared"
-	// "log"
-	"player/gui"
+	"log"
 	"time"
 	// "util"
 )
@@ -15,12 +15,8 @@ type movie struct {
 	ctx AVFormatContext
 	v   *video
 	a   *audio
-	s   *subtitle
+	s   *Subtitle
 	c   *Clock
-
-	width, height float64
-
-	chSeek chan time.Duration
 }
 
 func (m *movie) open(file string, subFile string, start time.Duration) {
@@ -29,7 +25,7 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	ctx := AVFormatContext{}
 	ctx.OpenInput(file)
 	if ctx.IsNil() {
-		println("open failed.")
+		log.Fatal("open failed:", file)
 		return
 	}
 
@@ -37,209 +33,55 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	ctx.DumpFormat()
 
 	m.ctx = ctx
-
-	m.chSeek = make(chan time.Duration)
-
-	videoStream := ctx.VideoStream()
-
-	if !videoStream.IsNil() {
-		m.v = &video{}
-		m.v.setup(ctx, videoStream, file, start)
-	}
+	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
 
 	audioStream := ctx.AudioStream()
-
 	if !audioStream.IsNil() {
 		m.a = &audio{}
 		m.a.setup(ctx, audioStream)
-	}
-	// avformat_seek_file
-	// av_rescale
-	if m.v != nil && len(subFile) > 0 {
-		println("play subtitle:", subFile)
-		m.s = NewSubtitle(subFile, m.v.window)
-		// m.v.a = m.a
-	}
-
-	start = SeekFrame(ctx, videoStream, audioStream, m.s, start, false)
-
-	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
-
-	if m.v != nil {
-		m.v.c = m.c
-	}
-
-	if m.a != nil {
 		m.a.c = m.c
 	}
 
-	if m.s != nil {
-		m.s.c = m.c
-	}
+	videoStream := ctx.VideoStream()
+	if !videoStream.IsNil() {
+		m.v = &video{}
+		m.v.setup(ctx, videoStream, file, start)
+		m.v.c = m.c
 
-	m.c.Reset()
-	m.c.SetTime(start)
+		if len(subFile) > 0 {
+			println("play subtitle:", subFile)
+			m.s = NewSubtitle(subFile, m.v.window, m.c)
+			go m.s.Play()
+		}
+		m.uievents()
+		start = m.v.seek(start)
 
-	if m.v != nil {
-		m.v.window.FuncKeyDown = append(m.v.window.FuncKeyDown, func(keycode int) {
-			switch keycode {
-			case gui.KEY_SPACE:
-				m.c.Toggle()
-				break
-			case gui.KEY_LEFT:
-				m.c.Pause()
-				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() - 10*time.Second))
-				break
-			case gui.KEY_RIGHT:
-				m.c.Pause()
-				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() + 10*time.Second))
-				break
-			case gui.KEY_UP:
-				m.c.Pause()
-				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() + time.Minute))
-				break
-			case gui.KEY_DOWN:
-				m.c.Pause()
-				m.c.ResumeWithTime(m.SeekTo(m.c.GetSeekTime() - time.Minute))
-				break
-			}
-		})
-		m.v.window.FuncOnProgressChanged = append(m.v.window.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
-			lastSeekTime := time.Duration(0)
+		m.c.Reset()
+		m.c.SetTime(start)
 
-			switch typ {
-			case 0:
-				lastSeekTime = m.c.GetSeekTime()
-
-				m.c.Pause()
-				break
-			case 2:
-				t := m.c.CalcTime(percent)
-				m.c.ResumeWithTime(m.SeekTo(t))
-				break
-			case 1:
-				t := m.c.CalcTime(percent)
-				// m.ctx.SeekFile(t, 0)
-				flags := AVSEEK_FLAG_FRAME
-				if t < lastSeekTime {
-					flags |= AVSEEK_FLAG_BACKWARD
-				}
-				m.ctx.SeekFrame(m.v.stream, t, flags)
-
-				lastSeekTime = t
-
-				if m.v != nil {
-					codec := m.v.stream.Codec()
-					codec.FlushBuffer()
-					m.drawCurrentFrame()
-				}
-
-				if m.s != nil {
-					m.v.window.ShowText(m.s.seek(t))
-				}
-
-				m.v.window.ShowProgress(m.c.CalcPlayProgress(percent))
-
-				break
-			}
-		})
+		if m.s != nil {
+			m.s.Seek(start)
+		}
+	} else {
+		log.Fatal("No video stream find.")
 	}
 }
 func (m *movie) SeekTo(t time.Duration) time.Duration {
-	backward := false
-	if t < m.c.GetSeekTime() {
-		backward = true
+	if m.v != nil {
+		t = m.v.seek(t)
 	}
 
-	timeAfterSeek := SeekFrame(m.ctx, m.v.stream, m.a.stream, m.s, t, backward)
-
-	println("seek to", timeAfterSeek.String())
+	println("seek to", t.String())
 
 	if m.a != nil {
 		m.a.flushBuffer()
 	}
 
 	if m.s != nil {
-		go m.s.play()
+		m.s.Seek(t)
 	}
 
-	return timeAfterSeek
-}
-
-func SeekFrame(ctx AVFormatContext, videoStream AVStream, audioStream AVStream, s *subtitle, t time.Duration, backward bool) time.Duration {
-	//seek audio is very very slow, it takes 30 seconds to seek to about 28m in movie (720p)
-	// b := time.Now()
-	// ctx.SeekFrame(audioStream, t, AVSEEK_FLAG_FRAME)
-	// println(time.Since(b).String())
-	flags := AVSEEK_FLAG_FRAME
-	if backward {
-		flags |= AVSEEK_FLAG_BACKWARD
-	}
-	ctx.SeekFrame(videoStream, t, flags)
-
-	frame := AllocFrame()
-	ret, _ := readOneFrame(ctx, videoStream, frame)
-
-	if s != nil {
-		s.seek(ret)
-	}
-
-	return ret
-	// return dropVideoFrames(ctx, videoStream, t, frame)
-	// return dropFrames(ctx, audioStream, t, frame)
-}
-func readOneFrame(ctx AVFormatContext, stream AVStream, frame AVFrame) (time.Duration, bool) {
-	packet := AVPacket{}
-	codecCtx := stream.Codec()
-
-	for ctx.ReadFrame(&packet) >= 0 {
-		if packet.StreamIndex() == stream.Index() {
-			if codecCtx.DecodeVideo(frame, &packet) {
-				tmp := packet.Pts()
-				if tmp == AV_NOPTS_VALUE {
-					tmp = 0
-				}
-
-				pts := time.Duration(float64(tmp) * stream.Timebase().Q2D() * float64(time.Second))
-				println("pts:", pts.String())
-				packet.Free()
-
-				return pts, true
-			} else {
-				packet.Free()
-			}
-		}
-	}
-
-	return 0, false
-}
-func dropVideoFrames(ctx AVFormatContext, videoStream AVStream, t time.Duration, frame AVFrame) time.Duration {
-	packet := AVPacket{}
-	codecCtx := videoStream.Codec()
-
-	for ctx.ReadFrame(&packet) >= 0 {
-		if packet.StreamIndex() == videoStream.Index() {
-			if codecCtx.DecodeVideo(frame, &packet) {
-
-				tmp := packet.Pts()
-				if tmp == AV_NOPTS_VALUE {
-					tmp = 0
-				}
-
-				pts := time.Duration(float64(tmp) * videoStream.Timebase().Q2D() * float64(time.Second))
-				println("pts:", pts.String())
-				packet.Free()
-
-				if t-pts < 10*time.Millisecond {
-					return pts
-				}
-			} else {
-				packet.Free()
-			}
-		}
-	}
-
-	return 0
+	return t
 }
 
 func tabs(t time.Duration) time.Duration {
@@ -312,9 +154,6 @@ func (m *movie) decode() {
 }
 
 func (m *movie) play() {
-	if m.s != nil {
-		go m.s.play()
-	}
 	if m.v != nil {
 		m.v.play()
 	} else {

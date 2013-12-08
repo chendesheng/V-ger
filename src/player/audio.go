@@ -20,8 +20,6 @@ type audio struct {
 	frame AVFrame
 
 	audioPktPts uint64
-	// audioClock     time.Duration
-	// audioClockTime time.Time
 
 	resampleCtx AVAudioResampleContext
 
@@ -35,28 +33,8 @@ type audio struct {
 }
 
 func (a *audio) setup(formatCtx AVFormatContext, stream AVStream) {
-
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
-
-	// codecCtx.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
-	// 	ret := ctx.DefaultGetBuffer(frame)
-
-	// 	pts := AVObject{}
-	// 	pts.Malloc(8)
-
-	// 	pts.WriteUInt64(a.audioPktPts)
-	// 	frame.SetOpaque(pts)
-	// 	return ret
-	// })
-	// codecCtx.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
-	// 	if !frame.IsNil() {
-	// 		pts := frame.Opaque()
-	// 		pts.Free()
-	// 	}
-
-	// 	ctx.DefaultReleaseBuffer(frame)
-	// })
 
 	decoder := codecCtx.FindDecoder()
 	if decoder.IsNil() {
@@ -171,17 +149,6 @@ func (a *audio) initsdl() {
 					println((pts - now).String())
 					if pts > now {
 						a.c.WaitUtil(pts)
-						// diff := float64(pts-now) / float64(time.Second)
-						// size := int(diff * float64(a.codecCtx.SimpleRate()*
-						// 	a.codecCtx.Channels()*GetBytesPerSample(a.codecCtx.SimpleFormat())))
-						// println("wait:", size)
-
-						// zeroes := make([]byte, size)
-						// for i, _ := range zeroes {
-						// 	zeroes[i] = 0
-						// }
-						// a.audioBuffer = append(a.audioBuffer, zeroes...)
-						// continue
 					} else {
 						diff := float64(now-pts) / float64(time.Second) / 2
 						diffsize = int(diff * float64(a.codecCtx.SimpleRate()*

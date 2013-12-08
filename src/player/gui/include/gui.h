@@ -17,7 +17,8 @@ void makeWindowCurrentContext(void*wptr);
 int getWindowWidth(void*);
 int getWindowHeight(void*);
 void showWindowProgress(void*,char*,char*,double);
-void showText(void*,SubItem*,int,double,double);
+void* showText(void*,SubItem*,int,int,double,double);
+void hideText(void* ptrWin, void* ptrText);
 void windowHideStartupView(void*);
 
 // typedef void (* TimerTickFunc)(void*);

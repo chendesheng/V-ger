@@ -29,7 +29,7 @@
     }
     else
     {
-        [self setFrameSize:NSMakeSize(self.frame.size.width, 50)];
+        [self setFrameSize:NSMakeSize(self.frame.size.width, 30)];
     }
     [super setHidden:flag];
 }

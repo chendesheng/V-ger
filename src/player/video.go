@@ -153,3 +153,71 @@ func (v *video) play() {
 	gui.PollEvents()
 	return
 }
+
+func (v *video) seek(t time.Duration) time.Duration {
+	flags := AVSEEK_FLAG_FRAME
+	if t < v.c.GetSeekTime() {
+		flags |= AVSEEK_FLAG_BACKWARD
+	}
+	ctx := v.formatCtx
+	ctx.SeekFrame(v.stream, t, flags)
+
+	frame := AllocFrame()
+	timeAfterSeek, _ := readOneFrame(ctx, v.stream, frame)
+	return timeAfterSeek
+}
+
+func readOneFrame(ctx AVFormatContext, stream AVStream, frame AVFrame) (time.Duration, bool) {
+	packet := AVPacket{}
+	codecCtx := stream.Codec()
+
+	for ctx.ReadFrame(&packet) >= 0 {
+		if packet.StreamIndex() == stream.Index() {
+			if codecCtx.DecodeVideo(frame, &packet) {
+				tmp := packet.Pts()
+				if tmp == AV_NOPTS_VALUE {
+					tmp = 0
+				}
+
+				pts := time.Duration(float64(tmp) * stream.Timebase().Q2D() * float64(time.Second))
+				println("pts:", pts.String())
+				packet.Free()
+
+				return pts, true
+			} else {
+				packet.Free()
+			}
+		}
+	}
+
+	return 0, false
+}
+
+func dropVideoFrames(ctx AVFormatContext, videoStream AVStream, t time.Duration, frame AVFrame) time.Duration {
+	packet := AVPacket{}
+	codecCtx := videoStream.Codec()
+
+	for ctx.ReadFrame(&packet) >= 0 {
+		if packet.StreamIndex() == videoStream.Index() {
+			if codecCtx.DecodeVideo(frame, &packet) {
+
+				tmp := packet.Pts()
+				if tmp == AV_NOPTS_VALUE {
+					tmp = 0
+				}
+
+				pts := time.Duration(float64(tmp) * videoStream.Timebase().Q2D() * float64(time.Second))
+				println("pts:", pts.String())
+				packet.Free()
+
+				if t-pts < 10*time.Millisecond {
+					return pts
+				}
+			} else {
+				packet.Free()
+			}
+		}
+	}
+
+	return 0
+}

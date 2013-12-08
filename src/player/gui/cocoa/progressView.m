@@ -29,13 +29,11 @@
     [[NSColor colorWithCalibratedRed:255 green:255 blue:255 alpha:0.3] setFill];
     NSRectFill(dirtyRect);
     
-    CGFloat x = 8;
-    if ([self->leftString length]<=5) {
-        x = 22;
-    }
-    [self->leftString drawAtPoint:NSMakePoint(x, 18) withAttributes:@{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]}];
-    
-    [self->rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-60+4, 18) withAttributes:@{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]}];
+    NSDictionary *attr = @{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]};
+    NSSize textSize = [self->leftString sizeWithAttributes:attr];
+    CGFloat textY = (dirtyRect.size.height-14)/2;
+    [self->leftString drawAtPoint:NSMakePoint(60-4-textSize.width,textY) withAttributes:attr];
+    [self->rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-60+4, textY) withAttributes:@{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]}];
     
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.5] set];
     [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, dirtyRect.size.width-120, barHeight) radius:2];
@@ -108,7 +106,7 @@
     if (b) {
         [v setFrameSize:NSMakeSize(v.frame.size.width, 0)];
     } else {
-        [v setFrameSize:NSMakeSize(v.frame.size.width, 50)];
+        [v setFrameSize:NSMakeSize(v.frame.size.width, 30)];
     }
     [v setHidden:b];
 }
