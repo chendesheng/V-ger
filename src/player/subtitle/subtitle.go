@@ -69,11 +69,11 @@ func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
 }
 
 func (s *Subtitle) playOneItem(pos int) {
-	println("play one item:", pos, s.items[pos].Content[0].Content)
 	_, to := s.calcFromTo(pos)
 	tId := s.r.SendShowText(s.items[pos])
 	s.c.WaitUtilWithQuit(to-20*time.Millisecond, s.quit)
 	s.r.SendHideText(tId)
+	println("play one item:", pos, s.items[pos].Content[0].Content)
 }
 
 func (s *Subtitle) FindPos(t time.Duration) (int, *SubItem) {

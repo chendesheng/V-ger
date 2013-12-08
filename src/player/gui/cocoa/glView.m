@@ -165,7 +165,8 @@
         NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
         double x = wsz.width - sz.width - padding;
-        [tv setFrame:NSMakeRect(x, padding, sz.width, sz.height)];        
+        [tv setFrame:NSMakeRect(x, padding, sz.width, sz.height)];
+        return tv;
     } else if (position == 4) {   
         TextView* tv = [[TextView alloc] init];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
@@ -175,7 +176,8 @@
         NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
         double y = (wsz.height - sz.height)/2;
-        [tv setFrame:NSMakeRect(padding, y, sz.width, sz.height)];  
+        [tv setFrame:NSMakeRect(padding, y, sz.width, sz.height)];
+        return tv;
     } else if (position == 5) {
         TextView* tv = [[TextView alloc] init];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
@@ -186,7 +188,8 @@
 
         double x = (wsz.width - sz.width)/2;
         double y = (wsz.height - sz.height)/2;
-        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];        
+        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
+        return tv;
     } else if (position == 6) {
         TextView* tv = [[TextView alloc] init];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
@@ -197,7 +200,8 @@
 
         double x = wsz.width - sz.width - padding;
         double y = (wsz.height - sz.height)/2;
-        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];        
+        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
+        return tv;
     } else if (position == 7) {
         TextView* tv = [[TextView alloc] init];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
@@ -208,7 +212,8 @@
 
         double x = padding;
         double y = wsz.height - sz.height - padding;
-        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];        
+        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
+        return tv;
     } else if (position == 8) {
         TextView* tv = [[TextView alloc] init];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
@@ -219,7 +224,8 @@
 
         double x = (wsz.width - sz.width)/2;
         double y = wsz.height - sz.height - padding;
-        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];        
+        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
+        return tv;
     } else if (position == 9) {
         TextView* tv = [[TextView alloc] init];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
@@ -230,7 +236,8 @@
 
         double x = wsz.width - sz.width - padding;
         double y = wsz.height - sz.height - padding;
-        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];        
+        [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
+        return tv;
     } else {
         TextView* tv = [[TextView alloc] init];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
