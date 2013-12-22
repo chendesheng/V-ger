@@ -26,3 +26,7 @@ func OpenAudio(spec AudioSpec) (int, AudioSpec) {
 func PauseAudio(vol int) {
 	C.SDL_PauseAudio(C.int(vol))
 }
+
+func QuitSubSystem(flags uint) {
+	C.SDL_QuitSubSystem(C.Uint32(flags))
+}

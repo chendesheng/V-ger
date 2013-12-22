@@ -26,6 +26,7 @@ type Window struct {
 	FuncKeyDown             []func(int)
 	FuncOnFullscreenChanged []func(bool)
 	FuncOnProgressChanged   []func(int, float64)
+	FuncAudioMenuClicked    []func(int)
 
 	texture gl.Texture
 
@@ -270,5 +271,25 @@ func goOnFullscreenChanged(ptr unsafe.Pointer, b int) {
 
 	for _, fn := range w.FuncOnFullscreenChanged {
 		fn(b != 0)
+	}
+}
+
+// //export goOnAudioStreamChanged
+// func goOnAudioStreamChanged(cname *C.char) {
+// 	name := C.GoString(cname)
+// 	println(name)
+// }
+
+// //export goOnSubtitleChanged
+// func goOnSubtitleChanged(name1 *C.char, name2 *C.char) {
+
+// }
+
+//export goOnAudioMenuClicked
+func goOnAudioMenuClicked(ptr unsafe.Pointer, tag int) {
+	w := windows[ptr]
+
+	for _, fn := range w.FuncAudioMenuClicked {
+		fn(tag)
 	}
 }

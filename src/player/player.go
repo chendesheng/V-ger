@@ -25,7 +25,8 @@ import (
 // var taskName = flag.String("task", "The.Rainmaker.1997.720p.WEB-DL.DD5.1.H.264-ViGi.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "the.walking.dead.s04e07.proper.720p.hdtv.x264-killers.mkv", "vger-task file name")
-var taskName = flag.String("task", "Nikita.S04E03.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+// var taskName = flag.String("task", "Nikita.S04E03.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+var taskName = flag.String("task", "LS and TSB_Rip1080_HDR.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "Google IO 2013 - Advanced Go Concurrency Patterns [720p].mp4", "vger-task file name")
 

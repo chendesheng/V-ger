@@ -7,6 +7,11 @@ import (
 )
 
 func (m *movie) uievents() {
+	m.v.window.FuncAudioMenuClicked = append(m.v.window.FuncAudioMenuClicked, func(i int) {
+		go func() {
+			m.a.setCurrentStream(i)
+		}()
+	})
 	m.v.window.FuncKeyDown = append(m.v.window.FuncKeyDown, func(keycode int) {
 		switch keycode {
 		case gui.KEY_SPACE:

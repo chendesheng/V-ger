@@ -44,5 +44,20 @@
     [[[self contentView] openGLContext] makeCurrentContext];
 }
 
+- (void)audioMenuItemClick:(id)sender {
+    // NSLog(sender);
+    NSMenuItem* subtitleMenuItem = (NSMenuItem*)sender;
+    if ([subtitleMenuItem state] == NSOnState) {
+        return;
+    }
 
+    NSMenu *menu = [[subtitleMenuItem parentItem] submenu];
+    for (int i = 0; i < [menu numberOfItems]; i++) {
+        NSMenuItem *item = [menu itemAtIndex:i];
+        [item setState:NSOffState];
+    }
+
+    [subtitleMenuItem setState:NSOnState];
+    onAudioMenuClicked(self, [subtitleMenuItem tag]);
+}
 @end

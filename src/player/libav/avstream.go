@@ -25,3 +25,6 @@ func (stream *AVStream) Timebase() AVRational {
 func (stream *AVStream) Duration() int64 {
 	return int64(stream.ptr.duration)
 }
+func (stream *AVStream) MetaData() AVDictionary {
+	return AVDictionary{ptr: stream.ptr.metadata}
+}

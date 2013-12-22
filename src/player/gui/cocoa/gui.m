@@ -32,6 +32,31 @@ void initialize() {
     [appMenuItem setSubmenu:appMenu];
 }
 
+void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
+    NSWindow* w = (NSWindow*)wptr;
+
+    NSMenu *menubar = [NSApp mainMenu];
+    NSMenuItem* audioMenuItem = [[NSMenuItem new] autorelease];
+    [menubar addItem:audioMenuItem];
+    NSMenu* audioMenu = [[NSMenu alloc] initWithTitle:@"Audio"];
+
+    for (int i = 0; i < len; i++) {
+        char* name = names[i];
+        int tag = tags[i];
+        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
+            action:@selector(audioMenuItemClick:) keyEquivalent:@""];
+        [item setTarget: w];
+        [item setTag: tag];
+        [audioMenu addItem:item];
+
+        if (tag == selected) {
+            [item setState: NSOnState];
+        }
+    }
+
+    [audioMenuItem setSubmenu:audioMenu];
+}
+
 void* newWindow(char* title, int width, int height) {
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 

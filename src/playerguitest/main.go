@@ -50,7 +50,7 @@ func main() {
 	strs := make([]AttributedString, 0)
 	strs = append(strs, str)
 
-	w.ShowText(&SubItem{0, 0, strs, 10, Position{50, 700}})
+	h1 := w.ShowText(&SubItem{0, 0, strs, 10, Position{50, 700}})
 
 	str = AttributedString{"Hello World1", 0, 0xffffff}
 	strs = make([]AttributedString, 0)
@@ -88,24 +88,39 @@ func main() {
 	strs = append(strs, str)
 	h = w.ShowText(&SubItem{0, 0, strs, 7, Position{0, 0}})
 
-	str = AttributedString{"Hello World8", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 8, Position{0, 0}})
-
 	str = AttributedString{"Hello World9", 0, 0xffffff}
 	strs = make([]AttributedString, 0)
 	strs = append(strs, str)
 	h = w.ShowText(&SubItem{0, 0, strs, 9, Position{0, 0}})
 
+	str = AttributedString{"Hello World8", 0, 0xffffff}
+	strs = make([]AttributedString, 0)
+	strs = append(strs, str)
+	h3 := w.ShowText(&SubItem{0, 0, strs, 8, Position{0, 0}})
+
 	// go func() {
 	// time.Sleep(3 * time.Second)
 	// w.HideText(h)
 	// }()
+	println(h)
+	println(h1)
+	println(h3)
 	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
 		if key == KEY_0 {
-			w.HideText(h)
+			w.HideText(h3)
 		}
 	})
+
+	audioStreamNames := make([]string, 0)
+	audioStreamNames = append(audioStreamNames, "a1")
+	audioStreamNames = append(audioStreamNames, "a2")
+	indexes := make([]int32, 0)
+	indexes = append(indexes, 1)
+	indexes = append(indexes, 2)
+	w.InitAudioMenu(audioStreamNames, indexes, 2)
+	w.FuncAudioMenuClicked = append(w.FuncAudioMenuClicked, func(i int) {
+		println(i)
+	})
+
 	PollEvents()
 }

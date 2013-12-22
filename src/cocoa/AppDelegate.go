@@ -216,7 +216,10 @@ func (delegate *AppDelegate) SpeedClick(sender uintptr) {
 	util.SaveConfig("max-speed", fmt.Sprint(speed))
 	download.LimitSpeed(int64(speed))
 
+	println(delegate.speedMenuItems)
+	println(delegate)
 	for _, item := range delegate.speedMenuItems {
+		println(item.Title())
 		item.SetState(NSOffState)
 	}
 

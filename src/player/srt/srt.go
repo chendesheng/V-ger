@@ -169,7 +169,7 @@ func parsePosition(text string) (int, Position, string) {
 	// println(text)
 
 	if matches == nil {
-		regPos2 := regexp.MustCompile(`^\{\\an([1-9])\}`)
+		regPos2 := regexp.MustCompile(`^\{\\an?([1-9])\}`)
 		matches := regPos2.FindStringSubmatch(text)
 		if matches == nil {
 			return 0, Position{0, 0}, text

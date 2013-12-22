@@ -1,10 +1,11 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	. "player/clock"
 	. "player/libav"
 	. "player/subtitle"
+	"strings"
 	// . "player/shared"
 	"log"
 	"time"
@@ -35,10 +36,30 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 	m.ctx = ctx
 	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
 
-	audioStream := ctx.AudioStream()
-	if !audioStream.IsNil() {
-		m.a = &audio{}
-		m.a.setup(ctx, audioStream)
+	audioStreams := ctx.AudioStream()
+
+	audioStreamNames := make([]string, 0)
+	audioStreamIndexes := make([]int32, 0)
+
+	if len(audioStreams) > 0 {
+
+		selected := audioStreams[0].Index()
+		for _, stream := range audioStreams {
+			dic := stream.MetaData()
+			m := dic.Map()
+			title := m["title"]                        //dic.AVDictGet("title", AVDictionaryEntry{}, 2).Value()
+			language := strings.ToLower(m["language"]) //dic.AVDictGet("language", AVDictionaryEntry{}, 2).Value()
+
+			// println(title, language)
+			audioStreamNames = append(audioStreamNames, fmt.Sprintf("[%s] %s", language, title))
+			audioStreamIndexes = append(audioStreamIndexes, int32(stream.Index()))
+			if strings.Contains(language, "eng") {
+				selected = stream.Index()
+			}
+		}
+
+		m.a = &audio{streams: audioStreams}
+		m.a.setCurrentStream(selected)
 		m.a.c = m.c
 	}
 
@@ -62,6 +83,12 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 		if m.s != nil {
 			m.s.Seek(start)
 		}
+
+		// for _, as := range audioStreams {
+		// 	as.
+		// }
+
+		m.v.window.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
 	} else {
 		log.Fatal("No video stream find.")
 	}

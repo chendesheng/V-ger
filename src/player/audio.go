@@ -13,13 +13,11 @@ import (
 )
 
 type audio struct {
-	formatCtx AVFormatContext
-	codecCtx  *AVCodecContext
-	stream    AVStream
+	streams []AVStream
 
-	frame AVFrame
-
-	audioPktPts uint64
+	codecCtx *AVCodecContext
+	stream   AVStream
+	frame    AVFrame
 
 	resampleCtx AVAudioResampleContext
 
@@ -32,7 +30,13 @@ type audio struct {
 	skipBytes int
 }
 
-func (a *audio) setup(formatCtx AVFormatContext, stream AVStream) {
+func (a *audio) setCurrentStream(index int) {
+	var stream AVStream
+	for _, s := range a.streams {
+		if s.Index() == index {
+			stream = s
+		}
+	}
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
 
@@ -53,12 +57,18 @@ func (a *audio) setup(formatCtx AVFormatContext, stream AVStream) {
 	resampleCtx := AVAudioResampleContext{}
 	resampleCtx.Alloc()
 
-	a.formatCtx = formatCtx
 	a.stream = stream
 	a.frame = AllocFrame()
-	a.audioPktPts = AV_NOPTS_VALUE
 	a.resampleCtx = resampleCtx
+
+	if a.ch != nil {
+		a.flushBuffer()
+		close(a.ch)
+	}
+
 	a.ch = make(chan *AVPacket, 200)
+
+	sdl.QuitSubSystem(sdl.SDL_INIT_AUDIO)
 
 	a.initsdl()
 }

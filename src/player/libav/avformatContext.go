@@ -5,6 +5,8 @@ package libav
 #include "libavformat/avformat.h"
 #include "libavutil/avutil.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/dict.h"
+
 #include <stdlib.h>
 */
 import "C"
@@ -65,22 +67,22 @@ func (ctx *AVFormatContext) VideoStream() AVStream {
 
 	return AVStream{ptr: nil}
 }
-func (ctx *AVFormatContext) AudioStream() AVStream {
+func (ctx *AVFormatContext) AudioStream() []AVStream {
 	var streams []*C.AVStream
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&streams))
 	header.Len = int(ctx.ptr.nb_streams)
 	header.Cap = header.Len
 	header.Data = uintptr(unsafe.Pointer(ctx.ptr.streams))
 
+	res := make([]AVStream, 0)
 	for i := 0; i < len(streams); i++ {
 		// stream := (ctx.ptr.streams)[i]
 		stream := streams[i]
 		if int(stream.codec.codec_type) == AVMEDIA_TYPE_AUDIO {
-			return AVStream{ptr: stream}
+			res = append(res, AVStream{ptr: stream})
 		}
 	}
-
-	return AVStream{ptr: nil}
+	return res
 }
 func (ctx *AVFormatContext) Stream(i int) AVStream {
 	var streams []*C.AVStream
@@ -137,6 +139,34 @@ func (ctx *AVFormatContext) Duration() int64 {
 func (ctx *AVFormatContext) StartTime() time.Duration {
 	return time.Duration((float64(ctx.ptr.start_time) / float64(AV_TIME_BASE)) * float64(time.Second))
 }
+
+// func (ctx *AVFormatContext) FindStreamInfo(count int) []map[string]string {
+// 	var dices *C.AVDictionary
+// 	C.avformat_find_stream_info(ctx.ptr, &dices)
+// 	// entries := dices.elems
+// 	infoes := make([](map[string]string), 0)
+// 	for i := 0; i < count; i++ {
+// 		var d C.AVDictionary = dices[i]
+// 		info := make(map[string]string)
+// 		infoes = append(infoes, info)
+
+// 		elems := make([]*C.AVDictionaryEntry, 0)
+// 		header := (*reflect.SliceHeader)(unsafe.Pointer(&elems))
+// 		header.Len = C.int(d.count)
+// 		header.Cap = C.int(d.count)
+// 		header.Data = d.elems
+
+// 		// header := reflect.SliceHeader{d.elems, C.int(d.count), C.int(d.count)}
+// 		for j := 0; j < len(elems); j++ {
+// 			ele := elems[0]
+// 			info[C.GoString(ele.key)] = C.GoString(ele.val)
+// 		}
+// 	}
+
+// 	println("%v", infoes)
+
+// 	return infoes
+// }
 
 const (
 	AVSEEK_FLAG_BACKWARD = 1 << iota ///< seek backward
