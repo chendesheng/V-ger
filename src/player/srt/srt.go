@@ -36,15 +36,6 @@ func linebreak(r rune) bool {
 	return r == '\r' || r == '\n'
 }
 
-var PreDefinedPosition [10]Position
-
-func init() {
-	PreDefinedPosition[1] = Position{10, 20}
-	PreDefinedPosition[2] = Position{0, 20}
-	PreDefinedPosition[1] = Position{0, 20}
-	PreDefinedPosition[1] = Position{0, 20}
-}
-
 func Parse(str string) []*SubItem {
 	lines := strings.FieldsFunc(str, linebreak)
 
@@ -163,25 +154,35 @@ func toColor(c string) uint {
 		return defaultColor
 	}
 }
-func parsePosition(text string) (int, Position, string) {
-	regPos := regexp.MustCompile(`^\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
-	matches := regPos.FindStringSubmatch(text)
-	// println(text)
+func removePositionInfo(text string) string {
+	regPos := regexp.MustCompile(`\{\\[^}]+\}`)
+	return regPos.ReplaceAllString(text, "")
+}
 
+func parsePos(text string) Position {
+	regPos := regexp.MustCompile(`\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
+	matches := regPos.FindStringSubmatch(text)
 	if matches == nil {
-		regPos2 := regexp.MustCompile(`^\{\\an?([1-9])\}`)
-		matches := regPos2.FindStringSubmatch(text)
-		if matches == nil {
-			return 0, Position{0, 0}, text
-		} else {
-			i, _ := strconv.Atoi(matches[1])
-			return i, PreDefinedPosition[i], text[len(matches[0]):]
-		}
+		return Position{-1, -1}
 	} else {
 		x, _ := strconv.Atoi(matches[1])
 		y, _ := strconv.Atoi(matches[2])
-		return 10, Position{float64(x), float64(y)}, text[len(matches[0]):]
+		return Position{float64(x), float64(y)}
 	}
+}
+func parseAlign(text string) int {
+	regPos := regexp.MustCompile(`^\{\\an?([1-9])\}`)
+	matches := regPos.FindStringSubmatch(text)
+	if matches == nil {
+		return 2
+	} else {
+		i, _ := strconv.Atoi(matches[1])
+		return i
+	}
+}
+
+func parsePosition(text string) (int, Position, string) {
+	return parseAlign(text), parsePos(text), removePositionInfo(text)
 }
 func parseTag(nodes []*html.Node, as AttributedString, res *[]AttributedString) {
 	for _, n := range nodes {

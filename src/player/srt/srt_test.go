@@ -19,6 +19,13 @@ import (
 // 		t.Errorf("parse error")
 // 	}
 // }
+func TestRemovePositionInfo(t *testing.T) {
+	res := removePositionInfo("{\\pos(aaa)}{\\an1}bbb{\\test}")
+	if res != "bbb" {
+		t.Errorf("Expect 'bbb' but %s", res)
+	}
+
+}
 func TestParse2(t *testing.T) {
 	data, err := ioutil.ReadFile("b.srt")
 	if err != nil {
@@ -308,8 +315,8 @@ func TestParsePosition(t *testing.T) {
 	if items[0].Content[0].Content != "President reagan:" {
 		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
 	}
-	if !(items[0].PositionType == 10 && items[0].X == 1 && items[0].Y == 20) {
-		t.Errorf("parse position faild except (1,20) but (%d, %d)", items[0].X, items[0].Y)
+	if !(items[0].PositionType == 2 && items[0].X == 1 && items[0].Y == 20) {
+		t.Errorf("parse position faild except (2, 1,20) but (%d, %f, %f)", items[0].PositionType, items[0].X, items[0].Y)
 	}
 }
 
@@ -320,6 +327,21 @@ func TestParsePosition2(t *testing.T) {
 	items := Parse(text)
 	if items[0].Content[0].Content != "President reagan:" {
 		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
+	}
+	if !(items[0].PositionType == 8 && items[0].X == -1 && items[0].Y == -1) {
+		t.Errorf("parse position faild except (8,-1,-1) but (%d, %f, %f)", items[0].PositionType, items[0].X, items[0].Y)
+	}
+}
+func TestParsePosition3(t *testing.T) {
+	text := `1
+00:00:00,001 --> 00:00:04,336
+{\an8}{\pos(1,2)}President reagan:`
+	items := Parse(text)
+	if items[0].Content[0].Content != "President reagan:" {
+		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
+	}
+	if !(items[0].PositionType == 8 && items[0].Position.X == 1 && items[0].Position.Y == 2) {
+		t.Errorf("type&position except (8, 1,2) but (%d, %f,%f)", items[0].PositionType, items[0].Position.X, items[0].Position.Y)
 	}
 	// if !(items[0].UsePosition && items[0].X == 1 && items[0].Y == 20) {
 	// 	t.Errorf("parse position faild except (1,20) but (%d, %d)", items[0].X, items[0].Y)
