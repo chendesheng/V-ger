@@ -23,11 +23,15 @@ type Subtitle struct {
 
 	ChanOffset    chan time.Duration
 	ChanOffsetRes chan time.Duration
+
+	chanStop chan bool
+
+	Name string
+
+	IsMainOrSecondSub bool
 }
 
-func (s *Subtitle) Play() {
-	var pos int
-
+func (s *Subtitle) Play(pos int) {
 	for {
 		select {
 		case d := <-s.ChanOffset:
@@ -49,8 +53,15 @@ func (s *Subtitle) Play() {
 				pos++
 			}
 			break
+		case <-s.chanStop:
+			close(s.quit)
+			return
 		}
 	}
+}
+
+func (s *Subtitle) Stop() {
+	s.chanStop <- true
 }
 
 func (s *Subtitle) calcFromTo(i int) (time.Duration, time.Duration) {
@@ -70,7 +81,15 @@ func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
 
 func (s *Subtitle) playOneItem(pos int) {
 	_, to := s.calcFromTo(pos)
-	tId := s.r.SendShowText(s.items[pos])
+	item := s.items[pos]
+	if !s.IsMainOrSecondSub {
+		if (item.PositionType != 2) || (item.X >= 0) || (item.Y >= 0) {
+			return
+		} else {
+			item.PositionType = 10
+		}
+	}
+	tId := s.r.SendShowText(item)
 	s.c.WaitUtilWithQuit(to-20*time.Millisecond, s.quit)
 	s.r.SendHideText(tId)
 	println("play one item:", pos, s.items[pos].Content[0].Content)
@@ -103,6 +122,9 @@ func NewSubtitle(file string, r SubRender, c *Clock) *Subtitle {
 	s.ChanSeek = make(chan time.Duration)
 	s.ChanOffset = make(chan time.Duration)
 	s.ChanOffsetRes = make(chan time.Duration)
+	s.chanStop = make(chan bool)
+	s.Name = file
+	s.IsMainOrSecondSub = true
 
 	s.items = srt.Parse(string(bytes))
 	if err != nil {

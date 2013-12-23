@@ -7,9 +7,9 @@ package gui
 import "C"
 import (
 	"github.com/go-gl/gl"
-	"unsafe"
-
 	. "player/shared"
+	"time"
+	"unsafe"
 )
 
 var windows map[unsafe.Pointer]*Window
@@ -27,18 +27,25 @@ type Window struct {
 	FuncOnFullscreenChanged []func(bool)
 	FuncOnProgressChanged   []func(int, float64)
 	FuncAudioMenuClicked    []func(int)
+	FuncSubtitleMenuClicked []func(int, bool)
 
 	texture gl.Texture
 
-	ChanDraw         chan []byte
-	ChanShowText     chan *SubItemArg
-	ChanHideText     chan uintptr
+	ChanDraw     chan []byte
+	ChanShowText chan *SubItemArg
+	ChanHideText chan uintptr
+
+	ChanShowMessage chan *SubItemArg
+	ChanHideMessage chan uintptr
+
 	ChanShowProgress chan *PlayProgressInfo
 
 	img []byte
 
 	originalWidth  int
 	originalHeight int
+
+	currentMessagePtr uintptr
 }
 
 // func (w *Window) Show() {
@@ -77,6 +84,9 @@ func NewWindow(title string, width, height int) *Window {
 		ChanShowProgress: make(chan *PlayProgressInfo),
 		ChanShowText:     make(chan *SubItemArg),
 		ChanHideText:     make(chan uintptr),
+
+		ChanShowMessage: make(chan *SubItemArg),
+		ChanHideMessage: make(chan uintptr),
 
 		originalWidth:  width,
 		originalHeight: height,
@@ -189,6 +199,21 @@ func (w *Window) SendShowText(s *SubItem) uintptr {
 	w.ChanShowText <- &SubItemArg{s, res}
 	return <-res
 }
+func (w *Window) SendShowMessage(msg string) {
+	s := SubItem{}
+	s.PositionType = 7
+	s.X = 20
+	s.Y = 20
+	s.Content = make([]AttributedString, 0)
+	s.Content = append(s.Content, AttributedString{msg, 3, 0xffffff})
+
+	res := make(chan uintptr)
+	w.ChanShowMessage <- &SubItemArg{&s, res}
+	ptr := <-res
+	time.Sleep(2 * time.Second)
+	w.ChanHideMessage <- ptr
+}
+
 func (w *Window) ShowText(s *SubItem) uintptr {
 	strs := s.Content
 
@@ -243,6 +268,19 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 		arg.Result <- w.ShowText(item)
 	case ptr := <-w.ChanHideText:
 		w.HideText(ptr)
+	case arg := <-w.ChanShowMessage:
+		if w.currentMessagePtr != 0 {
+			w.HideText(w.currentMessagePtr)
+		}
+
+		item := arg.SubItem
+		w.currentMessagePtr = w.ShowText(item)
+		arg.Result <- w.currentMessagePtr
+	case ptr := <-w.ChanHideMessage:
+		if (ptr != 0) && (w.currentMessagePtr == ptr) {
+			w.HideText(w.currentMessagePtr)
+			w.currentMessagePtr = 0
+		}
 	default:
 	}
 }
@@ -291,5 +329,14 @@ func goOnAudioMenuClicked(ptr unsafe.Pointer, tag int) {
 
 	for _, fn := range w.FuncAudioMenuClicked {
 		fn(tag)
+	}
+}
+
+//export goOnSubtitleMenuClicked
+func goOnSubtitleMenuClicked(ptr unsafe.Pointer, tag int, showOrHide int) {
+	w := windows[ptr]
+
+	for _, fn := range w.FuncSubtitleMenuClicked {
+		fn(tag, showOrHide != 0)
 	}
 }

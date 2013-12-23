@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	. "player/clock"
 	. "player/libav"
 	. "player/subtitle"
@@ -17,10 +18,11 @@ type movie struct {
 	v   *video
 	a   *audio
 	s   *Subtitle
+	s2  *Subtitle
 	c   *Clock
 }
 
-func (m *movie) open(file string, subFile string, start time.Duration) {
+func (m *movie) open(file string, subFiles []string, start time.Duration) {
 	println("open ", file)
 
 	ctx := AVFormatContext{}
@@ -69,10 +71,50 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 		m.v.setup(ctx, videoStream, file, start)
 		m.v.c = m.c
 
-		if len(subFile) > 0 {
-			println("play subtitle:", subFile)
-			m.s = NewSubtitle(subFile, m.v.window, m.c)
-			go m.s.Play()
+		if len(subFiles) > 0 {
+			tags := make([]int32, 0)
+			names := make([]string, 0)
+			for i, n := range subFiles {
+				tags = append(tags, int32(i))
+				names = append(names, filepath.Base(n))
+			}
+			m.v.window.InitSubtitleMenu(names, tags, 0)
+			m.v.window.FuncSubtitleMenuClicked = append(m.v.window.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
+				go func(m *movie, subFiles []string) {
+					if showOrHide {
+						// m.s.Stop()
+						s := NewSubtitle(subFiles[index], m.v.window, m.c)
+						if m.s == nil {
+							m.s = s
+							s.IsMainOrSecondSub = true
+						} else {
+							m.s2 = s
+							s.IsMainOrSecondSub = false
+						}
+
+						pos, _ := s.FindPos(m.c.GetSeekTime())
+						s.Play(pos)
+					} else {
+						if (m.s != nil) && (m.s.Name == subFiles[index]) {
+							m.s.Stop()
+							if m.s2 != nil {
+								m.s = m.s2
+								m.s.IsMainOrSecondSub = true
+								m.s2 = nil
+							} else {
+								m.s = nil
+							}
+						} else if (m.s2 != nil) && (m.s2.Name == subFiles[index]) {
+							m.s2.Stop()
+							m.s2 = nil
+						}
+					}
+				}(m, subFiles)
+			})
+
+			println("play subtitle:", subFiles)
+			m.s = NewSubtitle(subFiles[0], m.v.window, m.c)
+			go m.s.Play(0)
 		}
 		m.uievents()
 		start = m.v.seek(start)
@@ -87,8 +129,9 @@ func (m *movie) open(file string, subFile string, start time.Duration) {
 		// for _, as := range audioStreams {
 		// 	as.
 		// }
-
-		m.v.window.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
+		if len(audioStreams) > 1 {
+			m.v.window.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
+		}
 	} else {
 		log.Fatal("No video stream find.")
 	}
@@ -106,6 +149,9 @@ func (m *movie) SeekTo(t time.Duration) time.Duration {
 
 	if m.s != nil {
 		m.s.Seek(t)
+	}
+	if m.s2 != nil {
+		m.s2.Seek(t)
 	}
 
 	return t

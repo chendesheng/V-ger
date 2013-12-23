@@ -20,10 +20,9 @@ void onFullscreenChanged(void* wptr, int b) {
 	goOnFullscreenChanged(wptr, b);
 }
 
-
 void onAudioMenuClicked(void* wptr, int tag) {
 	goOnAudioMenuClicked(wptr, tag);
 }
-// void onSubtitleChanged(char* name1, char* name2) {
-// 	goOnSubtitleChanged(name1, name2);
-// }
+void onSubtitleMenuClicked(void* wptr, int tag, int showOrHide) {
+	goOnSubtitleMenuClicked(wptr, tag, showOrHide);
+}

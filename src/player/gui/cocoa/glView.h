@@ -10,6 +10,7 @@
     NSCursor* noneCursor;
     ProgressView* progressView;
     TextView* textView;
+    TextView* textView2;
     NSCursor* currentCursor;
     StartupView* startupView;
     NSSize originalSize;
@@ -23,6 +24,7 @@
 -(void)hideText:(TextView*)tv;
 
 -(void)setTextView:(TextView*)tv;
+-(void)setTextView2:(TextView*)tv;
 -(void)setStartupView:(StartupView*)sv;
 -(void)hideStartupView;
 @end

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"player/gui"
 	. "player/libav"
 	"time"
@@ -33,25 +34,29 @@ func (m *movie) uievents() {
 		case gui.KEY_MINUS:
 			println("key minus pressed")
 			if m.s != nil {
-				m.s.AddOffset(-1000 * time.Millisecond)
+				offset := m.s.AddOffset(-1000 * time.Millisecond)
+				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
 			}
 			break
 		case gui.KEY_EQUAL:
 			println("key equal pressed")
 			if m.s != nil {
-				m.s.AddOffset(1000 * time.Millisecond)
+				offset := m.s.AddOffset(1000 * time.Millisecond)
+				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
 			}
 			break
 		case gui.KEY_LEFT_BRACKET:
 			println("left bracket pressed")
 			if m.s != nil {
-				m.s.AddOffset(-200 * time.Millisecond)
+				offset := m.s.AddOffset(-200 * time.Millisecond)
+				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
 			}
 			break
 		case gui.KEY_RIGHT_BRACKET:
 			println("right bracket pressed")
 			if m.s != nil {
-				m.s.AddOffset(200 * time.Millisecond)
+				offset := m.s.AddOffset(200 * time.Millisecond)
+				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
 			}
 			break
 		}

@@ -26,7 +26,8 @@ import (
 
 // var taskName = flag.String("task", "the.walking.dead.s04e07.proper.720p.hdtv.x264-killers.mkv", "vger-task file name")
 // var taskName = flag.String("task", "Nikita.S04E03.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
-var taskName = flag.String("task", "LS and TSB_Rip1080_HDR.mkv", "vger-task file name")
+// var taskName = flag.String("task", "LS and TSB_Rip1080_HDR.mkv", "vger-task file name")
+var taskName = flag.String("task", "The.Vampire.Diaries.S05E09.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "Google IO 2013 - Advanced Go Concurrency Patterns [720p].mp4", "vger-task file name")
 
@@ -107,18 +108,20 @@ func main() {
 
 	base := util.ReadConfig("dir")
 
-	sub := ""
-	if len(t.Subs) > 0 {
-		sub = t.Subs[0]
-	} else {
-		if subs := findSubs(path.Join(base, "subs", t.Name)); len(subs) > 0 {
-			sub = subs[0]
-		}
-	}
+	// sub := ""
+	// if len(t.Subs) > 0 {
+	// 	sub = t.Subs[0]
+	// } else {
+	// 	if subs := findSubs(path.Join(base, "subs", t.Name)); len(subs) > 0 {
+	// 		sub = subs[0]
+	// 	}
+	// }
+
+	subs := findSubs(path.Join(base, "subs", t.Name))
 
 	m := movie{}
-	log.Print("sub: ", sub)
-	m.open(path.Join(base, t.Name), sub, t.LastPlaying)
+	// log.Print("sub: ", sub)
+	m.open(path.Join(base, t.Name), subs, t.LastPlaying)
 
 	go m.decode()
 

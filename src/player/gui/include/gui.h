@@ -24,12 +24,14 @@ void windowHideStartupView(void*);
 void windowToggleFullScreen(void* wptr);
 
 void initAudioMenu(void* wptr, char** name, int32_t*, int, int);
+void initSubtitleMenu(void* wptr, char** name, int32_t*, int, int);
 // void setSubtitles(void* wptr, char** name, int, int, int);
 // typedef void (* TimerTickFunc)(void*);
 // typedef void (* DrawFunc)(void*);
 
 void onAudioMenuClicked(void*, int);
-// void onSubtitleChanged(char*, char*);
+void onSubtitleMenuClicked(void*, int, int);
+
 
 void onDraw(void*);
 void onTimerTick(void*);

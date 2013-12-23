@@ -57,6 +57,31 @@ void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selecte
     [audioMenuItem setSubmenu:audioMenu];
 }
 
+void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
+    NSWindow* w = (NSWindow*)wptr;
+
+    NSMenu *menubar = [NSApp mainMenu];
+    NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
+    [menubar addItem:subtitleMenuItem];
+    NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
+
+    for (int i = 0; i < len; i++) {
+        char* name = names[i];
+        int tag = tags[i];
+        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
+            action:@selector(subtitleMenuItemClick:) keyEquivalent:@""];
+        [item setTarget: w];
+        [item setTag: tag];
+        [subtitleMenu addItem:item];
+
+        if (tag == selected) {
+            [item setState: NSOnState];
+        }
+    }
+
+    [subtitleMenuItem setSubmenu:subtitleMenu];
+}
+
 void* newWindow(char* title, int width, int height) {
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
@@ -77,6 +102,11 @@ void* newWindow(char* title, int width, int height) {
     [v addSubview:tv];
     [tv setAutoresizingMask:NSViewWidthSizable];
     [v setTextView:tv];
+
+    TextView* tv2 = [[TextView alloc] initWithFrame:NSMakeRect(0, 30, width, 0)];
+    [v addSubview:tv2];
+    [tv2 setAutoresizingMask:NSViewWidthSizable];
+    [v setTextView2:tv2];
 
     BlurView* bv = [[BlurView alloc] initWithFrame:NSMakeRect(0,0,width,30)];
     [v addSubview:bv];

@@ -46,18 +46,42 @@
 
 - (void)audioMenuItemClick:(id)sender {
     // NSLog(sender);
-    NSMenuItem* subtitleMenuItem = (NSMenuItem*)sender;
-    if ([subtitleMenuItem state] == NSOnState) {
+    NSMenuItem* audioMenuItem = (NSMenuItem*)sender;
+    if ([audioMenuItem state] == NSOnState) {
         return;
     }
 
-    NSMenu *menu = [[subtitleMenuItem parentItem] submenu];
+    NSMenu *menu = [[audioMenuItem parentItem] submenu];
     for (int i = 0; i < [menu numberOfItems]; i++) {
         NSMenuItem *item = [menu itemAtIndex:i];
         [item setState:NSOffState];
     }
 
-    [subtitleMenuItem setState:NSOnState];
-    onAudioMenuClicked(self, [subtitleMenuItem tag]);
+    [audioMenuItem setState:NSOnState];
+    onAudioMenuClicked(self, [audioMenuItem tag]);
+}
+- (void)subtitleMenuItemClick:(id)sender {
+    // NSLog(sender);
+    NSMenuItem* subtitleMenuItem = (NSMenuItem*)sender;
+    if ([subtitleMenuItem state] == NSOnState) {
+        [subtitleMenuItem setState:NSOffState];
+        onSubtitleMenuClicked(self, [subtitleMenuItem tag], 0);
+        return;
+    }
+
+    NSMenu *menu = [[subtitleMenuItem parentItem] submenu];
+    int cnt = 0;
+    for (int i = 0; i < [menu numberOfItems]; i++) {
+        NSMenuItem *item = [menu itemAtIndex:i];
+        if ([item state] == NSOnState) {
+            cnt++;
+        }
+    }
+    if (cnt == 2) {
+        return;
+    } else {
+        [subtitleMenuItem setState:NSOnState];
+        onSubtitleMenuClicked(self, [subtitleMenuItem tag], 1);
+    }
 }
 @end
