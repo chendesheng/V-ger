@@ -118,6 +118,8 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 	C.avcodec_flush_buffers(stream.Codec().ptr)
 }
 func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
+	frameLock.Lock()
+	defer frameLock.Unlock()
 	// timeBase := stream.ptr.time_base
 
 	seek_target := float64(t) / float64(time.Second) * AV_TIME_BASE

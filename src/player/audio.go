@@ -180,7 +180,7 @@ func (a *audio) initsdl() {
 				//decode frame from this packet, there may be many frames in one packet
 				// firstFrame := true
 				for packetSize > 0 { //continue decode until packet is empty
-					a.c.WaitUtilRunning()
+					// a.c.WaitUtilRunning()
 
 					gotFrame, size := codecCtx.DecodeAudio(frame, packet)
 

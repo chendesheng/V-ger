@@ -106,7 +106,7 @@ func (c *Clock) Pause() {
 func (c *Clock) pause() {
 	c.status = "paused"
 	c.pausedTime = time.Since(c.base)
-	c.wait = make(chan bool)
+	// c.wait = make(chan bool)
 }
 
 func (c *Clock) Toggle() {
@@ -135,15 +135,21 @@ func (c *Clock) ResumeWithTime(t time.Duration) {
 
 	if c.status == "paused" {
 		c.status = "running"
+		println("clock running")
 		c.base = time.Now().Add(-t)
+
 		close(c.wait)
+		c.wait = make(chan bool)
+		println("close wait")
 	}
 }
 
 func (c *Clock) resume() {
-	close(c.wait)
 	c.base = time.Now().Add(-c.pausedTime)
 	c.status = "running"
+
+	close(c.wait)
+	c.wait = make(chan bool)
 }
 
 func (c *Clock) Reset() {
@@ -165,6 +171,7 @@ func (c *Clock) waitUntilRunning() {
 
 	if status == "paused" {
 		<-ch
+		println("after paused")
 	}
 }
 
@@ -172,6 +179,7 @@ func (c *Clock) After(d time.Duration) {
 	// b := c.GetTime()
 	c.waitUntilRunning()
 
+	// println("clock wait after", d.String())
 	<-time.After(d) //time.After is not very accuracy which about one millisecond delay while wait one second
 
 	c.waitUntilRunning()
@@ -222,6 +230,7 @@ func NewClock(totalTime time.Duration) *Clock {
 		pausedTime: 0,
 		status:     "running",
 		totalTime:  totalTime,
+		wait:       make(chan bool),
 	}
 	c.Mutex = sync.Mutex{}
 	return c

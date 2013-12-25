@@ -124,7 +124,7 @@ void* newWindow(char* title, int width, int height) {
     [v setStartupView:sv];
 
 
-    NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/60.0 
+    NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/100.0 
                             target:w
                           selector:@selector(timerTick:)
                           userInfo:nil

@@ -20,44 +20,64 @@ func (m *movie) uievents() {
 			break
 		case gui.KEY_LEFT:
 			println("key left pressed")
-			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() - 10*time.Second))
+			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() - time.Second))
 			break
 		case gui.KEY_RIGHT:
-			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() + 10*time.Second))
+			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() + time.Second))
 			break
 		case gui.KEY_UP:
-			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() + time.Minute))
+			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() + 10*time.Second))
 			break
 		case gui.KEY_DOWN:
-			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() - time.Minute))
+			m.c.SetTime(m.SeekTo(m.c.GetSeekTime() - 10*time.Second))
 			break
 		case gui.KEY_MINUS:
 			println("key minus pressed")
-			if m.s != nil {
-				offset := m.s.AddOffset(-1000 * time.Millisecond)
-				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
-			}
+			go func() {
+				if m.s != nil {
+					offset := m.s.AddOffset(200 * time.Millisecond)
+					m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+				}
+				if m.s2 != nil {
+					m.s2.AddOffset(200 * time.Millisecond)
+				}
+			}()
 			break
 		case gui.KEY_EQUAL:
 			println("key equal pressed")
-			if m.s != nil {
-				offset := m.s.AddOffset(1000 * time.Millisecond)
-				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
-			}
+			go func() {
+				if m.s != nil {
+					offset := m.s.AddOffset(-200 * time.Millisecond)
+					m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+				}
+				if m.s2 != nil {
+					m.s2.AddOffset(-200 * time.Millisecond)
+				}
+			}()
 			break
 		case gui.KEY_LEFT_BRACKET:
 			println("left bracket pressed")
-			if m.s != nil {
-				offset := m.s.AddOffset(-200 * time.Millisecond)
-				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
-			}
+			go func() {
+				if m.s != nil {
+					offset := m.s.AddOffset(1000 * time.Millisecond)
+					m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+				}
+				if m.s2 != nil {
+					m.s2.AddOffset(1000 * time.Millisecond)
+				}
+			}()
 			break
 		case gui.KEY_RIGHT_BRACKET:
 			println("right bracket pressed")
-			if m.s != nil {
-				offset := m.s.AddOffset(200 * time.Millisecond)
-				go m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
-			}
+			go func() {
+				if m.s != nil {
+					offset := m.s.AddOffset(-1000 * time.Millisecond)
+					m.v.window.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+				}
+				if m.s2 != nil {
+					m.s2.AddOffset(-1000 * time.Millisecond)
+				}
+			}()
 			break
 		}
 	})
@@ -71,6 +91,7 @@ func (m *movie) uievents() {
 			lastSeekTime = m.c.GetSeekTime()
 
 			m.c.Pause()
+			time.Sleep(5 * time.Millisecond)
 			break
 		case 2:
 			if lastText != 0 {
@@ -79,6 +100,7 @@ func (m *movie) uievents() {
 			}
 			t := m.c.CalcTime(percent)
 			m.c.ResumeWithTime(m.SeekTo(t))
+			// time.Sleep(5 * time.Millisecond)
 			break
 		case 1:
 			t := m.c.CalcTime(percent)
@@ -86,7 +108,8 @@ func (m *movie) uievents() {
 			if t < lastSeekTime {
 				flags |= AVSEEK_FLAG_BACKWARD
 			}
-			m.ctx.SeekFrame(m.v.stream, t, flags)
+			// m.ctx.SeekFrame(m.v.stream, t, flags)
+			m.ctx.SeekFile(t, flags)
 			lastSeekTime = t
 
 			codec := m.v.stream.Codec()

@@ -45,7 +45,6 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 
 	if len(audioStreams) > 0 {
 
-		selected := audioStreams[0].Index()
 		for _, stream := range audioStreams {
 			dic := stream.MetaData()
 			m := dic.Map()
@@ -55,8 +54,16 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 			// println(title, language)
 			audioStreamNames = append(audioStreamNames, fmt.Sprintf("[%s] %s", language, title))
 			audioStreamIndexes = append(audioStreamIndexes, int32(stream.Index()))
+		}
+
+		selected := audioStreams[0].Index()
+		for _, stream := range audioStreams {
+			dic := stream.MetaData()
+			m := dic.Map()
+			language := strings.ToLower(m["language"])
 			if strings.Contains(language, "eng") {
 				selected = stream.Index()
+				break
 			}
 		}
 
@@ -129,7 +136,8 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 		// for _, as := range audioStreams {
 		// 	as.
 		// }
-		if len(audioStreams) > 1 {
+
+		if m.a != nil && len(audioStreams) > 1 {
 			m.v.window.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
 		}
 	} else {
@@ -139,6 +147,8 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 func (m *movie) SeekTo(t time.Duration) time.Duration {
 	if m.v != nil {
 		t = m.v.seek(t)
+
+		dropVideoFrames(m.ctx, m.v.stream, t, AllocFrame())
 	}
 
 	println("seek to", t.String())
@@ -201,15 +211,13 @@ func (m *movie) decode() {
 	ctx := m.ctx
 
 	for ctx.ReadFrame(&packet) >= 0 {
-		m.c.WaitUtilRunning()
-
 		streamIndex := packet.StreamIndex()
-		if m.v != nil {
-			if m.v.stream.Index() == streamIndex {
-				// println("decode video")
-				m.v.decode(&packet)
-				packet.Free()
-			}
+
+		if m.v.stream.Index() == streamIndex {
+			// println("decode video")
+			m.v.decode(&packet)
+			packet.Free()
+			continue
 		}
 
 		if m.a != nil {
@@ -218,9 +226,11 @@ func (m *movie) decode() {
 				pkt := packet
 				pkt.Dup()
 				m.a.ch <- &pkt
+				continue
 			}
 		}
 
+		packet.Free()
 	}
 
 	m.stop()

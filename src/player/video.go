@@ -162,8 +162,8 @@ func (v *video) seek(t time.Duration) time.Duration {
 	ctx := v.formatCtx
 	ctx.SeekFrame(v.stream, t, flags)
 
-	frame := AllocFrame()
-	timeAfterSeek, _ := readOneFrame(ctx, v.stream, frame)
+	// frame := AllocFrame()
+	timeAfterSeek, _ := readOneFrame(ctx, v.stream, v.frame)
 	return timeAfterSeek
 }
 
