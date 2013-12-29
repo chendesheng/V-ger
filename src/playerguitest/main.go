@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
-	. "player/shared"
-	// "time"
-	// "fmt"
+	"fmt"
 	"io/ioutil"
 	. "player/gui"
+	. "player/shared"
 	"strconv"
 	"strings"
+	// "time"
 )
 
 func readPPMFile(file string) (int, int, []byte) {
@@ -46,70 +46,70 @@ func main() {
 	// w.ChanDraw <- img
 	w.RefreshContent(img)
 
-	str := AttributedString{"hello", 0, 0}
+	str := AttributedString{"Hello World!", 0, 0xffffff}
 	strs := make([]AttributedString, 0)
 	strs = append(strs, str)
 
-	h1 := w.ShowText(&SubItem{0, 0, strs, 10, Position{50, 700}})
+	h := w.ShowText(&SubItem{0, 0, strs, 9, Position{-1, -1}})
 
-	str = AttributedString{"Hello World1", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
+	// str = AttributedString{"Hello World1", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	h := w.ShowText(&SubItem{0, 0, strs, 1, Position{0, 0}})
+	// h := w.ShowText(&SubItem{0, 0, strs, 1, Position{10, 10}})
 
-	str = AttributedString{"Hello World2", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 2, Position{0, 0}})
+	// str = AttributedString{"Hello World2", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	str = AttributedString{"Hello World3", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 3, Position{0, 0}})
+	// h = w.ShowText(&SubItem{0, 0, strs, 2, Position{0, 0}})
+	// str = AttributedString{"Hello World3", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	str = AttributedString{"Hello World4", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 4, Position{0, 0}})
+	// h = w.ShowText(&SubItem{0, 0, strs, 3, Position{0, 0}})
+	// str = AttributedString{"Hello World4", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	str = AttributedString{"Hello World5", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 5, Position{0, 0}})
+	// h = w.ShowText(&SubItem{0, 0, strs, 4, Position{0, 0}})
+	// str = AttributedString{"Hello World5", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	str = AttributedString{"Hello World6", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 6, Position{0, 0}})
+	// h = w.ShowText(&SubItem{0, 0, strs, 5, Position{0, 0}})
+	// str = AttributedString{"Hello World6", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	str = AttributedString{"Hello World7", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 7, Position{0, 0}})
+	// h = w.ShowText(&SubItem{0, 0, strs, 6, Position{0, 0}})
+	// str = AttributedString{"Hello World7", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	str = AttributedString{"Hello World9", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h = w.ShowText(&SubItem{0, 0, strs, 9, Position{0, 0}})
+	// h = w.ShowText(&SubItem{0, 0, strs, 7, Position{0, 0}})
+	// str = AttributedString{"Hello World9", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
-	str = AttributedString{"Hello World8", 0, 0xffffff}
-	strs = make([]AttributedString, 0)
-	strs = append(strs, str)
-	h3 := w.ShowText(&SubItem{0, 0, strs, 8, Position{0, 0}})
+	// h = w.ShowText(&SubItem{0, 0, strs, 9, Position{0, 0}})
+	// str = AttributedString{"Hello World8", 0, 0xffffff}
+	// strs = make([]AttributedString, 0)
+	// strs = append(strs, str)
 
+	// h3 := w.ShowText(&SubItem{0, 0, strs, 8, Position{0, 0}})
 	// go func() {
 	// time.Sleep(3 * time.Second)
 	// w.HideText(h)
 	// }()
 	println(h)
-	println(h1)
-	println(h3)
-	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
-		if key == KEY_0 {
-			w.HideText(h3)
-		}
-	})
+	// println(h1)
+	// println(h3)
+	// w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+	// 	if key == KEY_0 {
+	// 		w.HideText(h3)
+	// 	}
+	// })
 
 	audioStreamNames := make([]string, 0)
 	audioStreamNames = append(audioStreamNames, "a1")
@@ -120,6 +120,7 @@ func main() {
 	w.InitAudioMenu(audioStreamNames, indexes, 2)
 	w.FuncAudioMenuClicked = append(w.FuncAudioMenuClicked, func(i int) {
 		println(i)
+		go w.SendShowMessage(fmt.Sprintf("Select audio track %d", i))
 	})
 
 	PollEvents()

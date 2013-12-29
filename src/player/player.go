@@ -26,11 +26,11 @@ import (
 
 // var taskName = flag.String("task", "the.walking.dead.s04e07.proper.720p.hdtv.x264-killers.mkv", "vger-task file name")
 // var taskName = flag.String("task", "Nikita.S04E03.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
-var taskName = flag.String("task", "LS and TSB_Rip1080_HDR.mkv", "vger-task file name")
+// var taskName = flag.String("task", "LS and TSB_Rip1080_HDR.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "The.Vampire.Diaries.S05E09.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
-// var taskName = flag.String("task", "Google IO 2013 - Advanced Go Concurrency Patterns [720p].mp4", "vger-task file name")
+var taskName = flag.String("task", "Google IO 2013 - Advanced Go Concurrency Patterns [720p].mp4", "vger-task file name")
 
 // var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
@@ -146,7 +146,9 @@ func main() {
 		}
 		for {
 			c := m.c
-			c.WaitUtilRunning()
+			if c.WaitUtilRunning() {
+				time.Sleep(time.Second)
+			}
 
 			p := c.CalcPlayProgress(c.GetPercent())
 

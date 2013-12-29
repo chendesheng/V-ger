@@ -104,10 +104,11 @@ func (m *movie) uievents() {
 				lastText = 0
 			}
 			// t := m.c.CalcTime(percent)
-			m.c.ResumeWithTime(lastSeekTime)
 			// m.a.Pause(false)
-			// m.c.Resume()
+			m.c.Resume()
+			// m.c.ResumeWithTime(lastSeekTime)
 			m.chSeek <- lastSeekTime
+
 			// m.c.ResumeWithTime(m.SeekTo(lastSeekTime))
 			// time.Sleep(5 * time.Millisecond)
 			break

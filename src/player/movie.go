@@ -249,10 +249,25 @@ func (m *movie) decode() {
 	ctx := m.ctx
 
 	for {
-		m.c.WaitUtilRunning()
+		// m.c.WaitUtilRunning()
 
 		if ctx.ReadFrame(&packet) >= 0 {
-			if m.SendPacket(m.v.StreamIndex, m.v.ChanPacket, packet) {
+			// if m.SendPacket(m.v.StreamIndex, m.v.ChanPacket, packet) {
+			// 	continue
+			// }
+			if m.v.StreamIndex == packet.StreamIndex() {
+				if frameFinished, pts, img := m.v.DecodeAndScale(&packet); frameFinished {
+					//make sure seek operations not happens before one frame finish decode
+					//if not, segment fault & crash
+					select {
+					case m.v.ChanDecoded <- &VideoFrame{pts, img}:
+						break
+					case t := <-m.chSeek:
+						m.c.SetTime(m.SeekTo(t))
+						break
+					}
+				}
+				packet.Free()
 				continue
 			}
 
