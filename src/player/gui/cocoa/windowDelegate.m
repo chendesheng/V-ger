@@ -13,35 +13,35 @@
 {
     NSScreen *mainScreen = [NSScreen mainScreen];
     NSRect frame = [mainScreen frame];
-    NSLog(@"%lf %lf", frame.size.width, frame.size.height);
+    // NSLog(@"%lf %lf", frame.size.width, frame.size.height);
     
     Window* w = (Window*)(self->window);
     self->savedAspectRatio = w->customAspectRatio;
     w->customAspectRatio = frame.size;
 
-    NSLog(@"windowWillEnterFullScreen");
+    // NSLog(@"windowWillEnterFullScreen");
 
     onFullscreenChanged((void*)[notification object], 1);
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
-    NSLog(@"windowDidEnterFullScreen");
+    // NSLog(@"windowDidEnterFullScreen");
 }
 - (void)windowWillExitFullScreen:(NSNotification *)notification
 { 
     onFullscreenChanged((void*)[notification object], 0);
-    NSLog(@"windowWillExitFullScreen");
+    // NSLog(@"windowWillExitFullScreen");
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
-    NSLog(@"windowDidExitFullScreen");
+    // NSLog(@"windowDidExitFullScreen");
 
     Window* w = (Window*)(self->window);
     w->customAspectRatio = self->savedAspectRatio;
 
 }
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
-    NSLog(@"windowWillResize");
+    // NSLog(@"windowWillResize");
 
 	NSRect r;
 	Window* w = (Window*)sender;

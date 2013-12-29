@@ -27,7 +27,8 @@ type Position struct {
 }
 
 type PlayProgressInfo struct {
-	Left    string
-	Right   string
-	Percent float64
+	Left     string
+	Right    string
+	Percent  float64
+	Percent2 float64
 }

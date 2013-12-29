@@ -39,13 +39,13 @@ func init() {
 	flag.Parse()
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	// if logPath := util.ReadConfig("log"); logPath != "" {
-	f, err := os.OpenFile("player.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		log.Fatal(err)
+	if logPath := util.ReadConfig("playerlog"); logPath != "" {
+		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.SetOutput(f)
 	}
-	log.SetOutput(f)
-	// }
 
 	log.Print("log initialized.")
 }
@@ -140,18 +140,28 @@ func main() {
 		}
 	}()
 
-	go func() {
+	go func(name string) {
 		if m.v == nil {
 			return
 		}
-
 		for {
-			c := m.v.c
-			m.v.window.ChanShowProgress <- c.CalcPlayProgress(c.GetPercent())
+			c := m.c
+			c.WaitUtilRunning()
+
+			p := c.CalcPlayProgress(c.GetPercent())
+
+			t, err := task.GetTask(name)
+			if err == nil {
+				p.Percent2 = float64(t.DownloadedSize) / float64(t.Size)
+			} else {
+				log.Print(err)
+			}
+
+			m.w.SendShowProgress(p)
 
 			c.After(time.Second)
 		}
-	}()
+	}(*taskName)
 
 	// go website.Run()
 
@@ -159,7 +169,7 @@ func main() {
 	m.play()
 
 	if m.v != nil {
-		m.v.window.Destory()
+		m.w.Destory()
 	}
 
 	return

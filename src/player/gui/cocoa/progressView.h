@@ -5,5 +5,6 @@
     NSString *leftString;
     NSString *rightString;
     CGFloat percent;
+    CGFloat percent2;
 }
 @end

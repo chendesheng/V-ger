@@ -182,9 +182,9 @@ int getWindowHeight(void* ptr) {
     Window* w = (Window*)ptr;
     return (int)([[w contentView] frame].size.height);
 }
-void showWindowProgress(void* ptr, char* left, char* right, double percent) {
+void showWindowProgress(void* ptr, char* left, char* right, double percent, double percent2) {
     Window* w = (Window*)ptr;
-    [[w contentView] showProgress:left right:right percent:percent];
+    [[w contentView] showProgress:left right:right percent:percent percent2:percent2];
 }
 void* showText(void* ptr, SubItem* items, int length, int position, double x, double y) {
     Window* w = (Window*)ptr;

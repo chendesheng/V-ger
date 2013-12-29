@@ -17,7 +17,7 @@ void refreshWindowContent(void*wptr);
 void makeWindowCurrentContext(void*wptr);
 int getWindowWidth(void*);
 int getWindowHeight(void*);
-void showWindowProgress(void*,char*,char*,double);
+void showWindowProgress(void*,char*,char*,double, double);
 void* showText(void*,SubItem*,int,int,double,double);
 void hideText(void* ptrWin, void* ptrText);
 void windowHideStartupView(void*);

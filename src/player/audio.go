@@ -50,8 +50,8 @@ func (a *audio) setCurrentStream(index int) {
 		log.Println("open decoder error code ", errCode)
 		return
 	}
-	println("audio simple rate:", codecCtx.SimpleRate()) //samples per second
-	println("audio simple format:", codecCtx.SimpleFormat())
+	println("audio simple rate:", codecCtx.SampleRate()) //samples per second
+	println("audio simple format:", codecCtx.SampleFormat())
 	println("audio channels:", codecCtx.Channels()) //bytes per samples
 
 	resampleCtx := AVAudioResampleContext{}
@@ -63,10 +63,9 @@ func (a *audio) setCurrentStream(index int) {
 
 	if a.ch != nil {
 		a.flushBuffer()
-		close(a.ch)
+	} else {
+		a.ch = make(chan *AVPacket, 200)
 	}
-
-	a.ch = make(chan *AVPacket, 200)
 
 	sdl.QuitSubSystem(sdl.SDL_INIT_AUDIO)
 
@@ -80,18 +79,47 @@ func abs(i int64) int64 {
 	return i
 }
 func (a *audio) flushBuffer() {
+	log.Print("audio flush buffer")
 	for {
 		select {
-		case pkt := <-a.ch:
-			pkt.Free()
-			println("skip package")
+		case p := <-a.ch:
+			p.Free()
+			break
 		default:
-			println("flush return")
+			a.audioBuffer = a.audioBuffer[0:0]
+			// codec := a.stream.Codec()
+			// codec.FlushBuffer()
 			return
 		}
 	}
-	codec := a.stream.Codec()
-	codec.FlushBuffer()
+	// close(a.ch)
+	// a.ch = make(chan *AVPacket, 200)
+}
+func dropHalfSamples(buffer []byte, bytesPerSample int) []byte {
+	j := 0
+	for i := 0; i < len(buffer); i += bytesPerSample {
+		if (i/bytesPerSample)%3 == 0 {
+			for k := 0; k < bytesPerSample; k++ {
+				buffer[j+k] = buffer[i+k]
+			}
+			j += bytesPerSample
+		}
+	}
+	return buffer[:j-bytesPerSample]
+}
+func (a *audio) skipBuffer(samples int) int {
+	// if samples > 64 {
+	// 	samples = 64
+	// }
+
+	bytesPerSample := GetBytesPerSample(a.codecCtx.SampleFormat())
+	buffersamples := len(a.audioBuffer) / bytesPerSample
+
+	if samples >= buffersamples {
+		a.audioBuffer = a.audioBuffer[buffersamples*bytesPerSample:] //dropHalfSamples(a.audioBuffer, bytesPerSample) // a.audioBuffer[buffersamples*bytesPerSample:]
+	}
+
+	return buffersamples - len(a.audioBuffer)/bytesPerSample
 }
 func (a *audio) initsdl() {
 	codecCtx := a.codecCtx
@@ -108,24 +136,23 @@ func (a *audio) initsdl() {
 
 	var desired sdl.AudioSpec
 	desired.Init()
-	desired.SetFreq(codecCtx.SimpleRate())
+	desired.SetFreq(codecCtx.SampleRate())
 	desired.SetFormat(sdl.AUDIO_S16LSB)
 	desired.SetChannels(uint8(GetChannelLayoutNbChannels(layout)))
 	desired.SetSilence(0)
 	desired.SetSamples(4096) //audio buffer size
+	// bytesPerSample := GetBytesPerSample(a.codecCtx.SampleFormat())
+
+	// log.Print(GetBytesPerSample(a.codecCtx.SampleFormat()))
 
 	desired.SetCallback(func(userdata sdl.Object, stream sdl.Object, length int) {
-		// println(time.Duration(glfw.GetTime() * float64(time.Second)).String())
-
-		// startTime := time.Duration(0)
-		// delayBytes := 0
+		a.c.WaitUtilRunning()
 
 		codecCtx := a.codecCtx
 		frame := a.frame
 
 		for length > 0 {
 			if len(a.audioBuffer) > 0 { //try get from buffer first
-				// println("read buffer:", len(a.audioBuffer))
 				if length < len(a.audioBuffer) { //buffer has enough data
 					stream.Write(a.audioBuffer[:length])
 					stream.Offset(length)
@@ -135,56 +162,57 @@ func (a *audio) initsdl() {
 					stream.Write(a.audioBuffer)
 					stream.Offset(len(a.audioBuffer))
 					length -= len(a.audioBuffer)
-					// println("offset ", len(a.audioBuffer))
-					a.audioBuffer = make([]byte, 0) //make a new block, the last one will be released by gc.
+					a.audioBuffer = a.audioBuffer[0:0]
 				}
 			} else {
 				//buffer is empty, fill buffer
 				//fill one packet data in one time
-				packet, ok := <-a.ch
-				// if startTime == 0 {
-				// 	startTime = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * float64(time.Second))
-				// }
-				if !ok {
-					//write silence audio
-					stream.Write(make([]byte, length))
-					return
-				}
+				var packet *AVPacket
+				for {
+					var ok bool
+					packet, ok = <-a.ch
+					if !ok {
+						//write silence audio
+						stream.Write(make([]byte, length))
+						return
+					}
 
-				pts := time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * float64(time.Second))
-				now := a.c.GetTime()
-				diffsize := 0
-				if now < pts+time.Second && now > pts-time.Second &&
-					(now > pts+100*time.Millisecond || now < pts-100*time.Millisecond) {
-					println((pts - now).String())
-					if pts > now {
-						a.c.WaitUtil(pts)
-					} else {
-						diff := float64(now-pts) / float64(time.Second) / 2
-						diffsize = int(diff * float64(a.codecCtx.SimpleRate()*
-							a.codecCtx.Channels()*GetBytesPerSample(a.codecCtx.SimpleFormat())))
+					pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * float64(time.Second))
+					now := a.c.GetSeekTime()
 
-						// println("diffsize:", diffsize)
-
-						if diffsize >= len(a.audioBuffer) {
-							diffsize -= len(a.audioBuffer)
-							a.audioBuffer = make([]byte, 0) //skip all
+					if now < pts+time.Second && now > pts-time.Second && (now > pts+100*time.Millisecond || now < pts-100*time.Millisecond) {
+						if pts > now {
+							a.c.WaitUtil(pts)
+							// diff := float64(pts-now) / float64(time.Second)
+							// silenceLen := int(diff*float64(a.codecCtx.SampleRate())) * a.codecCtx.Channels() * GetBytesPerSample(a.codecCtx.SampleFormat())
+							// println("silenceLen:", silenceLen)
+							// a.audioBuffer = append(a.audioBuffer, make([]byte, silenceLen)...)
+							break
 						} else {
-							diffsize = 0
-							a.audioBuffer = a.audioBuffer[diffsize:]
+							// diff := float64(now-pts) / float64(time.Second)
+							diffsamples := int(0.1*float64(a.codecCtx.SampleRate())) * a.codecCtx.Channels()
+							log.Print("set diff samples:", diffsamples)
+
+							log.Print("skip packet:", pts.String())
+							packet.Free()
+							// pts = time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * float64(time.Second))
+							// packet, ok = <-a.ch
+							// if !ok {
+							// 	a.audioBuffer = append(a.audioBuffer, make([]byte, length)...)
+							// 	continue
+							// }
 						}
+					} else {
+						break
 					}
 				}
 
+				// println("audio buffer:", len(a.audioBuffer))
+
 				packetSize := packet.Size()
 				//decode frame from this packet, there may be many frames in one packet
-				// firstFrame := true
 				for packetSize > 0 { //continue decode until packet is empty
-					// a.c.WaitUtilRunning()
-
 					gotFrame, size := codecCtx.DecodeAudio(frame, packet)
-
-					// println("decode audio read size: ", size)
 					if size < 0 {
 						//skip error frame
 						log.Print("error audio frame")
@@ -195,24 +223,20 @@ func (a *audio) initsdl() {
 						if gotFrame {
 							data := a.resampleFrame(frame)
 							bytes := data.Bytes()
-							if diffsize > 0 {
-								// println("diffsize2:", diffsize)
-								if diffsize < len(bytes) {
-									bytes = bytes[diffsize:]
-									diffsize = 0
-								} else {
-									diffsize -= len(bytes)
-									bytes = make([]byte, 0)
-								}
-								println("diffsize3:", diffsize)
-							}
-							//TODO: we can avoid this copy by use AVObject as buffer directly
 							a.audioBuffer = append(a.audioBuffer, bytes...)
 							data.Free()
 						}
 					}
 				}
 				packet.Free()
+
+				// println("audio buffer after:", len(a.audioBuffer))
+
+				// if len(a.audioBuffer) > 0 && diffsamples > 0 { //
+				// 	log.Printf("sync audio: diffsamples=%d, buffersize=%d,", diffsamples, len(a.audioBuffer))
+				// 	diffsamples -= a.skipBuffer(diffsamples)
+				// 	log.Printf("after sync: diffsamples=%d, buffersize=%d,", diffsamples, len(a.audioBuffer))
+				// }
 			}
 		}
 	})
@@ -227,6 +251,15 @@ func (a *audio) initsdl() {
 
 	println("sdl play")
 	sdl.PauseAudio(0)
+}
+
+func (a *audio) Pause(b bool) {
+	// if b {
+	// 	// a.flushBuffer()
+	// 	sdl.PauseAudio(1)
+	// } else {
+	// 	sdl.PauseAudio(0)
+	// }
 }
 
 func (a *audio) resampleFrame(frame AVFrame) AVObject {

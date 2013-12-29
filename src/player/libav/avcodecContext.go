@@ -37,7 +37,7 @@ func (ctx *AVCodecContext) DefaultReleaseBuffer(frame *AVFrame) {
 }
 
 func (ctx *AVCodecContext) SetGetBufferCallback(fn GetBufferFunc) {
-	// println("aaaaaaaaaaaaa")
+	println("aaaaaaaaaaaaa")
 	// println("set opaque ", ctx.ptr)
 	ctx.ptr.opaque = unsafe.Pointer(ctx)
 	ctx.getBufferFunc = fn
@@ -55,6 +55,8 @@ func goGetBufferCallback(ctxptr unsafe.Pointer, frameptr unsafe.Pointer) int {
 	// println(frameptr)
 	// println(((*C.AVCodecContext)(ctxptr)).opaque)
 	ctx := (*AVCodecContext)(unsafe.Pointer(reflect.NewAt(reflect.TypeOf(AVCodecContext{}), ((*C.AVCodecContext)(ctxptr)).opaque).Pointer()))
+	// println("ctx.ptr ", ctx.ptr)
+	println(frameptr)
 	return ctx.getBufferFunc(ctx, &AVFrame{ptr: (*C.AVFrame)(frameptr)})
 }
 
@@ -72,11 +74,11 @@ func (ctx *AVCodecContext) Open(codec AVCodec) int {
 	return int(C.avcodec_open2(ctx.ptr, codec.ptr, nil))
 }
 
-func (ctx *AVCodecContext) SimpleRate() int {
+func (ctx *AVCodecContext) SampleRate() int {
 	return int(ctx.ptr.sample_rate)
 }
 
-func (ctx *AVCodecContext) SimpleFormat() int {
+func (ctx *AVCodecContext) SampleFormat() int {
 	return int(ctx.ptr.sample_fmt)
 }
 
@@ -102,6 +104,8 @@ func (ctx *AVCodecContext) PixelFormat() int {
 }
 
 func (ctx *AVCodecContext) DecodeVideo(frame AVFrame, packet *AVPacket) bool {
+	// println("decode video ", frame.ptr)
+	// println("decode video ", ctx.ptr)
 	var gotFrame C.int
 	C.avcodec_decode_video2(ctx.ptr, frame.ptr, &gotFrame, &packet.cAVPacket)
 	return gotFrame != 0

@@ -24,7 +24,7 @@ type Clock struct {
 
 //will be blocked if clock is paused
 func (c *Clock) GetTime() time.Duration {
-	c.waitUntilRunning()
+	// c.waitUntilRunning()
 
 	return c.getTime()
 }
@@ -38,7 +38,7 @@ func (c *Clock) CalcPlayProgress(percent float64) *PlayProgressInfo {
 	t := c.CalcTime(percent)
 	leftT := c.totalTime - t
 
-	return &PlayProgressInfo{formatTime(t), formatTime(leftT), percent}
+	return &PlayProgressInfo{formatTime(t), formatTime(leftT), percent, 0}
 }
 
 func (c *Clock) GetSeekTime() time.Duration {
@@ -161,7 +161,7 @@ func (c *Clock) Reset() {
 	c.status = "running"
 }
 
-func (c *Clock) waitUntilRunning() {
+func (c *Clock) waitUntilRunning() bool {
 	var ch chan bool
 	var status string
 	c.Lock()
@@ -172,22 +172,47 @@ func (c *Clock) waitUntilRunning() {
 	if status == "paused" {
 		<-ch
 		println("after paused")
+
+		return true
 	}
+
+	return false
 }
 
 func (c *Clock) After(d time.Duration) {
 	// b := c.GetTime()
-	c.waitUntilRunning()
+	// c.waitUntilRunning()
 
 	// println("clock wait after", d.String())
 	<-time.After(d) //time.After is not very accuracy which about one millisecond delay while wait one second
 
-	c.waitUntilRunning()
+	// c.waitUntilRunning()
 	// c.SetTime(b + d)
 }
 
-func (c *Clock) WaitUtilRunning() {
-	c.waitUntilRunning()
+func (c *Clock) WaitUtilRunning() bool {
+	return c.waitUntilRunning()
+}
+
+type beforeWait func()
+
+func (c *Clock) WaitUtilRunning2(fn beforeWait) bool {
+	var ch chan bool
+	var status string
+	c.Lock()
+	ch = c.wait
+	status = c.status
+	c.Unlock()
+
+	if status == "paused" {
+		fn()
+		<-ch
+		println("after paused")
+
+		return true
+	}
+
+	return false
 }
 
 func (c *Clock) WaitUtil(t time.Duration) {
@@ -199,7 +224,7 @@ func (c *Clock) WaitUtil(t time.Duration) {
 }
 
 func (c *Clock) AfterWithQuit(d time.Duration, quit chan bool) bool {
-	c.waitUntilRunning()
+	// c.waitUntilRunning()
 
 	select {
 	case <-time.After(d):
@@ -208,7 +233,7 @@ func (c *Clock) AfterWithQuit(d time.Duration, quit chan bool) bool {
 		return true
 	}
 
-	c.waitUntilRunning()
+	// c.waitUntilRunning()
 	return false
 }
 
@@ -221,6 +246,10 @@ func (c *Clock) WaitUtilWithQuit(t time.Duration, quit chan bool) bool {
 	}
 
 	return false
+}
+
+func (c *Clock) TotalTime() time.Duration {
+	return c.totalTime
 }
 
 func NewClock(totalTime time.Duration) *Clock {

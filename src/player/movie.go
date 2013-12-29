@@ -9,34 +9,26 @@ import (
 	"strings"
 	// . "player/shared"
 	"log"
+	. "player/gui"
+	. "player/video"
 	"time"
 	// "util"
 )
 
 type movie struct {
 	ctx AVFormatContext
-	v   *video
+	v   *Video
 	a   *audio
 	s   *Subtitle
 	s2  *Subtitle
 	c   *Clock
+	w   *Window
+
+	chSeek chan time.Duration
 }
 
-func (m *movie) open(file string, subFiles []string, start time.Duration) {
-	println("open ", file)
-
-	ctx := AVFormatContext{}
-	ctx.OpenInput(file)
-	if ctx.IsNil() {
-		log.Fatal("open failed:", file)
-		return
-	}
-
-	ctx.FindStreamInfo()
-	ctx.DumpFormat()
-
-	m.ctx = ctx
-	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
+func (m *movie) setupAudio() {
+	ctx := m.ctx
 
 	audioStreams := ctx.AudioStream()
 
@@ -70,92 +62,127 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 		m.a = &audio{streams: audioStreams}
 		m.a.setCurrentStream(selected)
 		m.a.c = m.c
-	}
 
+		if len(audioStreams) > 1 {
+			m.w.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
+		}
+	}
+}
+
+func (m *movie) setupSubtitles(subFiles []string) {
+	if len(subFiles) > 0 {
+		tags := make([]int32, 0)
+		names := make([]string, 0)
+		for i, n := range subFiles {
+			tags = append(tags, int32(i))
+			names = append(names, filepath.Base(n))
+		}
+		m.w.InitSubtitleMenu(names, tags, 0)
+		m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
+			go func(m *movie, subFiles []string) {
+				if showOrHide {
+					// m.s.Stop()
+					s := NewSubtitle(subFiles[index], m.w, m.c)
+					if m.s == nil {
+						m.s = s
+						s.IsMainOrSecondSub = true
+					} else {
+						m.s2 = s
+						s.IsMainOrSecondSub = false
+					}
+
+					pos, _ := s.FindPos(m.c.GetSeekTime())
+					s.Play(pos)
+				} else {
+					if (m.s != nil) && (m.s.Name == subFiles[index]) {
+						m.s.Stop()
+						if m.s2 != nil {
+							m.s = m.s2
+							m.s.IsMainOrSecondSub = true
+							m.s2 = nil
+						} else {
+							m.s = nil
+						}
+					} else if (m.s2 != nil) && (m.s2.Name == subFiles[index]) {
+						m.s2.Stop()
+						m.s2 = nil
+					}
+				}
+			}(m, subFiles)
+		})
+
+		println("play subtitle:", subFiles)
+		m.s = NewSubtitle(subFiles[0], m.w, m.c)
+		go m.s.Play(0)
+	}
+}
+
+func (m *movie) setupVideo() {
+	ctx := m.ctx
 	videoStream := ctx.VideoStream()
 	if !videoStream.IsNil() {
-		m.v = &video{}
-		m.v.setup(ctx, videoStream, file, start)
-		m.v.c = m.c
-
-		if len(subFiles) > 0 {
-			tags := make([]int32, 0)
-			names := make([]string, 0)
-			for i, n := range subFiles {
-				tags = append(tags, int32(i))
-				names = append(names, filepath.Base(n))
-			}
-			m.v.window.InitSubtitleMenu(names, tags, 0)
-			m.v.window.FuncSubtitleMenuClicked = append(m.v.window.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
-				go func(m *movie, subFiles []string) {
-					if showOrHide {
-						// m.s.Stop()
-						s := NewSubtitle(subFiles[index], m.v.window, m.c)
-						if m.s == nil {
-							m.s = s
-							s.IsMainOrSecondSub = true
-						} else {
-							m.s2 = s
-							s.IsMainOrSecondSub = false
-						}
-
-						pos, _ := s.FindPos(m.c.GetSeekTime())
-						s.Play(pos)
-					} else {
-						if (m.s != nil) && (m.s.Name == subFiles[index]) {
-							m.s.Stop()
-							if m.s2 != nil {
-								m.s = m.s2
-								m.s.IsMainOrSecondSub = true
-								m.s2 = nil
-							} else {
-								m.s = nil
-							}
-						} else if (m.s2 != nil) && (m.s2.Name == subFiles[index]) {
-							m.s2.Stop()
-							m.s2 = nil
-						}
-					}
-				}(m, subFiles)
-			})
-
-			println("play subtitle:", subFiles)
-			m.s = NewSubtitle(subFiles[0], m.v.window, m.c)
-			go m.s.Play(0)
-		}
-		m.uievents()
-		start = m.v.seek(start)
-
-		m.c.Reset()
-		m.c.SetTime(start)
-
-		if m.s != nil {
-			m.s.Seek(start)
+		var err error
+		m.v, err = NewVideo(ctx, videoStream, m.c)
+		if err != nil {
+			log.Fatal(err)
+			return
 		}
 
-		// for _, as := range audioStreams {
-		// 	as.
-		// }
-
-		if m.a != nil && len(audioStreams) > 1 {
-			m.v.window.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
-		}
 	} else {
 		log.Fatal("No video stream find.")
 	}
 }
-func (m *movie) SeekTo(t time.Duration) time.Duration {
-	if m.v != nil {
-		t = m.v.seek(t)
 
-		dropVideoFrames(m.ctx, m.v.stream, t, AllocFrame())
+func (m *movie) open(file string, subFiles []string, start time.Duration) {
+	println("open ", file)
+
+	ctx := AVFormatContext{}
+	ctx.OpenInput(file)
+	if ctx.IsNil() {
+		log.Fatal("open failed:", file)
+		return
 	}
 
-	println("seek to", t.String())
+	ctx.FindStreamInfo()
+	ctx.DumpFormat()
+
+	m.chSeek = make(chan time.Duration)
+
+	m.ctx = ctx
+	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
+
+	m.setupVideo()
+	m.w = NewWindow(filepath.Base(file), m.v.Width, m.v.Height)
+	m.v.SetRender(m.w)
+
+	m.uievents()
+
+	m.setupAudio()
+
+	m.setupSubtitles(subFiles)
+
+	start = m.v.Seek(start)
+
+	m.c.Reset()
+	m.c.SetTime(start)
+
+	if m.s != nil {
+		m.s.Seek(start)
+	}
+}
+func (m *movie) SeekTo(t time.Duration) time.Duration {
+	// t = t / time.Second * time.Second
 
 	if m.a != nil {
 		m.a.flushBuffer()
 	}
+
+	if m.v != nil {
+		m.v.FlushBuffer()
+		t = m.v.Seek(t)
+	}
+
+	println("seek to", t.String())
 
 	if m.s != nil {
 		m.s.Seek(t)
@@ -175,72 +202,82 @@ func tabs(t time.Duration) time.Duration {
 }
 
 //only call from UI thread
-func (m *movie) drawCurrentFrame() {
+func (m *movie) drawCurrentFrame() time.Duration {
 	ctx := m.ctx
 	v := m.v
 	if v == nil {
-		return
+		return time.Duration(0)
 	}
 
 	packet := AVPacket{}
 
-	frame := v.frame
+	// frame := v.frame
 	for ctx.ReadFrame(&packet) >= 0 {
-		if v.stream.Index() == packet.StreamIndex() {
-			codecCtx := v.codecCtx
-
-			frameFinished := codecCtx.DecodeVideo(frame, &packet)
+		// if v.stream.Index() == packet.StreamIndex() {
+		if frameFinished, t, bytes := v.DecodeAndScale(&packet); frameFinished {
 			packet.Free()
 
-			if frameFinished {
-				frame.Flip(v.height)
+			m.w.RefreshContent(bytes)
 
-				v.swsCtx.Scale(frame, v.pictureRGB)
-
-				v.window.RefreshContent(v.pictureRGB.RGBBytes(v.width, v.height))
-				break
-			}
+			return t
 		} else {
 			packet.Free()
 		}
 	}
+
+	return time.Duration(0)
+}
+
+func (m *movie) SendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
+	if index == packet.StreamIndex() {
+		pkt := packet
+		pkt.Dup()
+		select {
+		case ch <- &pkt:
+			return true
+		case t := <-m.chSeek:
+			packet.Free()
+			m.c.SetTime(m.SeekTo(t))
+			return true
+		}
+	}
+	return false
 }
 
 func (m *movie) decode() {
 	packet := AVPacket{}
 	ctx := m.ctx
 
-	for ctx.ReadFrame(&packet) >= 0 {
-		streamIndex := packet.StreamIndex()
+	for {
+		m.c.WaitUtilRunning()
 
-		if m.v.stream.Index() == streamIndex {
-			// println("decode video")
-			m.v.decode(&packet)
-			packet.Free()
-			continue
-		}
-
-		if m.a != nil {
-			if m.a.stream.Index() == streamIndex {
-				// println("decode audio")
-				pkt := packet
-				pkt.Dup()
-				m.a.ch <- &pkt
+		if ctx.ReadFrame(&packet) >= 0 {
+			if m.SendPacket(m.v.StreamIndex, m.v.ChanPacket, packet) {
 				continue
 			}
+
+			if m.a != nil {
+				if m.SendPacket(m.a.stream.Index(), m.a.ch, packet) {
+					continue
+				}
+			}
+
+			packet.Free()
+		} else {
+			m.stop()
+			return
 		}
-
-		packet.Free()
 	}
-
-	m.stop()
 }
 
 func (m *movie) play() {
-	if m.v != nil {
-		m.v.play()
+	go m.v.Play()
+
+	if m.w != nil {
+		PollEvents()
 	} else {
 		for {
+
 			<-time.After(time.Millisecond)
 		}
 	}

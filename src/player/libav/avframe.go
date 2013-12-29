@@ -29,7 +29,9 @@ func (frame *AVFrame) IsNil() bool {
 }
 
 func AllocFrame() AVFrame {
-	return AVFrame{ptr: C.avcodec_alloc_frame()}
+	frame := AVFrame{ptr: C.avcodec_alloc_frame()}
+	println("alloc frame ", frame.ptr)
+	return frame
 }
 
 func (frame *AVFrame) ChannelLayout() int64 {

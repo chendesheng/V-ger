@@ -114,7 +114,7 @@
     NSLog(@"keyUp");
 }
 
--(void)showProgress:(char*)left right:(char*)right percent:(double)percent {
+-(void)showProgress:(char*)left right:(char*)right percent:(double)percent percent2:(double)percent2 {
     ProgressView* pv = self->progressView;
     
     [pv->leftString autorelease];
@@ -124,6 +124,9 @@
     pv->rightString = [[NSString stringWithUTF8String:right] retain];
 
     pv->percent = percent;
+    if (percent2 > 0) {
+        pv->percent2 = percent2;
+    }
     
     [pv setNeedsDisplay:YES];
 }
