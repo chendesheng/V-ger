@@ -1,11 +1,23 @@
 package util
 
 import (
+	// "log"
+	"os"
+	"path"
+	// "path/filepath"
 	"strconv"
-	// "time"
 )
 
 var configCache map[string]string
+var configPath string
+
+func getConfigPath() string {
+	if configPath == "" {
+		configPath = path.Join(path.Dir(os.Args[0]), "config.json")
+	}
+
+	return configPath
+}
 
 func ReadAllConfigs() map[string]string {
 	if configCache == nil {
@@ -16,7 +28,7 @@ func ReadAllConfigs() map[string]string {
 		// }()
 	}
 
-	if err := ReadJson("config.json", &configCache); err != nil {
+	if err := ReadJson(getConfigPath(), &configCache); err != nil {
 		panic(err)
 	}
 	return configCache
@@ -42,7 +54,7 @@ func SaveConfig(name, value string) {
 	ReadAllConfigs()
 	configCache[name] = value
 
-	WriteJson("config.json", configCache)
+	WriteJson(getConfigPath(), configCache)
 }
 
 func ToggleBoolConfig(name string) bool {

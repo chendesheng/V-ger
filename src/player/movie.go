@@ -7,6 +7,7 @@ import (
 	. "player/libav"
 	. "player/subtitle"
 	"strings"
+	"task"
 	// . "player/shared"
 	"log"
 	. "player/gui"
@@ -169,6 +170,8 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 	if m.s != nil {
 		m.s.Seek(start)
 	}
+
+	go m.showProgress(filepath.Base(file))
 }
 func (m *movie) SeekTo(t time.Duration) time.Duration {
 	// t = t / time.Second * time.Second
@@ -243,13 +246,31 @@ func (m *movie) SendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 	}
 	return false
 }
+func (m *movie) showProgress(name string) {
+	p := m.c.CalcPlayProgress(m.c.GetPercent())
 
-func (m *movie) decode() {
+	t, err := task.GetTask(name)
+	if err == nil {
+		p.Percent2 = float64(t.DownloadedSize) / float64(t.Size)
+	} //else {
+	// log.Print(err)
+	//}
+
+	m.w.SendShowProgress(p)
+}
+func (m *movie) decode(name string) {
 	packet := AVPacket{}
 	ctx := m.ctx
 
+	ticker := time.NewTicker(time.Second)
+
 	for {
 		// m.c.WaitUtilRunning()
+		select {
+		case <-ticker.C:
+			go m.showProgress(name)
+		default:
+		}
 
 		if ctx.ReadFrame(&packet) >= 0 {
 			// if m.SendPacket(m.v.StreamIndex, m.v.ChanPacket, packet) {

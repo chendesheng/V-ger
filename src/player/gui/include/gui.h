@@ -23,6 +23,7 @@ void hideText(void* ptrWin, void* ptrText);
 void windowHideStartupView(void*);
 void windowToggleFullScreen(void* wptr);
 
+void initialize();
 void initAudioMenu(void* wptr, char** name, int32_t*, int, int);
 void initSubtitleMenu(void* wptr, char** name, int32_t*, int, int);
 // void setSubtitles(void* wptr, char** name, int, int, int);
@@ -39,7 +40,7 @@ void onKeyDown(void*, int);
 void onProgressChanged(void* wptr, int typ, double position);
 void onFullscreenChanged(void* wptr, int b);
 
-
+int onOpenFile(char* file);
 
 // void setText(void* wptr, SubItem* items, int len);
 // void setCallbackKeyDown();

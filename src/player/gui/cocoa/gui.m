@@ -8,6 +8,7 @@
 #import "blurView.h"
 #import "progressView.h"
 #import "startupView.h"
+#import "app.h"
 
 void initialize() {
     if (NSApp)
@@ -16,6 +17,9 @@ void initialize() {
 	[NSApplication sharedApplication];
 
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+
+    Application *appDelegate = [[Application alloc] init];
+    [NSApp setDelegate:appDelegate];
 
 	NSLog(@"initialized");
 	//create memu bar

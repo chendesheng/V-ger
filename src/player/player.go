@@ -16,6 +16,7 @@ import (
 
 	// . "player/shared"
 	// "website"
+	"player/gui"
 )
 
 // var filename = flag.String("file", "", "file name")
@@ -26,28 +27,42 @@ import (
 
 // var taskName = flag.String("task", "the.walking.dead.s04e07.proper.720p.hdtv.x264-killers.mkv", "vger-task file name")
 // var taskName = flag.String("task", "Nikita.S04E03.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+var taskName = flag.String("task", "", "vger-task file name")
+
 // var taskName = flag.String("task", "LS and TSB_Rip1080_HDR.mkv", "vger-task file name")
 
 // var taskName = flag.String("task", "The.Vampire.Diaries.S05E09.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
 
-var taskName = flag.String("task", "Google IO 2013 - Advanced Go Concurrency Patterns [720p].mp4", "vger-task file name")
+// var taskName = flag.String("task", "Google IO 2013 - Advanced Go Concurrency Patterns [720p].mp4", "vger-task file name")
 
 // var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
+var launchedFromGUI bool
 
 func init() {
-	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
-	flag.Parse()
-
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	if logPath := util.ReadConfig("playerlog"); logPath != "" {
 		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.SetOutput(f)
+		os.Stderr = f
 	}
 
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	log.Print("log initialized.")
+
+	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
+
+	for i, s := range os.Args {
+		log.Printf("Args[%d]:%s", i, s)
+		//Mac OS X assigns a unique process serial number ("PSN") to all apps launched via GUI. Call flag.Prase will crash app if not remove it.
+		if strings.HasPrefix(s, "-psn") {
+			os.Args[i] = ""
+			launchedFromGUI = true
+		}
+	}
+
+	flag.Parse()
 }
 func findSubs(base string) []string {
 	infoes, err := ioutil.ReadDir(base)
@@ -95,83 +110,91 @@ func findSubs(base string) []string {
 		return nil
 	}
 }
+
+type appDelegate struct {
+}
+
+func (a *appDelegate) OpenFile(filename string) bool {
+	log.Println("open file:", filename)
+	name := path.Base(filename)
+
+	base := util.ReadConfig("dir")
+	subs := findSubs(path.Join(base, "subs", name))
+
+	m := movie{}
+
+	t, err := task.GetTask(name)
+	lastPlaying := time.Duration(0)
+	if err == nil {
+		lastPlaying = t.LastPlaying
+
+		go func() {
+			ticker := time.Tick(3 * time.Second)
+			for _ = range ticker {
+				t, err := task.GetTask(name)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				t.LastPlaying = m.c.GetSeekTime()
+
+				task.SaveTask(t)
+			}
+		}()
+	}
+
+	// log.Print("sub: ", sub)
+	m.open(filename, subs, lastPlaying)
+
+	go m.decode(name)
+
+	go m.v.Play()
+
+	return true
+}
+
 func main() {
 	runtime.LockOSThread()
 
-	if taskName == nil {
-		return
-	}
+	if *taskName != "" {
 
-	t, err := task.GetTask(*taskName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	base := util.ReadConfig("dir")
-
-	// sub := ""
-	// if len(t.Subs) > 0 {
-	// 	sub = t.Subs[0]
-	// } else {
-	// 	if subs := findSubs(path.Join(base, "subs", t.Name)); len(subs) > 0 {
-	// 		sub = subs[0]
-	// 	}
-	// }
-
-	subs := findSubs(path.Join(base, "subs", t.Name))
-
-	m := movie{}
-	// log.Print("sub: ", sub)
-	m.open(path.Join(base, t.Name), subs, t.LastPlaying)
-
-	go m.decode()
-
-	go func() {
-		ticker := time.Tick(3 * time.Second)
-		for _ = range ticker {
-			t, err := task.GetTask(*taskName)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			t.LastPlaying = m.c.GetSeekTime()
-
-			task.SaveTask(t)
+		t, err := task.GetTask(*taskName)
+		if err != nil {
+			log.Fatal(err)
 		}
-	}()
 
-	go func(name string) {
-		if m.v == nil {
-			return
-		}
-		for {
-			c := m.c
-			if c.WaitUtilRunning() {
-				time.Sleep(time.Second)
+		base := util.ReadConfig("dir")
+
+		subs := findSubs(path.Join(base, "subs", t.Name))
+
+		m := movie{}
+		// log.Print("sub: ", sub)
+		m.open(path.Join(base, t.Name), subs, t.LastPlaying)
+
+		go m.decode(*taskName)
+
+		go func() {
+			ticker := time.Tick(3 * time.Second)
+			for _ = range ticker {
+				t, err := task.GetTask(*taskName)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				t.LastPlaying = m.c.GetSeekTime()
+
+				task.SaveTask(t)
 			}
+		}()
 
-			p := c.CalcPlayProgress(c.GetPercent())
-
-			t, err := task.GetTask(name)
-			if err == nil {
-				p.Percent2 = float64(t.DownloadedSize) / float64(t.Size)
-			} else {
-				log.Print(err)
-			}
-
-			m.w.SendShowProgress(p)
-
-			c.After(time.Second)
-		}
-	}(*taskName)
-
-	// go website.Run()
-
-	// m.v.play()
-	m.play()
-
-	if m.v != nil {
+		m.play()
 		m.w.Destory()
+	} else {
+		log.Println("open with file")
+
+		app := &appDelegate{}
+		gui.Initialize(app)
+		gui.PollEvents()
 	}
 
 	return

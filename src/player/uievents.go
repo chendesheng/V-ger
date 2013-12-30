@@ -105,8 +105,8 @@ func (m *movie) uievents() {
 			}
 			// t := m.c.CalcTime(percent)
 			// m.a.Pause(false)
-			m.c.Resume()
 			// m.c.ResumeWithTime(lastSeekTime)
+			m.c.Resume()
 			m.chSeek <- lastSeekTime
 
 			// m.c.ResumeWithTime(m.SeekTo(lastSeekTime))

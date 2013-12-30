@@ -115,7 +115,7 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 	seek_target := C.av_rescale_q(C.int64_t(seek_pos), timebaseq, timeBase)
 	C.av_seek_frame(ctx.ptr, C.int(stream.Index()), C.int64_t(seek_target), C.int(flags))
 
-	C.avcodec_flush_buffers(stream.Codec().ptr)
+	// C.avcodec_flush_buffers(stream.Codec().ptr)
 }
 func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
 	frameLock.Lock()

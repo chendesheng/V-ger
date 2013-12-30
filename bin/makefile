@@ -13,6 +13,8 @@ all:
 	cp main.html ~/Library/Vger/main.html
 	cp ./assets/main.js ~/Library/Vger/assets/main.js
 	cp ./assets/style.css ~/Library/Vger/assets/style.css
-window:
-	go install client
-	cp client ./GoCocoa.app/Contents/MacOS/GoCocoa
+vp:
+	go install player
+	cp ./player ./VgerPlayer.app/Contents/MacOS/VgerPlayer
+	cp ./config.json ./VgerPlayer.app/Contents/MacOS/config.json
+	cp ./player.plist ./VgerPlayer.app/Contents/Info.plist
