@@ -2,10 +2,10 @@ package clock
 
 import (
 	"fmt"
+	"log"
+	. "player/shared"
 	"sync"
 	"time"
-
-	. "player/shared"
 )
 
 type Clock struct {
@@ -83,8 +83,13 @@ func (c *Clock) getTime() time.Duration {
 }
 
 func (c *Clock) SetTime(t time.Duration) {
+	log.Println("clock set time:", t.String())
 	c.Lock()
 	defer c.Unlock()
+
+	if c.status == "paused" {
+		c.pausedTime = t
+	}
 
 	c.base = time.Now().Add(-t)
 }
@@ -121,6 +126,8 @@ func (c *Clock) Toggle() {
 }
 
 func (c *Clock) Resume() {
+	log.Print("clock resume:", c.getTime().String())
+
 	c.Lock()
 	defer c.Unlock()
 
@@ -183,7 +190,9 @@ func (c *Clock) After(d time.Duration) {
 	// b := c.GetTime()
 	// c.waitUntilRunning()
 
-	// println("clock wait after", d.String())
+	if d > time.Second {
+		log.Print("clock wait long time:", d.String())
+	}
 	<-time.After(d) //time.After is not very accuracy which about one millisecond delay while wait one second
 
 	// c.waitUntilRunning()

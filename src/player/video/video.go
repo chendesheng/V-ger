@@ -43,6 +43,7 @@ type Video struct {
 
 	ChanPacket  chan *AVPacket
 	ChanDecoded chan *VideoFrame
+	ChanFlush   chan bool
 	r           VideoRender
 }
 
@@ -138,6 +139,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 
 	v.ChanPacket = make(chan *AVPacket, 10)
 	v.ChanDecoded = make(chan *VideoFrame, 10)
+	v.ChanFlush = make(chan bool)
 
 	log.Print("new video success")
 	return v, nil
@@ -197,19 +199,36 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 	return false, 0
 }
 
-func (v *Video) Seek(t time.Duration) time.Duration {
+//small seek
+func (v *Video) SeekOffset(t time.Duration) time.Duration {
+	flags := AVSEEK_FLAG_FRAME
+	if t < v.c.GetTime() {
+		flags |= AVSEEK_FLAG_BACKWARD
+	}
+	ctx := v.formatCtx
+	ctx.SeekFrame(v.stream, t, flags)
+
+	timeAfterSeek, _ := v.DropFramesUtil(t)
+	if timeAfterSeek > t+time.Second {
+		ctx.SeekFrame(v.stream, t, flags|AVSEEK_FLAG_BACKWARD)
+		timeAfterSeek, _ = v.DropFramesUtil(t)
+	}
+	return timeAfterSeek
+}
+
+func (v *Video) Seek(t time.Duration) (time.Duration, []byte) {
 	// log.Print("video seek ", t.String())
 
 	flags := AVSEEK_FLAG_FRAME
-	// if t < v.c.GetSeekTime() {
+	// if t < v.c.GetTime() {
 	// 	flags |= AVSEEK_FLAG_BACKWARD
 	// }
 	ctx := v.formatCtx
 	ctx.SeekFrame(v.stream, t, flags)
 	// v.videoClock = t
 
-	timeAfterSeek := v.DropFramesUtil(t)
-	return timeAfterSeek
+	timeAfterSeek, img := v.DropFramesUtil(t)
+	return timeAfterSeek, img
 }
 
 func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
@@ -237,49 +256,25 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 func (v *Video) FlushBuffer() {
 	// close(v.ChanPacket)
 	// v.ChanPacket = make(chan *AVPacket, 200)
+	// v.ChanFlush <- true
 	for {
 		select {
-		// case p := <-v.ChanPacket:
-		// 	println("free video packet")
-		// 	p.Free()
-		// 	break
 		case <-v.ChanDecoded:
 			break
 		default:
 			return
 		}
 	}
+
 }
 
 func (v *Video) Play() {
-	for {
-		// println("video wait uitl running:", v.c.GetTime().String())
+	for data := range v.ChanDecoded {
+		v.c.WaitUtil(data.Pts)
+		log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
+		v.r.SendDrawImage(data.Img)
+
 		v.c.WaitUtilRunning()
-
-		select {
-		case data, ok := <-v.ChanDecoded:
-			if ok {
-				v.c.WaitUtil(data.Pts)
-				v.r.SendDrawImage(data.Img)
-			}
-			break
-			// case packet, ok := <-v.ChanPacket:
-			// if ok {
-			// 	if frameFinished, t, img := v.DecodeAndScale(packet); frameFinished {
-			// 		// println("video wait ", (t - v.c.GetTime()).String())
-			// 		v.c.WaitUtil(t)
-			// 		now := v.c.GetSeekTime()
-			// 		if (t < now && now-t > 100*time.Millisecond) || (t > now && t-now > 100*time.Millisecond) {
-			// 			break
-			// 		}
-
-			// 		v.r.SendDrawImage(img)
-			// 	}
-
-			// 	packet.Free()
-			// }
-			// break
-		}
 	}
 }
 func (v *Video) SetRender(r VideoRender) {
@@ -312,22 +307,30 @@ func (v *Video) SetRender(r VideoRender) {
 // 	return 0, false
 // }
 
-func (v *Video) DropFramesUtil(t time.Duration) time.Duration {
+func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte) {
 	packet := AVPacket{}
 	ctx := v.formatCtx
+	width, height := v.Width, v.Height
+	frame := v.frame
+	pictureRGB := v.pictureRGB
+	swsCtx := v.swsCtx
 
 	for ctx.ReadFrame(&packet) >= 0 {
 		if frameFinished, pts := v.Decode(&packet); frameFinished {
+
 			// println("pts:", pts.String())
 			packet.Free()
 
-			if t-pts < 30*time.Millisecond {
-				return pts
+			if t-pts < 0*time.Millisecond {
+				frame.Flip(height)
+				swsCtx.Scale(frame, pictureRGB)
+
+				return pts, pictureRGB.RGBBytes(width, height)
 			}
 		} else {
 			packet.Free()
 		}
 	}
 
-	return 0
+	return 0, nil
 }

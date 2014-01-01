@@ -46,7 +46,7 @@ func InitLog(filename string) {
 	if filename != "" {
 		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 		if err == nil {
-			os.Stderr = f
+			// os.Stderr = f
 			w.writers = append(w.writers, f)
 		} else {
 			log.Print(err)

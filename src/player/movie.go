@@ -16,6 +16,14 @@ import (
 	// "util"
 )
 
+type seekArg struct {
+	t   time.Duration
+	res chan bool
+}
+type ctrlArg struct {
+	c   int
+	res chan interface{}
+}
 type movie struct {
 	ctx AVFormatContext
 	v   *Video
@@ -25,7 +33,7 @@ type movie struct {
 	c   *Clock
 	w   *Window
 
-	chSeek chan time.Duration
+	chCtrl chan ctrlArg
 }
 
 func (m *movie) setupAudio() {
@@ -147,7 +155,7 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 	ctx.FindStreamInfo()
 	ctx.DumpFormat()
 
-	m.chSeek = make(chan time.Duration)
+	m.chCtrl = make(chan ctrlArg)
 
 	m.ctx = ctx
 	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
@@ -162,7 +170,7 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 
 	m.setupSubtitles(subFiles)
 
-	start = m.v.Seek(start)
+	start, _ = m.v.Seek(start)
 
 	m.c.Reset()
 	m.c.SetTime(start)
@@ -173,19 +181,21 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 
 	go m.showProgress(filepath.Base(file))
 }
-func (m *movie) SeekTo(t time.Duration) time.Duration {
+func (m *movie) SeekTo(t time.Duration) (time.Duration, []byte) {
 	// t = t / time.Second * time.Second
+	var img []byte
 
 	if m.a != nil {
 		m.a.flushBuffer()
 	}
 
 	if m.v != nil {
-		m.v.FlushBuffer()
-		t = m.v.Seek(t)
+		// m.v.FlushBuffer()
+
+		t, img = m.v.Seek(t)
 	}
 
-	println("seek to", t.String())
+	log.Print("seek to:", t.String())
 
 	if m.s != nil {
 		m.s.Seek(t)
@@ -194,7 +204,7 @@ func (m *movie) SeekTo(t time.Duration) time.Duration {
 		m.s2.Seek(t)
 	}
 
-	return t
+	return t, img
 }
 
 func tabs(t time.Duration) time.Duration {
@@ -204,12 +214,11 @@ func tabs(t time.Duration) time.Duration {
 	return t
 }
 
-//only call from UI thread
-func (m *movie) drawCurrentFrame() time.Duration {
+func (m *movie) getCurrentFrame() (time.Duration, []byte) {
 	ctx := m.ctx
 	v := m.v
 	if v == nil {
-		return time.Duration(0)
+		return time.Duration(0), nil
 	}
 
 	packet := AVPacket{}
@@ -220,15 +229,15 @@ func (m *movie) drawCurrentFrame() time.Duration {
 		if frameFinished, t, bytes := v.DecodeAndScale(&packet); frameFinished {
 			packet.Free()
 
-			m.w.RefreshContent(bytes)
+			// m.w.RefreshContent(bytes)
 
-			return t
+			return t, bytes
 		} else {
 			packet.Free()
 		}
 	}
 
-	return time.Duration(0)
+	return time.Duration(0), nil
 }
 
 func (m *movie) SendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
@@ -237,10 +246,6 @@ func (m *movie) SendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 		pkt.Dup()
 		select {
 		case ch <- &pkt:
-			return true
-		case t := <-m.chSeek:
-			packet.Free()
-			m.c.SetTime(m.SeekTo(t))
 			return true
 		}
 	}
@@ -258,6 +263,12 @@ func (m *movie) showProgress(name string) {
 
 	m.w.SendShowProgress(p)
 }
+
+const (
+	PAUSE = iota
+	RESUME
+)
+
 func (m *movie) decode(name string) {
 	packet := AVPacket{}
 	ctx := m.ctx
@@ -283,10 +294,17 @@ func (m *movie) decode(name string) {
 					select {
 					case m.v.ChanDecoded <- &VideoFrame{pts, img}:
 						break
-					case t := <-m.chSeek:
-						m.c.SetTime(m.SeekTo(t))
+					case arg := <-m.chCtrl:
+						if arg.c == PAUSE {
+							chPause := make(chan seekArg)
+							arg.res <- chPause
+
+							arg := <-chPause
+							m.c.SetTime(arg.t)
+						}
 						break
 					}
+
 				}
 				packet.Free()
 				continue
@@ -323,4 +341,17 @@ func (m *movie) stop() {
 	if m.a != nil {
 		close(m.a.ch)
 	}
+}
+
+func (m *movie) seekOffset(offset time.Duration) {
+	t := m.c.GetTime() + offset
+	res := make(chan interface{})
+	arg := ctrlArg{PAUSE, res}
+	m.chCtrl <- arg
+	ch := <-arg.res
+	chPause := ch.(chan seekArg)
+	m.v.FlushBuffer()
+	m.a.flushBuffer()
+	t = m.v.SeekOffset(t)
+	chPause <- seekArg{t, nil}
 }
