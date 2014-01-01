@@ -25,6 +25,7 @@ var TaskDir string
 func init() {
 	watchers = make([]chan *Task, 0)
 	TaskDir = path.Join(util.ReadConfig("dir"), "vger-tasks")
+	log.Print("Task dir:", TaskDir)
 
 	_, err := ioutil.ReadDir(TaskDir)
 	if os.IsNotExist(err) {
@@ -91,7 +92,7 @@ func GetTask(name string) (*Task, error) {
 	t := new(Task)
 	err := util.ReadJson(taskInfoFileName(name), t)
 	if err != nil {
-		log.Println("Get task error:", err.Error())
+		log.Printf("Get task error:%s. Task name:%s.", err.Error(), name)
 		return nil, err
 	}
 

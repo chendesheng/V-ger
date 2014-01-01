@@ -81,13 +81,13 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
                                                   traits:mask
                                                   weight:0
                                                     size:self->_fontSize];
-        CGFloat red = item.color&0xff0000;
-        CGFloat green = item.color&0x00ff00;
-        CGFloat blue = item.color&0x0000ff;
+        CGFloat red = item.color&0xff0000/255.0;
+        CGFloat green = item.color&0x00ff00/255.0;
+        CGFloat blue = item.color&0x0000ff/255.0;
         NSColor *color = [NSColor colorWithDeviceRed:red green:green blue:blue alpha:1];
         
         NSShadow *shadow = [[NSShadow alloc] init];
-        [shadow setShadowColor:[NSColor colorWithDeviceRed:(255-red) green:(255-green) blue:(255-blue) alpha:1]];
+        [shadow setShadowColor:[NSColor colorWithDeviceRed:0 green:0 blue:0 alpha:1]];
         [shadow setShadowBlurRadius:6];
         
         NSAttributedString *str = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:item.str] attributes:@{NSFontAttributeName:font,NSBackgroundColorAttributeName:[NSColor clearColor],

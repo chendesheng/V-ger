@@ -1,7 +1,7 @@
 package libav
 
 /*
-#cgo darwin LDFLAGS: -lavresample -lswscale -lbz2 -framework Foundation -lz -framework CoreVideo -framework VideoDecodeAcceleration
+#cgo darwin LDFLAGS: -L/usr/local/lib/ -lavcodec -lavformat -lavutil -lswscale -lavresample -lbz2 -framework Foundation -lz -framework CoreVideo -framework VideoDecodeAcceleration
 #include "libavformat/avformat.h"
 */
 import "C"

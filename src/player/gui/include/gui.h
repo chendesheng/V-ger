@@ -40,7 +40,7 @@ void onKeyDown(void*, int);
 void onProgressChanged(void* wptr, int typ, double position);
 void onFullscreenChanged(void* wptr, int b);
 
-int onOpenFile(char* file);
+int onOpenFile(const char* file);
 
 // void setText(void* wptr, SubItem* items, int len);
 // void setCallbackKeyDown();

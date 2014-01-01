@@ -27,6 +27,6 @@ void onSubtitleMenuClicked(void* wptr, int tag, int showOrHide) {
 	goOnSubtitleMenuClicked(wptr, tag, showOrHide);
 }
 
-int onOpenFile(char* file) {
+int onOpenFile(const char* file) {
 	return goOnOpenFile((void*)file);
 }

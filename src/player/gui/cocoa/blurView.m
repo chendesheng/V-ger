@@ -9,7 +9,7 @@
         self->backgroundLayer = [CALayer layer];
         [self setLayer:self->backgroundLayer];
         [self setWantsLayer:YES];
-        CIFilter *blurFilter = [CIFilter filterWithName:@"CIGaussianBlur" keysAndValues:@"inputRadius", [NSNumber numberWithFloat:20.0], nil];
+        CIFilter *blurFilter = (CIFilter*)[CIFilter filterWithName:@"CIGaussianBlur" keysAndValues:@"inputRadius", [NSNumber numberWithFloat:20.0], nil];
         // [blurFilter setDefaults];
         
         [self->backgroundLayer setMasksToBounds:YES];

@@ -16,6 +16,7 @@ import (
 
 	// . "player/shared"
 	// "website"
+	. "logger"
 	"player/gui"
 )
 
@@ -39,16 +40,18 @@ var taskName = flag.String("task", "", "vger-task file name")
 var launchedFromGUI bool
 
 func init() {
-	if logPath := util.ReadConfig("playerlog"); logPath != "" {
-		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.SetOutput(f)
-		os.Stderr = f
-	}
+	// if logPath := util.ReadConfig("playerlog"); logPath != "" {
+	// 	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	log.SetOutput(f)
+	// 	os.Stderr = f
+	// }
 
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	InitLog(util.ReadConfig("playerlog"))
+
 	log.Print("log initialized.")
 
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
@@ -133,7 +136,8 @@ func (a *appDelegate) OpenFile(filename string) bool {
 			for _ = range ticker {
 				t, err := task.GetTask(name)
 				if err != nil {
-					log.Fatal(err)
+					log.Print(err)
+					return
 				}
 
 				t.LastPlaying = m.c.GetSeekTime()

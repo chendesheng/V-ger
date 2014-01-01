@@ -16,7 +16,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	// "path"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -70,7 +70,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 func openHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("open \"%s\".\n", name)
-	cmd := exec.Command("./player", fmt.Sprintf("-task=%s", name))
+	// cmd := exec.Command("./player", fmt.Sprintf("-task=%s", name))
+	cmd := exec.Command("open", path.Join(util.ReadConfig("dir"), name))
+
 	cmd.Start()
 
 	w.Write([]byte(``))

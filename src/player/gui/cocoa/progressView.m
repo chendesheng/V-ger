@@ -32,7 +32,7 @@
     CGFloat knotHeight = 14;
     CGFloat knotWidth = 5;
     
-    [[NSColor colorWithCalibratedRed:255 green:255 blue:255 alpha:0.3] setFill];
+    [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:0.3] setFill];
     NSRectFill(dirtyRect);
     
     NSDictionary *attr = @{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]};
@@ -42,27 +42,25 @@
     [self->rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-60+4, textY) withAttributes:@{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]}];
     
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
-
     [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, dirtyRect.size.width-120, barHeight) radius:2];
 
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
     [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, position2, barHeight) radius:2];
     
-    NSShadow* theShadow = [[NSShadow alloc] init];
-    [theShadow setShadowOffset:NSMakeSize(0, 0)];
-    [theShadow setShadowBlurRadius:1.0];
+    // NSShadow* theShadow = [[NSShadow alloc] init];
+    // [theShadow setShadowOffset:NSMakeSize(0, 0)];
+    // [theShadow setShadowBlurRadius:1.0];
     
     // Use a partially transparent color for shapes that overlap.
-    [theShadow setShadowColor:[[NSColor blackColor]
-                               colorWithAlphaComponent:0.5]];
+    // [theShadow setShadowColor:[[NSColor blackColor] colorWithAlphaComponent:0.5]];
+    // [theShadow setShadowColor:nil];
+    // [theShadow set];
     
-    [theShadow set];
-    
-    [[NSColor colorWithCalibratedRed:255 green:255 blue:255 alpha:1] setFill];
+    [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:1] setFill];
     
     [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, position, barHeight) radius:2];
     
-    [[NSColor colorWithCalibratedRed:255 green:255 blue:255 alpha:1] setFill];
+    [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:1] setFill];
     [self drawRoundedRect:NSMakeRect(position-knotWidth/2+60, (dirtyRect.size.height-knotHeight)/2, knotWidth, knotHeight) radius:1.5];
     
     [super drawRect:dirtyRect];
@@ -97,14 +95,11 @@
                         self->percent = self->percent2;
                     }
                     [self setNeedsDisplay:YES];
-                    // self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent, 1);
                     onProgressChanged((void*)[self window], 1, self->percent);
                     break;
                 case NSLeftMouseUp:
                     [self setNeedsDisplay:YES];
                     onProgressChanged((void*)[self window], 2, self->percent);
-
-                    // self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent, 2);
                     keepOn = NO;
                     break;
                 default:

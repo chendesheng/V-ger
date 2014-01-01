@@ -94,9 +94,9 @@ void* newWindow(char* title, int width, int height) {
 	Window* w = [[Window alloc] initWithTitle:[NSString stringWithUTF8String:title]
 		width:width height:height];
 	
-    WindowDelegate* wd = [[WindowDelegate alloc] init];
+    WindowDelegate* wd = (WindowDelegate*)[[WindowDelegate alloc] init];
     wd->window = w;
-	[w setDelegate:wd];
+	[w setDelegate:(id)wd];
 
 	GLView* v = [[GLView alloc] initWithFrame2: [w frame]];
 	[w setContentView:v];
