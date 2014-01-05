@@ -77,7 +77,7 @@ func (m *movie) uievents() {
 				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
 				// }
 				if m.s2 != nil {
-					offset := m.s2.AddOffset(200 * time.Millisecond)
+					offset := m.s2.AddOffset(-200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()))
 				}
 			}()
@@ -106,7 +106,7 @@ func (m *movie) uievents() {
 		switch typ {
 		case 0:
 			m.SeekBegin()
-			t := m.Seek(m.c.CalcTime(percent), false)
+			t := m.Seek(m.c.CalcTime(percent))
 
 			lastSeekTime = t
 			break
@@ -116,7 +116,7 @@ func (m *movie) uievents() {
 			break
 		case 1:
 			t := m.c.CalcTime(percent)
-			t = m.Seek(t, true)
+			t = m.Seek(t)
 			lastSeekTime = t
 			break
 		}

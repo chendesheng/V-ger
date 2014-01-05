@@ -72,6 +72,7 @@ func (s *Subtitle) Play() {
 			pos, _ := s.FindPos(arg.t)
 
 			pos += arg.offset
+			println("pos:", pos)
 			for s.checkPos(pos, arg.t) {
 				pos += arg.offset
 			}
@@ -144,7 +145,7 @@ func (s *Subtitle) calcFromTo(i int) (time.Duration, time.Duration) {
 }
 
 func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
-	if pos >= len(s.items) {
+	if pos >= len(s.items) || pos < 0 {
 		return false
 	}
 

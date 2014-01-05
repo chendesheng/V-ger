@@ -40,16 +40,6 @@ var taskName = flag.String("task", "", "vger-task file name")
 var launchedFromGUI bool
 
 func init() {
-	// if logPath := util.ReadConfig("playerlog"); logPath != "" {
-	// 	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	log.SetOutput(f)
-	// 	os.Stderr = f
-	// }
-
-	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	InitLog(util.ReadConfig("playerlog"))
 
 	log.Print("log initialized.")

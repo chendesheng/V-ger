@@ -12,6 +12,7 @@ package libav
 import "C"
 import (
 	"errors"
+	"fmt"
 	"math"
 	"reflect"
 	"sync"
@@ -100,7 +101,7 @@ func (ctx *AVFormatContext) ReadFrame(packet *AVPacket) int {
 	return int(C.av_read_frame(ctx.ptr, &packet.cAVPacket))
 }
 
-func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags int) {
+func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags int) error {
 	frameLock.Lock()
 	defer frameLock.Unlock()
 
@@ -113,10 +114,14 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 	timebaseq.den = C.AV_TIME_BASE
 
 	seek_target := C.av_rescale_q(C.int64_t(seek_pos), timebaseq, timeBase)
-	C.av_seek_frame(ctx.ptr, C.int(stream.Index()), C.int64_t(seek_target), C.int(flags))
+	res := C.av_seek_frame(ctx.ptr, C.int(stream.Index()), C.int64_t(seek_target), C.int(flags))
+	if res < 0 {
+		return fmt.Errorf("Seek frame error:", res)
+	}
 
 	//this is required! otherwise will get history data after seeking
 	C.avcodec_flush_buffers(stream.Codec().ptr)
+	return nil
 }
 func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
 	frameLock.Lock()

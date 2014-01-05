@@ -109,8 +109,10 @@ func (c *Clock) Pause() {
 }
 
 func (c *Clock) pause() {
-	c.status = "paused"
-	c.pausedTime = time.Since(c.base)
+	if c.status != "paused" {
+		c.status = "paused"
+		c.pausedTime = time.Since(c.base)
+	}
 	// c.wait = make(chan bool)
 }
 

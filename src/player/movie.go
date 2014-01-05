@@ -171,7 +171,7 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 
 	m.setupSubtitles(subFiles)
 
-	start, _ = m.v.Seek(start)
+	start, _, _ = m.v.Seek(start)
 
 	m.c.Reset()
 	m.c.SetTime(start)
@@ -183,31 +183,35 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 	go m.showProgress(filepath.Base(file))
 }
 
-func (m *movie) SeekTo(t time.Duration) (time.Duration, []byte) {
-	// t = t / time.Second * time.Second
-	var img []byte
+// func (m *movie) SeekTo(t time.Duration) (time.Duration, []byte) {
+// 	// t = t / time.Second * time.Second
+// 	var img []byte
 
-	if m.a != nil {
-		m.a.flushBuffer()
-	}
+// 	if m.a != nil {
+// 		m.a.flushBuffer()
+// 	}
 
-	if m.v != nil {
-		// m.v.FlushBuffer()
+// 	if m.v != nil {
+// 		// m.v.FlushBuffer()
 
-		t, img = m.v.Seek(t)
-	}
+// 		var err error
+// 		t, img, err = m.v.Seek(t)
+// 		if err != nil {
+// 			// log.
+// 		}
+// 	}
 
-	log.Print("seek to:", t.String())
+// 	log.Print("seek to:", t.String())
 
-	if m.s != nil {
-		m.s.Seek(t)
-	}
-	if m.s2 != nil {
-		m.s2.Seek(t)
-	}
+// 	if m.s != nil {
+// 		m.s.Seek(t)
+// 	}
+// 	if m.s2 != nil {
+// 		m.s2.Seek(t)
+// 	}
 
-	return t, img
-}
+// 	return t, img
+// }
 
 func tabs(t time.Duration) time.Duration {
 	if t < 0 {
@@ -274,21 +278,24 @@ const (
 func (m *movie) decode(name string) {
 	packet := AVPacket{}
 	ctx := m.ctx
-
-	ticker := time.NewTicker(time.Second)
-
-	for {
-		select {
-		case <-ticker.C:
-			go m.showProgress(name)
-		default:
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		for {
+			select {
+			case <-ticker.C:
+				m.showProgress(name)
+			}
 		}
+	}()
 
-		if ctx.ReadFrame(&packet) >= 0 {
-			// if m.SendPacket(m.v.StreamIndex, m.v.ChanPacket, packet) {
-			// 	continue
-			// }
-
+	bufferring := false
+	for {
+		resCode := ctx.ReadFrame(&packet)
+		if resCode >= 0 {
+			if bufferring {
+				bufferring = false
+				m.c.Resume()
+			}
 			if m.v.StreamIndex == packet.StreamIndex() {
 				if frameFinished, pts, img := m.v.DecodeAndScale(&packet); frameFinished {
 					//make sure seek operations not happens before one frame finish decode
@@ -330,9 +337,45 @@ func (m *movie) decode(name string) {
 
 			packet.Free()
 		} else {
-			m.stop()
-			return
+			bufferring = true
+			m.c.Pause()
+
+			m.a.flushBuffer()
+			m.v.FlushBuffer()
+
+			t, _, err := m.v.Seek(m.c.GetTime())
+			if err == nil {
+				println("seek success:", t.String())
+				m.c.SetTime(t)
+				continue
+			} else {
+				log.Print("seek error:", err)
+			}
+
+			// println("seek to unfinished:", m.c.GetTime().String())
+			log.Print("get frame error:", resCode)
+
+			select {
+			case t := <-m.chSeekPause:
+				println("seek to unfinished2")
+				if t != -1 {
+					continue
+				}
+				for {
+					println("seek to unfinished3")
+					t := <-m.chSeekPause
+					println("seek to unfinished4")
+					if t >= 0 {
+						m.c.SetTime(t)
+						break
+					}
+				}
+			case <-time.After(100 * time.Millisecond):
+				break
+			}
+
 		}
+		println(bufferring)
 	}
 }
 
@@ -343,15 +386,8 @@ func (m *movie) play() {
 		PollEvents()
 	} else {
 		for {
-
 			<-time.After(time.Millisecond)
 		}
-	}
-}
-
-func (m *movie) stop() {
-	if m.a != nil {
-		close(m.a.ch)
 	}
 }
 
@@ -360,12 +396,25 @@ func (m *movie) seekOffset(offset time.Duration) {
 
 	m.SeekBegin()
 
-	t = m.v.SeekOffset(t)
+	var img []byte
+	var err error
+	t, img, err = m.v.SeekOffset(t)
+	if err != nil {
+		return
+	}
+
+	m.w.RefreshContent(img)
 
 	m.c.SetTime(t)
 	percent := m.c.GetPercent()
 	m.w.ShowProgress(m.c.CalcPlayProgress(percent))
 
+	if m.s != nil {
+		m.s.Seek(t)
+	}
+	if m.s2 != nil {
+		m.s2.Seek(t)
+	}
 	m.SeekEnd(t)
 }
 
@@ -375,13 +424,16 @@ func (m *movie) SeekBegin() {
 	m.a.flushBuffer()
 }
 
-func (m *movie) Seek(t time.Duration, draw bool) time.Duration {
+func (m *movie) Seek(t time.Duration) time.Duration {
 	var img []byte
-	t, img = m.v.Seek(t)
-	println("seek refresh")
-	if draw {
-		m.w.RefreshContent(img)
+	var err error
+	t, img, err = m.v.Seek(t)
+	if err != nil {
+		return t
 	}
+	// println("seek refresh")
+
+	m.w.RefreshContent(img)
 
 	m.c.SetTime(t)
 	percent := m.c.GetPercent()
