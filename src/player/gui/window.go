@@ -94,7 +94,7 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanDraw:         make(chan []byte),
 		ChanShowProgress: make(chan *PlayProgressInfo),
-		ChanShowText:     make(chan SubItemArg, 20),
+		ChanShowText:     make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
 		ChanHideText:     make(chan uintptr),
 
 		ChanShowMessage: make(chan SubItemArg),

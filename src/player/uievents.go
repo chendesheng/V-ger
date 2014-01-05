@@ -26,10 +26,24 @@ func (m *movie) uievents() {
 			m.c.Toggle()
 			break
 		case gui.KEY_LEFT:
-			m.seekOffset(-10 * time.Second)
+			var offset time.Duration
+			if m.s != nil {
+				t := m.c.GetTime()
+				offset = m.s.GetSubtime(t, -1) - t
+			} else {
+				offset = -10 * time.Second
+			}
+			m.seekOffset(offset)
 			break
 		case gui.KEY_RIGHT:
-			m.seekOffset(10 * time.Second)
+			var offset time.Duration
+			if m.s != nil {
+				t := m.c.GetTime()
+				offset = m.s.GetSubtime(t, 1) - t
+			} else {
+				offset = 10 * time.Second
+			}
+			m.seekOffset(offset)
 			break
 		case gui.KEY_UP:
 			m.seekOffset(-5 * time.Second)

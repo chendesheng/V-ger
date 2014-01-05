@@ -19,6 +19,11 @@ type SubItem struct {
 
 	SubItemExtra
 }
+
+func (item *SubItem) IsInDefaultPosition() bool {
+	return item.PositionType == 2 && item.X < 0 && item.Y < 0
+}
+
 type SubItemExtra struct {
 	Id     int
 	Handle uintptr

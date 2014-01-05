@@ -14,6 +14,11 @@ type durationArg struct {
 	d   time.Duration
 	res chan time.Duration
 }
+type subTimeArg struct {
+	t      time.Duration
+	offset int
+	res    chan time.Duration
+}
 
 type Subtitle struct {
 	r     SubRender
@@ -27,6 +32,8 @@ type Subtitle struct {
 	ChanSeek chan time.Duration
 
 	ChanOffset chan durationArg
+
+	chanGetSubTime chan subTimeArg
 
 	// ChanPause        chan time.Duration
 	// ChanPauseSeeking chan time.Duration
@@ -60,6 +67,35 @@ func (s *Subtitle) Play() {
 		case arg := <-s.ChanOffset:
 			s.offset += arg.d
 			arg.res <- s.offset
+			break
+		case arg := <-s.chanGetSubTime:
+			pos, _ := s.FindPos(arg.t)
+
+			pos += arg.offset
+			for s.checkPos(pos, arg.t) {
+				pos += arg.offset
+			}
+
+			for {
+				if pos < 0 {
+					pos = 0
+					break
+				}
+				if pos >= len(s.items) {
+					pos = len(s.items) - 1
+					break
+				}
+
+				item := s.items[pos]
+				if !item.IsInDefaultPosition() {
+					pos += arg.offset
+
+				} else {
+					break
+				}
+			}
+
+			arg.res <- s.items[pos].From
 			break
 		case t := <-s.ChanSeek:
 			s.render(t, chRes)
@@ -161,6 +197,7 @@ func NewSubtitle(file string, r SubRender, c *Clock) *Subtitle {
 	s.ChanSeek = make(chan time.Duration)
 	s.ChanOffset = make(chan durationArg)
 	s.chanStop = make(chan bool)
+	s.chanGetSubTime = make(chan subTimeArg)
 	s.Name = file
 	s.IsMainOrSecondSub = true
 
@@ -187,4 +224,11 @@ func (s *Subtitle) AddOffset(d time.Duration) time.Duration {
 	res := make(chan time.Duration)
 	s.ChanOffset <- durationArg{d, res}
 	return <-res
+}
+
+func (s *Subtitle) GetSubtime(t time.Duration, offset int) time.Duration {
+	res := make(chan time.Duration)
+	arg := subTimeArg{t, offset, res}
+	s.chanGetSubTime <- arg
+	return <-arg.res
 }
