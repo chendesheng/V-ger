@@ -53,7 +53,7 @@ func Parse(str string) []*SubItem {
 			lines[0] = text
 			content := parseContent(&lines)
 			// log.Print("content:", content)
-			items = append(items, &SubItem{from, to, content, usePos, pos})
+			items = append(items, &SubItem{from, to, content, usePos, pos, SubItemExtra{0, 0}})
 		} else {
 			log.Println("parse time error:", lines[0])
 			panic("parse error")

@@ -34,3 +34,5 @@ unar
 *.a
 
 src/player/gui/cocoa/gui.o
+
+bin/player

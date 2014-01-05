@@ -32,10 +32,10 @@ type Window struct {
 	texture gl.Texture
 
 	ChanDraw     chan []byte
-	ChanShowText chan *SubItemArg
+	ChanShowText chan SubItemArg
 	ChanHideText chan uintptr
 
-	ChanShowMessage chan *SubItemArg
+	ChanShowMessage chan SubItemArg
 	ChanHideMessage chan uintptr
 
 	ChanShowProgress chan *PlayProgressInfo
@@ -53,6 +53,18 @@ type Window struct {
 // }
 func (w *Window) SendDrawImage(img []byte) {
 	w.ChanDraw <- img
+}
+func (w *Window) FlushImageBuffer() {
+	for {
+		select {
+		case <-w.ChanDraw:
+			println("window drop image")
+			break
+		default:
+			println("window flush image buffer return")
+			return
+		}
+	}
 }
 func (w *Window) RefreshContent(img []byte) {
 	w.img = img
@@ -82,10 +94,10 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanDraw:         make(chan []byte),
 		ChanShowProgress: make(chan *PlayProgressInfo),
-		ChanShowText:     make(chan *SubItemArg),
+		ChanShowText:     make(chan SubItemArg, 20),
 		ChanHideText:     make(chan uintptr),
 
-		ChanShowMessage: make(chan *SubItemArg),
+		ChanShowMessage: make(chan SubItemArg),
 		ChanHideMessage: make(chan uintptr),
 
 		originalWidth:  width,
@@ -194,10 +206,10 @@ func (w *Window) ShowProgress(p *PlayProgressInfo) {
 
 	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent), C.double(p.Percent2))
 }
-func (w *Window) SendShowText(s *SubItem) uintptr {
-	res := make(chan uintptr)
-	w.ChanShowText <- &SubItemArg{s, res}
-	return <-res
+func (w *Window) SendShowText(s SubItemArg) {
+	// res := make(chan SubItemExtra)
+	w.ChanShowText <- s
+	// return <-res
 }
 func (w *Window) SendShowMessage(msg string) {
 	s := SubItem{}
@@ -207,11 +219,11 @@ func (w *Window) SendShowMessage(msg string) {
 	s.Content = make([]AttributedString, 0)
 	s.Content = append(s.Content, AttributedString{msg, 3, 0xffffff})
 
-	res := make(chan uintptr)
-	w.ChanShowMessage <- &SubItemArg{&s, res}
+	res := make(chan SubItemExtra)
+	w.ChanShowMessage <- SubItemArg{s, res}
 	ptr := <-res
 	time.Sleep(2 * time.Second)
-	w.ChanHideMessage <- ptr
+	w.ChanHideMessage <- ptr.Handle
 }
 
 func (w *Window) ShowText(s *SubItem) uintptr {
@@ -232,8 +244,9 @@ func (w *Window) ShowText(s *SubItem) uintptr {
 
 	return uintptr(C.showText(w.ptr, p, C.int(len(items)), C.int(s.PositionType), C.double(s.X), C.double(s.Y)))
 }
-func (w *Window) SendHideText(ptr uintptr) {
-	w.ChanHideText <- ptr
+func (w *Window) SendHideText(arg SubItemArg) {
+	// w.ChanHideText <- ptr
+	w.ChanShowText <- arg
 }
 func (w *Window) HideText(ptr uintptr) {
 	C.hideText(w.ptr, unsafe.Pointer(ptr))
@@ -250,8 +263,10 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	w := windows[ptr]
 
 	select {
-	case img := <-w.ChanDraw:
-		w.RefreshContent(img)
+	case img, ok := <-w.ChanDraw:
+		if ok {
+			w.RefreshContent(img)
+		}
 	default:
 	}
 
@@ -264,18 +279,26 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	select {
 	case arg := <-w.ChanShowText:
 		item := arg.SubItem
-		// width, height := w.GetWindowSize()
-		arg.Result <- w.ShowText(item)
-	case ptr := <-w.ChanHideText:
-		w.HideText(ptr)
+		if item.Handle == 0 || item.Handle == 1 {
+			println("show text:", arg.Result)
+			arg.Result <- SubItemExtra{item.Id, w.ShowText(&item)}
+			println("show text2")
+		} else {
+			println("hide text:", item.Handle)
+			w.HideText(item.Handle)
+			println("hide text2:", item.Handle)
+		}
+		break
+	// case ptr := <-w.ChanHideText:
+	// 	w.HideText(ptr)
 	case arg := <-w.ChanShowMessage:
 		if w.currentMessagePtr != 0 {
 			w.HideText(w.currentMessagePtr)
 		}
 
 		item := arg.SubItem
-		w.currentMessagePtr = w.ShowText(item)
-		arg.Result <- w.currentMessagePtr
+		w.currentMessagePtr = w.ShowText(&item)
+		arg.Result <- SubItemExtra{0, w.currentMessagePtr}
 	case ptr := <-w.ChanHideMessage:
 		if (ptr != 0) && (w.currentMessagePtr == ptr) {
 			w.HideText(w.currentMessagePtr)

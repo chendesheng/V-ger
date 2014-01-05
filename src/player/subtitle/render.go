@@ -5,6 +5,6 @@ import (
 )
 
 type SubRender interface {
-	SendShowText(*SubItem) uintptr
-	SendHideText(uintptr)
+	SendShowText(SubItemArg)
+	SendHideText(SubItemArg)
 }

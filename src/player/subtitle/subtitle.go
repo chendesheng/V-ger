@@ -6,7 +6,7 @@ import (
 	. "player/clock"
 	. "player/shared"
 	"player/srt"
-	"runtime"
+	// "runtime"
 	"time"
 )
 
@@ -28,38 +28,72 @@ type Subtitle struct {
 
 	ChanOffset chan durationArg
 
+	// ChanPause        chan time.Duration
+	// ChanPauseSeeking chan time.Duration
+
 	chanStop chan bool
 
 	Name string
 
 	IsMainOrSecondSub bool
+
+	// DisplayingMap map[int]uintptr
 }
 
-func (s *Subtitle) Play(pos int) {
+type displayingItem struct {
+	pos    int
+	handle uintptr
+}
+
+func (s *Subtitle) Play() {
+	for i, _ := range s.items {
+		s.items[i].Id = i
+	}
+
+	chRes := make(chan SubItemExtra)
 	for {
 		select {
+		case arg := <-chRes:
+			println("res from show:", arg.Id, arg.Handle)
+			s.items[arg.Id].Handle = arg.Handle
+			break
 		case arg := <-s.ChanOffset:
 			s.offset += arg.d
 			arg.res <- s.offset
 			break
 		case t := <-s.ChanSeek:
-			close(s.quit)
-			s.quit = make(chan bool)
-
-			pos, _ = s.FindPos(t)
-			runtime.Gosched()
-			break
-		case <-time.After(20 * time.Millisecond):
-			if s.checkPos(pos, s.c.GetSeekTime()) {
-				go func(pos int) {
-					s.playOneItem(pos)
-				}(pos)
-				pos++
-			}
+			s.render(t, chRes)
 			break
 		case <-s.chanStop:
-			close(s.quit)
-			return
+			for _, item := range s.items {
+				if item.Handle != 0 {
+					s.hideSubItem(*item)
+					item.Handle = 0
+				}
+			}
+			break
+		}
+	}
+}
+
+func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra) {
+	for i, item := range s.items {
+		if !s.checkPos(i, t) {
+			if item.Handle != 0 && item.Handle != 1 {
+				println(t.String(), "hide sub: ", item.Id, item.Content[0].Content)
+				s.hideSubItem(*item)
+				item.Handle = 0
+			}
+		}
+	}
+
+	for i, item := range s.items {
+		if s.checkPos(i, t) {
+			if item.Handle == 0 {
+				println(t.String(), "show sub: ", item.Id, item.Content[0].Content)
+				s.showSubitem(*item, chRes)
+				item.Handle = 1
+			}
 		}
 	}
 }
@@ -83,20 +117,21 @@ func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
 	return t >= from && t < to
 }
 
-func (s *Subtitle) playOneItem(pos int) {
-	_, to := s.calcFromTo(pos)
-	item := s.items[pos]
-	if !s.IsMainOrSecondSub {
+func (s *Subtitle) showSubitem(item SubItem, chRes chan SubItemExtra) {
+	if !s.IsMainOrSecondSub && item.PositionType != 10 {
 		if (item.PositionType != 2) || (item.X >= 0) || (item.Y >= 0) {
 			return
 		} else {
 			item.PositionType = 10
 		}
 	}
-	tId := s.r.SendShowText(item)
-	s.c.WaitUtilWithQuit(to-20*time.Millisecond, s.quit)
-	s.r.SendHideText(tId)
-	println("play one item:", pos, s.items[pos].Content[0].Content)
+	arg := SubItemArg{item, chRes}
+	go s.r.SendShowText(arg)
+}
+func (s *Subtitle) hideSubItem(item SubItem) {
+	if item.Handle != 0 && item.Handle != 1 {
+		go s.r.SendHideText(SubItemArg{item, nil})
+	}
 }
 
 func (s *Subtitle) FindPos(t time.Duration) (int, *SubItem) {
@@ -143,8 +178,9 @@ func NewSubtitle(file string, r SubRender, c *Clock) *Subtitle {
 }
 
 func (s *Subtitle) Seek(t time.Duration) {
-	println("subtitle seek:", t.String())
+	// println("subtitle seek:", t.String())
 	s.ChanSeek <- t
+	// println("subtitle seeked:", t.String())
 }
 
 func (s *Subtitle) AddOffset(d time.Duration) time.Duration {

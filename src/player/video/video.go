@@ -16,7 +16,6 @@ import (
 )
 
 type VideoRender interface {
-	// SendSetSize(int, int)
 	SendDrawImage([]byte)
 }
 type VideoFrame struct {
@@ -34,39 +33,14 @@ type Video struct {
 	frame      AVFrame
 	pictureRGB AVPicture
 
-	// videoPktPts uint64
-	//for calcuting pts if video file not supply it
-	// videoClock time.Duration
-
 	Width, Height int
 	c             *Clock
 
-	ChanPacket  chan *AVPacket
+	// ChanPacket  chan *AVPacket
 	ChanDecoded chan *VideoFrame
 	ChanFlush   chan bool
 	r           VideoRender
 }
-
-// func myGetBuffer(ctx *AVCodecContext, frame *AVFrame) int {
-// 	log.Println("SetGetBufferCallback")
-// 	log.Println("SetGetBufferCallback ", globalVideo.videoPktPts)
-// 	ret := ctx.DefaultGetBuffer(frame)
-
-// 	pts := AVObject{}
-// 	pts.Malloc(8)
-
-// 	pts.WriteUInt64(globalVideo.videoPktPts)
-// 	frame.SetOpaque(pts)
-// 	return ret
-// }
-// func myReleaseBuffer(ctx *AVCodecContext, frame *AVFrame) {
-// 	if !frame.IsNil() {
-// 		pts := frame.Opaque()
-// 		pts.Free()
-// 	}
-
-// 	ctx.DefaultReleaseBuffer(frame)
-// }
 
 func (v *Video) setupCodec(codec AVCodecContext) error {
 	v.codec = codec
@@ -80,9 +54,6 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 	if errCode < 0 {
 		return fmt.Errorf("open decoder error code %s", errCode)
 	}
-
-	// codec.SetGetBufferCallback(myGetBuffer)
-	// codec.SetReleaseBufferCallback(myReleaseBuffer)
 
 	return nil
 }
@@ -133,12 +104,8 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 	v.setupSwsContext()
 
 	v.c = c
-	// v.videoClock = start
-	// r.SendSetSize(v.Width, v.Height)
-	// v.r = r
 
-	v.ChanPacket = make(chan *AVPacket, 10)
-	v.ChanDecoded = make(chan *VideoFrame, 10)
+	v.ChanDecoded = make(chan *VideoFrame)
 	v.ChanFlush = make(chan bool)
 
 	log.Print("new video success")
@@ -160,38 +127,12 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 
 	frameFinished := codec.DecodeVideo(frame, packet)
 
-	// opaque := frame.Opaque()
-	// var pts time.Duration
-	// if packet.Dts() == AV_NOPTS_VALUE &&
-	// 	!opaque.IsNil() && opaque.UInt64() != AV_NOPTS_VALUE {
-	// 	pts = time.Duration(float64(opaque.UInt64()) * stream.Timebase().Q2D() * (float64(time.Second)))
-	// } else if packet.Dts() != AV_NOPTS_VALUE {
-	// 	pts = time.Duration(float64(packet.Dts()) * stream.Timebase().Q2D() * (float64(time.Second)))
-	// } else {
-	// 	pts = 0
-	// }
-
-	// println("pts:", pts)
 	if frameFinished {
 		//TODO: get pts in more safe way
 		var pts time.Duration
 		if packet.Dts() != AV_NOPTS_VALUE {
 			pts = time.Duration(float64(packet.Dts()) * stream.Timebase().Q2D() * (float64(time.Second)))
 		}
-
-		// var frameDelay float64
-		// if pts != 0 {
-		// 	v.videoClock = pts
-		// } else {
-		// 	pts = v.videoClock
-		// }
-		// codec := stream.Codec()
-		// frameDelay = codec.Timebase().Q2D()
-		// frameDelay += float64(frame.RepeatPict()) * (frameDelay * 0.5)
-		// v.videoClock += time.Duration(frameDelay * float64(time.Second))
-
-		// frame.Flip(v.height)
-		// v.swsCtx.Scale(frame, pictureRGB)
 
 		return true, pts
 	}
@@ -240,8 +181,6 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 	pictureRGB := v.pictureRGB
 	swsCtx := v.swsCtx
 	width, height := v.Width, v.Height
-	// c := v.c
-	// r := v.r
 
 	if frameFinished, pts := v.Decode(packet); frameFinished {
 		frame.Flip(height)
@@ -254,9 +193,7 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 }
 
 func (v *Video) FlushBuffer() {
-	// close(v.ChanPacket)
-	// v.ChanPacket = make(chan *AVPacket, 200)
-	// v.ChanFlush <- true
+	log.Print("video flush buffer")
 	for {
 		select {
 		case <-v.ChanDecoded:
@@ -265,13 +202,12 @@ func (v *Video) FlushBuffer() {
 			return
 		}
 	}
-
 }
 
 func (v *Video) Play() {
 	for data := range v.ChanDecoded {
 		v.c.WaitUtil(data.Pts)
-		log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
+		// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
 		v.r.SendDrawImage(data.Img)
 
 		v.c.WaitUtilRunning()
@@ -280,32 +216,6 @@ func (v *Video) Play() {
 func (v *Video) SetRender(r VideoRender) {
 	v.r = r
 }
-
-// func readOneFrame(ctx AVFormatContext, stream AVStream, frame AVFrame) (time.Duration, bool) {
-// 	packet := AVPacket{}
-// 	codec := stream.Codec()
-
-// 	for ctx.ReadFrame(&packet) >= 0 {
-// 		if packet.StreamIndex() == stream.Index() {
-// 			if codec.DecodeVideo(frame, &packet) {
-// 				tmp := packet.Pts()
-// 				if tmp == AV_NOPTS_VALUE {
-// 					tmp = 0
-// 				}
-
-// 				pts := time.Duration(float64(tmp) * stream.Timebase().Q2D() * float64(time.Second))
-// 				println("pts:", pts.String())
-// 				packet.Free()
-
-// 				return pts, true
-// 			} else {
-// 				packet.Free()
-// 			}
-// 		}
-// 	}
-
-// 	return 0, false
-// }
 
 func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte) {
 	packet := AVPacket{}

@@ -16,11 +16,16 @@ type SubItem struct {
 
 	PositionType int
 	Position
-}
 
+	SubItemExtra
+}
+type SubItemExtra struct {
+	Id     int
+	Handle uintptr
+}
 type SubItemArg struct {
-	*SubItem
-	Result chan uintptr
+	SubItem
+	Result chan SubItemExtra
 }
 type Position struct {
 	X, Y float64

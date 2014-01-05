@@ -83,7 +83,7 @@ func (c *Clock) getTime() time.Duration {
 }
 
 func (c *Clock) SetTime(t time.Duration) {
-	log.Println("clock set time:", t.String())
+	// log.Println("clock set time:", t.String())
 	c.Lock()
 	defer c.Unlock()
 

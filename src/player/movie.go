@@ -33,7 +33,8 @@ type movie struct {
 	c   *Clock
 	w   *Window
 
-	chCtrl chan ctrlArg
+	chCtrl      chan ctrlArg
+	chSeekPause chan time.Duration
 }
 
 func (m *movie) setupAudio() {
@@ -100,8 +101,7 @@ func (m *movie) setupSubtitles(subFiles []string) {
 						s.IsMainOrSecondSub = false
 					}
 
-					pos, _ := s.FindPos(m.c.GetSeekTime())
-					s.Play(pos)
+					s.Play()
 				} else {
 					if (m.s != nil) && (m.s.Name == subFiles[index]) {
 						m.s.Stop()
@@ -122,7 +122,7 @@ func (m *movie) setupSubtitles(subFiles []string) {
 
 		println("play subtitle:", subFiles)
 		m.s = NewSubtitle(subFiles[0], m.w, m.c)
-		go m.s.Play(0)
+		go m.s.Play()
 	}
 }
 
@@ -156,6 +156,7 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 	ctx.DumpFormat()
 
 	m.chCtrl = make(chan ctrlArg)
+	m.chSeekPause = make(chan time.Duration)
 
 	m.ctx = ctx
 	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
@@ -181,6 +182,7 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 
 	go m.showProgress(filepath.Base(file))
 }
+
 func (m *movie) SeekTo(t time.Duration) (time.Duration, []byte) {
 	// t = t / time.Second * time.Second
 	var img []byte
@@ -276,7 +278,6 @@ func (m *movie) decode(name string) {
 	ticker := time.NewTicker(time.Second)
 
 	for {
-		// m.c.WaitUtilRunning()
 		select {
 		case <-ticker.C:
 			go m.showProgress(name)
@@ -287,6 +288,7 @@ func (m *movie) decode(name string) {
 			// if m.SendPacket(m.v.StreamIndex, m.v.ChanPacket, packet) {
 			// 	continue
 			// }
+
 			if m.v.StreamIndex == packet.StreamIndex() {
 				if frameFinished, pts, img := m.v.DecodeAndScale(&packet); frameFinished {
 					//make sure seek operations not happens before one frame finish decode
@@ -294,17 +296,27 @@ func (m *movie) decode(name string) {
 					select {
 					case m.v.ChanDecoded <- &VideoFrame{pts, img}:
 						break
-					case arg := <-m.chCtrl:
-						if arg.c == PAUSE {
-							chPause := make(chan seekArg)
-							arg.res <- chPause
-
-							arg := <-chPause
-							m.c.SetTime(arg.t)
+					case t := <-m.chSeekPause:
+						if t != -1 {
+							break
+						}
+						for {
+							t := <-m.chSeekPause
+							if t >= 0 {
+								m.c.SetTime(t)
+								break
+							}
 						}
 						break
 					}
 
+					t := m.c.GetTime()
+					if m.s != nil {
+						m.s.Seek(t)
+					}
+					if m.s2 != nil {
+						m.s2.Seek(t)
+					}
 				}
 				packet.Free()
 				continue
@@ -345,13 +357,45 @@ func (m *movie) stop() {
 
 func (m *movie) seekOffset(offset time.Duration) {
 	t := m.c.GetTime() + offset
-	res := make(chan interface{})
-	arg := ctrlArg{PAUSE, res}
-	m.chCtrl <- arg
-	ch := <-arg.res
-	chPause := ch.(chan seekArg)
+
+	m.SeekBegin()
+
+	t = m.v.SeekOffset(t)
+
+	m.c.SetTime(t)
+	percent := m.c.GetPercent()
+	m.w.ShowProgress(m.c.CalcPlayProgress(percent))
+
+	m.SeekEnd(t)
+}
+
+func (m *movie) SeekBegin() {
+	m.chSeekPause <- -1
 	m.v.FlushBuffer()
 	m.a.flushBuffer()
-	t = m.v.SeekOffset(t)
-	chPause <- seekArg{t, nil}
+}
+
+func (m *movie) Seek(t time.Duration, draw bool) time.Duration {
+	var img []byte
+	t, img = m.v.Seek(t)
+	println("seek refresh")
+	if draw {
+		m.w.RefreshContent(img)
+	}
+
+	m.c.SetTime(t)
+	percent := m.c.GetPercent()
+	m.w.ShowProgress(m.c.CalcPlayProgress(percent))
+
+	if m.s != nil {
+		m.s.Seek(t)
+	}
+	if m.s2 != nil {
+		m.s2.Seek(t)
+	}
+	return t
+}
+
+func (m *movie) SeekEnd(t time.Duration) {
+	m.chSeekPause <- t
 }
