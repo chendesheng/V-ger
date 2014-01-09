@@ -7,11 +7,11 @@ import (
 )
 
 func removeTask(name string) error {
-	err := os.Remove(taskInfoFileName(name))
-	if err != nil {
-		fmt.Printf("Remove task [%s] failed: %s\n", name, err)
-		return err
-	}
+	// err := os.Remove(taskInfoFileName(name))
+	// if err != nil {
+	// 	fmt.Printf("Remove task [%s] failed: %s\n", name, err)
+	// 	return err
+	// }
 
 	return nil
 }

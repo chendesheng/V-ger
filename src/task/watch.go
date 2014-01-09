@@ -1,6 +1,7 @@
 package task
 
 import (
+	// "fmt"
 	"log"
 	"sync"
 	"time"
@@ -53,11 +54,15 @@ func RemoveWatch(ch chan *Task) {
 func writeChangeEvent(name string) {
 	// tks := GetTasks()
 
+	// println("write change event:", name)
+
 	t, err := GetTask(name)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
+	// fmt.Printf("%v", t)
 
 	watcherLock.Lock()
 	copyWatchers := make([]chan *Task, len(watchers))

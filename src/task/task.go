@@ -8,14 +8,16 @@ import (
 	"fmt"
 	"util"
 	// "io"
-	"io/ioutil"
+	// "io/ioutil"
 	"log"
 	// "native"
 	// "net/http"
-	"os"
+	// "os"
 	"path"
 	// "strconv"
 	// "regexp"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 	"strings"
 	"time"
 )
@@ -24,13 +26,16 @@ var TaskDir string
 
 func init() {
 	watchers = make([]chan *Task, 0)
-	TaskDir = path.Join(util.ReadConfig("dir"), "vger-tasks")
-	log.Print("Task dir:", TaskDir)
+	TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
+	// log.Print("Task dir:", TaskDir)
 
-	_, err := ioutil.ReadDir(TaskDir)
-	if os.IsNotExist(err) {
-		os.Mkdir(TaskDir, 0777)
-	}
+	// _, err := ioutil.ReadDir(TaskDir)
+	// if os.IsNotExist(err) {
+	// 	os.Mkdir(TaskDir, 0777)
+	// }
+
+	db := openDb()
+	defer db.Close()
 }
 
 type Task struct {
@@ -49,25 +54,37 @@ type Task struct {
 	NameHash   string
 	Est        time.Duration
 
-	Autoshutdown bool
+	// Autoshutdown bool
 
 	Subs        []string
 	LastPlaying time.Duration
 }
 
-func SetAutoshutdown(name string, onOrOff bool) {
-	if t, err := GetTask(name); err == nil {
-		t.Autoshutdown = onOrOff
-		SaveTask(t)
-	}
-}
+var taskColumnes string = `Name, 
+				URL,
+				Size,
+				StartTime,
+				DownloadedSize,
+				ElapsedTime,
+				LimitSpeed,
+				Speed,
+				Status,
+				Est,
+				LastPlaying`
 
-func taskInfoFileName(name string) string {
-	if !strings.HasSuffix(name, ".vger-task.txt") {
-		name = fmt.Sprint(name, ".vger-task.txt")
-	}
-	return path.Join(TaskDir, name)
-}
+// func SetAutoshutdown(name string, onOrOff bool) {
+// 	if t, err := GetTask(name); err == nil {
+// 		t.Autoshutdown = onOrOff
+// 		SaveTask(t)
+// 	}
+// }
+
+// func taskInfoFileName(name string) string {
+// 	if !strings.HasSuffix(name, ".vger-task.txt") {
+// 		name = fmt.Sprint(name, ".vger-task.txt")
+// 	}
+// 	return path.Join(TaskDir, name)
+// }
 
 func hashName(name string) string {
 	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
@@ -89,32 +106,67 @@ func newTask(name string, url string, size int64) *Task {
 	return t
 }
 func GetTask(name string) (*Task, error) {
-	t := new(Task)
-	err := util.ReadJson(taskInfoFileName(name), t)
+	// println("get task:", name)
+	db := openDb()
+	defer db.Close()
+	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task where Name=?`, taskColumnes), name))
 	if err != nil {
-		log.Printf("Get task error:%s. Task name:%s.", err.Error(), name)
 		return nil, err
+	} else {
+		// log.Printf("%v", t)
+		return t, nil
 	}
-
-	return t, nil
 }
 
-func GetTasks() []*Task {
-	fileInfoes, err := ioutil.ReadDir(TaskDir)
+func openDb() *sql.DB {
+	db, err := sql.Open("sqlite3", TaskDir)
 	if err != nil {
-		log.Print(err)
-		return make([]*Task, 0)
+		log.Fatal(err)
 	}
+	return db
+}
 
-	tasks := make([]*Task, 0, len(fileInfoes))
-	for _, f := range fileInfoes {
-		name := f.Name()
+type taskScanner interface {
+	Scan(...interface{}) error
+}
 
-		if strings.HasPrefix(name, ".") || f.IsDir() || !strings.HasSuffix(name, ".vger-task.txt") { //exculding hidden files
-			continue
-		}
+func scanTask(scanner taskScanner) (*Task, error) {
+	var t Task
+	var elapsedTime, est, lastPlaying int64
+	err := scanner.Scan(&t.Name,
+		&t.URL,
+		&t.Size,
+		&t.StartTime,
+		&t.DownloadedSize,
+		&elapsedTime,
+		&t.LimitSpeed,
+		&t.Speed,
+		&t.Status,
+		&est,
+		&lastPlaying)
+	if err == nil {
+		t.ElapsedTime = time.Duration(elapsedTime)
+		t.Est = time.Duration(est)
+		t.LastPlaying = time.Duration(lastPlaying)
+		return &t, nil
+	} else {
+		log.Print(err)
+		return nil, err
+	}
+}
+func GetTasks() []*Task {
+	db := openDb()
+	defer db.Close()
+	rows, err := db.Query(fmt.Sprintf(`select %s from task`, taskColumnes))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
 
-		if t, err := GetTask(name); err == nil {
+	tasks := make([]*Task, 0)
+	for rows.Next() {
+		t, err := scanTask(rows)
+		if err == nil {
 			tasks = append(tasks, t)
 		}
 	}
@@ -123,28 +175,116 @@ func GetTasks() []*Task {
 }
 
 func GetDownloadingTask() (*Task, bool) {
-	for _, t := range GetTasks() {
-		if t.Status == "Downloading" {
-			return t, true
-		}
-	}
+	// for _, t := range GetTasks() {
+	// 	if t.Status == "Downloading" {
+	// 		return t, true
+	// 	}
+	// }
 
-	return nil, false
+	// return nil, false
+
+	db := openDb()
+	defer db.Close()
+	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task where Status='Downloading'`, taskColumnes)))
+	if err != nil {
+		return nil, false
+	} else {
+		return t, true
+	}
 }
 func HasDownloadingOrPlaying() bool {
-	for _, t := range GetTasks() {
-		if t.Status == "Downloading" || t.Status == "Playing" {
-			log.Printf("has downloading or playing %v", t)
-			return true
-		}
-	}
+	// for _, t := range GetTasks() {
+	// 	if t.Status == "Downloading" || t.Status == "Playing" {
+	// 		log.Printf("has downloading or playing %v", t)
+	// 		return true
+	// 	}
+	// }
 
-	return false
+	// return false
+	db := openDb()
+	defer db.Close()
+	var count int
+	db.QueryRow("select count(*) from task where Statue='Downloading' or Status='Playing'").Scan(&count)
+
+	return count > 0
 }
 func SaveTask(t *Task) (err error) {
-	err = util.WriteJson(taskInfoFileName(t.Name), t)
-	if err == nil {
-		go writeChangeEvent(t.Name)
+	// err = util.WriteJson(taskInfoFileName(t.Name), t)
+	// if err == nil {
+	// 	go writeChangeEvent(t.Name)
+	// }
+
+	// return
+
+	defer func() {
+		if err == nil {
+			go writeChangeEvent(t.Name)
+		}
+	}()
+
+	// fmt.Printf("save task:%v", t)
+	db := openDb()
+	defer db.Close()
+
+	var tx *sql.Tx
+	tx, err = db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Commit()
+	var count int
+	err = tx.QueryRow("select count(*) from task where Name=?", t.Name).Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	if count > 0 {
+		// println("update")
+		_, err = tx.Exec(`update task set
+		URL=?,
+		Size=?,
+		StartTime=?,
+		DownloadedSize=?,
+		ElapsedTime=?,
+		LimitSpeed=?,
+		Speed=?,
+		Status=?,
+		Est=?,
+		LastPlaying=? where Name=?`,
+			t.URL,
+			t.Size,
+			t.StartTime,
+			t.DownloadedSize,
+			int64(t.ElapsedTime),
+			t.LimitSpeed,
+			t.Speed,
+			t.Status,
+			int64(t.Est),
+			int64(t.LastPlaying),
+			t.Name)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	} else {
+		_, err = tx.Exec(fmt.Sprintf(`
+			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`, taskColumnes), t.Name,
+			t.URL,
+			t.Size,
+			t.StartTime,
+			t.DownloadedSize,
+			t.ElapsedTime,
+			t.LimitSpeed,
+			t.Speed,
+			t.Status,
+			t.Est,
+			t.LastPlaying)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 	}
 
 	return

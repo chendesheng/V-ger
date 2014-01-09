@@ -36,3 +36,5 @@ unar
 src/player/gui/cocoa/gui.o
 
 bin/player
+
+*.db

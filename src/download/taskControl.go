@@ -87,7 +87,7 @@ func monitorTask() {
 			if err != nil {
 				log.Println(err)
 			}
-			native.MoveFileToTrash(task.TaskDir, fmt.Sprint(t.Name, ".vger-task.txt"))
+			// native.MoveFileToTrash(task.TaskDir, fmt.Sprint(t.Name, ".vger-task.txt"))
 			native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".zip"))
 			native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".rar"))
 		}
