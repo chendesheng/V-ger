@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"sync"
+	// "sync"
 	"time"
 	"unsafe"
 )
@@ -24,7 +24,7 @@ type AVFormatContext struct {
 	ptr *C.AVFormatContext
 }
 
-var frameLock sync.Mutex = sync.Mutex{}
+// var frameLock sync.Mutex = sync.Mutex{}
 
 func (ctx *AVFormatContext) OpenInput(filename string) {
 	cfilename := C.CString(filename)
@@ -33,6 +33,9 @@ func (ctx *AVFormatContext) OpenInput(filename string) {
 	if int(C.avformat_open_input(&ctx.ptr, cfilename, nil, nil)) != 0 {
 		// ctx.ptr = nil
 	}
+}
+func NetworkInit() {
+	C.avformat_network_init()
 }
 
 func (ctx AVFormatContext) IsNil() bool {
@@ -95,15 +98,34 @@ func (ctx *AVFormatContext) Stream(i int) AVStream {
 	return AVStream{ptr: streams[i]}
 }
 func (ctx *AVFormatContext) ReadFrame(packet *AVPacket) int {
-	frameLock.Lock()
-	defer frameLock.Unlock()
-
+	// frameLock.Lock()
+	// defer frameLock.Unlock()
 	return int(C.av_read_frame(ctx.ptr, &packet.cAVPacket))
 }
+func (ctx *AVFormatContext) SeekFrame2(stream AVStream, t time.Duration, flags int) error {
+	var timeBase C.AVRational
+	timeBase.num = 1
+	timeBase.den = C.AV_TIME_BASE
 
+	seek_pos := t / time.Second * C.AV_TIME_BASE
+
+	var timebaseq C.AVRational
+	timebaseq.num = 1
+	timebaseq.den = C.AV_TIME_BASE
+
+	seek_target := C.av_rescale_q(C.int64_t(seek_pos), timebaseq, timeBase)
+	res := C.av_seek_frame(ctx.ptr, -1, C.int64_t(seek_target), C.int(flags))
+	if res < 0 {
+		return fmt.Errorf("Seek frame error:", res)
+	}
+
+	//this is required! otherwise will get history data after seeking
+	C.avcodec_flush_buffers(stream.Codec().ptr)
+	return nil
+}
 func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags int) error {
-	frameLock.Lock()
-	defer frameLock.Unlock()
+	// frameLock.Lock()
+	// defer frameLock.Unlock()
 
 	timeBase := stream.ptr.time_base
 
@@ -124,8 +146,8 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 	return nil
 }
 func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
-	frameLock.Lock()
-	defer frameLock.Unlock()
+	// frameLock.Lock()
+	// defer frameLock.Unlock()
 	// timeBase := stream.ptr.time_base
 
 	seek_target := float64(t) / float64(time.Second) * AV_TIME_BASE

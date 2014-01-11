@@ -14,7 +14,7 @@ import (
 // 	}
 
 // 	text := string(data)
-// 	items := Parse(text)
+// 	items := Parse(text, 384,303)
 // 	if len(items) == 0 {
 // 		t.Errorf("parse error")
 // 	}
@@ -34,7 +34,7 @@ func TestParse2(t *testing.T) {
 	}
 
 	text := string(data)
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 
 	// fmt.Printf("%v", items)
 	if len(items) == 0 {
@@ -45,7 +45,7 @@ func TestParseItalic(t *testing.T) {
 	text := `1
 00:00:00,000 --> 00:00:01,111
 a<i>你好</i>c`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -73,7 +73,7 @@ func TestParseItalic2(t *testing.T) {
 00:00:00,000 --> 00:00:01,111
 cc
 a<i>b</i>c`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -102,7 +102,7 @@ func TestParseBold(t *testing.T) {
 00:00:00,000 --> 00:00:01,111
 cc
 a<b>b</b>c`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -132,7 +132,7 @@ func TestParseMixed(t *testing.T) {
 00:00:00,000 --> 00:00:01,111
 cc
 a<b>b</b>c<i>d</i><b>e</b>`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -183,7 +183,7 @@ func TestParseNested(t *testing.T) {
 	text := `1
 00:00:00,000 --> 00:00:01,111
 <b>a<i>b</i></b>`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -210,7 +210,7 @@ func TestParseFont(t *testing.T) {
 	text := `1
 00:00:00,000 --> 00:00:01,111
 <font color="white">a</font>`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -228,7 +228,7 @@ func TestParseFontColor(t *testing.T) {
 	text := `1
 00:00:00,000 --> 00:00:01,111
 <font color="#00ffee">a</font>`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -243,7 +243,7 @@ func TestParseFull(t *testing.T) {
 	text := `1
 00:00:00,000 --> 00:00:01,111
 <i><b><Font Color="white">a</font></b></i>b<b><font color="Black">c</font></b><i>d<i>`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if len(items) != 1 {
 		t.Error("should be only 1 item")
 		return
@@ -294,7 +294,7 @@ func TextBreaklne(t *testing.T) {
 President reagan:
 <i>Air and naval forces</i>
 <i>of the United States</i>`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 
 	if items[0].Content[0].Content != `President reagan:
 ` {
@@ -311,11 +311,11 @@ func TestParsePosition(t *testing.T) {
 	text := `1
 00:00:00,001 --> 00:00:04,336
 {\pos(1.12,20.4)}President reagan:`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if items[0].Content[0].Content != "President reagan:" {
 		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
 	}
-	if !(items[0].PositionType == 2 && items[0].X == 1 && items[0].Y == 20) {
+	if !(items[0].PositionType == 2 && (int(items[0].X) == 1) && (int(items[0].Y) == 20)) {
 		t.Errorf("parse position faild except (2, 1,20) but (%d, %f, %f)", items[0].PositionType, items[0].X, items[0].Y)
 	}
 }
@@ -324,7 +324,7 @@ func TestParsePosition2(t *testing.T) {
 	text := `1
 00:00:00,001 --> 00:00:04,336
 {\an8}President reagan:`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if items[0].Content[0].Content != "President reagan:" {
 		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
 	}
@@ -336,7 +336,7 @@ func TestParsePosition3(t *testing.T) {
 	text := `1
 00:00:00,001 --> 00:00:04,336
 {\an8}{\pos(1,2)}President reagan:`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if items[0].Content[0].Content != "President reagan:" {
 		t.Error("first content should be 'President reagan:' but", items[0].Content[0].Content)
 	}
@@ -356,7 +356,7 @@ func TestParseMulti(t *testing.T) {
 2479
 01:57:03,464 --> 01:57:06,234
 11462份申请`
-	items := Parse(text)
+	items := Parse(text, 384, 303)
 	if items[0].Content[0].Content != "9141" {
 		t.Error("first content should be '9141' but", items[0].Content[0].Content)
 	}
@@ -369,5 +369,5 @@ func TestParsePanic(t *testing.T) {
 	bytes, _ := ioutil.ReadFile("c.srt")
 	str := string(bytes)
 
-	Parse(str)
+	Parse(str, 384, 303)
 }

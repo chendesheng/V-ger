@@ -402,11 +402,11 @@
 -(void)hideText:(TextView*)tv {
     if (tv == self->textView) {
         [tv setText:NULL length:0];
-        double w = [self frame].size.width;
-        [tv setFrame:NSMakeRect(0, 0, w, 0)];
+        // double w = [self frame].size.width;
+        // [tv setFrame:NSMakeRect(0, 0, w, 0)];
 
-        TextView* tv2 = self->textView2;
-        [tv2 setFrame:NSMakeRect(0, 35, w, [tv2 frame].size.height)];
+        // TextView* tv2 = self->textView2;
+        // [tv2 setFrame:NSMakeRect(0, 35, w, [tv2 frame].size.height)];
     } else if (tv == self->textView2) {
         [tv setText:NULL length:0];
     } else {

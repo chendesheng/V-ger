@@ -2,42 +2,25 @@ package main
 
 import (
 	"io/ioutil"
-	"path"
-	"strings"
-	"toutf8"
-	// "flag"
-	"flag"
 	"log"
-	"os"
+	// "os"
+	"path"
 	"runtime"
+	"strings"
 	"task"
 	"time"
+	"toutf8"
 	"util"
 
 	// . "player/shared"
 	// "website"
 	. "logger"
 	"player/gui"
+	. "player/libav"
 )
 
-// var filename = flag.String("file", "", "file name")
-// var filename = flag.String("file", "", "file name")
-// var taskName = flag.String("task", "The.Walking.Dead.4x01.30.Days.Without.An.Accident.720p.HDTV.x264-IMMERSE.[tvu.org.ru].mkv", "vger-task file name")
-
-// var taskName = flag.String("task", "The.Rainmaker.1997.720p.WEB-DL.DD5.1.H.264-ViGi.mkv", "vger-task file name")
-
-// var taskName = flag.String("task", "the.walking.dead.s04e07.proper.720p.hdtv.x264-killers.mkv", "vger-task file name")
-// var taskName = flag.String("task", "Nikita.S04E03.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
-var taskName = flag.String("task", "", "vger-task file name")
-
-// var taskName = flag.String("task", "LS and TSB_Rip1080_HDR.mkv", "vger-task file name")
-
-// var taskName = flag.String("task", "The.Vampire.Diaries.S05E09.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
-
-// var taskName = flag.String("task", "Google IO 2013 - Advanced Go Concurrency Patterns [720p].mp4", "vger-task file name")
-
-// var taskName = flag.String("task", "The.Mentalist.S06E05.720p.HDTV.X264-DIMENSION.mkv", "vger-task file name")
-var launchedFromGUI bool
+// var filename string
+// var launchedFromGUI bool
 
 func init() {
 	InitLog(util.ReadConfig("playerlog"))
@@ -46,16 +29,19 @@ func init() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
 
-	for i, s := range os.Args {
-		log.Printf("Args[%d]:%s", i, s)
-		//Mac OS X assigns a unique process serial number ("PSN") to all apps launched via GUI. Call flag.Prase will crash app if not remove it.
-		if strings.HasPrefix(s, "-psn") {
-			os.Args[i] = ""
-			launchedFromGUI = true
-		}
-	}
+	// for i, s := range os.Args[1:] {
+	// 	log.Printf("Args[%d]:%s", i+1, s)
+	// 	//Mac OS X assigns a unique process serial number ("PSN") to all apps launched via GUI. Call flag.Prase will crash app if not remove it.
+	// 	if strings.HasPrefix(s, "-psn") {
+	// 		// os.Args[i] = ""
+	// 		launchedFromGUI = true
+	// 	} else {
+	// 		filename = s
+	// 		break
+	// 	}
+	// }
 
-	flag.Parse()
+	// flag.Parse()
 }
 func findSubs(base string) []string {
 	infoes, err := ioutil.ReadDir(base)
@@ -111,8 +97,8 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 	name := path.Base(filename)
 
-	base := util.ReadConfig("dir")
-	subs := findSubs(path.Join(base, "subs", name))
+	dir := util.ReadConfig("dir")
+	subs := findSubs(path.Join(dir, "subs", name))
 
 	m := movie{}
 
@@ -124,15 +110,21 @@ func (a *appDelegate) OpenFile(filename string) bool {
 		go func() {
 			ticker := time.Tick(3 * time.Second)
 			for _ = range ticker {
+				if m.c == nil {
+					continue
+				}
+
 				t, err := task.GetTask(name)
 				if err != nil {
 					log.Print(err)
 					return
 				}
 
-				t.LastPlaying = m.c.GetSeekTime()
+				t.LastPlaying = m.c.GetTime()
 
 				task.SaveTask(t)
+
+				m.c.WaitUtilRunning()
 			}
 		}()
 	}
@@ -150,46 +142,23 @@ func (a *appDelegate) OpenFile(filename string) bool {
 func main() {
 	runtime.LockOSThread()
 
-	if *taskName != "" {
+	// println(filename)
+	// if len(filename) > 0 {
+	NetworkInit()
 
-		t, err := task.GetTask(*taskName)
-		if err != nil {
-			log.Fatal(err)
-		}
+	// 	app := &appDelegate{}
+	// 	gui.Initialize(app)
 
-		base := util.ReadConfig("dir")
+	// 	app.OpenFile(filename)
 
-		subs := findSubs(path.Join(base, "subs", t.Name))
+	// 	gui.PollEvents()
+	// } else {
+	log.Println("open with file")
 
-		m := movie{}
-		// log.Print("sub: ", sub)
-		m.open(path.Join(base, t.Name), subs, t.LastPlaying)
-
-		go m.decode(*taskName)
-
-		go func() {
-			ticker := time.Tick(3 * time.Second)
-			for _ = range ticker {
-				t, err := task.GetTask(*taskName)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				t.LastPlaying = m.c.GetSeekTime()
-
-				task.SaveTask(t)
-			}
-		}()
-
-		m.play()
-		m.w.Destory()
-	} else {
-		log.Println("open with file")
-
-		app := &appDelegate{}
-		gui.Initialize(app)
-		gui.PollEvents()
-	}
+	app := &appDelegate{}
+	gui.Initialize(app)
+	gui.PollEvents()
+	// }
 
 	return
 }

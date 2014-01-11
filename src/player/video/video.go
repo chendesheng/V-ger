@@ -173,13 +173,14 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 	// 	flags |= AVSEEK_FLAG_BACKWARD
 	// }
 	ctx := v.formatCtx
-	err := ctx.SeekFrame(v.stream, t, flags)
+	err := ctx.SeekFrame2(v.stream, t, flags)
 	if err != nil {
 		return t, nil, err
 	}
 
-	timeAfterSeek, img, err := v.DropFramesUtil(t)
-	return timeAfterSeek, img, err
+	return t, nil, nil
+	// timeAfterSeek, img, err := v.DropFramesUtil(t)
+	// return timeAfterSeek, img, err
 }
 
 func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {

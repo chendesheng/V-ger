@@ -186,7 +186,7 @@ func (s *Subtitle) FindPos(t time.Duration) (int, *SubItem) {
 	return 1 << 31, nil
 }
 
-func NewSubtitle(file string, r SubRender, c *Clock) *Subtitle {
+func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Subtitle {
 	var err error
 	bytes, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -202,7 +202,7 @@ func NewSubtitle(file string, r SubRender, c *Clock) *Subtitle {
 	s.Name = file
 	s.IsMainOrSecondSub = true
 
-	s.items = srt.Parse(string(bytes))
+	s.items = srt.Parse(string(bytes), width, height)
 	if err != nil {
 		log.Print(err)
 		return nil

@@ -36,7 +36,7 @@ func linebreak(r rune) bool {
 	return r == '\r' || r == '\n'
 }
 
-func Parse(str string) []*SubItem {
+func Parse(str string, width, height float64) []*SubItem {
 	lines := strings.FieldsFunc(str, linebreak)
 
 	items := make([]*SubItem, 0)
@@ -49,7 +49,7 @@ func Parse(str string) []*SubItem {
 			// println("line after parseTime:", lines[0])
 			lines = lines[1:]
 
-			usePos, pos, text := parsePosition(lines[0])
+			usePos, pos, text := parsePosition(lines[0], width, height)
 			lines[0] = text
 			content := parseContent(&lines)
 			// log.Print("content:", content)
@@ -159,7 +159,7 @@ func removePositionInfo(text string) string {
 	return regPos.ReplaceAllString(text, "")
 }
 
-func parsePos(text string) Position {
+func parsePos(text string, width, height float64) Position {
 	regPos := regexp.MustCompile(`\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
 	matches := regPos.FindStringSubmatch(text)
 	if matches == nil {
@@ -167,7 +167,9 @@ func parsePos(text string) Position {
 	} else {
 		x, _ := strconv.Atoi(matches[1])
 		y, _ := strconv.Atoi(matches[2])
-		return Position{float64(x), float64(y)}
+
+		//w:384,h:303 two magic numbers come from Baofeng player, don't why
+		return Position{float64(x) / 384 * width, float64(y) / 303 * height}
 	}
 }
 func parseAlign(text string) int {
@@ -181,8 +183,8 @@ func parseAlign(text string) int {
 	}
 }
 
-func parsePosition(text string) (int, Position, string) {
-	return parseAlign(text), parsePos(text), removePositionInfo(text)
+func parsePosition(text string, width, height float64) (int, Position, string) {
+	return parseAlign(text), parsePos(text, width, height), removePositionInfo(text)
 }
 func parseTag(nodes []*html.Node, as AttributedString, res *[]AttributedString) {
 	for _, n := range nodes {

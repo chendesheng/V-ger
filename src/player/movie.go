@@ -92,7 +92,8 @@ func (m *movie) setupSubtitles(subFiles []string) {
 			go func(m *movie, subFiles []string) {
 				if showOrHide {
 					// m.s.Stop()
-					s := NewSubtitle(subFiles[index], m.w, m.c)
+					width, height := m.w.GetWindowSize()
+					s := NewSubtitle(subFiles[index], m.w, m.c, float64(width), float64(height))
 					if m.s == nil {
 						m.s = s
 						s.IsMainOrSecondSub = true
@@ -121,7 +122,8 @@ func (m *movie) setupSubtitles(subFiles []string) {
 		})
 
 		println("play subtitle:", subFiles)
-		m.s = NewSubtitle(subFiles[0], m.w, m.c)
+		width, height := m.w.GetWindowSize()
+		m.s = NewSubtitle(subFiles[0], m.w, m.c, float64(width), float64(height))
 		go m.s.Play()
 	}
 }
@@ -281,6 +283,8 @@ func (m *movie) decode(name string) {
 	go func() {
 		ticker := time.NewTicker(time.Second)
 		for {
+			m.c.WaitUtilRunning()
+
 			select {
 			case <-ticker.C:
 				m.showProgress(name)
@@ -403,7 +407,8 @@ func (m *movie) seekOffset(offset time.Duration) {
 		return
 	}
 
-	m.w.RefreshContent(img)
+	// m.w.RefreshContent(img)
+	go m.w.SendDrawImage(img)
 
 	m.c.SetTime(t)
 	percent := m.c.GetPercent()
@@ -427,13 +432,16 @@ func (m *movie) SeekBegin() {
 func (m *movie) Seek(t time.Duration) time.Duration {
 	var img []byte
 	var err error
+	println("seek:", t.String())
 	t, img, err = m.v.Seek(t)
+	println("end seek:", t.String())
 	if err != nil {
 		return t
 	}
 	// println("seek refresh")
-
-	m.w.RefreshContent(img)
+	if len(img) > 0 {
+		m.w.RefreshContent(img)
+	}
 
 	m.c.SetTime(t)
 	percent := m.c.GetPercent()
@@ -450,4 +458,5 @@ func (m *movie) Seek(t time.Duration) time.Duration {
 
 func (m *movie) SeekEnd(t time.Duration) {
 	m.chSeekPause <- t
+	println("seek end:", t.String())
 }
