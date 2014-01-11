@@ -7,6 +7,7 @@ package gui
 */
 import "C"
 import (
+	"log"
 	"unsafe"
 )
 
@@ -27,7 +28,7 @@ func (w *Window) InitAudioMenu(names []string, tags []int32, selected int) {
 	}
 }
 
-func (w *Window) InitSubtitleMenu(names []string, tags []int32, selected int) {
+func (w *Window) InitSubtitleMenu(names []string, tags []int32, selected1 int, selected2 int) {
 	if len(names) == 0 {
 		return
 	}
@@ -37,7 +38,9 @@ func (w *Window) InitSubtitleMenu(names []string, tags []int32, selected int) {
 		cnames = append(cnames, C.CString(name))
 	}
 
-	C.initSubtitleMenu(w.ptr, (**C.char)(&cnames[0]), (*C.int32_t)(unsafe.Pointer(&tags[0])), C.int(len(cnames)), C.int(selected))
+	log.Printf("selected1:%d, selected2:%d", selected1, selected2)
+
+	C.initSubtitleMenu(w.ptr, (**C.char)(&cnames[0]), (*C.int32_t)(unsafe.Pointer(&tags[0])), C.int(len(cnames)), C.int32_t(selected1), C.int32_t(selected2))
 
 	for _, cname := range cnames {
 		C.free(unsafe.Pointer(cname))

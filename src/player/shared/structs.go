@@ -20,6 +20,21 @@ type SubItem struct {
 	SubItemExtra
 }
 
+type Sub struct {
+	Movie   string
+	Name    string
+	Offset  time.Duration
+	Content string
+}
+
+type Playing struct {
+	Movie       string
+	LastPos     time.Duration
+	SoundStream int
+	Sub1        string
+	Sub2        string
+}
+
 func (item *SubItem) IsInDefaultPosition() bool {
 	return item.PositionType == 2 && item.X < 0 && item.Y < 0
 }

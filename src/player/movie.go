@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 	. "player/clock"
+	. "player/gui"
 	. "player/libav"
+	. "player/shared"
 	. "player/subtitle"
+	. "player/video"
 	"strings"
 	"task"
-	// . "player/shared"
-	"log"
-	. "player/gui"
-	. "player/video"
 	"time"
 	// "util"
 )
@@ -32,6 +32,7 @@ type movie struct {
 	s2  *Subtitle
 	c   *Clock
 	w   *Window
+	p   *Playing
 
 	chCtrl      chan ctrlArg
 	chSeekPause chan time.Duration
@@ -49,9 +50,9 @@ func (m *movie) setupAudio() {
 
 		for _, stream := range audioStreams {
 			dic := stream.MetaData()
-			m := dic.Map()
-			title := m["title"]                        //dic.AVDictGet("title", AVDictionaryEntry{}, 2).Value()
-			language := strings.ToLower(m["language"]) //dic.AVDictGet("language", AVDictionaryEntry{}, 2).Value()
+			mp := dic.Map()
+			title := mp["title"]                        //dic.AVDictGet("title", AVDictionaryEntry{}, 2).Value()
+			language := strings.ToLower(mp["language"]) //dic.AVDictGet("language", AVDictionaryEntry{}, 2).Value()
 
 			// println(title, language)
 			audioStreamNames = append(audioStreamNames, fmt.Sprintf("[%s] %s", language, title))
@@ -61,10 +62,14 @@ func (m *movie) setupAudio() {
 		selected := audioStreams[0].Index()
 		for _, stream := range audioStreams {
 			dic := stream.MetaData()
-			m := dic.Map()
-			language := strings.ToLower(m["language"])
+			mp := dic.Map()
+			language := strings.ToLower(mp["language"])
 			if strings.Contains(language, "eng") {
 				selected = stream.Index()
+			}
+
+			if m.p.SoundStream == stream.Index() {
+				selected = m.p.SoundStream
 				break
 			}
 		}
@@ -83,26 +88,44 @@ func (m *movie) setupSubtitles(subFiles []string) {
 	if len(subFiles) > 0 {
 		tags := make([]int32, 0)
 		names := make([]string, 0)
+
+		selected1 := -1
+		selected2 := -1
 		for i, n := range subFiles {
 			tags = append(tags, int32(i))
 			names = append(names, filepath.Base(n))
+
+			if n == m.p.Sub1 {
+				selected1 = i
+			}
+
+			if n == m.p.Sub2 {
+				selected2 = i
+			}
 		}
-		m.w.InitSubtitleMenu(names, tags, 0)
+
+		if selected1 == -1 && selected2 == -1 {
+			selected1 = 0
+		}
+
+		log.Printf("selected1:%d, selected2:%d", selected1, selected2)
+		m.w.InitSubtitleMenu(names, tags, selected1, selected2)
 		m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
 			go func(m *movie, subFiles []string) {
 				if showOrHide {
 					// m.s.Stop()
 					width, height := m.w.GetWindowSize()
 					s := NewSubtitle(subFiles[index], m.w, m.c, float64(width), float64(height))
-					if m.s == nil {
-						m.s = s
-						s.IsMainOrSecondSub = true
-					} else {
-						m.s2 = s
-						s.IsMainOrSecondSub = false
+					if s != nil {
+						if m.s == nil {
+							m.s = s
+							s.IsMainOrSecondSub = true
+						} else {
+							m.s2 = s
+							s.IsMainOrSecondSub = false
+						}
+						go s.Play()
 					}
-
-					s.Play()
 				} else {
 					if (m.s != nil) && (m.s.Name == subFiles[index]) {
 						m.s.Stop()
@@ -118,13 +141,61 @@ func (m *movie) setupSubtitles(subFiles []string) {
 						m.s2 = nil
 					}
 				}
+
+				if m.s != nil {
+					m.p.Sub1 = m.s.Name
+				} else {
+					m.p.Sub1 = ""
+				}
+
+				if m.s2 != nil {
+					m.p.Sub2 = m.s2.Name
+				} else {
+					m.p.Sub2 = ""
+				}
+
+				SavePlaying(m.p)
 			}(m, subFiles)
 		})
 
 		println("play subtitle:", subFiles)
 		width, height := m.w.GetWindowSize()
-		m.s = NewSubtitle(subFiles[0], m.w, m.c, float64(width), float64(height))
-		go m.s.Play()
+
+		if len(m.p.Sub1) == 0 && len(m.p.Sub2) > 0 {
+			m.p.Sub1 = m.p.Sub2
+			m.p.Sub2 = ""
+
+			SavePlaying(m.p)
+		}
+
+		if len(m.p.Sub1) > 0 {
+			m.s = NewSubtitle(m.p.Sub1, m.w, m.c, float64(width), float64(height))
+			m.s.IsMainOrSecondSub = true
+
+			if m.s != nil {
+				go m.s.Play()
+			}
+		}
+
+		if len(m.p.Sub2) > 0 {
+			m.s2 = NewSubtitle(m.p.Sub2, m.w, m.c, float64(width), float64(height))
+			m.s2.IsMainOrSecondSub = false
+
+			if m.s2 != nil {
+				go m.s2.Play()
+			}
+		}
+
+		if m.s == nil && m.s2 == nil {
+			m.s = NewSubtitle(subFiles[0], m.w, m.c, float64(width), float64(height))
+			m.p.Sub1 = subFiles[0]
+
+			if m.s != nil {
+				go m.s.Play()
+			}
+
+			SavePlaying(m.p)
+		}
 	}
 }
 
@@ -144,7 +215,7 @@ func (m *movie) setupVideo() {
 	}
 }
 
-func (m *movie) open(file string, subFiles []string, start time.Duration) {
+func (m *movie) open(file string, subFiles []string) {
 	println("open ", file)
 
 	ctx := AVFormatContext{}
@@ -173,7 +244,8 @@ func (m *movie) open(file string, subFiles []string, start time.Duration) {
 
 	m.setupSubtitles(subFiles)
 
-	start, _, _ = m.v.Seek(start)
+	start, _, _ := m.v.Seek(m.p.LastPos)
+	m.p.LastPos = start
 
 	m.c.Reset()
 	m.c.SetTime(start)

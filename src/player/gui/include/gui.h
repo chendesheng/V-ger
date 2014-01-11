@@ -25,7 +25,7 @@ void windowToggleFullScreen(void* wptr);
 
 void initialize();
 void initAudioMenu(void* wptr, char** name, int32_t*, int, int);
-void initSubtitleMenu(void* wptr, char** name, int32_t*, int, int);
+void initSubtitleMenu(void* wptr, char** name, int32_t*, int, int32_t, int32_t);
 // void setSubtitles(void* wptr, char** name, int, int, int);
 // typedef void (* TimerTickFunc)(void*);
 // typedef void (* DrawFunc)(void*);

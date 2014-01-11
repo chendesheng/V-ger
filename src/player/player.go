@@ -1,13 +1,14 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
+	. "player/shared"
 	// "os"
+	"io/ioutil"
 	"path"
 	"runtime"
 	"strings"
-	"task"
+	// "task"
 	"time"
 	"toutf8"
 	"util"
@@ -28,6 +29,8 @@ func init() {
 	log.Print("log initialized.")
 
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
+
+	DbFile = util.ReadConfig("dir") + "/vger.db"
 
 	// for i, s := range os.Args[1:] {
 	// 	log.Printf("Args[%d]:%s", i+1, s)
@@ -99,38 +102,28 @@ func (a *appDelegate) OpenFile(filename string) bool {
 
 	dir := util.ReadConfig("dir")
 	subs := findSubs(path.Join(dir, "subs", name))
+	for i, sub := range subs {
+		bytes, err := ioutil.ReadFile(sub)
+		if err == nil {
+			InsertSubtitle(&Sub{name, path.Base(sub), 0, string(bytes)})
+		}
 
-	m := movie{}
-
-	t, err := task.GetTask(name)
-	lastPlaying := time.Duration(0)
-	if err == nil {
-		lastPlaying = t.LastPlaying
-
-		go func() {
-			ticker := time.Tick(3 * time.Second)
-			for _ = range ticker {
-				if m.c == nil {
-					continue
-				}
-
-				t, err := task.GetTask(name)
-				if err != nil {
-					log.Print(err)
-					return
-				}
-
-				t.LastPlaying = m.c.GetTime()
-
-				task.SaveTask(t)
-
-				m.c.WaitUtilRunning()
-			}
-		}()
+		subs[i] = path.Base(sub)
 	}
 
+	m := movie{}
+	m.p = CreateOrGetPlaying(name)
+
+	go func() {
+		ticker := time.Tick(3 * time.Second)
+		for _ = range ticker {
+			m.p.LastPos = m.c.GetTime()
+			SavePlaying(m.p)
+		}
+	}()
+
 	// log.Print("sub: ", sub)
-	m.open(filename, subs, lastPlaying)
+	m.open(filename, subs)
 
 	go m.decode(name)
 

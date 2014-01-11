@@ -1,7 +1,7 @@
 package subtitle
 
 import (
-	"io/ioutil"
+	// "io/ioutil"
 	"log"
 	. "player/clock"
 	. "player/shared"
@@ -69,9 +69,11 @@ func (s *Subtitle) Play() {
 			arg.res <- s.offset
 			break
 		case arg := <-s.chanGetSubTime:
-			pos, _ := s.FindPos(arg.t)
-
-			pos += arg.offset
+			pos, _ := s.findPos(arg.t)
+			if arg.offset < 0 && s.items[pos].From > arg.t {
+				pos--
+			}
+			// pos += arg.offset
 			println("pos:", pos)
 			for s.checkPos(pos, arg.t) {
 				pos += arg.offset
@@ -171,7 +173,7 @@ func (s *Subtitle) hideSubItem(item SubItem) {
 	}
 }
 
-func (s *Subtitle) FindPos(t time.Duration) (int, *SubItem) {
+func (s *Subtitle) findPos(t time.Duration) (int, *SubItem) {
 	for i := 0; i < len(s.items); i++ {
 		from, to := s.calcFromTo(i)
 		if t < to {
@@ -188,13 +190,14 @@ func (s *Subtitle) FindPos(t time.Duration) (int, *SubItem) {
 
 func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Subtitle {
 	var err error
-	bytes, err := ioutil.ReadFile(file)
-	if err != nil {
-		log.Print(err)
+	sub := GetSubtitle(file)
+	if sub == nil {
+		log.Print("can't find subtitle: ", file)
 		return nil
 	}
 	s := &Subtitle{}
 	s.c = c
+	s.offset = sub.Offset
 	s.ChanSeek = make(chan time.Duration)
 	s.ChanOffset = make(chan durationArg)
 	s.chanStop = make(chan bool)
@@ -202,7 +205,7 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 	s.Name = file
 	s.IsMainOrSecondSub = true
 
-	s.items = srt.Parse(string(bytes), width, height)
+	s.items = srt.Parse(sub.Content, width, height)
 	if err != nil {
 		log.Print(err)
 		return nil

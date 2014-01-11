@@ -61,13 +61,15 @@ void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selecte
     [audioMenuItem setSubmenu:audioMenu];
 }
 
-void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
+void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t selected1, int32_t selected2) {
     NSWindow* w = (NSWindow*)wptr;
 
     NSMenu *menubar = [NSApp mainMenu];
     NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
     [menubar addItem:subtitleMenuItem];
     NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
+
+    NSLog(@"selected1:%d,selected2:%d", selected1, selected2);
 
     for (int i = 0; i < len; i++) {
         char* name = names[i];
@@ -78,7 +80,13 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int sele
         [item setTag: tag];
         [subtitleMenu addItem:item];
 
-        if (tag == selected) {
+        if (tag == selected1) {
+            NSLog(@"subtitle 1 NSOnState");
+            [item setState: NSOnState];
+        }
+
+        if (tag == selected2) {
+            NSLog(@"subtitle 2 NSOnState");
             [item setState: NSOnState];
         }
     }

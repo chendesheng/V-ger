@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	// . "player/shared"
+	. "player/shared"
 	// "log"
 	"player/gui"
 	// . "player/video"
@@ -14,6 +14,8 @@ func (m *movie) uievents() {
 	m.w.FuncAudioMenuClicked = append(m.w.FuncAudioMenuClicked, func(i int) {
 		go func() {
 			m.a.setCurrentStream(i)
+			m.p.SoundStream = i
+			SavePlaying(m.p)
 		}()
 	})
 
@@ -57,6 +59,8 @@ func (m *movie) uievents() {
 				if m.s != nil {
 					offset := m.s.AddOffset(-200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+
+					UpdateSubtitleOffset(m.s.Name, offset)
 				}
 			}()
 			break
@@ -66,6 +70,8 @@ func (m *movie) uievents() {
 				if m.s != nil {
 					offset := m.s.AddOffset(200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+
+					UpdateSubtitleOffset(m.s.Name, offset)
 				}
 			}()
 			break
@@ -79,6 +85,8 @@ func (m *movie) uievents() {
 				if m.s2 != nil {
 					offset := m.s2.AddOffset(-200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()))
+
+					UpdateSubtitleOffset(m.s2.Name, offset)
 				}
 			}()
 			break
@@ -92,6 +100,8 @@ func (m *movie) uievents() {
 				if m.s2 != nil {
 					offset := m.s2.AddOffset(200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()))
+
+					UpdateSubtitleOffset(m.s2.Name, offset)
 				}
 			}()
 			break

@@ -61,7 +61,7 @@
     onAudioMenuClicked(self, [audioMenuItem tag]);
 }
 - (void)subtitleMenuItemClick:(id)sender {
-    // NSLog(sender);
+    NSLog(@"subtitleMenuItemClick");
     NSMenuItem* subtitleMenuItem = (NSMenuItem*)sender;
     if ([subtitleMenuItem state] == NSOnState) {
         [subtitleMenuItem setState:NSOffState];
