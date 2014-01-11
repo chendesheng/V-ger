@@ -27,8 +27,16 @@ func goOnOpenFile(cfilename unsafe.Pointer) C.int {
 	}
 }
 
+//export goOnWillTerminate
+func goOnWillTerminate() {
+	if appDelegate != nil {
+		appDelegate.WillTerminate()
+	}
+}
+
 type AppDelegate interface {
 	OpenFile(string) bool
+	WillTerminate()
 }
 
 var appDelegate AppDelegate

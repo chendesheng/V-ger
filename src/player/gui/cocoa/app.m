@@ -6,4 +6,8 @@
 	const char *cfilename = [filename UTF8String];
 	return onOpenFile(cfilename) == 1;
 }
+- (void)applicationWillTerminate:(NSNotification *)aNotification {
+	NSLog(@"applicationWillTerminate");
+	onWillTerminate();
+}
 @end

@@ -30,3 +30,7 @@ void onSubtitleMenuClicked(void* wptr, int tag, int showOrHide) {
 int onOpenFile(const char* file) {
 	return goOnOpenFile((void*)file);
 }
+
+void onWillTerminate() {
+	goOnWillTerminate();
+}

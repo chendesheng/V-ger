@@ -41,7 +41,7 @@ void onProgressChanged(void* wptr, int typ, double position);
 void onFullscreenChanged(void* wptr, int b);
 
 int onOpenFile(const char* file);
-
+void onWillTerminate();
 // void setText(void* wptr, SubItem* items, int len);
 // void setCallbackKeyDown();
 // void setCallbackMouseDown();

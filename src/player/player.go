@@ -96,6 +96,8 @@ func findSubs(base string) []string {
 type appDelegate struct {
 }
 
+var mv *movie
+
 func (a *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 	name := path.Base(filename)
@@ -112,15 +114,16 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	}
 
 	m := movie{}
+	mv = &m
 	m.p = CreateOrGetPlaying(name)
 
-	go func() {
-		ticker := time.Tick(3 * time.Second)
-		for _ = range ticker {
-			m.p.LastPos = m.c.GetTime()
-			SavePlaying(m.p)
-		}
-	}()
+	// go func() {
+	// 	ticker := time.Tick(3 * time.Second)
+	// 	for _ = range ticker {
+	// 		m.p.LastPos = m.c.GetTime()
+	// 		SavePlaying(m.p)
+	// 	}
+	// }()
 
 	// log.Print("sub: ", sub)
 	m.open(filename, subs)
@@ -130,6 +133,11 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	go m.v.Play()
 
 	return true
+}
+
+func (a *appDelegate) WillTerminate() {
+	mv.p.LastPos = mv.c.GetTime() - time.Second
+	SavePlaying(mv.p)
 }
 
 func main() {
