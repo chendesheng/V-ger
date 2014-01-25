@@ -16,22 +16,6 @@ import (
 	. "player/shared"
 )
 
-type SubItems []*SubItem
-
-func (s SubItems) Len() int {
-	return len([]*SubItem(s))
-}
-
-func (s SubItems) Less(i, j int) bool {
-	return s[i].From < s[j].From
-}
-
-func (s SubItems) Swap(i, j int) {
-	t := s[i]
-	s[i] = s[j]
-	s[j] = t
-}
-
 func linebreak(r rune) bool {
 	return r == '\r' || r == '\n'
 }

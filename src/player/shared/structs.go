@@ -58,3 +58,19 @@ type PlayProgressInfo struct {
 	Percent  float64
 	Percent2 float64
 }
+
+type SubItems []*SubItem
+
+func (s SubItems) Len() int {
+	return len([]*SubItem(s))
+}
+
+func (s SubItems) Less(i, j int) bool {
+	return s[i].From < s[j].From
+}
+
+func (s SubItems) Swap(i, j int) {
+	t := s[i]
+	s[i] = s[j]
+	s[j] = t
+}

@@ -2,10 +2,8 @@ package ass
 
 import (
 	"fmt"
-	// "io"
-	// "io/ioutil"
-	// "os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -32,6 +30,8 @@ func Parse(text string) (items []*SubItem, err error) {
 	p.parse()
 
 	items = p.items
+	sort.Sort(SubItems(items))
+
 	err = nil
 	return
 }
@@ -321,8 +321,8 @@ func (p *parser) parseDialogue(line string) *SubItem {
 		var field string
 		field, content = parseField(content)
 		switch format {
-		case "Text":
-			parseText(field, &item)
+		case "Text": //always the last one so it can contains comma
+			parseText(field+content, &item)
 			break
 		case "Start":
 			item.From = parseTime(field)
