@@ -25,6 +25,7 @@ type Sub struct {
 	Name    string
 	Offset  time.Duration
 	Content string
+	Type    string
 }
 
 type Playing struct {

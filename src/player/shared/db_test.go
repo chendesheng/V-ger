@@ -31,7 +31,7 @@ func setup() {
 func TestInsertSubtitle(t *testing.T) {
 	setup()
 
-	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent"})
+	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent", "srt"})
 
 	subs := GetSubtitles("moviename")
 	if len(subs) != 1 {
@@ -55,7 +55,7 @@ func TestInsertSubtitle(t *testing.T) {
 func TestUpdateSubtitle(t *testing.T) {
 	setup()
 
-	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent"})
+	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent", "ass"})
 
 	UpdateSubtitleOffset("subname", 100)
 

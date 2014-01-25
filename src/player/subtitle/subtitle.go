@@ -5,7 +5,8 @@ import (
 	"log"
 	. "player/clock"
 	. "player/shared"
-	"player/srt"
+	"player/subtitle/ass"
+	"player/subtitle/srt"
 	// "runtime"
 	"time"
 )
@@ -227,7 +228,12 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 	s.Name = file
 	s.IsMainOrSecondSub = true
 
-	s.items = srt.Parse(sub.Content, width, height)
+	if sub.Type == "ass" {
+		s.items, err = ass.Parse(sub.Content)
+	} else {
+		s.items, err = srt.Parse(sub.Content, width, height)
+	}
+
 	if err != nil {
 		log.Print(err)
 		return nil

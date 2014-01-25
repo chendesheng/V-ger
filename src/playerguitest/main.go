@@ -50,7 +50,7 @@ func main() {
 	strs := make([]AttributedString, 0)
 	strs = append(strs, str)
 
-	h := w.ShowText(&SubItem{0, 0, strs, 9, Position{-1, -1}})
+	h := w.ShowText(&SubItem{0, 0, strs, 9, Position{-1, -1}, SubItemExtra{0, 0}})
 
 	// str = AttributedString{"Hello World1", 0, 0xffffff}
 	// strs = make([]AttributedString, 0)
@@ -122,6 +122,8 @@ func main() {
 		println(i)
 		go w.SendShowMessage(fmt.Sprintf("Select audio track %d", i))
 	})
+
+	NewDialog("test", 100, 100)
 
 	PollEvents()
 }

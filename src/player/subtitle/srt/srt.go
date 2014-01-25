@@ -36,10 +36,18 @@ func linebreak(r rune) bool {
 	return r == '\r' || r == '\n'
 }
 
-func Parse(str string, width, height float64) []*SubItem {
+func Parse(str string, width, height float64) (items []*SubItem, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = r.(error)
+			items = nil
+		}
+	}()
+
 	lines := strings.FieldsFunc(str, linebreak)
 
-	items := make([]*SubItem, 0)
+	items = make([]*SubItem, 0)
 
 	parseContent(&lines)
 
@@ -61,7 +69,10 @@ func Parse(str string, width, height float64) []*SubItem {
 	}
 
 	sort.Sort(SubItems(items))
-	return items
+
+	err = nil
+
+	return
 }
 
 func parseContent(lines *[]string) []AttributedString {

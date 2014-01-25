@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	// "task"
+	"subtitles"
 	"time"
 	"toutf8"
 	"util"
@@ -57,7 +58,7 @@ func findSubs(base string) []string {
 			if f.IsDir() {
 				res = append(res, findSubs(filename)...)
 			} else {
-				if !util.CheckExt(filename, "srt") {
+				if !util.CheckExt(filename, "srt", "ass") {
 					continue
 				}
 
@@ -105,9 +106,10 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	dir := util.ReadConfig("dir")
 	subs := findSubs(path.Join(dir, "subs", name))
 	for i, sub := range subs {
+		sub = strings.ToLower(sub)
 		bytes, err := ioutil.ReadFile(sub)
 		if err == nil {
-			InsertSubtitle(&Sub{name, path.Base(sub), 0, string(bytes)})
+			InsertSubtitle(&Sub{name, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:]})
 		}
 
 		subs[i] = path.Base(sub)
@@ -139,7 +141,16 @@ func (a *appDelegate) WillTerminate() {
 	mv.p.LastPos = mv.c.GetTime() - time.Second
 	SavePlaying(mv.p)
 }
+func (a *appDelegate) SearchSubtitleMenuItemClick() {
+	log.Print("SearchSubtitleMenuItemClick")
 
+	res := make(chan subtitles.Subtitle)
+	subtitles.SearchSubtitles(mv.p.Movie, res)
+	for sub := range res {
+		// mv.w.ShowSubList()
+		println(sub.URL)
+	}
+}
 func main() {
 	runtime.LockOSThread()
 

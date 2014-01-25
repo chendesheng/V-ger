@@ -26,7 +26,7 @@ func scanSub(scanner rowScanner) (*Sub, error) {
 	var sub Sub
 
 	var offset int64
-	err := scanner.Scan(&sub.Movie, &sub.Name, &offset, &sub.Content)
+	err := scanner.Scan(&sub.Movie, &sub.Name, &offset, &sub.Content, &sub.Type)
 	if err == nil {
 		sub.Offset = time.Duration(offset)
 		return &sub, nil
@@ -40,7 +40,7 @@ func GetSubtitles(movie string) []*Sub {
 	db := openDb()
 	defer db.Close()
 
-	sql := `select Movie, Name, Offset, Content from subtitle where Movie=?`
+	sql := `select Movie, Name, Offset, Content, Type from subtitle where Movie=?`
 	rows, err := db.Query(sql, movie)
 	if err != nil {
 		log.Print(err)
@@ -62,7 +62,7 @@ func GetSubtitle(name string) *Sub {
 	db := openDb()
 	defer db.Close()
 
-	sql := `select Movie, Name, Offset, Content from subtitle where Name=?`
+	sql := `select Movie, Name, Offset, Content, Type from subtitle where Name=?`
 	rows, err := db.Query(sql, name)
 	if err != nil {
 		log.Print(err)
@@ -89,8 +89,8 @@ func InsertSubtitle(sub *Sub) {
 		log.Fatal(err)
 	}
 	if count == 0 {
-		sql := "insert into subtitle(Movie, Name, Offset, Content) values (?,?,?,?)"
-		_, err := db.Exec(sql, sub.Movie, sub.Name, sub.Offset, sub.Content)
+		sql := "insert into subtitle(Movie, Name, Offset, Content, Type) values (?,?,?,?,?)"
+		_, err := db.Exec(sql, sub.Movie, sub.Name, sub.Offset, sub.Content, sub.Type)
 		if err != nil {
 			log.Print(err)
 		}
