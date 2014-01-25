@@ -52,6 +52,16 @@ type displayingItem struct {
 	handle uintptr
 }
 
+func (s *Subtitle) printSub(pos int) {
+	item := s.items[pos]
+	content := ""
+	if len(item.Content) > 0 {
+		content = item.Content[0].Content
+	}
+
+	log.Printf("%d:%s", pos, content)
+}
+
 func (s *Subtitle) Play() {
 	for i, _ := range s.items {
 		s.items[i].Id = i
@@ -70,14 +80,21 @@ func (s *Subtitle) Play() {
 			break
 		case arg := <-s.chanGetSubTime:
 			pos, _ := s.findPos(arg.t)
-			if arg.offset < 0 && s.items[pos].From > arg.t {
+
+			s.printSub(pos)
+			if arg.offset < 0 && s.calcFrom(pos) > arg.t {
 				pos--
 			}
+
+			s.printSub(pos)
+
 			// pos += arg.offset
-			println("pos:", pos)
+			// println("pos:", pos)
 			for s.checkPos(pos, arg.t) {
 				pos += arg.offset
 			}
+
+			s.printSub(pos)
 
 			for {
 				if pos < 0 {
@@ -98,7 +115,7 @@ func (s *Subtitle) Play() {
 				}
 			}
 
-			arg.res <- s.items[pos].From
+			arg.res <- s.calcFrom(pos)
 			break
 		case t := <-s.ChanSeek:
 			s.render(t, chRes)
@@ -119,7 +136,7 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra) {
 	for i, item := range s.items {
 		if !s.checkPos(i, t) {
 			if item.Handle != 0 && item.Handle != 1 {
-				println(t.String(), "hide sub: ", item.Id, item.Content[0].Content)
+				// println(t.String(), "hide sub: ", item.Id, item.Content[0].Content)
 				s.hideSubItem(*item)
 				item.Handle = 0
 			}
@@ -129,7 +146,7 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra) {
 	for i, item := range s.items {
 		if s.checkPos(i, t) {
 			if item.Handle == 0 {
-				println(t.String(), "show sub: ", item.Id, item.Content[0].Content)
+				// println(t.String(), "show sub: ", item.Id, item.Content[0].Content)
 				s.showSubitem(*item, chRes)
 				item.Handle = 1
 			}
@@ -141,9 +158,14 @@ func (s *Subtitle) Stop() {
 	s.chanStop <- true
 }
 
-func (s *Subtitle) calcFromTo(i int) (time.Duration, time.Duration) {
-	item := s.items[i]
+func (s *Subtitle) calcFromTo(pos int) (time.Duration, time.Duration) {
+	item := s.items[pos]
 	return item.From + s.offset, item.To + s.offset
+}
+
+func (s *Subtitle) calcFrom(pos int) time.Duration {
+	item := s.items[pos]
+	return item.From + s.offset
 }
 
 func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
