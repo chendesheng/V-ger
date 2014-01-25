@@ -87,9 +87,10 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
                                                   traits:mask
                                                   weight:0
                                                     size:[self CalcFontsize]];
-        CGFloat red = item.color&0xff0000;
-        CGFloat green = item.color&0x00ff00;
-        CGFloat blue = item.color&0x0000ff;
+        CGFloat red = ((item.color&0xff0000) >> 16)/255.0;
+        CGFloat green = ((item.color&0x00ff00) >> 8)/255.0;
+        CGFloat blue = (item.color&0x0000ff)/255.0;
+        // NSLog(@"color:%f,%f,%f", red, green, blue);
         NSColor *color = [NSColor colorWithDeviceRed:red green:green blue:blue alpha:1];
         
         NSShadow *shadow = [[NSShadow alloc] init];
