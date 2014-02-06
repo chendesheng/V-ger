@@ -293,8 +293,12 @@ h1, h2 {
 #subscribes {
 	float:left;
 	/*height: 100%;*/
-	padding: 0px 0px 0 30px !important;
+	padding: 10px 0px 0 30px !important;
 	width: 200px;
+	height: 100%;
+	overflow: auto;
+	margin: 0;
+	box-sizing: border-box;
 	/*border-right: solid 1px #383022;*/
 	/*position: fixed;	*/
 }

@@ -244,7 +244,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				$scope.currentSubscribe[k] = current[k];
 			});
 
-			$scope.tasks_max_size = 10;
+			$scope.tasks_max_size = 11;
 			setTimeout(function() {
 				$scope.$apply(function() {
 					$scope.tasks_max_size = 10000000;
