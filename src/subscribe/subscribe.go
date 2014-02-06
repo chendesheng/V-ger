@@ -156,8 +156,7 @@ func UpdateAll() {
 			log.Print(err)
 		} else {
 			for _, t := range tasks {
-				t1, _ := task.GetTask(t.Name)
-				if t1 == nil {
+				if b, err := task.Exists(t.Name); err == nil && b {
 					log.Printf("subscribe new task: %v", t)
 
 					if t.Season < 0 {

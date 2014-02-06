@@ -208,6 +208,15 @@ func HasDownloadingOrPlaying() bool {
 
 	return count > 0
 }
+func Exists(name string) (bool, error) {
+	db := openDb()
+	defer db.Close()
+	var count int
+	err := db.QueryRow("select count(*) from task where Name=?", name).Scan(&count)
+
+	return count > 0, err
+}
+
 func updateTask(t *Task) error {
 	db := openDb()
 	defer db.Close()
@@ -272,7 +281,12 @@ func insertTask(t *Task) error {
 }
 
 func SaveTask(t *Task) (err error) {
-	if t1, _ := GetTask(t.Name); t1 != nil {
+	b, err := Exists(t.Name)
+	if err != nil {
+		return err
+	}
+
+	if b {
 		err = updateTask(t)
 	} else {
 		err = insertTask(t)
