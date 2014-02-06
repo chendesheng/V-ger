@@ -58,7 +58,7 @@ func monitorTask() {
 				delete(taskControls, t.Name)
 
 				dir := util.ReadConfig("dir")
-				err := native.MoveFileToTrash(dir, t.Name)
+				err := native.MoveFileToTrash(dir, path.Join(t.Subscribe, t.Name))
 				if err != nil {
 					log.Println(err)
 				}
@@ -88,7 +88,7 @@ func monitorTask() {
 			}
 			if t.Status == "Deleted" {
 				dir := util.ReadConfig("dir")
-				err := native.MoveFileToTrash(dir, t.Name)
+				err := native.MoveFileToTrash(dir, path.Join(t.Subscribe, t.Name))
 				if err != nil {
 					log.Println(err)
 				}
@@ -124,7 +124,10 @@ func download(tc *taskControl) {
 		return
 	}
 
-	f, err := openOrCreateFileRW(path.Join(baseDir, t.Name), t.DownloadedSize)
+	dir := path.Join(baseDir, t.Subscribe)
+	util.MakeSurePathExists(dir)
+
+	f, err := openOrCreateFileRW(path.Join(dir, t.Name), t.DownloadedSize)
 	if err != nil {
 		return
 	}

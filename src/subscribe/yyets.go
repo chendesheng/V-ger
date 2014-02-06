@@ -91,6 +91,9 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 					// 	s.Name = fmt.Sprintf("[%s] %s", getRigOfTags(getTag1(c, "strong")), s.Name)
 					// }
 				}
+				s.Name = strings.TrimLeft(s.Name, ".")
+				s.Name = strings.Replace(s.Name, "/", "|", -1)
+				s.Name = strings.Replace(s.Name, "\\", "|", -1)
 			}
 		}
 

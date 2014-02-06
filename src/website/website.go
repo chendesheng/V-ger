@@ -72,7 +72,12 @@ func openHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("open \"%s\".\n", name)
 	// cmd := exec.Command("./player", fmt.Sprintf("-task=%s", name))
-	cmd := exec.Command("open", path.Join(util.ReadConfig("dir"), name))
+	t, err := task.GetTask(name)
+	p := util.ReadConfig("dir")
+	if err == nil && t != nil {
+		p = path.Join(p, t.Subscribe)
+	}
+	cmd := exec.Command("open", path.Join(p, name))
 
 	cmd.Start()
 

@@ -32,6 +32,7 @@ func addRangeHeader(req *http.Request, from, to int64) {
 		req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", from, to))
 	}
 }
+
 func openOrCreateFileRW(path string, position int64) (*os.File, error) {
 	// log.Print("open or create file " + path)
 

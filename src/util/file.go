@@ -1,14 +1,14 @@
 package util
 
 import (
-	"io/ioutil"
+	// "io/ioutil"
 	"os"
 	"path"
 	// "strings"
 )
 
 func MakeSurePathExists(path string) error {
-	if _, err := ioutil.ReadDir(path); os.IsNotExist(err) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return os.Mkdir(path, 0777)
 	}
 
@@ -16,7 +16,7 @@ func MakeSurePathExists(path string) error {
 }
 
 func IsPathExists(path string) bool {
-	if _, err := ioutil.ReadDir(path); os.IsNotExist(err) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return false
 	} else {
 		return true
