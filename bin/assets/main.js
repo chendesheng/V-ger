@@ -38,6 +38,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 			return websocket;
 		}
+		$scope.tasks_max_size = 100000000;
 
 		var allTasks = [];
 		$scope.tasks = [];
@@ -242,6 +243,17 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			angular.forEach(current, function(v, k){
 				$scope.currentSubscribe[k] = current[k];
 			});
+
+			$scope.tasks_max_size = 10;
+			setTimeout(function() {
+				$scope.$apply(function() {
+					$scope.tasks_max_size = 10000000;
+				});
+			}, 700);
+
+			setTimeout(function() {
+				document.getElementById('tasks-list').scrollTop = 0;
+			}, 10);
 		}
 
 		function get_subscribe(name) {

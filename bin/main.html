@@ -25,9 +25,8 @@
 					{{subscribe.Name}}
 				</li>
 			</ul>
-
-			<ul id="tasks-list" >
-				<li class="subscribe-info" ng-show="currentSubscribe.Name != 'Single Tasks'">
+			<div id="subscribe-content" ng-class="{'show-info':currentSubscribe.Name!='Single Tasks'}">
+				<div class="subscribe-info">
 					<img src="{{currentSubscribe.Banner}}" style="float:left">
 					<span style="float:left">
 						<span class="name">{{currentSubscribe.Name}}</span>
@@ -36,56 +35,60 @@
 						<a target="_black" href="{{currentSubscribe.URL}}" class="url">{{currentSubscribe.URL}}</a>
 					</span>
 					<div class="clear"></div>
-				</li>
-		       <li ng-repeat="task in tasks | orderBy:['-Season', '-Episode', '-StartTime'] | filter:task_filter:1" class="task">
-		       		<div class="task-infoes">
-		       			<div class="left-actions">
-			       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped' || task.Status=='Playing'"></button>
-			       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
-			       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
-			       		</div>
-			       		<div class="middle-actions">
-			       			<div ng-class="{middle:task.Status=='New'}">
-			       				<div class="name">
-			       					<span ng-show="task.Status=='Queued'">[Waiting] </span><a title="{{task.Name}}" ng-click="$event.preventDefault();send_open(task);" href="{{task.URL}}" ng-class="{disabled:task.Status=='New'}">{{task.Name}}</a>
-			       				</div>
-			       			</div>
-							
-							<div class="progress-box">
-						       	<div class="progress" ng-hide="(task.Status=='Finished')||(task.Status=='New')">
-						       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*450).toFixed(0)}}px;"></div>
-								</div>
-							</div>
-
-				       		<div class="row-3rd" ng-hide="task.Status=='New'">
-				       			<input type="button" ng-click="search_subtitles(task.Name)" value="S" />
-				       			<input type="button" ng-click="send_play(task)" value="P" ng-show="task.Status!='Finished'"/>
-
-				       			<!-- <span ng-hide="task.Status=='Finished'">
-					       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
-					       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
-				       			</span> -->
-
-				       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
-				       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(0)}}KB/s</span>
-								<!-- 
-					       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-					       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span> -->
-
+				</div>
+				<div id="subscribe-list">
+				<ul id="tasks-list" >
+			       <li ng-repeat="task in tasks | filter:task_filter:1 | orderBy:['-Season', '-Episode', '-StartTime'] | limitTo:tasks_max_size" class="task">
+			       		<div class="task-infoes">
+			       			<div class="left-actions">
+				       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped' || task.Status=='Playing'"></button>
+				       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
+				       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
 				       		</div>
-				       	</div>
+				       		<div class="middle-actions">
+				       			<div ng-class="{middle:task.Status=='New'}">
+				       				<div class="name">
+				       					<span ng-show="task.Status=='Queued'">[Waiting] </span><a title="{{task.Name}}" ng-click="$event.preventDefault();send_open(task);" href="{{task.URL}}" ng-class="{disabled:task.Status=='New'}">{{task.Name}}</a>
+				       				</div>
+				       			</div>
+								
+								<div class="progress-box">
+							       	<div class="progress" ng-hide="(task.Status=='Finished')||(task.Status=='New')">
+							       		<div ng-class="{downloading:task.Status=='Downloading',stopped:task.Status!='Downloading'}" style="width:{{(task.DownloadedSize/task.Size*450).toFixed(0)}}px;"></div>
+									</div>
+								</div>
 
-		       			<!-- <div>
-				       		<span style="display:none;">[{{task.StartDate.format()}}]</span>
-				       		<span style="display:none;" class="elapsed">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-				       	</div> -->
+					       		<div class="row-3rd" ng-hide="task.Status=='New'">
+					       			<input type="button" ng-click="search_subtitles(task.Name)" value="S" />
+					       			<input type="button" ng-click="send_play(task)" value="P" ng-show="task.Status!='Finished'"/>
 
-		       			<button ng-show="task.Status!='New'" class="close" ng-click="move_to_trash(task);" title="Trash"></button>
+					       			<!-- <span ng-hide="task.Status=='Finished'">
+						       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
+						       			<label for="autoshutdown-{{task.NameHash}}">Shutdown after finish</label>
+					       			</span> -->
 
-		       			<input type="button" class="download" ng-show="task.Status=='New'" ng-click="download_task(task);" title="Download" value="&darr;"/>
-		       		<div>
-		       </li>
-			</ul>
+					       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
+					       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(0)}}KB/s</span>
+									<!-- 
+						       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
+						       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span> -->
+
+					       		</div>
+					       	</div>
+
+			       			<!-- <div>
+					       		<span style="display:none;">[{{task.StartDate.format()}}]</span>
+					       		<span style="display:none;" class="elapsed">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
+					       	</div> -->
+
+			       			<button ng-show="task.Status!='New'" class="close" ng-click="move_to_trash(task);" title="Trash"></button>
+
+			       			<input type="button" class="download" ng-show="task.Status=='New'" ng-click="download_task(task);" title="Download" value="&darr;"/>
+			       		<div>
+			       </li>
+				</ul>
+				</div>
+			</div>
 		</div>
 
 		<form  ng-submit="go()">
