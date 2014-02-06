@@ -34,3 +34,7 @@ int onOpenFile(const char* file) {
 void onWillTerminate() {
 	goOnWillTerminate();
 }
+
+void onSearchSubtitleMenuItemClick() {
+	goOnSearchSubtitleMenuItemClick();
+}

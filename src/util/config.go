@@ -9,14 +9,14 @@ import (
 )
 
 var configCache map[string]string
-var configPath string
+var ConfigPath string
 
 func getConfigPath() string {
-	if configPath == "" {
-		configPath = path.Join(path.Dir(os.Args[0]), "config.json")
+	if ConfigPath == "" {
+		ConfigPath = path.Join(path.Dir(os.Args[0]), "config.json")
 	}
 
-	return configPath
+	return ConfigPath
 }
 
 func ReadAllConfigs() map[string]string {

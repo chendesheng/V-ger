@@ -23,6 +23,8 @@ func (m *movie) uievents() {
 	// chPausing = nil
 	// var pausingTime time.Duration
 	m.w.FuncKeyDown = append(m.w.FuncKeyDown, func(keycode int) {
+		SavePlaying(m.p)
+
 		switch keycode {
 		case gui.KEY_SPACE:
 			m.c.Toggle()
@@ -123,6 +125,8 @@ func (m *movie) uievents() {
 		case 2:
 			t := lastSeekTime
 			m.SeekEnd(t)
+
+			SavePlaying(m.p)
 			break
 		case 1:
 			t := m.c.CalcTime(percent)

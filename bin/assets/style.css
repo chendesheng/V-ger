@@ -101,6 +101,9 @@ body, html {
 	width: 100%;
 	height: 100%;
 }
+a {
+	color: #383022;
+}
 button {
 	-webkit-appearance: none;
 	background-color:transparent;
@@ -129,6 +132,7 @@ input[type=button],input[type=submit] {
 	-webkit-user-select: none;
 	font-family: "brandon-grotesque", sans-serif;
 	font-size: 0.9em;
+	outline: none;
 }
 input[type=button]:hover,input[type=submit]:hover{
 	-webkit-box-shadow:0 1px 1px rgba(0,0,0,.1);
@@ -147,6 +151,7 @@ input[type=button]:active {
 	-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 	-moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 	box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.3);
+	outline: none;
 }
 input[type=text], textarea {
 	display: block;
@@ -229,6 +234,12 @@ h1,h2 {
 	background: white;
 	/*box-shadow: 0px -2px 3px #888888;*/
 }
+input[type="button"].download {
+	
+}
+.box-tasks-list {
+	padding-top: 20px;
+}
 #tasks li {
 	padding: 0px 0;
 }
@@ -263,6 +274,22 @@ h1, h2 {
 	width:100%;
 	box-sizing: border-box;
 }
+#tasks-list {
+	float:left;
+	height: 100%;
+	padding: 0px 0px 0 30px !important;
+}
+#subscribes {
+	float:left;
+	/*height: 100%;*/
+	padding: 0px 0px 0 30px !important;
+	width: 200px;
+	/*border-right: solid 1px #383022;*/
+	/*position: fixed;	*/
+}
+#subscribes li {
+	cursor: pointer;
+}
 .box-tasks-list {
 	overflow: auto;
 	height: 100%;
@@ -273,7 +300,9 @@ h1, h2 {
 .task-infoes {
 	font-size:0.9em;
 }
-
+.task-infoes .middle {
+	padding-top: 14px;
+}
 .overlay {
 	-webkit-box-align: center;
 	-webkit-box-orient: vertical;
@@ -305,15 +334,33 @@ h1, h2 {
 	z-index: 0;
 	background-color: rgb(240,239,233);
 }
+
 .popup .close {
 	position: absolute;
 	left: 10px;
 	top: 10px;
 	z-index: 1;
 }
+.popup .content {
+	padding: 15px;
+}
 .popup .bottom {
 	padding-bottom: 10px;
 	text-align: center;
+}
+
+#need-verfiycode-overlay .popup {
+	min-width: 200px !important;
+}
+#need-verfiycode-overlay .content {
+	text-align: center;
+}
+#need-verfiycode-overlay img {
+	margin-bottom: 17px;
+}
+#need-verfiycode-overlay .input-verifycode {
+	margin:auto;
+	height: 28px;
 }
 .close {
 	font-size: 15px;
@@ -323,6 +370,7 @@ h1, h2 {
 	-o-transition: all 0.2s;
 	transition: all 0.2s;
 	color: #999;
+	outline: none;
 }
 .close:hover {
 	color: #555;
@@ -396,19 +444,25 @@ h3 {
 	display: block;
 	margin: auto;
 	position: relative;
-
-    -webkit-transition: all 0.3s ease;                  
-    -moz-transition: all 0.3s ease;                 
-    -o-transition: all 0.3s ease;   
-    -ms-transition: all 0.3s ease;          
-    transition: all 0.3s ease;
+/*
+    -webkit-transition: all 0.2s ease;                  
+    -moz-transition: all 0.2s ease;                 
+    -o-transition: all 0.2s ease;   
+    -ms-transition: all 0.2s ease;          
+    transition: all 0.2s ease;*/
 }
 .task-infoes .name {
-	cursor: pointer;
 	font-weight: bold;
 	/*font-size: 1.1em;*/
 }
-.task-infoes .close {
+.task-infoes .name a {
+	cursor: pointer;
+}
+
+.task-infoes .name a.disabled {
+	cursor: default;
+}
+.task-infoes .close, .task-infoes .download {
 	position: absolute;
 	right:0;
 	top: 50%;
@@ -430,11 +484,11 @@ h3 {
 	width: 100%;
 	height: 2px;
 
-    -webkit-transition: all 0.3s ease;                  
-    -moz-transition: all 0.3s ease;                 
-    -o-transition: all 0.3s ease;   
-    -ms-transition: all 0.3s ease;          
-    transition: all 0.3s ease;
+    -webkit-transition: all 0.2s ease;                  
+    -moz-transition: all 0.2s ease;                 
+    -o-transition: all 0.2s ease;   
+    -ms-transition: all 0.2s ease;          
+    transition: all 0.2s ease;
 }
 
 .task-infoes .progress .downloading {
@@ -444,12 +498,15 @@ h3 {
 	background-color:#aaa;
 }
 .task-infoes .left-actions {
-	position: absolute;
-	left:-22px;
-	top:50%;
+	/*left:-22px;*/
+	/*top:50%;*/
+	float: left;
 	width: 16px;
 	height: 16px;
-	margin-top:-8px;
+	margin:15px 5px 0 0;
+}
+.task-infoes .middle-actions {
+	float: left;
 }
 .task-infoes .info {
 	float:right;
@@ -459,6 +516,7 @@ h3 {
 	background-image: url('/assets/resume.png');
 	background-position: center;
 	background-repeat: no-repeat;
+	outline: none;
 }
 .resume:hover {
 	background-image: url('/assets/resume_hovered.png');
@@ -470,6 +528,7 @@ h3 {
 	background-image: url('/assets/stop.png');
 	background-position: center;
 	background-repeat: no-repeat;
+	outline: none;
 }
 .stop:hover {
 	background-image: url('/assets/stop_hovered.png');
@@ -541,11 +600,11 @@ h3 {
 .task.ng-leave .task-infoes,*/
 .task.ng-enter, 
 .task.ng-leave { 
-	-webkit-transition: all 0.5s ease;                  
-	-moz-transition: all 0.5s ease;                 
-	-o-transition: all 0.5s ease;   
-	-ms-transition: all 0.5s ease;          
-	transition: all 0.5s ease;
+	-webkit-transition: height 0.3s ease;
+	-moz-transition: height 0.3s ease;
+	-o-transition: height 0.3s ease;
+	-ms-transition: height 0.3s ease;
+	transition: height 0.3s ease;
 	/*position: relative;*/
 	display: block;
 } 
@@ -613,4 +672,61 @@ h3 {
 	margin: 0;
 	padding: 0;
 	width: 20px;
+}
+/*li.subscribe:first-child {
+	border-bottom: 1px solid #fff;
+	box-shadow: inset 0 -1px 0 #ddd;
+}*/
+li.subscribe {
+	/*opacity: 0.5;*/
+	color: #999;
+	font-weight: 700;
+	font-size: 15px;
+
+	-webkit-transition: color 0.2s;
+	-moz-transition: color 0.2s;
+	-ms-transition: color 0.2s;
+	-o-transition: color 0.2s;
+	transition: color 0.2s;
+
+	padding-bottom: 5px !important;
+	margin-bottom: 10px;
+}
+li.subscribe:hover {
+	color: #383022;
+}
+li.subscribe.highlight {
+	color: #383022;
+}
+.subscribe-info {
+	padding-bottom: 20px !important;
+	border-bottom: solid 1px #383022;
+	opacity: 1;
+}
+.subscribe-info.ng-hide {
+	opacity:0;
+}
+/*.subscribe-info.ng-leave,*/
+.subscribe-info.ng-hide-add,
+.subscribe-info.ng-hide-remove {
+	-webkit-transition: all 0.3s;
+	-moz-transition: all 0.3s;
+	-ms-transition: all 0.3s;
+	-o-transition: all 0.3s;
+	transition: all 0.3s;	
+}
+
+.subscribe-info img {
+	max-width: 100px;
+	margin-right: 30px;
+	border-radius: 3px;
+}
+
+.subscribe-info .name {
+	vertical-align: top;
+	font-weight: bold;
+	font-size: 1.1em;
+}
+.clear {
+	clear:both;
 }

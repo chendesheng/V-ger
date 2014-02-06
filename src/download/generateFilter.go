@@ -57,7 +57,7 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 			if maxSpeed > 0 {
 				blockSize = maxSpeed * 1024
 			} else {
-				blockSize = int64(100 * 1024)
+				blockSize = int64(32 * 1024)
 				changeBlockSize.Reset(time.Second * 15)
 			}
 		case output <- &block{from, to, nil}:

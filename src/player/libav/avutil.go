@@ -127,3 +127,7 @@ const (
 	AV_PIX_FMT_YUYV422
 	AV_PIX_FMT_RGB24
 )
+
+const (
+	AVSEEK_SIZE = 0x10000
+)

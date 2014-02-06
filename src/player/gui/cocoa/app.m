@@ -10,4 +10,8 @@
 	NSLog(@"applicationWillTerminate");
 	onWillTerminate();
 }
+
+-(void)searchSubtitleMenuItemClick:(id)sender {
+	onSearchSubtitleMenuItemClick();
+}
 @end

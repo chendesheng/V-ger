@@ -68,3 +68,8 @@ func (obj *AVObject) Bytes() []byte {
 
 	return bytes
 }
+
+//can only write once
+func (obj *AVObject) Write(bytes []byte) {
+	C.memcpy(unsafe.Pointer(obj.ptr), unsafe.Pointer(&bytes[0]), C.size_t(len(bytes)))
+}

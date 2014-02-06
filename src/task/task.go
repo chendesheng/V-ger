@@ -6,14 +6,14 @@ import (
 	// "encoding/json"
 	// "errors"
 	"fmt"
-	"util"
+	// "util"
 	// "io"
 	// "io/ioutil"
 	"log"
 	// "native"
 	// "net/http"
 	// "os"
-	"path"
+	// "path"
 	// "strconv"
 	// "regexp"
 	"database/sql"
@@ -26,7 +26,7 @@ var TaskDir string
 
 func init() {
 	watchers = make([]chan *Task, 0)
-	TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
+	// TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
 	// log.Print("Task dir:", TaskDir)
 
 	// _, err := ioutil.ReadDir(TaskDir)
@@ -34,8 +34,8 @@ func init() {
 	// 	os.Mkdir(TaskDir, 0777)
 	// }
 
-	db := openDb()
-	defer db.Close()
+	// db := openDb()
+	// defer db.Close()
 }
 
 type Task struct {
@@ -58,6 +58,12 @@ type Task struct {
 
 	Subs        []string
 	LastPlaying time.Duration
+
+	Original  string
+	Subscribe string
+
+	Season  int
+	Episode int
 }
 
 var taskColumnes string = `Name, 
@@ -70,7 +76,11 @@ var taskColumnes string = `Name,
 				Speed,
 				Status,
 				Est,
-				LastPlaying`
+				LastPlaying,
+				Subscribe,
+				Original,
+				Season,
+				Episode`
 
 // func SetAutoshutdown(name string, onOrOff bool) {
 // 	if t, err := GetTask(name); err == nil {
@@ -101,6 +111,8 @@ func newTask(name string, url string, size int64) *Task {
 	t.LimitSpeed = 0
 	t.Speed = 0
 	t.Status = "New"
+	t.Original = ""
+	t.Subscribe = ""
 
 	t.NameHash = hashName(t.Name)
 	return t
@@ -143,7 +155,11 @@ func scanTask(scanner taskScanner) (*Task, error) {
 		&t.Speed,
 		&t.Status,
 		&est,
-		&lastPlaying)
+		&lastPlaying,
+		&t.Subscribe,
+		&t.Original,
+		&t.Season,
+		&t.Episode)
 	if err == nil {
 		t.ElapsedTime = time.Duration(elapsedTime)
 		t.Est = time.Duration(est)
@@ -175,14 +191,6 @@ func GetTasks() []*Task {
 }
 
 func GetDownloadingTask() (*Task, bool) {
-	// for _, t := range GetTasks() {
-	// 	if t.Status == "Downloading" {
-	// 		return t, true
-	// 	}
-	// }
-
-	// return nil, false
-
 	db := openDb()
 	defer db.Close()
 	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task where Status='Downloading'`, taskColumnes)))
@@ -193,14 +201,6 @@ func GetDownloadingTask() (*Task, bool) {
 	}
 }
 func HasDownloadingOrPlaying() bool {
-	// for _, t := range GetTasks() {
-	// 	if t.Status == "Downloading" || t.Status == "Playing" {
-	// 		log.Printf("has downloading or playing %v", t)
-	// 		return true
-	// 	}
-	// }
-
-	// return false
 	db := openDb()
 	defer db.Close()
 	var count int
@@ -208,39 +208,11 @@ func HasDownloadingOrPlaying() bool {
 
 	return count > 0
 }
-func SaveTask(t *Task) (err error) {
-	// err = util.WriteJson(taskInfoFileName(t.Name), t)
-	// if err == nil {
-	// 	go writeChangeEvent(t.Name)
-	// }
-
-	// return
-
-	defer func() {
-		if err == nil {
-			go writeChangeEvent(t.Name)
-		}
-	}()
-
-	// fmt.Printf("save task:%v", t)
+func updateTask(t *Task) error {
 	db := openDb()
 	defer db.Close()
 
-	var tx *sql.Tx
-	tx, err = db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Commit()
-	var count int
-	err = tx.QueryRow("select count(*) from task where Name=?", t.Name).Scan(&count)
-	if err != nil {
-		return err
-	}
-
-	if count > 0 {
-		// println("update")
-		_, err = tx.Exec(`update task set
+	_, err := db.Exec(`update task set
 		URL=?,
 		Size=?,
 		StartTime=?,
@@ -250,41 +222,64 @@ func SaveTask(t *Task) (err error) {
 		Speed=?,
 		Status=?,
 		Est=?,
-		LastPlaying=? where Name=?`,
-			t.URL,
-			t.Size,
-			t.StartTime,
-			t.DownloadedSize,
-			int64(t.ElapsedTime),
-			t.LimitSpeed,
-			t.Speed,
-			t.Status,
-			int64(t.Est),
-			int64(t.LastPlaying),
-			t.Name)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-	} else {
-		_, err = tx.Exec(fmt.Sprintf(`
-			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			`, taskColumnes), t.Name,
-			t.URL,
-			t.Size,
-			t.StartTime,
-			t.DownloadedSize,
-			t.ElapsedTime,
-			t.LimitSpeed,
-			t.Speed,
-			t.Status,
-			t.Est,
-			t.LastPlaying)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
+		LastPlaying=?,
+		Subscribe=?,
+		Original=?,
+		Season=?,
+		Episode=? where Name=?`,
+		t.URL,
+		t.Size,
+		t.StartTime,
+		t.DownloadedSize,
+		int64(t.ElapsedTime),
+		t.LimitSpeed,
+		t.Speed,
+		t.Status,
+		int64(t.Est),
+		int64(t.LastPlaying),
+		t.Subscribe,
+		t.Original,
+		t.Season,
+		t.Episode,
+		t.Name)
 
+	return err
+}
+
+func insertTask(t *Task) error {
+	db := openDb()
+	defer db.Close()
+
+	_, err := db.Exec(fmt.Sprintf(`
+			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
+			`, taskColumnes), t.Name,
+		t.URL,
+		t.Size,
+		t.StartTime,
+		t.DownloadedSize,
+		t.ElapsedTime,
+		t.LimitSpeed,
+		t.Speed,
+		t.Status,
+		t.Est,
+		t.LastPlaying,
+		t.Subscribe,
+		t.Original,
+		t.Season,
+		t.Episode)
+
+	return err
+}
+
+func SaveTask(t *Task) (err error) {
+	if t1, _ := GetTask(t.Name); t1 != nil {
+		err = updateTask(t)
+	} else {
+		err = insertTask(t)
+	}
+
+	if err == nil {
+		go writeChangeEvent(t.Name)
 	}
 
 	return

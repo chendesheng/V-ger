@@ -68,7 +68,11 @@ func getFileInfo(header http.Header) (name string, size int64) {
 		sizeStr := regexSize.FindStringSubmatch(cr[0])[1]
 		size, _ = strconv.ParseInt(sizeStr, 10, 64)
 	} else {
-		size, _ = strconv.ParseInt(header["Content-Length"][0], 10, 64)
+		if len(header["Content-Length"]) > 0 {
+			size, _ = strconv.ParseInt(header["Content-Length"][0], 10, 64)
+		} else {
+			size = 0
+		}
 	}
 
 	return

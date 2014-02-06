@@ -25,6 +25,10 @@ type AVFormatContext struct {
 }
 
 // var frameLock sync.Mutex = sync.Mutex{}
+func NewAVFormatContext() AVFormatContext {
+	ptr := C.avformat_alloc_context()
+	return AVFormatContext{ptr: ptr}
+}
 
 func (ctx *AVFormatContext) OpenInput(filename string) {
 	cfilename := C.CString(filename)
@@ -52,6 +56,10 @@ func (ctx *AVFormatContext) FindStreamInfo() error {
 	} else {
 		return nil
 	}
+}
+
+func (ctx *AVFormatContext) SetInputFormat(f unsafe.Pointer) {
+	ctx.ptr.iformat = (*_Ctype_struct_AVInputFormat)(f)
 }
 
 func (ctx *AVFormatContext) VideoStream() AVStream {
@@ -170,6 +178,11 @@ func (ctx *AVFormatContext) StartTime() time.Duration {
 	return time.Duration((float64(ctx.ptr.start_time) / float64(AV_TIME_BASE)) * float64(time.Second))
 }
 
+func (ctx *AVFormatContext) SetPb(pb AVIOContext) {
+	ctx.ptr.pb = pb.ptr
+	ctx.ptr.flags |= AVFMT_FLAG_CUSTOM_IO
+}
+
 // func (ctx *AVFormatContext) FindStreamInfo(count int) []map[string]string {
 // 	var dices *C.AVDictionary
 // 	C.avformat_find_stream_info(ctx.ptr, &dices)
@@ -203,4 +216,8 @@ const (
 	AVSEEK_FLAG_BYTE                 ///< seeking based on position in bytes
 	AVSEEK_FLAG_ANY                  ///< seek to any frame, even non-keyframes
 	AVSEEK_FLAG_FRAME                ///< seeking based on frame number
+)
+
+const (
+	AVFMT_FLAG_CUSTOM_IO = 0x0080
 )

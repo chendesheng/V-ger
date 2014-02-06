@@ -2,19 +2,20 @@ package download
 
 import (
 	// "errors"
-	"fmt"
+	// "fmt"
 	"io"
 	"task"
 	// "time"
 	// "bytes"
-	// "log"
+	"log"
 	// "bytes"
 )
 
 var play_quit chan bool
 
 func Play(t *task.Task, w io.Writer, from, to int64) {
-	fmt.Println("playing download from ", from, " to ", to)
+	log.Print("playing download from ", from, " to ", to)
+
 	if play_quit != nil {
 		ensureQuit(play_quit)
 	}
@@ -25,7 +26,7 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 	play_quit = make(chan bool)
 
 	doDownload(t, writerAtWrap{w}, from, to, 0, nil, play_quit)
-} 
+}
 
 type writerAtWrap struct {
 	w io.Writer

@@ -234,6 +234,8 @@ func (w *Window) ShowText(s *SubItem) uintptr {
 		cstr := C.CString(str.Content)
 		defer C.free(unsafe.Pointer(cstr))
 
+		println("color:", str.Content)
+		println("color:", str.Color)
 		items = append(items, C.SubItem{cstr, C.int(str.Style), C.uint(str.Color)})
 	}
 
@@ -250,6 +252,9 @@ func (w *Window) SendHideText(arg SubItemArg) {
 }
 func (w *Window) HideText(ptr uintptr) {
 	C.hideText(w.ptr, unsafe.Pointer(ptr))
+}
+func (w *Window) ShowSubList(sub Sub) {
+	// C.showSubList()
 }
 
 //export goOnDraw

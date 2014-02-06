@@ -7,6 +7,8 @@
 #import "textView.h"
 #import "blurView.h"
 #import "progressView.h"
+#import "popupView.h"
+#import "subtitleView.h"
 #import "startupView.h"
 #import "app.h"
 
@@ -28,11 +30,19 @@ void initialize() {
     [menubar addItem:appMenuItem];
     [NSApp setMainMenu:menubar];
     id appMenu = [[NSMenu new] autorelease];
+
+    NSMenuItem *searchSubtitleMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Search Subtitle"
+        action:@selector(searchSubtitleMenuItemClick:) keyEquivalent:@""] autorelease];
+    [searchSubtitleMenuItem setTarget: appDelegate];
+    [appMenu addItem:searchSubtitleMenuItem];
+
     id appName = [[NSProcessInfo processInfo] processName];
     id quitTitle = [@"Quit " stringByAppendingString:appName];
     id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
         action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
     [appMenu addItem:quitMenuItem];
+
+
     [appMenuItem setSubmenu:appMenu];
 }
 
@@ -130,6 +140,15 @@ void* newWindow(char* title, int width, int height) {
 
     [v setProgressView:pv];
 
+    // BlurView* bvPopup = [[BlurView alloc] initWithFrame:NSMakeRect(200,40,400,500)];
+    // [v addSubview:bvPopup];
+    // [bvPopup setAutoresizingMask:NSViewWidthSizable];
+
+    // PopupView* ppv = [[PopupView alloc] initWithFrame:NSMakeRect(0,0,400,500)];
+    // [bvPopup addSubview:ppv];
+    // [ppv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+
+
     StartupView* sv = [[StartupView alloc] initWithFrame:[v frame]];
     [v addSubview:sv];
 
@@ -213,4 +232,26 @@ void windowHideStartupView(void* ptr) {
 void windowToggleFullScreen(void* ptr) {
     Window* w = (Window*)ptr;
     [w toggleFullScreen:nil];
+}
+
+void *newDialog(char* title, int width, int height) {
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+
+    NSPanel *dialog = [[NSPanel alloc] initWithContentRect:NSMakeRect(200.0, 200.0, 300, 200)
+        styleMask:NSHUDWindowMask | NSClosableWindowMask | NSTitledWindowMask | NSUtilityWindowMask | NSResizableWindowMask
+          backing:NSBackingStoreBuffered
+            defer:YES];
+
+    [dialog makeKeyAndOrderFront:nil];
+
+    [dialog setTitle:[NSString stringWithUTF8String:title]];
+    
+    SubtitleView* sv = [[SubtitleView alloc] initWithFrame:NSMakeRect(0,0,dialog.frame.size.width,dialog.frame.size.height)];
+    [dialog setContentView:sv];
+    [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+
+
+    [pool drain];
+
+    return dialog;
 }

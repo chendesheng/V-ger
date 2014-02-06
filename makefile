@@ -11,6 +11,13 @@ all:
 	cp $(BIN)/config.json $(BIN)/VgerPlayer.app/Contents/MacOS/config.json
 	cp $(BIN)/player.plist $(BIN)/VgerPlayer.app/Contents/Info.plist
 	rm *.o
+gui:
+	$(CC) $(P_SRC)/*.m -c -I$(P_INC)
+	libtool -static -o $(P_SRC)/libcocoa.a *.o
+	go install -a player/gui
+	go install playerguitest
+	rm *.o
+
 # exe:
 # 	go install vger
 # 	cp vger ~/Library/Vger/vger

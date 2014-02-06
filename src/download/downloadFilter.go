@@ -50,8 +50,8 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 
 	// log.Print("download routine begin: ", url[:strings.Index(url, "?")])
 
-	log.Print(url)
-	
+	// log.Print(url)
+
 	for {
 		select {
 		case b, ok := <-input:

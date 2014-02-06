@@ -1,7 +1,7 @@
 package download
 
 import (
-	"fmt"
+	// "fmt"
 	"log"
 	"native"
 	// "net/http"
@@ -53,9 +53,15 @@ func monitorTask() {
 				tc.stopDownload()
 				delete(taskControls, t.Name)
 			}
-			if t.Status == "Deleted" {
+			if t.Status == "Deleted" || t.Status == "New" {
 				tc.stopDownload()
 				delete(taskControls, t.Name)
+
+				dir := util.ReadConfig("dir")
+				err := native.MoveFileToTrash(dir, t.Name)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 			if t.Status == "Finished" {
 				delete(taskControls, t.Name)
@@ -69,6 +75,7 @@ func monitorTask() {
 					}
 				}
 			}
+
 		} else {
 			if t.Status == "Downloading" {
 				if t.DownloadedSize == 0 {
@@ -79,19 +86,14 @@ func monitorTask() {
 				taskControls[t.Name] = tc
 				go download(tc)
 			}
-		}
-
-		if t.Status == "Deleted" {
-			dir := util.ReadConfig("dir")
-			err := native.MoveFileToTrash(dir, t.Name)
-			if err != nil {
-				log.Println(err)
+			if t.Status == "Deleted" {
+				dir := util.ReadConfig("dir")
+				err := native.MoveFileToTrash(dir, t.Name)
+				if err != nil {
+					log.Println(err)
+				}
 			}
-			// native.MoveFileToTrash(task.TaskDir, fmt.Sprint(t.Name, ".vger-task.txt"))
-			native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".zip"))
-			native.MoveFileToTrash(dir, fmt.Sprint(t.Name, ".rar"))
 		}
-
 	}
 }
 func Start() {

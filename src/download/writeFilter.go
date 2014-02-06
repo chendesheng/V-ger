@@ -30,6 +30,7 @@ func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, quit ch
 				return
 			}
 			for {
+				// println("writeAt:", b.from, len(b.data))
 				_, err := w.WriteAt(b.data, b.from)
 
 				if err == nil {

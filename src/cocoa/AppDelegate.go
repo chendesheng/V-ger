@@ -67,13 +67,15 @@ type AppDelegate struct {
 	downloadingTaskStatusItems map[string]NSStatusItem
 }
 
+var appDelegate *AppDelegate
+
 func (delegate *AppDelegate) ShouldPresentNotification(center objc.Object) bool {
 	return true
 }
 func (delegate *AppDelegate) DidActivateNotification(center objc.Object, notification objc.Object) {
 	noti := NSUserNotification{notification}
 	title := noti.Title()
-	if strings.Contains(title, "Shutdown") {
+	if strings.Contains(title, "Sleep") {
 		if quit := native.DefaultNativeAPI.(*cocoaNativeAPI).shutdownQuit; quit != nil {
 			close(quit)
 		}
@@ -87,6 +89,7 @@ func (delegate *AppDelegate) DidActivateNotification(center objc.Object, notific
 }
 
 func (delegate *AppDelegate) ApplicationDidFinishLaunching(obj objc.Object) {
+	appDelegate = delegate
 
 	mainItem := NSStatusItem{NSSystemStatusBar().StatusItemWithLength(-1).Retain()}
 	mainItem.SetHighlightMode(true)
@@ -97,7 +100,7 @@ func (delegate *AppDelegate) ApplicationDidFinishLaunching(obj objc.Object) {
 	img.SetTemplate(true)
 	mainItem.SetImage(img)
 
-	shutdownAfterFinishItem := NewNSMenuItem("Shutdown after finish", objc.GetSelector("shutdownAfterFinishClick:"), "")
+	shutdownAfterFinishItem := NewNSMenuItem("Sleep after finish", objc.GetSelector("shutdownAfterFinishClick:"), "")
 	shutdownAfterFinishItem.SetTarget(delegate)
 	if util.ReadBoolConfig("shutdown-after-finish") {
 		shutdownAfterFinishItem.SetState(NSOnState)
@@ -204,6 +207,8 @@ func (delegate *AppDelegate) ShutdownAfterFinishClick(sender uintptr) {
 	}
 }
 func (delegate *AppDelegate) SpeedClick(sender uintptr) {
+	delegate = appDelegate
+
 	item := NSMenuItem{objc.NewObject(sender)}
 	title := item.Title()
 	speed := 0
@@ -227,6 +232,8 @@ func (delegate *AppDelegate) SpeedClick(sender uintptr) {
 }
 
 func (delegate *AppDelegate) SimultaneousClick(sender uintptr) {
+	delegate = appDelegate
+
 	senderItem := NSMenuItem{objc.NewObject(sender)}
 	title := senderItem.Title()
 	cntReg := regexp.MustCompile("Up to (\\d+)")
@@ -262,7 +269,7 @@ func (delegate *AppDelegate) NewTaskFromPasteboardClick(sender uintptr) {
 			url := ""
 			name := ""
 			regFormat := regexp.MustCompile(".(mkv|avi|mp4|rmvb|rm|wmv)$")
-			files, err := thunder.NewTask(str)
+			files, err := thunder.NewTask(str, "")
 			if err != nil {
 				SendNotification("Download failed", err.Error())
 				return

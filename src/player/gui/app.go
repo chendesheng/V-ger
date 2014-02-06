@@ -14,7 +14,6 @@ func PollEvents() {
 //export goOnOpenFile
 func goOnOpenFile(cfilename unsafe.Pointer) C.int {
 	filename := C.GoString((*C.char)(cfilename))
-	log.Println("goOnOpenFile:", filename)
 
 	if appDelegate != nil {
 		if appDelegate.OpenFile(filename) {
@@ -34,9 +33,17 @@ func goOnWillTerminate() {
 	}
 }
 
+//export goOnSearchSubtitleMenuItemClick
+func goOnSearchSubtitleMenuItemClick() {
+	if appDelegate != nil {
+		appDelegate.SearchSubtitleMenuItemClick()
+	}
+}
+
 type AppDelegate interface {
 	OpenFile(string) bool
 	WillTerminate()
+	SearchSubtitleMenuItemClick()
 }
 
 var appDelegate AppDelegate

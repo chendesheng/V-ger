@@ -8,8 +8,8 @@ import (
 	"path"
 	"runtime"
 	"strings"
-	// "task"
 	"subtitles"
+	"task"
 	"time"
 	"toutf8"
 	"util"
@@ -18,7 +18,7 @@ import (
 	// "website"
 	. "logger"
 	"player/gui"
-	. "player/libav"
+	// . "player/libav"
 )
 
 // var filename string
@@ -151,26 +151,17 @@ func (a *appDelegate) SearchSubtitleMenuItemClick() {
 		println(sub.URL)
 	}
 }
+
 func main() {
+	task.TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
+
 	runtime.LockOSThread()
 
-	// println(filename)
-	// if len(filename) > 0 {
-	NetworkInit()
+	util.SetCookie("gdriveid", util.ReadConfig("gdriveid"), "http://xunlei.com")
 
-	// 	app := &appDelegate{}
-	// 	gui.Initialize(app)
-
-	// 	app.OpenFile(filename)
-
-	// 	gui.PollEvents()
-	// } else {
-	log.Println("open with file")
-
+	// NetworkInit()
 	app := &appDelegate{}
 	gui.Initialize(app)
 	gui.PollEvents()
-	// }
-
 	return
 }

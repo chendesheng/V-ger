@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"subscribe"
 	// "subtitles"
 	"task"
 	"thunder"
@@ -130,7 +131,11 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("add download \"%s\".\nname: %s\n", url, name)
 
 		if t, err := task.GetTask(name); err == nil {
-			if t.Status == "Finished" {
+			if t.Status == "New" {
+				t.URL = url
+				t.Size = size
+				task.StartNewTask2(t)
+			} else if t.Status == "Finished" {
 				w.Write([]byte("File has been downloaded."))
 			} else {
 				log.Print("task already exists")
@@ -155,10 +160,16 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	input, _ := ioutil.ReadAll(r.Body)
-	url := string(input)
 
-	// thunder.Login(config["thunder-user"], config["thunder-password"])
-	files, err := thunder.NewTask(url)
+	m := make(map[string]string)
+	json.Unmarshal(input, &m)
+
+	url := string(m["url"])
+	verifycode := string(m["verifycode"])
+
+	println("thunderNewHandler:", url, verifycode)
+
+	files, err := thunder.NewTask(url, verifycode)
 	if err == nil {
 		text, _ := json.Marshal(files)
 		w.Write([]byte(text))
@@ -166,6 +177,64 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err)
 	}
 }
+func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if re := recover(); re != nil {
+			err := re.(error)
+
+			writeError(w, err)
+		}
+	}()
+	log.Print("subscribeHandler")
+
+	input, _ := ioutil.ReadAll(r.Body)
+	url := string(input)
+
+	println(url)
+
+	s, tasks, err := subscribe.Parse(url)
+	if err != nil {
+		panic(err)
+	}
+
+	if s1 := subscribe.GetSubscribe(s.Name); s1 != nil {
+		for _, t := range tasks {
+			if t1, _ := task.GetTask(t.Name); t1 == nil {
+				task.SaveTask(t)
+			}
+		}
+
+		text, _ := json.Marshal(s1)
+		w.Write([]byte(text))
+	} else {
+		subscribe.SaveSubscribe(s)
+
+		for _, t := range tasks {
+			task.SaveTask(t)
+		}
+
+		text, _ := json.Marshal(s)
+		w.Write([]byte(text))
+	}
+}
+func subscribeHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if re := recover(); re != nil {
+			err := re.(error)
+
+			writeError(w, err)
+		}
+	}()
+	text, _ := json.Marshal(subscribe.GetSubscribes())
+	w.Write([]byte(text))
+}
+
+func thunderVerifyCodeHandler(w http.ResponseWriter, r *http.Request) {
+	h := w.Header()
+	h.Add("Content-Type", "image/jpeg")
+	thunder.WriteValidationCode(w)
+}
+
 func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if re := recover(); re != nil {
@@ -446,8 +515,13 @@ func Run() {
 	http.HandleFunc("/autoshutdown", setAutoShutdownHandler)
 	// http.HandleFunc("/queue/", queueHandler)
 
+	http.HandleFunc("/subscribe/new", subscribeNewHandler)
+	http.HandleFunc("/subscribe", subscribeHandler)
+
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 	http.HandleFunc("/thunder/torrent", thunderTorrentHandler)
+	http.HandleFunc("/thunder/verifycode", thunderVerifyCodeHandler)
+	http.HandleFunc("/thunder/verifycode/", thunderVerifyCodeHandler)
 
 	http.Handle("/subtitles/search/", websocket.Handler(subtitlesSearchHandler))
 	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)

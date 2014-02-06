@@ -32,6 +32,7 @@ func (lf *limitFilter) active() {
 		s := time.Now()
 		select {
 		case bf := <-ch:
+			// println("limitfilter")
 			b := bf.b
 			f := bf.f
 			if b == nil {

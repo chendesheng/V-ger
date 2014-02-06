@@ -13,6 +13,12 @@ func StartNewTask(name string, url string, size int64) error {
 
 	return SaveTask(t)
 }
+func StartNewTask2(t *Task) error {
+	println("start new task2")
+	startOrQueueTask(t)
+
+	return SaveTask(t)
+}
 
 func ResumeTask(name string) error {
 	t, err := GetTask(name)
@@ -46,7 +52,15 @@ func DeleteTask(name string) error {
 	if err != nil {
 		return err
 	} else {
-		t.Status = "Deleted"
+		if len(t.Subscribe) > 0 {
+			t.Status = "New"
+			t.LastPlaying = 0
+			t.DownloadedSize = 0
+			t.Speed = 0
+		} else {
+			t.Status = "Deleted"
+		}
+
 		SaveTask(t)
 	}
 	return nil

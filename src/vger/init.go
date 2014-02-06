@@ -5,7 +5,10 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"os"
+	"path"
 	"runtime"
+	"subscribe"
+	"task"
 	"thunder"
 	"time"
 	"util"
@@ -44,4 +47,7 @@ func init() {
 			log.Print(err)
 		}
 	}()
+
+	task.TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
+	subscribe.DbPath = task.TaskDir
 }

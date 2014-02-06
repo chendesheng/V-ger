@@ -35,13 +35,16 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			function doSend(message) {
 				websocket.send(message);
 			}
+
+			return websocket;
 		}
 
-
+		var allTasks = [];
 		$scope.tasks = [];
 		$scope.config = {
 			'max-speed': '0'
 		};
+		$scope.task_filter = {Subscribe:'Single Tasks'}
 		$http.get('/config').success(function(resp) {
 			$scope.config = resp;
 			var v = $scope.config['shutdown-after-finish'];
@@ -53,6 +56,9 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				for (var i = data.length - 1; i >= 0; i--) {
 					var item = data[i];
 					item.StartDate = new Date(Date.parse(item.StartDate))
+					if (item.Subscribe == '') {
+						item.Subscribe = 'Single Tasks';
+					}
 				};
 
 				var collection = {};
@@ -81,7 +87,14 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 			}, monitor_process);
 		}
-		monitor_process();
+
+		$http.get('/subscribe').success(function (subscribes) {
+			angular.forEach(subscribes, function (s) {
+				$scope.subscribes.push(s);
+			});
+			monitor_process();
+		})
+
 		$scope.new_url = document.getElementById('new-url').value;
 
 
@@ -95,6 +108,10 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		}
 
 		$scope.send_open = function(task) {
+			if (task.Status == 'New') {
+				return;
+			}
+
 			$http.get('/open/' + task.Name).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
@@ -126,14 +143,63 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 		$scope.waiting = false;
 
-		function new_task() {
+		$scope.thunder_commit = {
+			name: "",
+			url: "",
+			verifycode: ""
+		};
+		$scope.thunder_needverifycode = false;
+
+		$scope.new_thunder_task = function() {
 			$scope.waiting = true;
-			if ($scope.new_url.indexOf('lixian.vip.xunlei.com') != -1 ||
-				$scope.new_url.indexOf('youtube.com') != -1 ||
-				/.*dmg|.*zip|.*rar|.*exe|.*iso|.*pkg|.*gz/.test($scope.new_url)) {
-				$http.post('/new/', $scope.new_url).success(function(resp) {
+
+			var text = JSON.stringify($scope.thunder_commit);
+
+			$http.post('/thunder/new', text).success(function(data) {
+				$scope.waiting = false;
+				if (typeof data == 'string') {
+					if (data == 'Need verify code') {
+						$scope.thunder_needverifycode = true;
+						document.getElementById('verifycode').src='/thunder/verifycode/'+(new Date);
+						return;
+					} else {
+						$scope.thunder_needverifycode = false;
+					}
+
+					$scope.push_alert(data);
+					return;
+				}
+
+				$scope.thunder_needverifycode = false;
+
+				for (var i = data.length - 1; i >= 0; i--) {
+					var item = data[i];
+					item.loading = false;
+
+					var j = item.Name.lastIndexOf('\/');
+					item.Name = item.Name.substring(j + 1);
+				}
+				if (data.length == 1 && data[0].Percent == 100) {
+					$scope.waiting = true;
+					if ($scope.thunder_commit.name) {
+						data[0].Name = $scope.thunder_commit.name;
+					}
+
+					$scope.download_bt_files(data[0]);
+				} else {
+					$scope.bt_files = data;
+				}
+			});
+		}
+
+		function new_task(url) {
+			$scope.waiting = true;
+			if (url.indexOf('lixian.vip.xunlei.com') != -1 ||
+				url.indexOf('youtube.com') != -1 ||
+				/.*dmg|.*zip|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
+				$http.post('/new/', url).success(function(resp) {
 					if (!resp) {
-						$scope.new_url = '';
+						url = '';
 					}
 					$scope.waiting = false;
 					resp && $scope.push_alert(resp);
@@ -141,28 +207,54 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					$scope.waiting = false;
 				});
 			} else {
-				$http.post('/thunder/new', $scope.new_url).success(function(data) {
-					$scope.waiting = false;
-					if (typeof data == 'string') {
-						$scope.push_alert(data);
-						return;
-					}
-					for (var i = data.length - 1; i >= 0; i--) {
-						var item = data[i];
-						item.loading = false;
-
-						var j = item.Name.lastIndexOf('\/');
-						item.Name = item.Name.substring(j + 1);
-					}
-					if (data.length == 1 && data[0].Percent == 100) {
-						$scope.waiting = true;
-						$scope.download_bt_files(data[0]);
-					} else {
-						$scope.bt_files = data;
-					}
-				});
+				$scope.thunder_commit.url = url;
+				$scope.thunder_commit.name = "";
+				$scope.new_thunder_task();
 			}
 		};
+
+		$scope.subscribes = [{Name:"Single Tasks"}];
+		$scope.new_subscribe = function (url) {
+			$scope.waiting = true;
+			$http.post('/subscribe/new', url).success(function (data) {
+				if (typeof data == 'string') {
+					$scope.push_alert(data);
+					return;
+				}
+				$scope.waiting = false;
+				$scope.task_filter.Subscribe = data.Name;
+				angular.forEach($scope.subscribes, function(s) {
+					if (s.Name == data.Name) {
+						$scope.switch_subscribe(data);
+						throw "subscribe exists";
+					}
+				});
+				$scope.subscribes.push(data);
+
+				$scope.switch_subscribe(data);
+			});
+		}
+		$scope.currentSubscribe = {Name:'Single Tasks'};
+		$scope.switch_subscribe = function(s) {
+			$scope.task_filter.Subscribe = s.Name;
+
+			var current = get_subscribe(s.Name);
+			angular.forEach(current, function(v, k){
+				$scope.currentSubscribe[k] = current[k];
+			});
+		}
+
+		function get_subscribe(name) {
+			for (var i = 0; i < $scope.subscribes.length; i++) {
+				var s = $scope.subscribes[i];
+				if (name == s.Name) {
+					return s;
+				}
+			}
+
+			return $scope.subscribes[0];
+		}
+
 		$scope.get_bt_file_status = function(percent) {
 			return (percent == 100) ? 'Finished' : percent + '%'
 		}
@@ -203,50 +295,91 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.subtitles = [];
 		$scope.subtitles_movie_name = '';
 
+		$scope.ws_search_subtitles = null;
+
 		$scope.search_subtitles = function(name) {
+			if ($scope.ws_search_subtitles) {
+				return;
+			}
+
 			$scope.subtitles = [];
 			$scope.subtitles_movie_name = name;
+			$scope.waiting = true;
 
-			monitor('/subtitles/search/' + name, function(data) {
-				$scope.nosubtitles = false;
-				data.loading = false;
+			$scope.ws_search_subtitles = monitor('/subtitles/search/' + name, function(data) {
+				if ($scope.ws_search_subtitles != null) {
+					$scope.nosubtitles = false;
+					data.loading = false;
 
-				//truncate description
-				data.FullDescription = data.Description;
-				var description = data.Description;
-				if (description.length > 73)
-					data.Description = description.substr(0, 35) + '...' + description.substr(description.length - 35, 35);
+					//truncate description
+					data.FullDescription = data.Description;
+					var description = data.Description;
+					if (description.length > 73)
+						data.Description = description.substr(0, 35) + '...' + description.substr(description.length - 35, 35);
 
-				$scope.subtitles.push(data);
-				$scope.waiting = true;
-			}, function() {
-				if ($scope.subtitles.length == 0) {
-					$scope.nosubtitles = true;
+					$scope.subtitles.push(data);
+					$scope.waiting = true;
 				}
-				$scope.waiting = false;
 			}, function() {
-				if ($scope.subtitles.length == 0) {
-					$scope.nosubtitles = true;
+				// if ($scope.ws_search_subtitles != null) {
+				// 	if ($scope.subtitles.length == 0) {
+				// 		$scope.nosubtitles = true;
+				// 	}
+				// 	$scope.waiting = false;
+				// 	$scope.ws_search_subtitles = null;
+				// }
+			}, function() {
+				if ($scope.ws_search_subtitles != null) {
+					if ($scope.subtitles.length == 0) {
+						$scope.nosubtitles = true;
+					}
+					$scope.waiting = false;
+					$scope.ws_search_subtitles = null;
 				}
-				$scope.waiting = false;
 			});
+		};
+		$scope.stop_search_subtitles = function() {
+			if ($scope.ws_search_subtitles) {
+				var ws = $scope.ws_search_subtitles;
+				$scope.ws_search_subtitles = null;
+
+				if ($scope.waiting == false) {
+					ws.close();
+				}
+
+				$scope.waiting = false;
+				$scope.nosubtitles = false;
+				$scope.subtitles = [];
+			}
 		};
 
 		$scope.download_subtitles = function(sub) {
 			sub.loading = true;
 			$http.post('/subtitles/download/' + $scope.subtitles_movie_name, sub.URL).success(function() {
 				sub.loading = false;
-				$scope.subtitles = [];
+				$scope.stop_search_subtitles();
 			})
 		};
 
 		$scope.go = function() {
 			$scope.waiting = true
-			if (/.+\:\/\/.+|^magnet\:\?.+/.test($scope.new_url)) {
-				new_task();
+			if (/www.yyets.com\/resource\/[0-9+]/.test($scope.new_url)) {
+				$scope.new_subscribe($scope.new_url);
+			} else if (/.+\:\/\/.+|^magnet\:\?.+/.test($scope.new_url)) {
+				new_task($scope.new_url);
 			} else {
 				$scope.search_subtitles($scope.new_url)
 			}
+		};
+		$scope.download_task = function (task) {
+			// alert(task.Original);
+			if (!task.Original) {
+				$scope.push_alert("No original URL.")
+				return;
+			}
+			$scope.thunder_commit.url = task.Original;
+			$scope.thunder_commit.name = task.Name;
+			$scope.new_thunder_task();
 		};
 		$scope.google_subtitles = function() {
 			var name = $scope.subtitles_movie_name;

@@ -10,6 +10,8 @@ typedef struct SubItem {
 
 void test();
 void* newWindow(char* title, int width, int height);
+void* newDialog(char* title, int width, int height);
+
 void initialize();
 void pollEvents();
 void showWindow(void* wptr);
@@ -42,6 +44,7 @@ void onFullscreenChanged(void* wptr, int b);
 
 int onOpenFile(const char* file);
 void onWillTerminate();
+void onSearchSubtitleMenuItemClick();
 // void setText(void* wptr, SubItem* items, int len);
 // void setCallbackKeyDown();
 // void setCallbackMouseDown();

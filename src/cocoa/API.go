@@ -29,17 +29,17 @@ func (api *cocoaNativeAPI) SetNotificationClickCallback(callbock native.Notifica
 }
 
 func (api *cocoaNativeAPI) ComputerShutdown(reason string) error {
-	SendNotification("Shutdown after 60 seconds", reason)
+	SendNotification("Sleep after 60 seconds", reason)
 
 	t := time.NewTimer(time.Second * 60)
 	api.shutdownQuit = make(chan bool)
 	func() {
 		select {
 		case <-api.shutdownQuit:
-			log.Print("shutdown stop")
+			log.Print("sleep stop")
 			t.Stop()
 		case <-t.C:
-			log.Print("shutdown now")
+			log.Print("sleep now")
 			/*    NSAppleScript* script = [[NSAppleScript alloc] initWithSource:
 			                            @"Tell application \"System Events\" to shut down"];
 			if (script != NULL)
@@ -55,7 +55,7 @@ func (api *cocoaNativeAPI) ComputerShutdown(reason string) error {
 			}
 			[NSApp terminate: nil];*/
 			s := NewNSAppleScript()
-			s.InitWithSource("Tell application \"System Events\" to shut down")
+			s.InitWithSource("Tell application \"Finder\" to sleep")
 			s.CompileAndReturnError()
 			s.ExecuteAndReturnError()
 		}

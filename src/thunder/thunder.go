@@ -13,13 +13,13 @@ import (
 	"strings"
 	"time"
 	// "encoding/json"
+	"io"
 	"regexp"
-	// "io"
 	// "os"
 	// "util"
 )
 
-func NewTask(taskURL string) ([]ThunderTask, error) {
+func NewTask(taskURL string, verifyCode string) ([]ThunderTask, error) {
 	err := Login()
 	if err != nil {
 		return nil, err
@@ -33,17 +33,17 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 	userId := getCookieValue("userid")
 
 	if taskType == 4 {
-		if err := btTaskCommit(userId, taskURL); err != nil {
+		if err := btTaskCommit(userId, taskURL, verifyCode); err != nil {
 			return nil, err
 		}
 	} else if taskType == 1 {
-		err := uploadTorrent(torrent, userId)
+		err := uploadTorrent(torrent, userId, verifyCode)
 		if err != nil {
 			return nil, err
 		}
 
 	} else {
-		if err := taskCommit(userId, taskURL, taskType); err != nil {
+		if err := taskCommit(userId, taskURL, taskType, verifyCode); err != nil {
 			return nil, err
 		}
 	}
@@ -53,13 +53,20 @@ func NewTask(taskURL string) ([]ThunderTask, error) {
 func NewTaskWithTorrent(torrent []byte) ([]ThunderTask, error) {
 	userId := getCookieValue("userid")
 
-	err := uploadTorrent(torrent, userId)
+	err := uploadTorrent(torrent, userId, "")
 	if err != nil {
 		return nil, err
 	}
 	return getNewlyCreateTask(userId)
 }
-func uploadTorrent(torrent []byte, userId string) error {
+func WriteValidationCode(w io.Writer) {
+	resp, err := http.Get(fmt.Sprintf("http://verify2.xunlei.com/image?t=MVA&cachetime=%d", time.Now().Unix()))
+	if err == nil {
+		bytes, _ := ioutil.ReadAll(resp.Body)
+		w.Write(bytes)
+	}
+}
+func uploadTorrent(torrent []byte, userId string, verifycode string) error {
 	text, err := uploadTorrentFile(torrent)
 	if err != nil {
 		return err
@@ -92,27 +99,33 @@ func uploadTorrent(torrent []byte, userId string) error {
 	findex := strings.Join(selectionList, "_")
 	size := strings.Join(sizelist, "_")
 
-	_, err = sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
+	res, err := sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
 		&url.Values{
 			"callback": {"jsonp"},
 			"t":        {time.Now().String()},
 		},
 		&url.Values{
-			"uid":        {userId},
-			"cid":        {infoid},
-			"tsize":      {fmt.Sprint(btsize)},
-			"goldbean":   {"0"},
-			"silverbean": {"0"},
-			"btname":     {ftitle},
-			"size":       {size},
-			"findex":     {findex},
-			"o_page":     {"task"},
-			"o_taskid":   {"0"},
-			"class_id":   {"0"},
+			"uid":         {userId},
+			"cid":         {infoid},
+			"tsize":       {fmt.Sprint(btsize)},
+			"goldbean":    {"0"},
+			"silverbean":  {"0"},
+			"btname":      {ftitle},
+			"size":        {size},
+			"findex":      {findex},
+			"o_page":      {"task"},
+			"o_taskid":    {"0"},
+			"class_id":    {"0"},
+			"verify_code": {verifycode},
 		})
+	if err == nil {
+		if strings.Contains(res, "{\"progress\":-12}") || strings.Contains(res, "{\"progress\":-11}") {
+			return fmt.Errorf("Need verify code")
+		}
+	}
 	return err
 }
-func taskCommit(userId string, taskURL string, taskType int) error {
+func taskCommit(userId string, taskURL string, taskType int, verifyCode string) error {
 	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_check",
 		&url.Values{
 			"callback": {"fun"},
@@ -131,24 +144,34 @@ func taskCommit(userId string, taskURL string, taskType int) error {
 	// 	return fmt.Errorf("Commit task error, try again later")
 	// }
 
-	sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_commit",
+	res, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_commit",
 		&url.Values{
-			"callback":   {"ret_task"},
-			"uid":        {userId},
-			"cid":        {cid},
-			"gcid":       {gcid},
-			"size":       {size},
-			"goldbean":   {"0"},
-			"silverbean": {"0"},
-			"t":          {t},
-			"url":        {taskURL},
-			"type":       {fmt.Sprintf("%d", taskType)},
-			"o_page":     {"history"},
-			"o_taskid":   {"0"},
-			"class_id":   {"0"},
-			"database":   {"undefined"},
-			"time":       {time.Now().String()},
+			"callback":    {"ret_task"},
+			"uid":         {userId},
+			"cid":         {cid},
+			"gcid":        {gcid},
+			"size":        {size},
+			"goldbean":    {"0"},
+			"silverbean":  {"0"},
+			"t":           {t},
+			"url":         {taskURL},
+			"type":        {fmt.Sprintf("%d", taskType)},
+			"o_page":      {"history"},
+			"o_taskid":    {"0"},
+			"class_id":    {"0"},
+			"database":    {"undefined"},
+			"time":        {time.Now().String()},
+			"verify_code": {verifyCode},
 		})
+
+	if err == nil {
+		//-12 means need input validation code
+		//-11 means validation code not match
+		if strings.HasPrefix(res, "ret_task('-12'") || strings.HasPrefix(res, "ret_task('-11'") {
+			//need input validation code
+			return fmt.Errorf("Need verify code")
+		}
+	}
 
 	return nil
 }
@@ -164,7 +187,7 @@ func uploadTorrentFile(torrent []byte) (string, error) {
 
 	return "", err
 }
-func btTaskCommit(userId string, taskURL string) error {
+func btTaskCommit(userId string, taskURL string, verifycode string) error {
 
 	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/url_query", &url.Values{
 		"u":        {taskURL},
@@ -180,25 +203,31 @@ func btTaskCommit(userId string, taskURL string) error {
 	// 	return fmt.Errorf("Commit bt task error, try again later.")
 	// }
 
-	_, err = sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
+	res, err := sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
 		&url.Values{
 			"callback": {"jsonp"},
 			"t":        {time.Now().String()},
 		},
 		&url.Values{
-			"uid":        {userId},
-			"cid":        {cid},
-			"tsize":      {tsize},
-			"goldbean":   {"0"},
-			"silverbean": {"0"},
-			"btname":     {btname},
-			"size":       {size},
-			"findex":     {findex},
-			"o_page":     {"task"},
-			"o_taskid":   {"0"},
-			"class_id":   {"0"},
+			"uid":         {userId},
+			"cid":         {cid},
+			"tsize":       {tsize},
+			"goldbean":    {"0"},
+			"silverbean":  {"0"},
+			"btname":      {btname},
+			"size":        {size},
+			"findex":      {findex},
+			"o_page":      {"task"},
+			"o_taskid":    {"0"},
+			"class_id":    {"0"},
+			"verify_code": {verifycode},
 		})
 
+	if err == nil {
+		if strings.Contains(res, "{\"progress\":-12}") || strings.Contains(res, "{\"progress\":-11}") {
+			return fmt.Errorf("Need verify code")
+		}
+	}
 	return err
 }
 func getNewlyCreateTask(userId string) ([]ThunderTask, error) {

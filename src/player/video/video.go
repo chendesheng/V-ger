@@ -79,7 +79,9 @@ func (v *Video) setupSwsContext() {
 		*/
 		width += 1
 	}
-	v.swsCtx = SwsGetContext(width, v.Height, v.codec.PixelFormat(),
+
+	println("setupSwsContext", v.Width, v.Height, v.codec.PixelFormat())
+	v.swsCtx = SwsGetContext(width, v.Height, AV_PIX_FMT_YUV420P,
 		v.Width, v.Height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
 }
 

@@ -1,8 +1,11 @@
 package main
 
 import (
+	// "bytes"
+	"download"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	. "player/clock"
 	. "player/gui"
@@ -13,6 +16,7 @@ import (
 	"strings"
 	"task"
 	"time"
+	"util"
 	// "util"
 )
 
@@ -45,6 +49,8 @@ func (m *movie) setupAudio() {
 
 	audioStreamNames := make([]string, 0)
 	audioStreamIndexes := make([]int32, 0)
+
+	log.Print("setupAudio:", len(audioStreams))
 
 	if len(audioStreams) > 0 {
 
@@ -215,27 +221,153 @@ func (m *movie) setupVideo() {
 	}
 }
 
+func (m *movie) openHttp(file string) (AVFormatContext, string) {
+	_, name, size, err := download.GetDownloadInfo(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t, err := task.GetTask(name)
+	if err != nil {
+		// log.Fatal(err)
+		t = &task.Task{}
+		t.Name = name
+		t.Size = size
+		t.StartTime = time.Now().Unix()
+		t.Status = "Stopped"
+		t.URL = file
+		task.SaveTask(t)
+	}
+
+	mbuf := &util.Buffer{}
+
+	// currentPos := int64(0)
+	buf := AVObject{}
+	buf.Malloc(1024 * 32)
+	ioctx := NewAVIOContext(buf, func(buf AVObject) int {
+		if buf.Size() == 0 {
+			return 0
+		}
+
+		size := buf.Size()
+		// currentPos := mbuf.CurrentPos
+
+		// println("read: currentPos11:", mbuf.CurrentPos)
+		// for size > 0 && currentPos+int64(size) < t.Size {
+		for {
+
+			if bytes, err := mbuf.Read(size); err == nil {
+				buf.Write(bytes)
+				// size -= len(bytes)
+				currentPos := mbuf.GetCurrentPos()
+				currentPos += int64(len(bytes))
+				mbuf.SetCurrentPos(currentPos)
+				println("readfunc:", currentPos, len(bytes))
+				return len(bytes)
+			}
+
+			time.Sleep(50 * time.Millisecond)
+		}
+
+		// println("read: currentPos:", mbuf.CurrentPos)
+		// return buf.Size() - size
+	}, func(pos int64, whence int) int64 {
+		println("seekfunc:", pos, whence)
+
+		// download.Play(t, w, from, to)
+		// t, _ = task.GetTask(t.Name)
+		currentPos := mbuf.GetCurrentPos()
+		switch whence {
+		case os.SEEK_SET:
+			currentPos = pos
+			break
+		case os.SEEK_CUR:
+			currentPos += pos
+			break
+		case os.SEEK_END:
+			currentPos = t.Size + pos
+			break
+		// case AVSEEK_SIZE:
+		default:
+			return t.Size
+		}
+
+		if currentPos > t.Size {
+			currentPos = t.Size
+			return currentPos
+		}
+
+		if currentPos < 0 {
+			return -1
+		}
+		mbuf.SetCurrentPos(currentPos)
+		mbuf.ClearData()
+		go download.Play(t, mbuf, currentPos, t.Size)
+		return currentPos
+	})
+
+	ctx := NewAVFormatContext()
+	ctx.SetPb(ioctx)
+
+	download.Play(t, mbuf, 0, 1024*32)
+
+	if bytes, err := mbuf.Read(1024 * 32); err == nil {
+		println("bytes:", len(bytes))
+		pd := NewAVProbeData()
+
+		obj := AVObject{}
+		obj.Malloc(len(bytes))
+		obj.Write(bytes)
+
+		pd.SetBuffer(obj)
+		pd.SetFileName("")
+
+		ctx.SetInputFormat(pd.InputFormat())
+
+		mbuf.ClearData()
+
+		go download.Play(t, mbuf, 0, t.Size)
+
+		ctx.OpenInput("")
+	}
+
+	return ctx, name
+}
+
 func (m *movie) open(file string, subFiles []string) {
 	println("open ", file)
 
-	ctx := AVFormatContext{}
-	ctx.OpenInput(file)
-	if ctx.IsNil() {
-		log.Fatal("open failed:", file)
-		return
-	}
+	var ctx AVFormatContext
+	var filename string
 
-	ctx.FindStreamInfo()
-	ctx.DumpFormat()
+	if strings.HasPrefix(file, "http://") {
+		ctx, filename = m.openHttp(file)
+	} else {
+		ctx = AVFormatContext{}
+		ctx.OpenInput(file)
+		if ctx.IsNil() {
+			log.Fatal("open failed:", file)
+			return
+		}
+
+		filename = filepath.Base(file)
+
+		ctx.FindStreamInfo()
+		ctx.DumpFormat()
+
+	}
 
 	m.chCtrl = make(chan ctrlArg)
 	m.chSeekPause = make(chan time.Duration)
 
 	m.ctx = ctx
+	// dur := ctx.Duration()
+	// if dur < 0 {
+	// 	dur = -dur
+	// }
 	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
 
 	m.setupVideo()
-	m.w = NewWindow(filepath.Base(file), m.v.Width, m.v.Height)
+	m.w = NewWindow(filename, m.v.Width, m.v.Height)
 	m.v.SetRender(m.w)
 
 	m.uievents()
@@ -254,38 +386,8 @@ func (m *movie) open(file string, subFiles []string) {
 		m.s.Seek(start)
 	}
 
-	go m.showProgress(filepath.Base(file))
+	go m.showProgress(filename)
 }
-
-// func (m *movie) SeekTo(t time.Duration) (time.Duration, []byte) {
-// 	// t = t / time.Second * time.Second
-// 	var img []byte
-
-// 	if m.a != nil {
-// 		m.a.flushBuffer()
-// 	}
-
-// 	if m.v != nil {
-// 		// m.v.FlushBuffer()
-
-// 		var err error
-// 		t, img, err = m.v.Seek(t)
-// 		if err != nil {
-// 			// log.
-// 		}
-// 	}
-
-// 	log.Print("seek to:", t.String())
-
-// 	if m.s != nil {
-// 		m.s.Seek(t)
-// 	}
-// 	if m.s2 != nil {
-// 		m.s2.Seek(t)
-// 	}
-
-// 	return t, img
-// }
 
 func tabs(t time.Duration) time.Duration {
 	if t < 0 {
@@ -332,6 +434,8 @@ func (m *movie) SendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 	return false
 }
 func (m *movie) showProgress(name string) {
+	m.p.LastPos = m.c.GetTime()
+
 	p := m.c.CalcPlayProgress(m.c.GetPercent())
 
 	t, err := task.GetTask(name)

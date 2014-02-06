@@ -70,10 +70,12 @@
     NSRect bound = NSMakeRect(60, 10, self.frame.size.width-120, self.frame.size.height-20);
     
     if (NSPointInRect(pt, bound)) {
-        self->percent = (pt.x-bound.origin.x)/bound.size.width;
+        self->percent = (pt.x-bound.origin.x)/bound.size.width;            
+        if ((self->percent2>0) && (self->percent > self->percent2)) {
+            self->percent = self->percent2;
+        }
         [self setNeedsDisplay:YES];
-            
-        // self->window->callbacks.trackPositionChanged((GLFWwindow*)self->window, self->percent, 0);
+        
         onProgressChanged((void*)[self window], 0, self->percent);
             
         bool keepOn = YES;
