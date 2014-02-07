@@ -2,13 +2,13 @@ package subscribe
 
 import (
 	"database/sql"
-	"download"
+	// "download"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
-	"task"
-	"thunder"
-	"time"
+	// "task"
+	// "thunder"
+	// "time"
 )
 
 type Subscribe struct {
@@ -148,51 +148,51 @@ func SaveSubscribe(s *Subscribe) (err error) {
 	return
 }
 
-func UpdateAll() {
-	subscribes := GetSubscribes()
-	for _, s := range subscribes {
-		_, tasks, err := Parse(s.URL)
-		if err != nil {
-			log.Print(err)
-		} else {
-			for _, t := range tasks {
-				if b, err := task.Exists(t.Name); err == nil && !b {
-					log.Printf("subscribe new task: %v", t)
+// func UpdateAll() {
+// 	subscribes := GetSubscribes()
+// 	for _, s := range subscribes {
+// 		_, tasks, err := Parse(s.URL)
+// 		if err != nil {
+// 			log.Print(err)
+// 		} else {
+// 			for _, t := range tasks {
+// 				if b, err := task.Exists(t.Name); err == nil && !b {
+// 					log.Printf("subscribe new task: %v", t)
 
-					if t.Season < 0 {
-						task.SaveTask(t)
-						continue
-					}
+// 					if t.Season < 0 {
+// 						task.SaveTask(t)
+// 						continue
+// 					}
 
-					files, err := thunder.NewTask(t.Original, "")
-					if err != nil {
-						log.Print(err)
-					}
-					fmt.Printf("%v\n", files)
-					if err == nil && len(files) == 1 && files[0].Percent == 100 {
-						t.URL = files[0].DownloadURL
-						_, _, size, err := download.GetDownloadInfo(t.URL)
-						if err != nil {
-							log.Print(err)
-						} else {
-							t.Size = size
-							task.SaveTask(t)
-							task.StartNewTask2(t)
+// 					files, err := thunder.NewTask(t.Original, "")
+// 					if err != nil {
+// 						log.Print(err)
+// 					}
+// 					fmt.Printf("%v\n", files)
+// 					if err == nil && len(files) == 1 && files[0].Percent == 100 {
+// 						t.URL = files[0].DownloadURL
+// 						_, _, size, err := download.GetDownloadInfo(t.URL)
+// 						if err != nil {
+// 							log.Print(err)
+// 						} else {
+// 							t.Size = size
+// 							task.SaveTask(t)
+// 							task.StartNewTask2(t)
 
-						}
-					}
-				}
-			}
-		}
-	}
-}
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
-func Monitor() {
-	time.Sleep(3 * time.Second)
+// func Monitor() {
+// 	time.Sleep(3 * time.Second)
 
-	for {
-		UpdateAll()
+// 	for {
+// 		UpdateAll()
 
-		time.Sleep(30 * time.Second)
-	}
-}
+// 		time.Sleep(30 * time.Second)
+// 	}
+// }

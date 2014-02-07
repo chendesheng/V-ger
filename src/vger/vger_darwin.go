@@ -3,13 +3,13 @@ package main
 import (
 	"cocoa"
 	"download"
-	"subscribe"
+	// "subscribe"
 	"website"
 )
 
 func main() {
 	go download.Start()
 	go website.Run()
-	go subscribe.Monitor()
+	// go subscribe.Monitor()
 	cocoa.Start()
 }

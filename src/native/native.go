@@ -1,5 +1,9 @@
 package native
 
+import (
+	"io"
+)
+
 type NotificationClickCallback func(string, string)
 
 type NativeAPI interface {
@@ -7,6 +11,7 @@ type NativeAPI interface {
 	SetNotificationClickCallback(callbock NotificationClickCallback)
 	ComputerShutdown(reason string) error
 	MoveFileToTrash(dir, name string) error
+	SetIcon(dir string, r io.Reader)
 }
 
 var DefaultNativeAPI NativeAPI

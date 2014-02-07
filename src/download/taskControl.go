@@ -4,8 +4,9 @@ import (
 	// "fmt"
 	"log"
 	"native"
-	// "net/http"
+	"net/http"
 	"path"
+	"subscribe"
 	"task"
 	"time"
 	"util"
@@ -125,7 +126,18 @@ func download(tc *taskControl) {
 	}
 
 	dir := path.Join(baseDir, t.Subscribe)
-	util.MakeSurePathExists(dir)
+	if _, exists := util.MakeSurePathExists(dir); !exists {
+		s := subscribe.GetSubscribe(t.Subscribe)
+		if s != nil {
+			resp, err := http.Get(s.Banner)
+			defer resp.Body.Close()
+			if err != nil {
+				log.Print(err)
+			} else {
+				native.DefaultNativeAPI.SetIcon(dir, resp.Body)
+			}
+		}
+	}
 
 	f, err := openOrCreateFileRW(path.Join(dir, t.Name), t.DownloadedSize)
 	if err != nil {

@@ -499,6 +499,8 @@ func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func Run() {
+	go Monitor()
+
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 
 	http.HandleFunc("/assets/", assetsHandler)
@@ -543,5 +545,54 @@ func Run() {
 	err := http.ListenAndServe(server, nil)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func UpdateAll() {
+	subscribes := subscribe.GetSubscribes()
+	for _, s := range subscribes {
+		_, tasks, err := subscribe.Parse(s.URL)
+		if err != nil {
+			log.Print(err)
+		} else {
+			for _, t := range tasks {
+				if b, err := task.Exists(t.Name); err == nil && !b {
+					log.Printf("subscribe new task: %v", t)
+
+					if t.Season < 0 {
+						task.SaveTask(t)
+						continue
+					}
+
+					files, err := thunder.NewTask(t.Original, "")
+					if err != nil {
+						log.Print(err)
+					}
+					fmt.Printf("%v\n", files)
+					if err == nil && len(files) == 1 && files[0].Percent == 100 {
+						t.URL = files[0].DownloadURL
+						_, _, size, err := download.GetDownloadInfo(t.URL)
+						if err != nil {
+							log.Print(err)
+						} else {
+							t.Size = size
+							task.SaveTask(t)
+							task.StartNewTask2(t)
+
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func Monitor() {
+	time.Sleep(3 * time.Second)
+
+	for {
+		UpdateAll()
+
+		time.Sleep(30 * time.Second)
 	}
 }

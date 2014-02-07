@@ -7,12 +7,12 @@ import (
 	// "strings"
 )
 
-func MakeSurePathExists(path string) error {
+func MakeSurePathExists(path string) (error, bool) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.Mkdir(path, 0777)
+		return os.Mkdir(path, 0777), false
 	}
 
-	return nil
+	return nil, true
 }
 
 func IsPathExists(path string) bool {

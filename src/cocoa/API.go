@@ -1,13 +1,20 @@
 package cocoa
 
 import (
-	// "github.com/mkrautz/objc"
-	// . "github.com/mkrautz/objc/AppKit"
+	"github.com/mkrautz/objc"
+	. "github.com/mkrautz/objc/AppKit"
 	. "github.com/mkrautz/objc/Foundation"
+	"io"
 	"log"
 	"native"
 	"os"
 	// "os/exec"
+	"bytes"
+	"image"
+	"image/draw"
+	"image/jpeg"
+	"image/png"
+	"io/ioutil"
 	"os/user"
 	"path"
 	"strings"
@@ -94,4 +101,56 @@ func (api *cocoaNativeAPI) MoveFileToTrash(dir, name string) error {
 	println(path.Join(dir, name))
 	println(path.Join(trashPath, name))
 	return os.Rename(path.Join(dir, name), path.Join(trashPath, name))
+}
+
+func (api *cocoaNativeAPI) SetIcon(dir string, r io.Reader) {
+	pool := NewNSAutoreleasePool()
+	defer pool.Drain()
+
+	goimg, err := jpeg.Decode(r)
+	if err != nil {
+		println(err.Error())
+	}
+	if goimg == nil {
+		println("nil")
+	}
+	sz := goimg.Bounds().Size()
+	maxw := sz.X
+	if sz.X < sz.Y {
+		maxw = sz.Y
+	}
+	newimg := image.NewRGBA(image.Rect(0, 0, maxw, maxw))
+	println((maxw - sz.X) / 2)
+	rt := goimg.Bounds()
+	rt.Min.X = (maxw - sz.X) / 2
+	rt.Min.Y = (maxw - sz.Y) / 2
+	rt.Max.X += (maxw - sz.X) / 2
+	rt.Max.Y += (maxw - sz.Y) / 2
+	// rt.Add(image.Point{(maxw - sz.X) / 2, (maxw - sz.Y) / 2})
+
+	draw.Draw(newimg, rt, goimg, image.Point{0, 0}, draw.Src)
+
+	buf := bytes.NewBuffer(nil)
+	png.Encode(buf, newimg)
+	b, _ := ioutil.ReadAll(buf)
+	data := DataWithBytes(b)
+
+	// data.WriteToFile("/Volumes/Data/Downloads/Video/Girls/c.jpg", true)
+
+	img := NSImage{objc.GetClass("NSImage").Alloc()}
+	img.AutoRelease()
+
+	img.InitWithData(data)
+
+	// bmp1 := NSBitmapImageRep{img.Representations().ObjectAtIndex(0)}
+	// data1 := bmp1.RepresentationUsingType(NSPNGFileType, NSDictionary{objc.NilObject()})
+	// // data1.WriteToFile("/Volumes/Data/Downloads/Video/Girls/d.jpg", true)
+	// bf := bytes.NewBuffer(data1.Bytes())
+	// _, err = png.Decode(bf)
+	// if err != nil {
+	// 	log.Print(err)
+	// }
+
+	w := NSSharedWorkspace()
+	w.SetIcon(img, dir, NSExcludeQuickDrawElementsIconCreationOption)
 }
