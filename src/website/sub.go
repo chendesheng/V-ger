@@ -51,7 +51,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	util.MakeSurePathExists(subFileDir)
 
 	subFile := path.Join(subFileDir, name)
-	if ok, err := subtitles.QuickDownload(url, subFile); !ok {
+	if err := subtitles.QuickDownload(url, subFile); err != nil {
 		w.Write([]byte(err.Error()))
 		return
 	}

@@ -60,7 +60,7 @@ func (m *movie) uievents() {
 			go func() {
 				if m.s != nil {
 					offset := m.s.AddOffset(-200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
 					UpdateSubtitleOffset(m.s.Name, offset)
 				}
@@ -71,7 +71,7 @@ func (m *movie) uievents() {
 			go func() {
 				if m.s != nil {
 					offset := m.s.AddOffset(200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
 					UpdateSubtitleOffset(m.s.Name, offset)
 				}
@@ -82,11 +82,11 @@ func (m *movie) uievents() {
 			go func() {
 				// if m.s != nil {
 				// 	offset := m.s.AddOffset(-1000 * time.Millisecond)
-				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 				// }
 				if m.s2 != nil {
 					offset := m.s2.AddOffset(-200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()))
+					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
 					UpdateSubtitleOffset(m.s2.Name, offset)
 				}
@@ -97,11 +97,11 @@ func (m *movie) uievents() {
 			go func() {
 				// if m.s != nil {
 				// 	offset := m.s.AddOffset(1000 * time.Millisecond)
-				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()))
+				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 				// }
 				if m.s2 != nil {
 					offset := m.s2.AddOffset(200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()))
+					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
 					UpdateSubtitleOffset(m.s2.Name, offset)
 				}

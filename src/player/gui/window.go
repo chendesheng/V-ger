@@ -211,7 +211,7 @@ func (w *Window) SendShowText(s SubItemArg) {
 	w.ChanShowText <- s
 	// return <-res
 }
-func (w *Window) SendShowMessage(msg string) {
+func (w *Window) SendShowMessage(msg string, autoHide bool) uintptr {
 	s := SubItem{}
 	s.PositionType = 7
 	s.X = 20
@@ -222,8 +222,19 @@ func (w *Window) SendShowMessage(msg string) {
 	res := make(chan SubItemExtra)
 	w.ChanShowMessage <- SubItemArg{s, res}
 	ptr := <-res
-	time.Sleep(2 * time.Second)
-	w.ChanHideMessage <- ptr.Handle
+
+	if autoHide {
+		time.Sleep(2 * time.Second)
+		w.ChanHideMessage <- ptr.Handle
+
+		return 0
+	} else {
+		return ptr.Handle
+	}
+}
+
+func (w *Window) SendHideMessage(h uintptr) {
+	w.ChanHideMessage <- h
 }
 
 func (w *Window) ShowText(s *SubItem) uintptr {

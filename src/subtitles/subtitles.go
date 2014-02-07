@@ -65,12 +65,59 @@ func SearchSubtitles(name string, result chan Subtitle) {
 	<-shooterFinish
 	close(result)
 }
-func QuickDownload(url, path string) (bool, error) {
+
+func SearchSubtitlesMaxCount(name string, result chan Subtitle, maxcnt int) {
+	yyetsRes := make(chan Subtitle)
+	yyetsCnt := 0
+	go func() {
+		err := yyetsSearchSubtitles(name, yyetsRes)
+		if err != nil {
+			log.Println(err)
+		}
+		close(yyetsRes)
+	}()
+
+	shooterRes := make(chan Subtitle)
+	shooterCnt := 0
+	go func() {
+		err := shooterSearch(name, shooterRes)
+		if err != nil {
+			log.Println(err)
+		}
+		close(shooterRes)
+	}()
+
+	var yyetsFinish, shoooterFinish bool
+	var s Subtitle
+	for !(yyetsFinish && shoooterFinish) {
+		select {
+		case s, yyetsFinish = <-yyetsRes:
+			yyetsCnt++
+			if yyetsCnt < maxcnt {
+				result <- s
+			}
+			break
+		case s, shoooterFinish = <-shooterRes:
+			shooterCnt++
+			if shooterCnt < maxcnt {
+				result <- s
+			}
+			break
+		}
+
+		if yyetsCnt >= maxcnt && shooterCnt >= maxcnt {
+			close(result)
+		}
+	}
+
+	close(result)
+}
+func QuickDownload(url, path string) error {
 	resp, err := http.Get(url)
 	// bytes, err := httputil.DumpResponse(resp, false)
 	// fmt.Println(string(bytes))
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
@@ -78,15 +125,15 @@ func QuickDownload(url, path string) (bool, error) {
 	defer resp.Body.Close()
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0666)
 	defer f.Close()
 	if err != nil {
-		return false, err
+		return err
 	}
 	// fmt.Println(data)
 	f.WriteAt(data, 0)
-	return true, nil
+	return nil
 }

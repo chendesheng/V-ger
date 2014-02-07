@@ -1,11 +1,13 @@
 package main
 
 import (
-	"log"
-	. "player/shared"
-	// "os"
+	"download"
 	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
 	"path"
+	. "player/shared"
 	"runtime"
 	"strings"
 	"subtitles"
@@ -64,11 +66,17 @@ func findSubs(base string) []string {
 
 				log.Print("try convert to utf8:", filename)
 
-				utf8Text, err := toutf8.ConverToUTF8(filename)
+				utf8Text, encoding, err := toutf8.ConverToUTF8(filename)
 				if err == nil {
 					log.Print("convert to utf8 success")
 					ioutil.WriteFile(filename, []byte(utf8Text), 0666)
+
 					res = append(res, filename)
+					if encoding == "gb18030" || encoding == "utf-8" {
+						tmp := res[0]
+						res[0] = res[len(res)-1]
+						res[len(res)-1] = tmp
+					}
 				} else {
 					log.Print(err.Error())
 
@@ -94,6 +102,51 @@ func findSubs(base string) []string {
 	}
 }
 
+func downloadSubs(movieName string) []string {
+	chSubs := make(chan subtitles.Subtitle)
+	go subtitles.SearchSubtitles(util.CleanMovieName(movieName), chSubs)
+
+	for s := range chSubs {
+		log.Printf("%v", s)
+		// text, _ := json.Marshal(s)
+		// io.WriteString(ws, string(text))
+		url, subname, _, err := download.GetDownloadInfo(s.URL)
+		if err != nil {
+			return nil
+		}
+
+		subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
+		util.MakeSurePathExists(subFileDir)
+		subFile := path.Join(subFileDir, subname)
+
+		if err := subtitles.QuickDownload(url, subFile); err != nil {
+			log.Print(err)
+		} else {
+			if util.CheckExt(subname, "rar", "zip") {
+				cmd := exec.Command(path.Join(path.Dir(os.Args[0]), "unar"), subFile, "-f", "-o", subFileDir)
+
+				if err := cmd.Run(); err != nil {
+					log.Print(err)
+				} else {
+					os.Remove(subFile)
+				}
+			}
+		}
+	}
+
+	dir := util.ReadConfig("dir")
+	subs := findSubs(path.Join(dir, "subs", movieName))
+	for i, sub := range subs {
+		sub = strings.ToLower(sub)
+		bytes, err := ioutil.ReadFile(sub)
+		if err == nil {
+			InsertSubtitle(&Sub{movieName, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:]})
+		}
+		subs[i] = path.Base(sub)
+	}
+	return subs
+}
+
 type appDelegate struct {
 }
 
@@ -103,16 +156,24 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 	name := path.Base(filename)
 
-	dir := util.ReadConfig("dir")
-	subs := findSubs(path.Join(dir, "subs", name))
-	for i, sub := range subs {
-		sub = strings.ToLower(sub)
-		bytes, err := ioutil.ReadFile(sub)
-		if err == nil {
-			InsertSubtitle(&Sub{name, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:]})
-		}
+	// dir := util.ReadConfig("dir")
+	// subs := findSubs(path.Join(dir, "subs", name))
+	// for i, sub := range subs {
+	// 	sub = strings.ToLower(sub)
+	// 	bytes, err := ioutil.ReadFile(sub)
+	// 	if err == nil {
+	// 		InsertSubtitle(&Sub{name, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:]})
+	// 	}
 
-		subs[i] = path.Base(sub)
+	// 	subs[i] = path.Base(sub)
+	// }
+	subs := make([]string, 0)
+	local := GetSubtitles(name)
+	log.Printf("%v", subs)
+	if len(local) > 0 {
+		for _, s := range local {
+			subs = append(subs, s.Name)
+		}
 	}
 
 	m := movie{}
@@ -130,11 +191,19 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	// log.Print("sub: ", sub)
 	m.open(filename, subs)
 
+	if len(subs) == 0 {
+		go func() {
+			h := m.w.SendShowMessage("Downloading subtitles...", false)
+			defer m.w.SendHideMessage(h)
+			m.setupSubtitles(downloadSubs(name))
+		}()
+	}
+
 	go m.decode(name)
 
 	go m.v.Play()
 
-	return true
+	return len(filename) > 0
 }
 
 func (a *appDelegate) WillTerminate() {

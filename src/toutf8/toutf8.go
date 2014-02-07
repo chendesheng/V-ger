@@ -58,34 +58,35 @@ func GuessEncoding(data []byte) (string, error) {
 	return cd.Close(), nil
 }
 
-func ConverToUTF8(filename string) (string, error) {
+func ConverToUTF8(filename string) (string, string, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	encoding, err := GuessEncoding(data)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
+	encoding = strings.ToLower(encoding)
 	log.Print("encodeing:", encoding)
 
-	if strings.ToLower(encoding) == "utf-8" {
-		return string(data), nil
+	if encoding == "utf-8" {
+		return string(data), encoding, nil
 	}
 
 	c, err := iconv.Open("UTF-8", encoding)
 	defer c.Close()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	res, _, err := c.Conv(data, make([]byte, 512))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return string(res), nil
+	return string(res), encoding, nil
 }
 
 // func GB18030ToUTF8(filename string) (string, error) {
