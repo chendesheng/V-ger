@@ -113,107 +113,70 @@ func SaveBannerImage(name string, bytes []byte) {
 		log.Print(err)
 	}
 }
-func SaveSubscribe(s *Subscribe) (err error) {
+func updateSubscribe(s *Subscribe) error {
 	db := openDb()
 	defer db.Close()
 
-	var tx *sql.Tx
-	tx, err = db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Commit()
-	var count int
-	err = tx.QueryRow("select count(*) from subscribe where Name=?", s.Name).Scan(&count)
-	if err != nil {
-		return err
-	}
-
-	var autodownload int
-	autodownload = 0
+	autodownload := 0
 	if s.Autodownload {
 		autodownload = 1
 	}
 
-	if count > 0 {
-		// println("update")
-
-		_, err = tx.Exec(`update subscribe set
+	_, err := db.Exec(`update subscribe set
 		Source=?,
 		URL=?,
 		Autodownload=?,
 		Banner=? where Name=?`,
-			s.Source,
-			s.URL,
-			autodownload,
-			s.Banner,
-			s.Name)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-	} else {
-		_, err = tx.Exec(fmt.Sprintf(`
+		s.Source,
+		s.URL,
+		autodownload,
+		s.Banner,
+		s.Name)
+
+	return err
+}
+func insertSubscribe(s *Subscribe) error {
+	db := openDb()
+	defer db.Close()
+
+	autodownload := 0
+	if s.Autodownload {
+		autodownload = 1
+	}
+
+	_, err := db.Exec(fmt.Sprintf(`
 			insert into subscribe(%s) values(?, ?, ?, ?, ?)
 			`, subscribeColumnes), s.Name,
-			s.Source,
-			s.URL,
-			autodownload,
-			s.Banner)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
+		s.Source,
+		s.URL,
+		autodownload,
+		s.Banner)
+
+	return err
+}
+func Exists(name string) (bool, error) {
+	db := openDb()
+	defer db.Close()
+	var count int
+	err := db.QueryRow("select count(*) from subscribe where Name=?", name).Scan(&count)
+
+	return count > 0, err
+}
+func SaveSubscribe(s *Subscribe) (err error) {
+	b, err := Exists(s.Name)
+	if err != nil {
+		return err
+	}
+
+	if b {
+		err = updateSubscribe(s)
+	} else {
+		err = insertSubscribe(s)
+	}
+
+	if err != nil {
+		log.Print(err)
 	}
 
 	return
 }
-
-// func UpdateAll() {
-// 	subscribes := GetSubscribes()
-// 	for _, s := range subscribes {
-// 		_, tasks, err := Parse(s.URL)
-// 		if err != nil {
-// 			log.Print(err)
-// 		} else {
-// 			for _, t := range tasks {
-// 				if b, err := task.Exists(t.Name); err == nil && !b {
-// 					log.Printf("subscribe new task: %v", t)
-
-// 					if t.Season < 0 {
-// 						task.SaveTask(t)
-// 						continue
-// 					}
-
-// 					files, err := thunder.NewTask(t.Original, "")
-// 					if err != nil {
-// 						log.Print(err)
-// 					}
-// 					fmt.Printf("%v\n", files)
-// 					if err == nil && len(files) == 1 && files[0].Percent == 100 {
-// 						t.URL = files[0].DownloadURL
-// 						_, _, size, err := download.GetDownloadInfo(t.URL)
-// 						if err != nil {
-// 							log.Print(err)
-// 						} else {
-// 							t.Size = size
-// 							task.SaveTask(t)
-// 							task.StartNewTask2(t)
-
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-// func Monitor() {
-// 	time.Sleep(3 * time.Second)
-
-// 	for {
-// 		UpdateAll()
-
-// 		time.Sleep(30 * time.Second)
-// 	}
-// }
