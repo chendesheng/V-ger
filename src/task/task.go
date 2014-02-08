@@ -121,7 +121,7 @@ func GetTask(name string) (*Task, error) {
 	// println("get task:", name)
 	db := openDb()
 	defer db.Close()
-	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task where Name=?`, taskColumnes), name))
+	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task left join playing on Name=Movie where Name=?`, taskColumnes), name))
 	if err != nil {
 		return nil, err
 	} else {
