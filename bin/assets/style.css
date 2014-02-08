@@ -550,6 +550,21 @@ h3 {
 .stop:active {
 	background-image: url('/assets/stop_pressed.png');
 }
+.unread {
+	/*background-image: url('/assets/unread.png');
+	background-position: center;
+	background-repeat: no-repeat;
+	outline: none;
+*/
+	/*display: block;*/
+	width:12px !important;
+	height: 12px !important;
+	border-radius: 6px !important;
+	padding: 0 !important;
+	/*border: none;*/
+	/*background-color: blue;	*/
+}
+
 .autoshutdown {
 	background-image: url('/assets/autoshutdown.png');
 	background-position: center;

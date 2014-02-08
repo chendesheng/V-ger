@@ -76,11 +76,11 @@ var taskColumnes string = `Name,
 				Speed,
 				Status,
 				Est,
-				LastPlaying,
 				Subscribe,
 				Original,
 				Season,
-				Episode`
+				Episode,
+				LastPos` //lastPos field move to table playing, require join table
 
 // func SetAutoshutdown(name string, onOrOff bool) {
 // 	if t, err := GetTask(name); err == nil {
@@ -143,8 +143,10 @@ type taskScanner interface {
 }
 
 func scanTask(scanner taskScanner) (*Task, error) {
+	var lastPlaying sql.NullInt64
+
 	var t Task
-	var elapsedTime, est, lastPlaying int64
+	var elapsedTime, est int64
 	err := scanner.Scan(&t.Name,
 		&t.URL,
 		&t.Size,
@@ -155,15 +157,17 @@ func scanTask(scanner taskScanner) (*Task, error) {
 		&t.Speed,
 		&t.Status,
 		&est,
-		&lastPlaying,
 		&t.Subscribe,
 		&t.Original,
 		&t.Season,
-		&t.Episode)
+		&t.Episode,
+		&lastPlaying)
 	if err == nil {
 		t.ElapsedTime = time.Duration(elapsedTime)
 		t.Est = time.Duration(est)
-		t.LastPlaying = time.Duration(lastPlaying)
+		if lastPlaying.Valid {
+			t.LastPlaying = time.Duration(lastPlaying.Int64)
+		}
 		return &t, nil
 	} else {
 		log.Print(err)
@@ -173,7 +177,7 @@ func scanTask(scanner taskScanner) (*Task, error) {
 func GetTasks() []*Task {
 	db := openDb()
 	defer db.Close()
-	rows, err := db.Query(fmt.Sprintf(`select %s from task`, taskColumnes))
+	rows, err := db.Query(fmt.Sprintf(`select %s from task left join playing on Name=Movie`, taskColumnes))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -184,6 +188,8 @@ func GetTasks() []*Task {
 		t, err := scanTask(rows)
 		if err == nil {
 			tasks = append(tasks, t)
+
+			// println(t.LastPlaying)
 		}
 	}
 
@@ -193,7 +199,7 @@ func GetTasks() []*Task {
 func GetDownloadingTask() (*Task, bool) {
 	db := openDb()
 	defer db.Close()
-	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task where Status='Downloading'`, taskColumnes)))
+	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
 	if err != nil {
 		return nil, false
 	} else {
@@ -231,7 +237,6 @@ func updateTask(t *Task) error {
 		Speed=?,
 		Status=?,
 		Est=?,
-		LastPlaying=?,
 		Subscribe=?,
 		Original=?,
 		Season=?,
@@ -245,7 +250,6 @@ func updateTask(t *Task) error {
 		t.Speed,
 		t.Status,
 		int64(t.Est),
-		int64(t.LastPlaying),
 		t.Subscribe,
 		t.Original,
 		t.Season,
@@ -260,7 +264,7 @@ func insertTask(t *Task) error {
 	defer db.Close()
 
 	_, err := db.Exec(fmt.Sprintf(`
-			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
+			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
 			`, taskColumnes), t.Name,
 		t.URL,
 		t.Size,
@@ -271,7 +275,6 @@ func insertTask(t *Task) error {
 		t.Speed,
 		t.Status,
 		t.Est,
-		t.LastPlaying,
 		t.Subscribe,
 		t.Original,
 		t.Season,
