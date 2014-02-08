@@ -233,6 +233,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				$scope.subscribes.push(data);
 
 				$scope.switch_subscribe(data);
+
+				$scope.new_url = '';
 			});
 		}
 		$scope.currentSubscribe = {Name:'Single Tasks'};
