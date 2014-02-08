@@ -59,7 +59,7 @@ func monitorTask() {
 				delete(taskControls, t.Name)
 
 				dir := util.ReadConfig("dir")
-				err := native.MoveFileToTrash(dir, path.Join(t.Subscribe, t.Name))
+				err := native.MoveFileToTrash(path.Join(dir, t.Subscribe), t.Name)
 				if err != nil {
 					log.Println(err)
 				}
