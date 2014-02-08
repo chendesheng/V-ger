@@ -22,7 +22,10 @@
 
 			<ul id="subscribes">
 				<li ng-repeat="subscribe in subscribes" class="subscribe" ng-class="{highlight:subscribe.Name==task_filter.Subscribe}" ng-click="switch_subscribe(subscribe);">
-					{{subscribe.Name}}
+					<!-- <span class="subscribe-icon" ng-show="subscribe.Name!='Single Tasks'"> -->
+					<img src="/subscribe/banner/{{subscribe.Name}}" alt="banner" ng-show="subscribe.Name!='Single Tasks'">
+					<!-- </span> -->
+					<span class="subscribe-menu-name">{{subscribe.Name}}</span>
 				</li>
 			</ul>
 			<div id="subscribe-content" ng-class="{'show-info':currentSubscribe.Name!='Single Tasks'}">
