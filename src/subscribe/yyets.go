@@ -2,7 +2,7 @@ package subscribe
 
 import (
 	"encoding/base64"
-	"fmt"
+	// "fmt"
 	"github.com/peterbourgon/html"
 	"io/ioutil"
 	"net/http"
@@ -21,7 +21,7 @@ func parseEpisodes(n *html.Node, season int, subscribeName string, format string
 			t.Season = season
 			t.Episode, _ = strconv.Atoi(getAttr(c, "episode"))
 
-			fmt.Printf("%v\n", t)
+			// fmt.Printf("%v\n", t)
 
 			result = append(result, t)
 		}
@@ -103,7 +103,7 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	}
 	f(doc)
 
-	fmt.Printf("%v\n", s)
+	// fmt.Printf("%v\n", s)
 	// encoded, err := downloadBannerImage(s.Banner)
 	// if err == nil {
 	// 	s.Banner = encoded

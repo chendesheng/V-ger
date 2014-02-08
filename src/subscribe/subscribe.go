@@ -92,6 +92,27 @@ func GetSubscribe(name string) *Subscribe {
 
 	return nil
 }
+func GetBannerImage(name string) []byte {
+	db := openDb()
+	defer db.Close()
+
+	bytes := make([]byte, 0)
+	err := db.QueryRow(`select BannerImage from subscribe where Name=?`, name).Scan(&bytes)
+	if err != nil {
+		log.Print(err)
+	}
+
+	return bytes
+}
+func SaveBannerImage(name string, bytes []byte) {
+	db := openDb()
+	defer db.Close()
+
+	_, err := db.Exec("update subscribe set BannerImage=? where Name=?", bytes, name)
+	if err != nil {
+		log.Print(err)
+	}
+}
 func SaveSubscribe(s *Subscribe) (err error) {
 	db := openDb()
 	defer db.Close()

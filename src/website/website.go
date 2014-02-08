@@ -222,6 +222,37 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(text))
 	}
 }
+func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
+	name := ""
+	if len(r.URL.String()) > 17 {
+		name, _ = url.QueryUnescape(r.URL.String()[18:])
+	}
+	println(name)
+	s := subscribe.GetSubscribe(name)
+	if s != nil {
+		bytes := subscribe.GetBannerImage(name)
+		if len(bytes) > 0 {
+			w.Write(bytes)
+		} else {
+			resp, err := http.Get(s.Banner)
+			if err != nil {
+				writeError(w, err)
+			} else {
+				bytes, err = ioutil.ReadAll(resp.Body)
+				if err != nil {
+					writeError(w, err)
+				} else {
+					subscribe.SaveBannerImage(name, bytes)
+
+					w.Write(subscribe.GetBannerImage(name))
+				}
+			}
+		}
+	} else {
+		w.WriteHeader(404)
+		w.Write([]byte("Unknown subscribe"))
+	}
+}
 func subscribeHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if re := recover(); re != nil {
@@ -524,6 +555,7 @@ func Run() {
 
 	http.HandleFunc("/subscribe/new", subscribeNewHandler)
 	http.HandleFunc("/subscribe", subscribeHandler)
+	http.HandleFunc("/subscribe/banner/", subscribeBannerHandler)
 
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 	http.HandleFunc("/thunder/torrent", thunderTorrentHandler)

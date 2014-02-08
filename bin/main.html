@@ -27,7 +27,7 @@
 			</ul>
 			<div id="subscribe-content" ng-class="{'show-info':currentSubscribe.Name!='Single Tasks'}">
 				<div class="subscribe-info">
-					<img src="{{currentSubscribe.Banner}}" style="float:left">
+					<img src="/subscribe/banner/{{currentSubscribe.Name}}" style="float:left">
 					<span style="float:left">
 						<span class="name">{{currentSubscribe.Name}}</span>
 						&nbsp;<input type="button" value="Update" ng-click="new_subscribe(currentSubscribe.URL);"/>

@@ -12,6 +12,7 @@ type NativeAPI interface {
 	ComputerShutdown(reason string) error
 	MoveFileToTrash(dir, name string) error
 	SetIcon(dir string, r io.Reader)
+	GetIcon(dir string, w io.Writer) bool //return true means folder use custom icon. If folder not exists return false.
 }
 
 var DefaultNativeAPI NativeAPI

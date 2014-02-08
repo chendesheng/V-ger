@@ -154,3 +154,19 @@ func (api *cocoaNativeAPI) SetIcon(dir string, r io.Reader) {
 	w := NSSharedWorkspace()
 	w.SetIcon(img, dir, NSExcludeQuickDrawElementsIconCreationOption)
 }
+
+func (api *cocoaNativeAPI) GetIcon(dir string, w io.Writer) bool {
+	if _, err := os.Stat(path.Join(dir, "Icon\r")); os.IsNotExist(err) {
+		return false
+	}
+
+	pool := NewNSAutoreleasePool()
+	defer pool.Drain()
+
+	ws := NSSharedWorkspace()
+	img := ws.IconForFile(dir)
+	bmp := NSBitmapImageRep{img.Representations().ObjectAtIndex(0)}
+	data := bmp.RepresentationUsingType(NSPNGFileType, NSDictionary{objc.NilObject()})
+	w.Write(data.Bytes())
+	return true
+}
