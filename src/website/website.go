@@ -610,7 +610,6 @@ func UpdateAll() {
 							t.Size = size
 							task.SaveTask(t)
 							task.StartNewTask2(t)
-
 						}
 					}
 				}

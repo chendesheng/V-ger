@@ -79,8 +79,7 @@ var taskColumnes string = `Name,
 				Subscribe,
 				Original,
 				Season,
-				Episode,
-				LastPos` //lastPos field move to table playing, require join table
+				Episode` //lastPos field move to table playing, require join table
 
 // func SetAutoshutdown(name string, onOrOff bool) {
 // 	if t, err := GetTask(name); err == nil {
@@ -121,7 +120,7 @@ func GetTask(name string) (*Task, error) {
 	// println("get task:", name)
 	db := openDb()
 	defer db.Close()
-	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task left join playing on Name=Movie where Name=?`, taskColumnes), name))
+	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Name=?`, taskColumnes), name))
 	if err != nil {
 		return nil, err
 	} else {
@@ -177,7 +176,7 @@ func scanTask(scanner taskScanner) (*Task, error) {
 func GetTasks() []*Task {
 	db := openDb()
 	defer db.Close()
-	rows, err := db.Query(fmt.Sprintf(`select %s from task left join playing on Name=Movie`, taskColumnes))
+	rows, err := db.Query(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie`, taskColumnes))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -199,7 +198,7 @@ func GetTasks() []*Task {
 func GetDownloadingTask() (*Task, bool) {
 	db := openDb()
 	defer db.Close()
-	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
+	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
 	if err != nil {
 		return nil, false
 	} else {
@@ -297,6 +296,8 @@ func SaveTask(t *Task) (err error) {
 
 	if err == nil {
 		go writeChangeEvent(t.Name)
+	} else {
+		log.Print(err)
 	}
 
 	return

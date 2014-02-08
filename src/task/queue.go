@@ -13,11 +13,11 @@ func StartNewTask(name string, url string, size int64) error {
 
 	return SaveTask(t)
 }
-func StartNewTask2(t *Task) error {
+func StartNewTask2(t *Task) {
 	println("start new task2")
 	startOrQueueTask(t)
 
-	return SaveTask(t)
+	SaveTask(t)
 }
 
 func ResumeTask(name string) error {
