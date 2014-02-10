@@ -26,6 +26,9 @@ type Sub struct {
 	Offset  time.Duration
 	Content string
 	Type    string
+
+	Lang1 string //one subtitle file may has double languages
+	Lang2 string
 }
 
 type Playing struct {

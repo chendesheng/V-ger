@@ -4,8 +4,10 @@ import (
 	// "io/ioutil"
 	"log"
 	. "player/clock"
+	"player/language"
 	. "player/shared"
 	"player/subtitle/ass"
+	"player/subtitle/chinese"
 	"player/subtitle/srt"
 	// "runtime"
 	"time"
@@ -36,16 +38,14 @@ type Subtitle struct {
 
 	chanGetSubTime chan subTimeArg
 
-	// ChanPause        chan time.Duration
-	// ChanPauseSeeking chan time.Duration
-
 	chanStop chan bool
 
 	Name string
 
 	IsMainOrSecondSub bool
 
-	// DisplayingMap map[int]uintptr
+	Lang1 string //one subtitle file may has double languages
+	Lang2 string
 }
 
 type displayingItem struct {
@@ -211,6 +211,25 @@ func (s *Subtitle) findPos(t time.Duration) (int, *SubItem) {
 	return 1 << 31, nil
 }
 
+func detectLanguage(items []*SubItem) (string, string) {
+	content := ""
+	for _, item := range items {
+		for _, attrStr := range item.Content {
+			content += attrStr.Content
+		}
+	}
+
+	return language.DetectLanguages(content)
+}
+
+func simplized(items []*SubItem) {
+	for _, item := range items {
+		for i, attrStr := range item.Content {
+			item.Content[i].Content = chinese.Simplized(attrStr.Content)
+		}
+	}
+}
+
 func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Subtitle {
 	var err error
 	sub := GetSubtitle(file)
@@ -227,12 +246,20 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 	s.chanGetSubTime = make(chan subTimeArg)
 	s.Name = file
 	s.IsMainOrSecondSub = true
+	s.Lang1 = sub.Lang1
+	s.Lang2 = sub.Lang2
 
 	if sub.Type == "ass" {
 		s.items, err = ass.Parse(sub.Content)
 	} else {
 		s.items, err = srt.Parse(sub.Content, width, height)
 	}
+
+	if len(sub.Lang1) == 0 && len(sub.Lang2) == 0 {
+		s.Lang1, s.Lang2 = detectLanguage(s.items)
+		UpdateSubtitleLanguage(s.Name, s.Lang1, s.Lang2)
+	}
+	simplized(s.items)
 
 	if err != nil {
 		log.Print(err)

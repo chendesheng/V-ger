@@ -95,27 +95,6 @@ func (m *movie) setupSubtitles(subFiles []string) {
 		tags := make([]int32, 0)
 		names := make([]string, 0)
 
-		selected1 := -1
-		selected2 := -1
-		for i, n := range subFiles {
-			tags = append(tags, int32(i))
-			names = append(names, filepath.Base(n))
-
-			if n == m.p.Sub1 {
-				selected1 = i
-			}
-
-			if n == m.p.Sub2 {
-				selected2 = i
-			}
-		}
-
-		if selected1 == -1 && selected2 == -1 {
-			selected1 = 0
-		}
-
-		log.Printf("selected1:%d, selected2:%d", selected1, selected2)
-		m.w.InitSubtitleMenu(names, tags, selected1, selected2)
 		m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
 			go func(m *movie, subFiles []string) {
 				if showOrHide {
@@ -176,32 +155,102 @@ func (m *movie) setupSubtitles(subFiles []string) {
 
 		if len(m.p.Sub1) > 0 {
 			m.s = NewSubtitle(m.p.Sub1, m.w, m.c, float64(width), float64(height))
-			m.s.IsMainOrSecondSub = true
-
 			if m.s != nil {
-				go m.s.Play()
+				m.s.IsMainOrSecondSub = true
+
+				if m.s != nil {
+					go m.s.Play()
+				}
 			}
 		}
 
 		if len(m.p.Sub2) > 0 {
-			m.s2 = NewSubtitle(m.p.Sub2, m.w, m.c, float64(width), float64(height))
-			m.s2.IsMainOrSecondSub = false
+			if m.s == nil {
+				m.s = NewSubtitle(m.p.Sub2, m.w, m.c, float64(width), float64(height))
+				if m.s != nil {
+					m.s.IsMainOrSecondSub = false
 
-			if m.s2 != nil {
-				go m.s2.Play()
+					if m.s != nil {
+						go m.s.Play()
+					}
+				}
+			} else {
+				m.s2 = NewSubtitle(m.p.Sub2, m.w, m.c, float64(width), float64(height))
+				if m.s2 != nil {
+					m.s2.IsMainOrSecondSub = false
+
+					if m.s2 != nil {
+						go m.s2.Play()
+					}
+				}
 			}
 		}
 
 		if m.s == nil && m.s2 == nil {
-			m.s = NewSubtitle(subFiles[0], m.w, m.c, float64(width), float64(height))
-			m.p.Sub1 = subFiles[0]
+			println("auto select default subtitle")
+
+			var en, cn, double *Subtitle
+			for _, file := range subFiles {
+				s := NewSubtitle(file, m.w, m.c, float64(width), float64(height))
+				fmt.Printf("%v", s)
+				if s.Lang1 == "en" && len(s.Lang2) == 0 {
+					en = s
+				}
+				if s.Lang1 == "cn" && len(s.Lang2) == 0 {
+					cn = s
+				}
+				if len(s.Lang1) > 0 && len(s.Lang2) > 0 {
+					double = s
+				}
+			}
+
+			if double != nil {
+				m.s = double
+			} else {
+				if cn != nil {
+					m.s = cn
+					m.s2 = en
+				} else {
+					m.s = en
+				}
+			}
 
 			if m.s != nil {
+				m.s.IsMainOrSecondSub = true
+				m.p.Sub1 = m.s.Name
 				go m.s.Play()
+			}
+
+			if m.s2 != nil {
+				m.s.IsMainOrSecondSub = false
+				m.p.Sub2 = m.s2.Name
+				go m.s2.Play()
 			}
 
 			SavePlaying(m.p)
 		}
+
+		selected1 := -1
+		selected2 := -1
+		for i, n := range subFiles {
+			tags = append(tags, int32(i))
+			names = append(names, filepath.Base(n))
+
+			if m.s != nil && n == m.s.Name {
+				selected1 = i
+			}
+
+			if m.s2 != nil && n == m.s2.Name {
+				selected2 = i
+			}
+		}
+
+		if selected1 == -1 && selected2 == -1 {
+			selected1 = 0
+		}
+
+		log.Printf("selected1:%d, selected2:%d", selected1, selected2)
+		m.w.InitSubtitleMenu(names, tags, selected1, selected2)
 	}
 }
 

@@ -123,6 +123,7 @@ func downloadSubs(movieName string) []string {
 			log.Print(err)
 		} else {
 			if util.CheckExt(subname, "rar", "zip") {
+				log.Print(path.Join(path.Dir(os.Args[0]), "unar"))
 				cmd := exec.Command(path.Join(path.Dir(os.Args[0]), "unar"), subFile, "-f", "-o", subFileDir)
 
 				if err := cmd.Run(); err != nil {
@@ -140,7 +141,8 @@ func downloadSubs(movieName string) []string {
 		sub = strings.ToLower(sub)
 		bytes, err := ioutil.ReadFile(sub)
 		if err == nil {
-			InsertSubtitle(&Sub{movieName, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:]})
+
+			InsertSubtitle(&Sub{movieName, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:], "", ""})
 		}
 		subs[i] = path.Base(sub)
 	}
@@ -169,12 +171,12 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	// }
 	subs := make([]string, 0)
 	local := GetSubtitles(name)
-	log.Printf("%v", subs)
 	if len(local) > 0 {
 		for _, s := range local {
 			subs = append(subs, s.Name)
 		}
 	}
+	log.Printf("%v", subs)
 
 	m := movie{}
 	mv = &m

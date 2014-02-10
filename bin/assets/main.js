@@ -96,7 +96,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				angular.forEach(tasks, function(val) {
 					if ((val.Status == 'Downloading') || (val.Status == 'Queued')
 						|| (val.Status == 'Stopped')
-						|| ((val.Status=='Finished')&&(val.LastPlaying==0))) {
+						|| ((val.Status=='Finished')&&(val.LastPlaying<100))) {
 						subscribeMap[val.Subscribe].Badge++;
 					}
 				});
