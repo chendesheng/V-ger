@@ -5,6 +5,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"time"
+
+	"github.com/nightlyone/lockfile"
 )
 
 var DbFile = ""
@@ -37,6 +39,11 @@ func scanSub(scanner rowScanner) (*Sub, error) {
 }
 
 func GetSubtitles(movie string) []*Sub {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -59,6 +66,11 @@ func GetSubtitles(movie string) []*Sub {
 	return subs
 }
 func GetSubtitle(name string) *Sub {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -80,6 +92,11 @@ func GetSubtitle(name string) *Sub {
 	return nil
 }
 func InsertSubtitle(sub *Sub) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -98,6 +115,11 @@ func InsertSubtitle(sub *Sub) {
 }
 
 func UpdateSubtitleOffset(name string, offset time.Duration) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -121,6 +143,11 @@ func scanPlaying(scanner rowScanner) (*Playing, error) {
 }
 
 func GetPlaying(movie string) *Playing {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -164,6 +191,11 @@ func CreateOrGetPlaying(movie string) *Playing {
 }
 
 func SavePlaying(p *Playing) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	log.Printf("Save playing: %v", *p)
 
 	db := openDb()

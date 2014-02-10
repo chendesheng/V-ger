@@ -18,6 +18,7 @@ import (
 	// "regexp"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/nightlyone/lockfile"
 	"strings"
 	"time"
 )
@@ -174,6 +175,11 @@ func scanTask(scanner taskScanner) (*Task, error) {
 	}
 }
 func GetTasks() []*Task {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 	rows, err := db.Query(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie`, taskColumnes))
@@ -196,6 +202,11 @@ func GetTasks() []*Task {
 }
 
 func GetDownloadingTask() (*Task, bool) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
@@ -206,6 +217,11 @@ func GetDownloadingTask() (*Task, bool) {
 	}
 }
 func HasDownloadingOrPlaying() bool {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 	var count int
@@ -214,6 +230,11 @@ func HasDownloadingOrPlaying() bool {
 	return count > 0
 }
 func Exists(name string) (bool, error) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 	var count int
@@ -223,6 +244,11 @@ func Exists(name string) (bool, error) {
 }
 
 func updateTask(t *Task) error {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -259,6 +285,11 @@ func updateTask(t *Task) error {
 }
 
 func insertTask(t *Task) error {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 

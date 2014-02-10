@@ -38,3 +38,7 @@ src/player/gui/cocoa/gui.o
 bin/player
 
 *.db
+
+src/semaphore/semaphore.go
+
+src/semaphore/semaphore_test.go

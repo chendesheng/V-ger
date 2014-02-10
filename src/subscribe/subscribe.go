@@ -5,6 +5,7 @@ import (
 	// "download"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/nightlyone/lockfile"
 	"log"
 	// "task"
 	// "thunder"
@@ -56,6 +57,11 @@ func scanSubscribe(scanner myScanner) (*Subscribe, error) {
 }
 
 func GetSubscribes() []*Subscribe {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe`, subscribeColumnes))
@@ -75,6 +81,11 @@ func GetSubscribes() []*Subscribe {
 	return subscribes
 }
 func GetSubscribe(name string) *Subscribe {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe where Name=?`, subscribeColumnes), name)
@@ -93,6 +104,11 @@ func GetSubscribe(name string) *Subscribe {
 	return nil
 }
 func GetBannerImage(name string) []byte {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -105,6 +121,11 @@ func GetBannerImage(name string) []byte {
 	return bytes
 }
 func SaveBannerImage(name string, bytes []byte) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -114,6 +135,11 @@ func SaveBannerImage(name string, bytes []byte) {
 	}
 }
 func updateSubscribe(s *Subscribe) error {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -136,6 +162,11 @@ func updateSubscribe(s *Subscribe) error {
 	return err
 }
 func insertSubscribe(s *Subscribe) error {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 
@@ -155,6 +186,11 @@ func insertSubscribe(s *Subscribe) error {
 	return err
 }
 func Exists(name string) (bool, error) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
 	db := openDb()
 	defer db.Close()
 	var count int
