@@ -23,14 +23,17 @@
 			<ul id="subscribes">
 				<li ng-repeat="subscribe in subscribes" class="subscribe" ng-class="{highlight:subscribe.Name==task_filter.Subscribe}" ng-click="switch_subscribe(subscribe);">
 					<!-- <span class="subscribe-icon" ng-show="subscribe.Name!='Single Tasks'"> -->
-					<img src="/subscribe/banner/{{subscribe.Name}}" alt="banner" ng-show="subscribe.Name!='Single Tasks'">
+					<img ng-src="/subscribe/banner/{{subscribe.Name}}" alt="banner">
 					<!-- </span> -->
 					<span class="subscribe-menu-name">{{subscribe.Name}}</span>
+					<span class="badge" ng-show="subscribe.Badge<100&&subscribe.Badge>0">{{subscribe.Badge}}</span>
+					<span class="badge" ng-show="subscribe.Badge>99">99+</span>
+					<span class="clear"></span>
 				</li>
 			</ul>
 			<div id="subscribe-content" ng-class="{'show-info':currentSubscribe.Name!='Single Tasks'}">
 				<div class="subscribe-info">
-					<img src="/subscribe/banner/{{currentSubscribe.Name}}" style="float:left">
+					<img ng-src="/subscribe/banner/{{currentSubscribe.Name}}" style="float:left">
 					<span style="float:left">
 						<span class="name">{{currentSubscribe.Name}}</span>
 						&nbsp;<input type="button" value="Update" ng-click="new_subscribe(currentSubscribe.URL);"/>

@@ -249,8 +249,13 @@ func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		w.WriteHeader(404)
-		w.Write([]byte("Unknown subscribe"))
+		if name == "Single Tasks" {
+			// ioutil.ReadFile("filename")
+			http.ServeFile(w, r, "assets/vger.png")
+		} else {
+			w.WriteHeader(404)
+			w.Write([]byte("Unknown subscribe"))
+		}
 	}
 }
 func subscribeHandler(w http.ResponseWriter, r *http.Request) {

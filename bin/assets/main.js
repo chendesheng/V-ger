@@ -82,10 +82,24 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 						tasks.splice(i, 1);
 					}
 				}
+
 				angular.forEach(collection, function(val, key) {
 					tasks.push(val)
 				});
 
+				var subscribeMap = {};
+				angular.forEach($scope.subscribes, function(val, key) {
+					val.Badge = 0;
+					subscribeMap[val.Name] = val;
+				});
+
+				angular.forEach(tasks, function(val) {
+					if ((val.Status == 'Downloading') || (val.Status == 'Queued')
+						|| (val.Status == 'Stopped')
+						|| ((val.Status=='Finished')&&(val.LastPlaying==0))) {
+						subscribeMap[val.Subscribe].Badge++;
+					}
+				});
 			}, monitor_process);
 		}
 
