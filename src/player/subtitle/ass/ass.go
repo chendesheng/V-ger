@@ -1,24 +1,30 @@
 package ass
 
 import (
+	// "bytes"
+	"bufio"
 	"fmt"
+	"io"
+	. "player/shared"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
-
-	. "player/shared"
 )
 
 type parser struct {
+	*LineScanner
+
 	formats []string
 	items   []*SubItem
-	lines   []string
+
+	width  float64
+	height float64
 }
 
-func Parse(text string) (items []*SubItem, err error) {
+func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -26,79 +32,55 @@ func Parse(text string) (items []*SubItem, err error) {
 			items = nil
 		}
 	}()
-	p := newParser(text)
+
+	p := newParser(r, width, height)
 	p.parse()
 
 	items = p.items
 	sort.Sort(SubItems(items))
 
 	err = nil
+
 	return
 }
 
-func newParser(text string) *parser {
+func newParser(r io.Reader, width float64, height float64) *parser {
 	p := parser{}
-	p.lines = strings.Split(text, "\n")
+	p.LineScanner = (*LineScanner)(bufio.NewScanner(r))
+	p.width, p.height = width, height
 	return &p
 }
-
-func (p *parser) parse() {
-	for {
-		line, eof := p.nextLine()
-		if eof {
+func (p *parser) parseSection(line string) {
+	if line == "[Events]" {
+		line = p.NextLine()
+		if len(line) == 0 {
 			return
 		}
 
-		if line == "[Events]" {
-			line, eof := p.nextLine()
-			if eof {
-				panic("Unexpect EOF.")
-			}
+		if line[0] == '[' {
+			p.parseSection(line)
+		} else {
 			p.formats = parseFormats(line)
 			for {
-				line, eof := p.nextLine()
-				if eof {
+				line = p.NextLine()
+				if len(line) == 0 {
 					return
-				}
-				if line[0] == '[' {
-					break
 				}
 
 				p.items = append(p.items, p.parseDialogue(line))
 			}
-
+		}
+	}
+}
+func (p *parser) parse() {
+	for {
+		line := p.NextLine()
+		if len(line) == 0 {
 			return
 		}
-	}
 
-	return
-}
-
-func parseEmptyLines(lines []string) []string {
-	for i, l := range lines {
-		l = strings.Trim(l, " \t\r")
-		if len(l) > 0 {
-			return lines[i:]
-		}
-	}
-
-	return nil
-}
-
-func (p *parser) nextLine() (string, bool) {
-	p.lines = parseEmptyLines(p.lines)
-
-	if len(p.lines) == 0 {
-		return "", true
-	} else {
-		line := p.lines[0]
-		line = strings.Trim(line, " \t\r")
-
-		p.lines = p.lines[1:]
-		if line[0] == ';' {
-			return p.nextLine()
-		} else {
-			return line, false
+		if line[0] == '[' {
+			p.parseSection(line)
 		}
 	}
 }
@@ -130,7 +112,7 @@ func parseTime(content string) time.Duration {
 	return h*time.Hour + m*time.Minute + s*time.Second + ms*10*time.Millisecond
 }
 
-func parseText(text string, item *SubItem) {
+func (p *parser) parseText(text string, item *SubItem) {
 	var state int
 	part := make([]rune, 0)
 	attrstart := 0
@@ -179,7 +161,7 @@ func parseText(text string, item *SubItem) {
 				// fmt.Printf("%v", as)
 			}
 
-			currentStyle, currentColor, currentPos, currentAlign = parseAttr(text[attrstart:attrend+1], currentStyle, currentColor, currentPos, currentAlign)
+			currentStyle, currentColor, currentPos, currentAlign = p.parseAttr(text[attrstart:attrend+1], currentStyle, currentColor, currentPos, currentAlign)
 		}
 
 		w = width
@@ -195,16 +177,30 @@ func parseText(text string, item *SubItem) {
 	item.Content = res
 	item.Position = currentPos
 	item.PositionType = currentAlign
-	fmt.Printf("%v", *item)
+
+	if len(item.Content) >= 1 {
+		item.Content[0].Content = dropSvgContent(item.Content[0].Content)
+	}
+	// fmt.Printf("%v", *item)
 }
-func parsePosition(text string) (bool, Position) {
+func dropSvgContent(text string) string {
+	text = strings.TrimLeft(text, " \r\n\t")
+	regSvg := regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
+
+	if regSvg.MatchString(text) {
+		return ""
+	} else {
+		return text
+	}
+}
+func (p *parser) parsePos(text string) (bool, Position) {
 	regPos := regexp.MustCompile(`^pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)`)
 	matches := regPos.FindStringSubmatch(text)
 
 	if matches != nil {
 		x, _ := strconv.Atoi(matches[1])
 		y, _ := strconv.Atoi(matches[2])
-		return true, Position{float64(x), float64(y)}
+		return true, Position{float64(x) / 384 * p.width, float64(y) / 303 * p.height}
 	} else {
 		return false, Position{-1, -1}
 	}
@@ -262,11 +258,11 @@ func parseColor(text string) (bool, uint) {
 		return false, 0xffffff
 	}
 }
-func parseAttr(text string, style int, color uint, pos Position, an int) (int, uint, Position, int) {
+func (p *parser) parseAttr(text string, style int, color uint, pos Position, an int) (int, uint, Position, int) {
 	attrs := strings.Split(strings.Trim(text, "{} \r\n\t"), "\\")
 	for _, a := range attrs {
 		if strings.HasPrefix(a, "pos") {
-			if ok, tmpPos := parsePosition(a); ok {
+			if ok, tmpPos := p.parsePos(a); ok {
 				pos = tmpPos
 			}
 		} else if strings.HasPrefix(a, "an") {
@@ -288,10 +284,22 @@ func parseAttr(text string, style int, color uint, pos Position, an int) (int, u
 
 	return style, color, pos, an
 }
+
+func parseLine(line string) (string, string) {
+	i := strings.Index(line, ":")
+	if i < 0 {
+		panic(fmt.Errorf("Parse line error: expect ':'."))
+	}
+	title := line[:i]
+	content := line[i+1:]
+	return title, content
+}
+
 func parseFormats(line string) []string {
-	title, content := parseFormatTitle(line)
+	title, content := parseLine(line)
 	if title != "Format" {
-		panic("Expect title 'Format'.")
+		// panic(fmt.Errorf("Expect title 'Format'."))
+		return nil
 	}
 
 	formats := strings.Split(content, ",")
@@ -301,19 +309,10 @@ func parseFormats(line string) []string {
 	return formats
 }
 
-func parseFormatTitle(line string) (string, string) {
-	i := strings.Index(line, ":")
-	if i < 0 {
-		panic("Parse line error: expect ':'.")
-	}
-	title := line[:i]
-	content := line[i+1:]
-	return title, content
-}
 func (p *parser) parseDialogue(line string) *SubItem {
-	title, content := parseFormatTitle(line)
+	title, content := parseLine(line)
 	if title != "Dialogue" {
-		panic("Expect title 'Dialogue'.")
+		panic(fmt.Errorf("Expect title 'Dialogue'."))
 	}
 
 	var item SubItem
@@ -322,7 +321,7 @@ func (p *parser) parseDialogue(line string) *SubItem {
 		field, content = parseField(content)
 		switch format {
 		case "Text": //always the last one so it can contains comma
-			parseText(field+content, &item)
+			p.parseText(field+content, &item)
 			break
 		case "Start":
 			item.From = parseTime(field)
@@ -332,12 +331,5 @@ func (p *parser) parseDialogue(line string) *SubItem {
 			break
 		}
 	}
-	// fmt.Printf("%v\n", item)
 	return &item
 }
-
-// func main() {
-// 	f, _ := os.Open("a.ass")
-// 	items := Parse(f)
-// 	fmt.Printf("%d", len(items))
-// }

@@ -2,10 +2,13 @@ package srt
 
 import (
 	"encoding/hex"
+	"fmt"
+	"io"
 	// "fmt"
-	"log"
+	// "log"
 	"sort"
 	// "io/ioutil"
+	"bufio"
 	"bytes"
 	"github.com/peterbourgon/html"
 	"regexp"
@@ -16,94 +19,75 @@ import (
 	. "player/shared"
 )
 
-func linebreak(r rune) bool {
-	return r == '\r' || r == '\n'
+type parser struct {
+	*LineScanner
+
+	items []*SubItem
 }
 
-func Parse(str string, width, height float64) (items []*SubItem, err error) {
-	defer func() {
-		r := recover()
-		if r != nil {
-			err = r.(error)
-			items = nil
+func newParser(r io.Reader) *parser {
+	p := parser{}
+	p.LineScanner = (*LineScanner)(bufio.NewScanner(r))
+	return &p
+}
+func (p *parser) appendItem(item SubItem, text string, width, height float64) {
+	if item.To != 0 { //item is not inited yet
+		text = strings.Trim(text, "\n")
+
+		// drop last line
+		i := strings.LastIndex(text, "\n")
+		if i >= 0 {
+			text = text[:i]
 		}
-	}()
+		item.PositionType, item.Position, text = parsePosition(text, width, height)
 
-	lines := strings.FieldsFunc(str, linebreak)
+		item.Content = parseAttributedString(text)
+		if len(item.Content) >= 1 {
+			item.Content[0].Content = dropSvgContent(item.Content[0].Content)
+		}
 
-	items = make([]*SubItem, 0)
+		p.items = append(p.items, &item)
+	}
+}
+func dropSvgContent(text string) string {
+	text = strings.TrimLeft(text, " \r\n\t")
+	regSvg := regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
 
-	parseContent(&lines)
+	if regSvg.MatchString(text) {
+		return ""
+	} else {
+		return text
+	}
+}
 
-	// log.Print("head: ", head)
-	for len(lines) > 0 {
-		if ok, from, to := parseTime(lines[0]); ok {
-			// println("line after parseTime:", lines[0])
-			lines = lines[1:]
+func (p *parser) parse(width, height float64) {
+	var item SubItem
+	var text string
 
-			usePos, pos, text := parsePosition(lines[0], width, height)
-			lines[0] = text
-			content := parseContent(&lines)
-			// log.Print("content:", content)
-			items = append(items, &SubItem{from, to, content, usePos, pos, SubItemExtra{0, 0}})
+	for {
+		line := p.NextLine()
+		if len(line) == 0 {
+			p.appendItem(item, fmt.Sprintf("%s\n0", text), width, height)
+			return
+		}
+
+		if ok, from, to := parseTime(line); ok {
+			p.appendItem(item, text, width, height)
+
+			//for next item
+			text = ""
+			item.From = from
+			item.To = to
+			// item.SubItemExtra = SubItemExtra{0, 0}
+
 		} else {
-			log.Println("parse time error:", lines[0])
-			panic("parse error")
+			text = fmt.Sprintf("%s\n%s", text, line)
 		}
 	}
-
-	sort.Sort(SubItems(items))
-
-	err = nil
 
 	return
 }
 
-func parseContent(lines *[]string) []AttributedString {
-	i := 0
-	for ; i < len(*lines); i++ {
-		line := (*lines)[i]
-		// println("line:", line)
-
-		// _, err := strconv.Atoi(line)
-		// if err == nil {
-		// 	break
-		// }
-
-		ok, _, _ := parseTime(line)
-		if ok {
-			break
-		}
-	}
-	content := ""
-	if i == 0 {
-		*lines = nil
-	} else if i == len(*lines) {
-		content = strings.Join((*lines)[:i], "\n")
-		*lines = nil
-	} else {
-		if i > 1 {
-			content = strings.Join((*lines)[:i-1], "\n")
-		}
-		*lines = (*lines)[i:]
-	}
-
-	// log.Print("i:",i)
-	// if i+1 < len(*lines) {
-	// 	println("parseContent:", i)
-	// 	content := ""
-	// 	if i > 1 {
-	// 		content = strings.Join((*lines)[:i-1], "\n")
-	// 	}
-	// 	*lines = (*lines)[i:]
-	// } else {
-	// 	// *lines = make([]string,0)
-	// 	*lines = nil
-	// }
-
-	return parseAttributedString(content)
-	// return content
-}
 func toColor(c string) uint {
 	c = strings.ToLower(c)
 	switch c {
@@ -247,16 +231,22 @@ func convertTime(parts []string) time.Duration {
 	return time.Duration(h)*time.Hour + time.Duration(m)*time.Minute + time.Duration(s)*time.Second + time.Duration(ms)*time.Millisecond
 }
 
-// func main() {
-// 	srt, err := ioutil.ReadFile("a.srt")
-// 	if err != nil {
-// 		return
-// 	}
-// 	// log.Print(string(srt))
-// 	// fmt.log.Print("Hello, playground")
-// 	head, items := Parse(string(srt))
-// 	log.Print("head:", head)
-// 	for _, item := range items {
-// 		fmt.Printf("item: %v\n", item)
-// 	}
-// }
+func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = r.(error)
+			items = nil
+		}
+	}()
+
+	p := newParser(r)
+	p.parse(width, height)
+
+	items = p.items
+	sort.Sort(SubItems(items))
+
+	err = nil
+
+	return
+}

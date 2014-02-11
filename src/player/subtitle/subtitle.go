@@ -9,6 +9,7 @@ import (
 	"player/subtitle/ass"
 	"player/subtitle/chinese"
 	"player/subtitle/srt"
+	"strings"
 	// "runtime"
 	"time"
 )
@@ -249,10 +250,12 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 	s.Lang1 = sub.Lang1
 	s.Lang2 = sub.Lang2
 
+	log.Print("parse sub:", file)
+
 	if sub.Type == "ass" {
-		s.items, err = ass.Parse(sub.Content)
+		s.items, err = ass.Parse(strings.NewReader(sub.Content), width, height)
 	} else {
-		s.items, err = srt.Parse(sub.Content, width, height)
+		s.items, err = srt.Parse(strings.NewReader(sub.Content), width, height)
 	}
 
 	if len(sub.Lang1) == 0 && len(sub.Lang2) == 0 {

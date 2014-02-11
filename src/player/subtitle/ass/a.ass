@@ -21,6 +21,8 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 Style: Default,方正黑体_GBK,21,&H00FFFFFF,&HF0000000,&H006C3300,&H00000000,-1,0,0,0,100,100,0,0,1,2,1,2,5,5,5,134
 
 [Events]
+[Events]
+[Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:00.98,0:00:03.81,*Default,NTP,0,0,0,,{\bord0\fad(400,400)\fs18\pos(190,227)\an1}德州  休斯頓
 Dialogue: 0,0:00:26.13,0:00:27.78,*Default,NTP,0,0,0,,你們這些狗雜種\N{\fn方正综艺_GBK}{\fs14}{\b0}{\c&HFFFFFF&}{\3c&H2F2F2F&}{\4c&H000000&}You jackass sons of bitches!
