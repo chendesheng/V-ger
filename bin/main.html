@@ -68,6 +68,7 @@
 					       		<div class="row-3rd" ng-hide="task.Status=='New'">
 					       			<input type="button" ng-click="search_subtitles(task.Name)" value="S" />
 					       			<input type="button" ng-click="send_play(task)" value="P" ng-show="task.Status!='Finished'"/>
+					       			
 
 					       			<!-- <span ng-hide="task.Status=='Finished'">
 						       			<input id="autoshutdown-{{task.NameHash}}" type="checkbox" ng-model="task.Autoshutdown" ng-click="set_autoshutdown(task)" />
@@ -76,6 +77,9 @@
 
 					       			<span ng-show="task.Status=='Downloading'" class="info">Est. {{parse_duration(task.Est)}}</span>
 					       			<span ng-show="task.Status=='Downloading' || task.Status=='Playing'" class="info">{{task.Speed.toFixed(0)}}KB/s</span>
+
+					       			<span ng-show="task.LastPlaying>=100" class="last-played">Last Played: {{parse_duration(task.LastPlaying)}}</span>
+
 									<!-- 
 						       		<span ng-show="task.Status!='Downloading'" class="elapsed info">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
 						       		<span ng-show="task.Status!='Downloading'" class="info">{{parse_time(task.StartTime)}}</span> -->
