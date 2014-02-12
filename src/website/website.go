@@ -196,7 +196,6 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 	url := string(input)
 
 	println(url)
-
 	s, tasks, err := subscribe.Parse(url)
 	if err != nil {
 		panic(err)
@@ -232,6 +231,8 @@ func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
 	if s != nil {
 		bytes := subscribe.GetBannerImage(name)
 		if len(bytes) > 0 {
+			h := w.Header()
+			h.Add("max-age", "600")
 			w.Write(bytes)
 		} else {
 			resp, err := http.Get(s.Banner)
