@@ -1,15 +1,27 @@
 package subscribe
 
 import (
-	// "os"
+	"fmt"
+	"os"
 	"testing"
 )
 
 func TestYYest(t *testing.T) {
-	// f, err := os.Open("./yyets.html")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	f, err := os.Open("yyets.html")
+	if err != nil {
+		t.Error(err)
+	}
 
-	Parse("http://www.yyets.com/resource/11133")
+	_, tasks, err := parse(f)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(tasks) != 3 {
+		t.Errorf("Expect 3 tasks but %d", len(tasks))
+	}
+
+	fmt.Printf("%v\n", tasks[0])
+	fmt.Printf("%v\n", tasks[1])
+	fmt.Printf("%v\n", tasks[2])
 }

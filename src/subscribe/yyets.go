@@ -2,6 +2,7 @@ package subscribe
 
 import (
 	"encoding/base64"
+	"io"
 	// "fmt"
 	"github.com/peterbourgon/html"
 	"io/ioutil"
@@ -12,30 +13,24 @@ import (
 	"time"
 )
 
-func parseEpisodes(n *html.Node, season int, subscribeName string, format string) []*task.Task {
-	result := make([]*task.Task, 0)
+func parseEpisodes(n *html.Node, season int, subscribeName string, format string, result *map[int]*task.Task) {
 	for _, c := range getTag(n, "li") {
 		if strings.ToLower(getAttr(c, "format")) == format {
-			t := parseSingle(c)
-			t.Subscribe = subscribeName
-			t.Season = season
-			t.Episode, _ = strconv.Atoi(getAttr(c, "episode"))
-
-			// fmt.Printf("%v\n", t)
-
-			result = append(result, t)
+			episode, _ := strconv.Atoi(getAttr(c, "episode"))
+			if _, ok := (*result)[episode]; !ok {
+				t := parseSingle(c)
+				t.Subscribe = subscribeName
+				t.Season = season
+				t.Episode = episode
+				println(t)
+				(*result)[t.Episode] = t
+			}
 		}
 	}
-	return result
 }
-func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer resp.Body.Close()
+func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 
-	doc, err := html.Parse(resp.Body)
+	doc, err := html.Parse(r)
 
 	if err != nil {
 		return nil, nil, err
@@ -53,7 +48,6 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 
 	s = &Subscribe{}
 	s.Source = "YYets"
-	s.URL = url
 	s.Autodownload = true
 
 	var f func(*html.Node)
@@ -67,11 +61,14 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 					season = -season // put it on bottom
 				}
 
-				res := parseEpisodes(n, season, s.Name, "720p")
-				if len(res) == 0 {
-					res = parseEpisodes(n, season, s.Name, "web-dl")
+				res := make(map[int]*task.Task)
+				parseEpisodes(n, season, s.Name, "720p", &res)
+				parseEpisodes(n, season, s.Name, "web-dl", &res)
+
+				for _, t := range res {
+					result = append(result, t)
 				}
-				result = append(result, res...)
+
 				return
 			}
 		}
@@ -111,6 +108,18 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 
 	err = nil
 	return
+}
+func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	s, t, err := parse(resp.Body)
+	s.URL = url
+
+	return s, t, err
 }
 
 func downloadBannerImage(url string) (string, error) {
