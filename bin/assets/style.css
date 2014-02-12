@@ -476,10 +476,18 @@ h3 {
 }
 .task-infoes .name a {
 	cursor: pointer;
+
+	-webkit-transition: opacity 0.2s linear;
+	-moz-transition: opacity 0.2s linear;
+	-ms-transition: opacity 0.2s linear;
+	-o-transition: opacity 0.2s linear;
+	transition: opacity 0.2s linear;
+	opacity: 1;
 }
 
 .task-infoes .name a.disabled {
 	cursor: default;
+	opacity: 0.6;
 }
 .task-infoes .close, .task-infoes .download {
 	position: absolute;
@@ -534,8 +542,11 @@ h3 {
 	float: left;
 }
 .task-infoes .info {
-	float:right;
 	width: 110px;
+	float: right;
+}
+.task-infoes .last-played {
+	margin-left: 10px;
 }
 .resume {
 	background-image: url('/assets/resume.png');
@@ -723,11 +734,11 @@ li.subscribe {
 	font-weight: 700;
 	font-size: 15px;
 
-	-webkit-transition: color 0.2s;
-	-moz-transition: color 0.2s;
-	-ms-transition: color 0.2s;
-	-o-transition: color 0.2s;
-	transition: color 0.2s;
+	-webkit-transition: color 0.2s linear;
+	-moz-transition: color 0.2s linear;
+	-ms-transition: color 0.2s linear;
+	-o-transition: color 0.2s linear;
+	transition: color 0.2s linear;
 
 
 	/*padding-bottom: 5px !important;*/
@@ -764,11 +775,11 @@ li.subscribe img {
 	margin-top: 2px;
 	opacity: 0.6;
 	
-	-webkit-transition: opacity 0.2s;
-	-moz-transition: opacity 0.2s;
-	-ms-transition: opacity 0.2s;
-	-o-transition: opacity 0.2s;
-	transition: opacity 0.2s;
+	-webkit-transition: opacity 0.2s linear;
+	-moz-transition: opacity 0.2s linear;
+	-ms-transition: opacity 0.2s linear;
+	-o-transition: opacity 0.2s linear;
+	transition: opacity 0.2s linear;
 }
 li.subscribe.highlight img,
 li.subscribe:hover img {
