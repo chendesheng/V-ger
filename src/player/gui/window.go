@@ -245,7 +245,7 @@ func (w *Window) ShowText(s *SubItem) uintptr {
 		cstr := C.CString(str.Content)
 		defer C.free(unsafe.Pointer(cstr))
 
-		println("color:", str.Content)
+		println("content:", str.Content)
 		println("color:", str.Color)
 		items = append(items, C.SubItem{cstr, C.int(str.Style), C.uint(str.Color)})
 	}
@@ -294,15 +294,32 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 
 	select {
 	case arg := <-w.ChanShowText:
+		var arg1 SubItemArg
+	begin:
 		item := arg.SubItem
 		if item.Handle == 0 || item.Handle == 1 {
-			println("show text:", arg.Result)
+		skip:
+			for {
+				select {
+				case arg1 = <-w.ChanShowText:
+					if arg1.SubItem.Handle != item.Handle || arg1.From != item.From {
+						arg.Result <- SubItemExtra{item.Id, w.ShowText(&item)}
+						arg = arg1
+
+						goto begin
+					}
+					break
+				default:
+					break skip
+				}
+			}
+			// println("show text:", arg.Result)
 			arg.Result <- SubItemExtra{item.Id, w.ShowText(&item)}
-			println("show text2")
+			// println("show text2")
 		} else {
-			println("hide text:", item.Handle)
+			// println("hide text:", item.Handle)
 			w.HideText(item.Handle)
-			println("hide text2:", item.Handle)
+			// println("hide text2:", item.Handle)
 		}
 		break
 	// case ptr := <-w.ChanHideText:
