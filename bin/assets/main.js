@@ -270,7 +270,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					var top = parseInt($($('#tasks-list .highlight-task')[0]).data('order'))*80;
 					if (top==NaN) top = 0;
 					console.log(top);
-					$('#tasks-list').scrollTop(top+80);
+					$('#tasks-list').scrollTop(top);
 				}, 350);
 			}, 500);
 		}
