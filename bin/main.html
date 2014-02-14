@@ -11,6 +11,7 @@
 	<script src="/assets/angular-ui.js"></script>
 	<script type="text/javascript" src="/assets/main.js"></script>
 	<script type="text/javascript" src="/assets/date.js"></script>
+	<script type="text/javascript" src="/assets/jquery-2.1.0.js"></script>
 </head>
 <body ng-controller="tasks_ctrl">
 
@@ -44,7 +45,7 @@
 				</div>
 				<div id="subscribe-list">
 				<ul id="tasks-list" >
-			       <li ng-repeat="task in tasks | filter:task_filter:1 | orderBy:['-Season', '-Episode', '-StartTime'] | limitTo:tasks_max_size" class="task">
+			       <li ng-repeat="task in tasks | filter:task_filter:1 | orderBy:['-Season', '-Episode', '-StartTime'] | limitTo:tasks_max_size" class="task" data-order="{{$index}}" ng-class="{'highlight-task':task.Status!='New'}">
 			       		<div class="task-infoes">
 			       			<div class="left-actions">
 				       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped' || task.Status=='Playing'"></button>

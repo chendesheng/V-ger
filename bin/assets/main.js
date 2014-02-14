@@ -96,7 +96,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				angular.forEach(tasks, function(val) {
 					if ((val.Status == 'Downloading') || (val.Status == 'Queued')
 						|| (val.Status == 'Stopped')
-						|| ((val.Status=='Finished')&&(val.LastPlaying<100))) {
+						|| ((val.Status=='Finished')&&(subscribeMap[val.Subscribe].Duration==0))
+						|| ((val.Status=='Finished')&&(val.LastPlaying<subscribeMap[val.Subscribe].Duration))) {
 						subscribeMap[val.Subscribe].Badge++;
 					}
 				});
@@ -265,11 +266,13 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				$scope.$apply(function() {
 					$scope.tasks_max_size = 10000000;
 				});
-			}, 700);
-
-			setTimeout(function() {
-				document.getElementById('tasks-list').scrollTop = 0;
-			}, 10);
+				setTimeout(function() {
+					var top = parseInt($($('#tasks-list .highlight-task')[0]).data('order'))*80;
+					if (top==NaN) top = 0;
+					console.log(top);
+					$('#tasks-list').scrollTop(top+80);
+				}, 350);
+			}, 500);
 		}
 
 		function get_subscribe(name) {
