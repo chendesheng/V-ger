@@ -140,7 +140,7 @@ func (m *movie) setupSubtitles(subFiles []string) {
 					m.p.Sub2 = ""
 				}
 
-				SavePlaying(m.p)
+				SavePlayingAsync(m.p)
 			}(m, subFiles)
 		})
 
@@ -151,7 +151,7 @@ func (m *movie) setupSubtitles(subFiles []string) {
 			m.p.Sub1 = m.p.Sub2
 			m.p.Sub2 = ""
 
-			SavePlaying(m.p)
+			SavePlayingAsync(m.p)
 		}
 
 		if len(m.p.Sub1) > 0 {
@@ -228,7 +228,7 @@ func (m *movie) setupSubtitles(subFiles []string) {
 				go m.s2.Play()
 			}
 
-			SavePlaying(m.p)
+			SavePlayingAsync(m.p)
 		}
 
 		selected1 := -1
@@ -438,7 +438,7 @@ func (m *movie) open(file string, subFiles []string) {
 		}
 	}
 
-	SavePlaying(m.p)
+	SavePlayingAsync(m.p)
 
 	m.c.Reset()
 	m.c.SetTime(start)

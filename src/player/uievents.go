@@ -15,7 +15,7 @@ func (m *movie) uievents() {
 		go func() {
 			m.a.setCurrentStream(i)
 			m.p.SoundStream = i
-			SavePlaying(m.p)
+			SavePlayingAsync(m.p)
 		}()
 	})
 
@@ -23,7 +23,7 @@ func (m *movie) uievents() {
 	// chPausing = nil
 	// var pausingTime time.Duration
 	m.w.FuncKeyDown = append(m.w.FuncKeyDown, func(keycode int) {
-		SavePlaying(m.p)
+		SavePlayingAsync(m.p)
 
 		switch keycode {
 		case gui.KEY_SPACE:
@@ -62,7 +62,7 @@ func (m *movie) uievents() {
 					offset := m.s.AddOffset(-200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
-					UpdateSubtitleOffset(m.s.Name, offset)
+					UpdateSubtitleOffsetAsync(m.s.Name, offset)
 				}
 			}()
 			break
@@ -73,7 +73,7 @@ func (m *movie) uievents() {
 					offset := m.s.AddOffset(200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
-					UpdateSubtitleOffset(m.s.Name, offset)
+					UpdateSubtitleOffsetAsync(m.s.Name, offset)
 				}
 			}()
 			break
@@ -88,7 +88,7 @@ func (m *movie) uievents() {
 					offset := m.s2.AddOffset(-200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
-					UpdateSubtitleOffset(m.s2.Name, offset)
+					UpdateSubtitleOffsetAsync(m.s2.Name, offset)
 				}
 			}()
 			break
@@ -103,7 +103,7 @@ func (m *movie) uievents() {
 					offset := m.s2.AddOffset(200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
-					UpdateSubtitleOffset(m.s2.Name, offset)
+					UpdateSubtitleOffsetAsync(m.s2.Name, offset)
 				}
 			}()
 			break
@@ -126,12 +126,14 @@ func (m *movie) uievents() {
 			t := lastSeekTime
 			m.SeekEnd(t)
 
-			SavePlaying(m.p)
+			m.p.LastPos = m.c.GetTime()
+			SavePlayingAsync(m.p)
 			break
 		case 1:
 			t := m.c.CalcTime(percent)
 			t = m.Seek(t)
 			lastSeekTime = t
+
 			break
 		}
 

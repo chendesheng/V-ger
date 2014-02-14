@@ -116,7 +116,50 @@ func InsertSubtitle(sub *Sub) {
 	}
 }
 
+var chUpdateSubtitleOffset chan map[string]interface{}
+
+func UpdateSubtitleOffsetAsync(name string, offset time.Duration) {
+	if chUpdateSubtitleOffset == nil {
+		chUpdateSubtitleOffset = make(chan map[string]interface{}, 20)
+		go func() {
+			for {
+				arg := <-chUpdateSubtitleOffset
+				name := arg["name"].(string)
+				offset := arg["offset"].(time.Duration)
+
+				var arg1 map[string]interface{}
+			saving:
+				for {
+					select {
+					case arg1 = <-chUpdateSubtitleOffset:
+
+						if name1 := arg1["name"].(string); name1 != name {
+							UpdateSubtitleOffset(name, offset)
+							name = name1
+							offset = arg1["offset"].(time.Duration)
+							goto saving
+						} else {
+							offset = arg1["offset"].(time.Duration)
+						}
+						break
+					default:
+						UpdateSubtitleOffset(name, offset)
+						break saving
+					}
+				}
+				time.Sleep(time.Second)
+			}
+		}()
+	}
+	chUpdateSubtitleOffset <- map[string]interface{}{
+		"name":   name,
+		"offset": offset,
+	}
+}
+
 func UpdateSubtitleOffset(name string, offset time.Duration) {
+	log.Printf("update subtitle offset: %s, %d", name, offset)
+
 	if len(lockfile.DefaultLock) > 0 {
 		lockfile.DefaultLock.Lock()
 		defer lockfile.DefaultLock.Unlock()
@@ -208,13 +251,44 @@ func CreateOrGetPlaying(movie string) *Playing {
 	return GetPlaying(movie)
 }
 
+var chPlaying chan *Playing
+
+func SavePlayingAsync(p *Playing) {
+	if chPlaying == nil {
+		chPlaying = make(chan *Playing, 20)
+		go func() {
+			for {
+				p := <-chPlaying
+				var p1 *Playing
+			saving:
+				for {
+					select {
+					case p1 = <-chPlaying:
+						if p != p1 {
+							SavePlaying(p)
+							p = p1
+							goto saving
+						}
+						break
+					default:
+						SavePlaying(p)
+						break saving
+					}
+				}
+				time.Sleep(time.Second)
+			}
+		}()
+	}
+
+	chPlaying <- p
+}
 func SavePlaying(p *Playing) {
+	log.Printf("Save playing: %v", p)
+
 	if len(lockfile.DefaultLock) > 0 {
 		lockfile.DefaultLock.Lock()
 		defer lockfile.DefaultLock.Unlock()
 	}
-
-	log.Printf("Save playing: %v", *p)
 
 	db := openDb()
 	defer db.Close()
