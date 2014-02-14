@@ -50,7 +50,8 @@
 				       			<button class="resume" ng-click="send_resume(task)" ng-show="task.Status=='Stopped' || task.Status=='Playing'"></button>
 				       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Downloading'"></button>
 				       			<button class="stop" ng-click="send_stop(task)" ng-show="task.Status=='Queued'"></button>
-				       			<input class="unread" ng-show="(task.Status=='Finished')&&(task.LastPlaying<100)" type="button"/>
+				       			<span class="unread" ng-show="(task.Status=='Finished')&&(task.LastPlaying<100)" type="button"></span>
+				       			<span class="halfread" ng-show="(task.Status=='Finished')&&(task.LastPlaying>=100)&&(task.LastPlaying<currentSubscribe.Duration)" type="button"></span>
 				       		</div>
 				       		<div class="middle-actions">
 				       			<div ng-class="{middle:task.Status=='New'}">

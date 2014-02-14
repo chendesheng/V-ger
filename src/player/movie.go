@@ -14,6 +14,7 @@ import (
 	. "player/subtitle"
 	. "player/video"
 	"strings"
+	"subscribe"
 	"task"
 	"time"
 	"util"
@@ -413,7 +414,8 @@ func (m *movie) open(file string, subFiles []string) {
 	// if dur < 0 {
 	// 	dur = -dur
 	// }
-	m.c = NewClock(time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second)))
+	duration := time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
+	m.c = NewClock(duration)
 
 	m.setupVideo()
 	m.w = NewWindow(filename, m.v.Width, m.v.Height)
@@ -427,6 +429,16 @@ func (m *movie) open(file string, subFiles []string) {
 
 	start, _, _ := m.v.Seek(m.p.LastPos)
 	m.p.LastPos = start
+	m.p.Duration = duration
+
+	if t, _ := task.GetTask(m.p.Movie); t != nil {
+		println("get subscribe:", t.Subscribe)
+		if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
+			subscribe.UpdateDuration(t.Subscribe, duration)
+		}
+	}
+
+	SavePlaying(m.p)
 
 	m.c.Reset()
 	m.c.SetTime(start)

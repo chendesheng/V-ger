@@ -18,6 +18,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"player/shared"
 	"strconv"
 	"strings"
 	"subscribe"
@@ -87,6 +88,22 @@ func openHandler(w http.ResponseWriter, r *http.Request) {
 func trashHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
 	log.Printf("trash \"%s\".\n", name)
+	t, err := task.GetTask(name)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	p := shared.GetPlaying(name)
+
+	if s := subscribe.GetSubscribe(t.Subscribe); s != nil {
+		if t.LastPlaying > time.Minute &&
+			p != nil && p.Duration > 0 &&
+			float64(t.LastPlaying)/float64(p.Duration) > 0.85 &&
+			t.LastPlaying < s.Duration {
+			subscribe.UpdateDuration(t.Subscribe, t.LastPlaying)
+		}
+	}
 
 	task.DeleteTask(name)
 }

@@ -7,6 +7,7 @@ import (
 	"net/http/cookiejar"
 	"os"
 	"path"
+	"player/shared"
 	"runtime"
 	"subscribe"
 	"task"
@@ -51,6 +52,7 @@ func init() {
 
 	task.TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
 	subscribe.DbPath = task.TaskDir
+	shared.DbFile = task.TaskDir
 
 	//only block when file locked by another process
 	lockfile.DefaultLock, _ = lockfile.New("/tmp/vger.db.lock.txt")

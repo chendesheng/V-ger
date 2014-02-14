@@ -37,6 +37,7 @@ type Playing struct {
 	SoundStream int
 	Sub1        string
 	Sub2        string
+	Duration    time.Duration
 }
 
 func (item *SubItem) IsInDefaultPosition() bool {

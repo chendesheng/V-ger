@@ -148,10 +148,11 @@ func UpdateSubtitleLanguage(name string, lang1, lang2 string) {
 
 func scanPlaying(scanner rowScanner) (*Playing, error) {
 	var p Playing
-	var lastPos int64
-	err := scanner.Scan(&p.Movie, &lastPos, &p.SoundStream, &p.Sub1, &p.Sub2)
+	var lastPos, duration int64
+	err := scanner.Scan(&p.Movie, &lastPos, &p.SoundStream, &p.Sub1, &p.Sub2, &duration)
 	if err == nil {
 		p.LastPos = time.Duration(lastPos)
+		p.Duration = time.Duration(duration)
 		return &p, nil
 	} else {
 		log.Print(err)
@@ -168,7 +169,7 @@ func GetPlaying(movie string) *Playing {
 	db := openDb()
 	defer db.Close()
 
-	sql := `select Movie, LastPos, SoundStream, Sub1, Sub2 from Playing where Movie=?`
+	sql := `select Movie, LastPos, SoundStream, Sub1, Sub2, Duration from Playing where Movie=?`
 	rows, err := db.Query(sql, movie)
 	if err != nil {
 		log.Println(err)
@@ -201,7 +202,7 @@ func CreateOrGetPlaying(movie string) *Playing {
 	}
 
 	if count == 0 {
-		SavePlaying(&Playing{movie, 0, -1, "", ""})
+		SavePlaying(&Playing{movie, 0, -1, "", "", 0})
 	}
 
 	return GetPlaying(movie)
@@ -225,14 +226,14 @@ func SavePlaying(p *Playing) {
 	}
 
 	if count == 0 {
-		sql := "insert into playing(Movie, LastPos, SoundStream, Sub1, Sub2) values (?,?,?,?,?)"
-		_, err := db.Exec(sql, p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2)
+		sql := "insert into playing(Movie, LastPos, SoundStream, Sub1, Sub2, Duration) values (?,?,?,?,?,?)"
+		_, err := db.Exec(sql, p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2, p.Duration)
 		if err != nil {
 			log.Print(err)
 		}
 	} else {
-		_, err := db.Exec("update playing set Movie=?,LastPos=?,SoundStream=?,Sub1=?,Sub2=? where Movie=?",
-			p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2, p.Movie)
+		_, err := db.Exec("update playing set Movie=?,LastPos=?,SoundStream=?,Sub1=?,Sub2=?,Duration=? where Movie=?",
+			p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2, p.Duration, p.Movie)
 		if err != nil {
 			log.Print(err)
 		}

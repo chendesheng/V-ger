@@ -2,6 +2,7 @@ package subscribe
 
 import (
 	"database/sql"
+	"time"
 	// "download"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
@@ -18,13 +19,15 @@ type Subscribe struct {
 	URL          string
 	Autodownload bool
 	Banner       string
+	Duration     time.Duration
 }
 
 var subscribeColumnes string = `Name, 
 				Source,
 				URL,
 				Autodownload,
-				Banner`
+				Banner,
+				Duration`
 var DbPath string
 
 func openDb() *sql.DB {
@@ -42,13 +45,16 @@ type myScanner interface {
 func scanSubscribe(scanner myScanner) (*Subscribe, error) {
 	var s Subscribe
 	var autodownoad int
+	var duration int64
 	err := scanner.Scan(&s.Name,
 		&s.Source,
 		&s.URL,
 		&autodownoad,
-		&s.Banner)
+		&s.Banner,
+		&duration)
 	if err == nil {
 		s.Autodownload = (autodownoad != 0)
+		s.Duration = time.Duration(duration)
 		return &s, nil
 	} else {
 		log.Print(err)
@@ -90,6 +96,7 @@ func GetSubscribe(name string) *Subscribe {
 	defer db.Close()
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe where Name=?`, subscribeColumnes), name)
 	if err != nil {
+		log.Print(err.Error())
 		return nil
 	}
 	defer rows.Close()
@@ -97,7 +104,10 @@ func GetSubscribe(name string) *Subscribe {
 	if rows.Next() {
 		s, err := scanSubscribe(rows)
 		if err == nil {
+			println("get subscribe:", s.Name)
 			return s
+		} else {
+			log.Print(err.Error())
 		}
 	}
 
@@ -152,11 +162,13 @@ func updateSubscribe(s *Subscribe) error {
 		Source=?,
 		URL=?,
 		Autodownload=?,
-		Banner=? where Name=?`,
+		Banner=?,
+		Duration=? where Name=?`,
 		s.Source,
 		s.URL,
 		autodownload,
 		s.Banner,
+		int64(s.Duration),
 		s.Name)
 
 	return err
@@ -176,12 +188,13 @@ func insertSubscribe(s *Subscribe) error {
 	}
 
 	_, err := db.Exec(fmt.Sprintf(`
-			insert into subscribe(%s) values(?, ?, ?, ?, ?)
+			insert into subscribe(%s) values(?, ?, ?, ?, ?,?)
 			`, subscribeColumnes), s.Name,
 		s.Source,
 		s.URL,
 		autodownload,
-		s.Banner)
+		s.Banner,
+		s.Duration)
 
 	return err
 }
@@ -215,4 +228,21 @@ func SaveSubscribe(s *Subscribe) (err error) {
 	}
 
 	return
+}
+func UpdateDuration(name string, duration time.Duration) error {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
+	db := openDb()
+	defer db.Close()
+
+	println("update duration:", name, duration)
+
+	_, err := db.Exec(`update subscribe set
+		Duration=? where Name=?`,
+		duration, name)
+
+	return err
 }

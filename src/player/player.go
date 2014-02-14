@@ -2,6 +2,7 @@ package main
 
 import (
 	"download"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -20,6 +21,7 @@ import (
 	// "website"
 	. "logger"
 	"player/gui"
+	"subscribe"
 	// . "player/libav"
 )
 
@@ -34,6 +36,7 @@ func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
 
 	DbFile = util.ReadConfig("dir") + "/vger.db"
+	subscribe.DbPath = DbFile
 
 	// for i, s := range os.Args[1:] {
 	// 	log.Printf("Args[%d]:%s", i+1, s)
@@ -102,9 +105,9 @@ func findSubs(base string) []string {
 	}
 }
 
-func downloadSubs(movieName string) []string {
+func downloadSubs(movieName string, search string) []string {
 	chSubs := make(chan subtitles.Subtitle)
-	go subtitles.SearchSubtitles(util.CleanMovieName(movieName), chSubs)
+	go subtitles.SearchSubtitles(search, chSubs)
 
 	for s := range chSubs {
 		log.Printf("%v", s)
@@ -119,6 +122,7 @@ func downloadSubs(movieName string) []string {
 		util.MakeSurePathExists(subFileDir)
 		subFile := path.Join(subFileDir, subname)
 
+		println("subfile:", subFile)
 		if err := subtitles.QuickDownload(url, subFile); err != nil {
 			log.Print(err)
 		} else {
@@ -197,7 +201,12 @@ func (a *appDelegate) OpenFile(filename string) bool {
 		go func() {
 			h := m.w.SendShowMessage("Downloading subtitles...", false)
 			defer m.w.SendHideMessage(h)
-			m.setupSubtitles(downloadSubs(name))
+			tk, _ := task.GetTask(name)
+			var search = util.CleanMovieName(name)
+			if tk != nil && len(tk.Subscribe) != 0 && tk.Season > 0 {
+				search = fmt.Sprintf("%s s%2de%2d", tk.Subscribe, tk.Season, tk.Episode)
+			}
+			m.setupSubtitles(downloadSubs(name, search))
 		}()
 	}
 

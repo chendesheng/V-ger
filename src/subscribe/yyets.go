@@ -22,7 +22,7 @@ func parseEpisodes(n *html.Node, season int, subscribeName string, format string
 				t.Subscribe = subscribeName
 				t.Season = season
 				t.Episode = episode
-				println(t)
+				// println(t)
 				(*result)[t.Episode] = t
 			}
 		}
@@ -117,6 +117,9 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	defer resp.Body.Close()
 
 	s, t, err := parse(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
 	s.URL = url
 
 	return s, t, err

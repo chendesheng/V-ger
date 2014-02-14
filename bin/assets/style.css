@@ -298,7 +298,7 @@ h1, h2 {
 	float:left;
 	/*height: 100%;*/
 	padding: 10px 0px 0 30px !important;
-	width: 200px;
+	width: 210px;
 	height: 100%;
 	overflow: auto;
 	margin: 0;
@@ -573,18 +573,53 @@ h3 {
 	background-image: url('/assets/stop_pressed.png');
 }
 .unread {
-	/*background-image: url('/assets/unread.png');
-	background-position: center;
-	background-repeat: no-repeat;
-	outline: none;
-*/
-	/*display: block;*/
-	width:12px !important;
-	height: 12px !important;
-	border-radius: 6px !important;
+	width:14px !important;
+	height: 14px !important;
+	border-radius: 7px !important;
 	padding: 0 !important;
-	/*border: none;*/
-	/*background-color: blue;	*/
+
+	background-color:#4d90fe;
+	background-image:-webkit-gradient(linear,left top,left bottom,from(#4d90fe),to(#4787ed));
+	background-image:-webkit-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:-moz-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:-ms-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:-o-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:linear-gradient(top,#4d90fe,#4787ed);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorStr='#4d90fe',EndColorStr='#4787ed');
+	display: block;
+	/*border:1px solid #3079ed;*/
+}
+.halfread {
+	background-color:#4d90fe;
+	background-image:-webkit-gradient(linear,left top,left bottom,from(#4d90fe),to(#4787ed));
+	background-image:-webkit-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:-moz-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:-ms-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:-o-linear-gradient(top,#4d90fe,#4787ed);
+	background-image:linear-gradient(top,#4d90fe,#4787ed);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorStr='#4d90fe',EndColorStr='#4787ed');
+
+	width:14px !important;
+	height: 14px !important;
+	border-radius: 7px !important;
+	padding: 0 !important;
+
+	position: relative;
+	display: inline-block;
+	margin: 0 !important;
+}
+.halfread:before {
+	width:6px !important;
+	height: 12px !important;
+	border-radius: 6px 0 0 6px !important;
+	padding: 0 !important;
+	background-color: rgb(240,239,233);
+	position: absolute;
+	left:1px;
+	top:1px;
+	z-index: 1;
+	display: block;
+	content: '';
 }
 
 .autoshutdown {
