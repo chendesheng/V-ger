@@ -141,6 +141,33 @@ func NewWindow(title string, width, height int) *Window {
 	return w
 }
 
+func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
+	width, height := w.GetWindowSize()
+	fwidth, fheight := float64(width), float64(height)
+
+	ratio := float64(imgWidth) / float64(imgHeight)
+	windowRatio := fwidth / fheight
+
+	if ratio < windowRatio*1.15 && ratio > windowRatio*0.85 { //aspect radio is close enough
+		if fwidth < ratio*fheight { //always larger
+			fwidth = ratio * fheight
+		} else {
+			fheight = fwidth / ratio
+		}
+	} else {
+		if fwidth > ratio*fheight { //always smaller
+			fwidth = ratio * fheight
+		} else {
+			fheight = fwidth / ratio
+		}
+	}
+
+	vwidth, vheight := int(fwidth+0.5), int(fheight+0.5)
+	x, y := (width-vwidth)/2, (height-vheight)/2
+
+	return x, y, vwidth, vheight
+}
+
 func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	if len(img) == 0 {
 		return
@@ -150,25 +177,13 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 
 	w.texture.Bind(gl.TEXTURE_2D)
 
-	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, int(imgWidth), int(imgHeight), gl.RGB,
+	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, imgWidth, imgHeight, gl.RGB,
 		gl.UNSIGNED_BYTE, img)
 
 	// width, height := w.GetWindowSize()
 	// gl.Viewport(0, 0, 1280, 720)
-	width, height := w.GetWindowSize()
-	fwidth, fheight := float64(width), float64(height)
-
-	ratio := float64(imgWidth) / float64(imgHeight)
-	if fwidth > ratio*fheight { //always smaller
-		fwidth = ratio * fheight
-	} else {
-		fheight = fwidth / ratio
-	}
-
-	vwidth, vheight := int(fwidth+0.5), int(fheight+0.5)
-	x, y := (width-vwidth)/2, (height-vheight)/2
-
-	gl.Viewport(x, y, vwidth, vheight)
+	x, y, width, height := w.fitToWindow(imgWidth, imgHeight)
+	gl.Viewport(x, y, width, height)
 
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.PROJECTION)
