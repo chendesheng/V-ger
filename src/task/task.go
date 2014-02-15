@@ -129,6 +129,19 @@ func GetTask(name string) (*Task, error) {
 		return t, nil
 	}
 }
+func ExistsEpisode(subscribeName string, season, episode int) (bool, error) {
+	if len(lockfile.DefaultLock) > 0 {
+		lockfile.DefaultLock.Lock()
+		defer lockfile.DefaultLock.Unlock()
+	}
+
+	db := openDb()
+	defer db.Close()
+	var count int
+	err := db.QueryRow("select count(*) from task where Subscribe=? and Season=? and Episode=?",
+		subscribeName, season, episode).Scan(&count)
+	return count > 0, err
+}
 
 func openDb() *sql.DB {
 	db, err := sql.Open("sqlite3", TaskDir)

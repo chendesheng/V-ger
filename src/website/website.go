@@ -220,8 +220,12 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 
 	if s1 := subscribe.GetSubscribe(s.Name); s1 != nil {
 		for _, t := range tasks {
-			if t1, _ := task.GetTask(t.Name); t1 == nil {
-				task.SaveTask(t)
+			if exists, err := task.Exists(t.Name); err == nil && !exists {
+				if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
+					task.SaveTask(t)
+				} else {
+					println("episode exists")
+				}
 			}
 		}
 
@@ -611,28 +615,30 @@ func UpdateAll() {
 			log.Print(err)
 		} else {
 			for _, t := range tasks {
-				if b, err := task.Exists(t.Name); err == nil && !b {
-					log.Printf("subscribe new task: %v", t)
+				if exists, err := task.Exists(t.Name); err == nil && !exists {
+					if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
+						log.Printf("subscribe new task: %v", t)
 
-					if t.Season < 0 {
-						task.SaveTask(t)
-						continue
-					}
+						if t.Season < 0 {
+							task.SaveTask(t)
+							continue
+						}
 
-					files, err := thunder.NewTask(t.Original, "")
-					if err != nil {
-						log.Print(err)
-					}
-					fmt.Printf("%v\n", files)
-					if err == nil && len(files) == 1 && files[0].Percent == 100 {
-						t.URL = files[0].DownloadURL
-						_, _, size, err := download.GetDownloadInfo(t.URL)
+						files, err := thunder.NewTask(t.Original, "")
 						if err != nil {
 							log.Print(err)
-						} else {
-							t.Size = size
-							task.SaveTask(t)
-							task.StartNewTask2(t)
+						}
+						fmt.Printf("%v\n", files)
+						if err == nil && len(files) == 1 && files[0].Percent == 100 {
+							t.URL = files[0].DownloadURL
+							_, _, size, err := download.GetDownloadInfo(t.URL)
+							if err != nil {
+								log.Print(err)
+							} else {
+								t.Size = size
+								task.SaveTask(t)
+								task.StartNewTask2(t)
+							}
 						}
 					}
 				}
