@@ -209,8 +209,8 @@ func (a *appDelegate) OpenFile(filename string) bool {
 
 	if len(subs) == 0 {
 		go func() {
-			h := m.w.SendShowMessage("Downloading subtitles...", false)
-			defer m.w.SendHideMessage(h)
+			m.w.SendShowMessage("Downloading subtitles...", false)
+			defer m.w.SendHideMessage()
 			tk, _ := task.GetTask(name)
 			var search = util.CleanMovieName(name)
 			if tk != nil && len(tk.Subscribe) != 0 && tk.Season > 0 {

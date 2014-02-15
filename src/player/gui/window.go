@@ -46,6 +46,7 @@ type Window struct {
 	originalHeight int
 
 	currentMessagePtr uintptr
+	currentMessage    *SubItem
 }
 
 // func (w *Window) Show() {
@@ -135,6 +136,13 @@ func NewWindow(title string, width, height int) *Window {
 	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) {
 		if keycode == KEY_ESCAPE {
 			C.windowToggleFullScreen(w.ptr)
+		}
+	})
+
+	w.FuncOnFullscreenChanged = append(w.FuncOnFullscreenChanged, func(b bool) {
+		if w.currentMessagePtr != 0 {
+			w.HideText(w.currentMessagePtr)
+			w.currentMessagePtr = w.ShowText(w.currentMessage)
 		}
 	})
 
@@ -248,8 +256,8 @@ func (w *Window) SendShowMessage(msg string, autoHide bool) uintptr {
 	}
 }
 
-func (w *Window) SendHideMessage(h uintptr) {
-	w.ChanHideMessage <- h
+func (w *Window) SendHideMessage() {
+	w.ChanHideMessage <- 0
 }
 
 func (w *Window) ShowText(s *SubItem) uintptr {
@@ -346,12 +354,15 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 
 		item := arg.SubItem
 		w.currentMessagePtr = w.ShowText(&item)
+		w.currentMessage = &item
+
 		arg.Result <- SubItemExtra{0, w.currentMessagePtr}
-	case ptr := <-w.ChanHideMessage:
-		if (ptr != 0) && (w.currentMessagePtr == ptr) {
-			w.HideText(w.currentMessagePtr)
-			w.currentMessagePtr = 0
-		}
+	case <-w.ChanHideMessage:
+		// if (ptr != 0) && (w.currentMessagePtr == ptr) {
+		w.HideText(w.currentMessagePtr)
+		w.currentMessage = nil
+		w.currentMessagePtr = 0
+		// }
 	default:
 	}
 }

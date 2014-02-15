@@ -51,6 +51,10 @@ func main() {
 	strs = append(strs, str)
 
 	h := w.ShowText(&SubItem{0, 0, strs, 9, Position{-1, -1}, SubItemExtra{0, 0}})
+	w.FuncOnFullscreenChanged = append(w.FuncOnFullscreenChanged, func(b bool) {
+		w.HideText(h)
+		h = w.ShowText(&SubItem{0, 0, strs, 9, Position{-1, -1}, SubItemExtra{0, 0}})
+	})
 
 	// str = AttributedString{"Hello World1", 0, 0xffffff}
 	// strs = make([]AttributedString, 0)
@@ -120,7 +124,7 @@ func main() {
 	w.InitAudioMenu(audioStreamNames, indexes, 2)
 	w.FuncAudioMenuClicked = append(w.FuncAudioMenuClicked, func(i int) {
 		println(i)
-		go w.SendShowMessage(fmt.Sprintf("Select audio track %d", i))
+		go w.SendShowMessage(fmt.Sprintf("Select audio track %d", i), false)
 	})
 
 	NewDialog("test", 100, 100)

@@ -138,4 +138,16 @@ func (m *movie) uievents() {
 		}
 
 	})
+
+	m.w.FuncOnFullscreenChanged = append(m.w.FuncOnFullscreenChanged, func(b bool) {
+		if m.s != nil {
+			t := m.c.GetTime()
+			m.s.SeekRefresh(t)
+		}
+
+		if m.s2 != nil {
+			t := m.c.GetTime()
+			m.s2.SeekRefresh(t)
+		}
+	})
 }

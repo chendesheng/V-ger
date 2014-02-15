@@ -21,15 +21,13 @@
 
     // NSLog(@"windowWillEnterFullScreen");
 
-    onFullscreenChanged((void*)[notification object], 1);
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
-    // NSLog(@"windowDidEnterFullScreen");
+    onFullscreenChanged((void*)[notification object], 1);
 }
 - (void)windowWillExitFullScreen:(NSNotification *)notification
 { 
-    onFullscreenChanged((void*)[notification object], 0);
     // NSLog(@"windowWillExitFullScreen");
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification
@@ -39,6 +37,7 @@
     Window* w = (Window*)(self->window);
     w->customAspectRatio = self->savedAspectRatio;
 
+    onFullscreenChanged((void*)[notification object], 0);
 }
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
     // NSLog(@"windowWillResize");

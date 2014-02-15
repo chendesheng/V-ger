@@ -50,3 +50,15 @@ src/.DS_Store
 src/.DS_Store
 
 src/.DS_Store
+
+*.a
+
+*.a
+
+bin/playerguitest
+
+*.a
+
+src/player/gui/cocoa/libcocoa.a
+
+src/player/gui/cocoa/libcocoa.a

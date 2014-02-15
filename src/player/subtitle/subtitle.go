@@ -33,7 +33,8 @@ type Subtitle struct {
 	offset time.Duration
 	quit   chan bool
 
-	ChanSeek chan time.Duration
+	ChanSeek        chan time.Duration
+	ChanSeekRefersh chan time.Duration
 
 	ChanOffset chan durationArg
 
@@ -120,7 +121,10 @@ func (s *Subtitle) Play() {
 			arg.res <- s.calcFrom(pos)
 			break
 		case t := <-s.ChanSeek:
-			s.render(t, chRes)
+			s.render(t, chRes, false)
+			break
+		case t := <-s.ChanSeekRefersh:
+			s.render(t, chRes, true)
 			break
 		case <-s.chanStop:
 			for _, item := range s.items {
@@ -134,9 +138,9 @@ func (s *Subtitle) Play() {
 	}
 }
 
-func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra) {
+func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool) {
 	for i, item := range s.items {
-		if !s.checkPos(i, t) {
+		if refersh || !s.checkPos(i, t) {
 			if item.Handle != 0 && item.Handle != 1 {
 				// println(t.String(), "hide sub: ", item.Id, item.Content[0].Content)
 				s.hideSubItem(*item)
@@ -242,6 +246,7 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 	s.c = c
 	s.offset = sub.Offset
 	s.ChanSeek = make(chan time.Duration)
+	s.ChanSeekRefersh = make(chan time.Duration)
 	s.ChanOffset = make(chan durationArg)
 	s.chanStop = make(chan bool)
 	s.chanGetSubTime = make(chan subTimeArg)
@@ -280,6 +285,10 @@ func (s *Subtitle) Seek(t time.Duration) {
 	// println("subtitle seek:", t.String())
 	s.ChanSeek <- t
 	// println("subtitle seeked:", t.String())
+}
+
+func (s *Subtitle) SeekRefresh(t time.Duration) {
+	s.ChanSeekRefersh <- t
 }
 
 func (s *Subtitle) AddOffset(d time.Duration) time.Duration {
