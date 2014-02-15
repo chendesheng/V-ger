@@ -2,6 +2,7 @@ package subscribe
 
 import (
 	"database/sql"
+	"sync"
 	"time"
 	// "download"
 	"fmt"
@@ -113,7 +114,32 @@ func GetSubscribe(name string) *Subscribe {
 
 	return nil
 }
-func GetBannerImage(name string) []byte {
+
+var bannerCache map[string][]byte
+var bannerCacheLock sync.RWMutex
+
+func GetBannerImage(name string) (bytes []byte) {
+	bannerCacheLock.RLock()
+	if bannerCache == nil {
+		bannerCache = make(map[string][]byte)
+	}
+
+	if data, ok := bannerCache[name]; ok {
+		bytes = data
+
+		bannerCacheLock.RUnlock()
+		return
+	}
+	bannerCacheLock.RUnlock()
+
+	defer func() {
+		if len(bytes) > 0 {
+			bannerCacheLock.Lock()
+			bannerCache[name] = bytes
+			bannerCacheLock.Unlock()
+		}
+	}()
+
 	if len(lockfile.DefaultLock) > 0 {
 		lockfile.DefaultLock.Lock()
 		defer lockfile.DefaultLock.Unlock()
@@ -122,7 +148,7 @@ func GetBannerImage(name string) []byte {
 	db := openDb()
 	defer db.Close()
 
-	bytes := make([]byte, 0)
+	bytes = make([]byte, 0)
 	err := db.QueryRow(`select BannerImage from subscribe where Name=?`, name).Scan(&bytes)
 	if err != nil {
 		log.Print(err)
