@@ -746,6 +746,10 @@ h3 {
 	background: url('/assets/shooter.ico');
 	vertical-align: middle;
 }
+.Kankan {
+	background: url('/assets/kankan.ico');
+	vertical-align: middle;
+}
 #configs {
 	position: absolute;
 	top: 10px;

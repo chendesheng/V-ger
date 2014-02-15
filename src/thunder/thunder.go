@@ -50,6 +50,15 @@ func NewTask(taskURL string, verifyCode string) ([]ThunderTask, error) {
 
 	return getNewlyCreateTask(userId)
 }
+
+// func GetUserId() (string, error) {
+// 	if isLogined {
+// 		return getCookieValue("userid"), nil
+// 	} else {
+// 		return
+// 	}
+// }
+
 func NewTaskWithTorrent(torrent []byte) ([]ThunderTask, error) {
 	userId := getCookieValue("userid")
 
@@ -252,6 +261,7 @@ func getNewlyCreateTask(userId string) ([]ThunderTask, error) {
 				DownloadURL: info["lixian_url"].(string),
 				Size:        info["filesize"].(string),
 				Percent:     100,
+				Cid:         info["cid"].(string),
 			},
 		}, nil
 	}

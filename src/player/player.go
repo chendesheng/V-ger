@@ -13,12 +13,14 @@ import (
 	"strings"
 	"subtitles"
 	"task"
+	"thunder"
 	"time"
 	"toutf8"
 	"util"
 
 	// . "player/shared"
 	// "website"
+	"bytes"
 	. "logger"
 	"player/gui"
 	"subscribe"
@@ -105,9 +107,10 @@ func findSubs(base string) []string {
 	}
 }
 
-func downloadSubs(movieName string, search string) []string {
+func downloadSubs(movieName, url string, search string) []string {
 	chSubs := make(chan subtitles.Subtitle)
-	go subtitles.SearchSubtitles(search, chSubs)
+	thunder.Login()
+	go subtitles.SearchSubtitles(search, url, chSubs)
 
 	for s := range chSubs {
 		log.Printf("%v", s)
@@ -117,15 +120,22 @@ func downloadSubs(movieName string, search string) []string {
 		if err != nil {
 			return nil
 		}
+		if subname == "content" {
+			subname = s.Description
+		}
 
 		subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
 		util.MakeSurePathExists(subFileDir)
 		subFile := path.Join(subFileDir, subname)
 
 		println("subfile:", subFile)
-		if err := subtitles.QuickDownload(url, subFile); err != nil {
+		data, err := subtitles.QuickDownload(url)
+		if err != nil {
 			log.Print(err)
 		} else {
+			data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
+			ioutil.WriteFile(subFile, data, 0666)
+
 			if util.CheckExt(subname, "rar", "zip") {
 				log.Print(path.Join(path.Dir(os.Args[0]), "unar"))
 				cmd := exec.Command(path.Join(path.Dir(os.Args[0]), "unar"), subFile, "-f", "-o", subFileDir)
@@ -206,7 +216,7 @@ func (a *appDelegate) OpenFile(filename string) bool {
 			if tk != nil && len(tk.Subscribe) != 0 && tk.Season > 0 {
 				search = fmt.Sprintf("%s s%2de%2d", tk.Subscribe, tk.Season, tk.Episode)
 			}
-			m.setupSubtitles(downloadSubs(name, search))
+			m.setupSubtitles(downloadSubs(name, tk.URL, search))
 		}()
 	}
 
@@ -225,7 +235,12 @@ func (a *appDelegate) SearchSubtitleMenuItemClick() {
 	log.Print("SearchSubtitleMenuItemClick")
 
 	res := make(chan subtitles.Subtitle)
-	subtitles.SearchSubtitles(mv.p.Movie, res)
+	tk, _ := task.GetTask(mv.p.Movie)
+	url := ""
+	if tk != nil {
+		url = tk.URL
+	}
+	subtitles.SearchSubtitles(mv.p.Movie, url, res)
 	for sub := range res {
 		// mv.w.ShowSubList()
 		println(sub.URL)

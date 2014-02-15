@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"log"
 	// "os"
+	"encoding/base64"
+	"encoding/binary"
+	"encoding/hex"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,6 +20,8 @@ type ThunderTask struct {
 	PlayURL     string
 	Size        string
 	Percent     int
+
+	Cid string
 }
 
 func (t *ThunderTask) String() string {
@@ -165,4 +170,15 @@ func parseUploadTorrentResutl(text string) (map[string]interface{}, error) {
 	res := make(map[string]interface{})
 	json.Unmarshal([]byte(text), &res)
 	return res, nil
+}
+
+func ParseFid(fid string) (cid string, size uint64, gcid string) {
+	data, _ := base64.StdEncoding.DecodeString(fid)
+	fmt.Printf("%s-->%#v", fid, data)
+
+	cid = strings.ToUpper(hex.EncodeToString(data[:20]))
+	size = binary.LittleEndian.Uint64(data[20:28])
+	gcid = strings.ToUpper(hex.EncodeToString(data[28:]))
+
+	return
 }

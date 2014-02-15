@@ -269,7 +269,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				setTimeout(function() {
 					var top = parseInt($($('#tasks-list .highlight-task')[0]).data('order'))*80;
 					if (top==NaN) top = 0;
-					console.log(top);
+					// console.log(top);
 					$('#tasks-list').scrollTop(top);
 				}, 350);
 			}, 500);
@@ -359,6 +359,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				// 	$scope.waiting = false;
 				// 	$scope.ws_search_subtitles = null;
 				// }
+				$scope.waiting = false;
+				// $scope.ws_search_subtitles = null;
 			}, function() {
 				if ($scope.ws_search_subtitles != null) {
 					if ($scope.subtitles.length == 0) {
@@ -386,9 +388,13 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 		$scope.download_subtitles = function(sub) {
 			sub.loading = true;
-			$http.post('/subtitles/download/' + $scope.subtitles_movie_name, sub.URL).success(function() {
+			var input = JSON.stringify({'name':sub.Description, 'url':sub.URL});
+			$http.post('/subtitles/download/' + $scope.subtitles_movie_name, input).success(function(resp) {
 				sub.loading = false;
 				$scope.stop_search_subtitles();
+				if (resp) {
+					$scope.push_alert(resp);
+				}
 			})
 		};
 

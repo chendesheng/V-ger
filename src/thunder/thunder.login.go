@@ -23,23 +23,34 @@ func doubleMD5(p string) string {
 
 var isLogined = false
 
+var UserName string
+var Password string
+
 func Login() error {
-	setCookie("gdriveid", util.ReadConfig("gdriveid"))
-
-	if isLogined {
-		return nil
-	}
-
 	config := util.ReadAllConfigs()
 	user := config["thunder-user"]
 	password := config["thunder-password"]
+
+	gdriveid, _, err := Login2(util.ReadConfig("gdriveid"), user, password)
+	if err != nil {
+		util.SaveConfig("gdriveid", gdriveid)
+	}
+	return err
+}
+
+func Login2(gdriveid string, user, password string) (string, string, error) {
+	setCookie("gdriveid", gdriveid)
+
+	if isLogined {
+		return gdriveid, getCookieValue("userid"), nil
+	}
 
 	_, err := sendGet("http://login.xunlei.com/check",
 		&url.Values{
 			"u": {user},
 		})
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	verifyCode := strings.Split(getCookieValue("check_result"), ":")[1]
@@ -54,41 +65,45 @@ func Login() error {
 			"p":            {passwordMd5},
 		})
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	//gdriveid
 	_, err = sendGet("http://dynamic.lixian.vip.xunlei.com/login?from=0", &url.Values{})
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
+	userid := getCookieValue("userid")
 	html, err := sendGet("http://dynamic.cloud.vip.xunlei.com/user_task",
 		&url.Values{
-			"userid": {getCookieValue("userid")},
+			"userid": {userid},
 			"st":     {"4"},
 		})
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	gdriveidReg := regexp.MustCompile(`input type="hidden" id="cok" value="([^"]+)"`)
 	matches := gdriveidReg.FindStringSubmatch(html)
 	if matches == nil {
-		return fmt.Errorf("Can't find gdriveid.")
+		return "", "", fmt.Errorf("Can't find gdriveid.")
 	}
 
-	gdriveid := matches[1]
+	gdriveid = matches[1]
 
 	log.Print("gdriveid: ", gdriveid)
 
 	setCookie("gdriveid", gdriveid)
-	util.SaveConfig("gdriveid", gdriveid)
 
 	isLogined = true
 
 	log.Println("Thunder login success.")
-	return nil
+	return gdriveid, userid, nil
+}
+
+func GetUserId() string {
+	return getCookieValue("userid")
 }
 
 func setCookie(name, value string) {

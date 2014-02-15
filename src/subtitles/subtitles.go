@@ -2,11 +2,13 @@ package subtitles
 
 import (
 	// "fmt"
+	// "io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
+	"strings"
+	// "os"
 )
 
 type Subtitle struct {
@@ -42,7 +44,7 @@ func readBody(resp *http.Response) string {
 	return text
 }
 
-func SearchSubtitles(name string, result chan Subtitle) {
+func SearchSubtitles(name string, url string, result chan Subtitle) {
 	yyetsFinish := make(chan bool)
 	go func() {
 		err := yyetsSearchSubtitles(name, result)
@@ -61,8 +63,31 @@ func SearchSubtitles(name string, result chan Subtitle) {
 		close(shooterFinish)
 	}()
 
+	if len(url) > 0 && strings.Contains(url, "gdl.lixian.vip.xunlei.com") {
+		kankanFinish := make(chan bool)
+		go func() {
+			defer close(kankanFinish)
+			defer func() {
+				r := recover()
+				if r != nil {
+					log.Print(r.(error))
+				}
+			}()
+
+			err := kankanSearch(url, result)
+			if err != nil {
+				log.Print(err)
+			}
+
+		}()
+
+		<-kankanFinish
+	}
+
 	<-yyetsFinish
 	<-shooterFinish
+
+	println("search subtitle finish")
 	close(result)
 }
 
@@ -112,28 +137,23 @@ func SearchSubtitlesMaxCount(name string, result chan Subtitle, maxcnt int) {
 
 	close(result)
 }
-func QuickDownload(url, path string) error {
+func QuickDownload(url string) ([]byte, error) {
 	resp, err := http.Get(url)
+	defer resp.Body.Close()
 	// bytes, err := httputil.DumpResponse(resp, false)
 	// fmt.Println(string(bytes))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	// print(len(data))
-	defer resp.Body.Close()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0666)
-	defer f.Close()
-	if err != nil {
-		return err
-	}
 	// fmt.Println(data)
-	f.WriteAt(data, 0)
-	return nil
+
+	return data, err
 }
