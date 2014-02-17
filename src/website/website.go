@@ -410,7 +410,7 @@ func progressHandler(ws *websocket.Conn) {
 func assetsHandler(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println(r.URL.Path)
 	path := r.URL.Path[1:]
-	if _, err := os.OpenFile(path, os.O_RDONLY, 0666); os.IsNotExist(err) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		http.NotFound(w, r)
 	} else {
 		http.ServeFile(w, r, path)
