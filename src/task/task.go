@@ -17,8 +17,8 @@ import (
 	// "strconv"
 	// "regexp"
 	"database/sql"
+	"filelock"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/nightlyone/lockfile"
 	"strings"
 	"time"
 )
@@ -130,9 +130,9 @@ func GetTask(name string) (*Task, error) {
 	}
 }
 func ExistsEpisode(subscribeName string, season, episode int) (bool, error) {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -188,9 +188,9 @@ func scanTask(scanner taskScanner) (*Task, error) {
 	}
 }
 func GetTasks() []*Task {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -215,9 +215,9 @@ func GetTasks() []*Task {
 }
 
 func GetDownloadingTask() (*Task, bool) {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -230,9 +230,9 @@ func GetDownloadingTask() (*Task, bool) {
 	}
 }
 func HasDownloadingOrPlaying() bool {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -243,9 +243,9 @@ func HasDownloadingOrPlaying() bool {
 	return count > 0
 }
 func Exists(name string) (bool, error) {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -257,9 +257,9 @@ func Exists(name string) (bool, error) {
 }
 
 func updateTask(t *Task) error {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -298,9 +298,9 @@ func updateTask(t *Task) error {
 }
 
 func insertTask(t *Task) error {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()

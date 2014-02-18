@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/nightlyone/lockfile"
+	"filelock"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -54,6 +54,6 @@ func init() {
 	subscribe.DbPath = task.TaskDir
 	shared.DbFile = task.TaskDir
 
-	//only block when file locked by another process
-	lockfile.DefaultLock, _ = lockfile.New("/tmp/vger.db.lock.txt")
+	// only block when file locked by another process
+	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 }

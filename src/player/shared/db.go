@@ -2,11 +2,10 @@ package shared
 
 import (
 	"database/sql"
+	"filelock"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"time"
-
-	"github.com/nightlyone/lockfile"
 )
 
 var DbFile = ""
@@ -39,9 +38,9 @@ func scanSub(scanner rowScanner) (*Sub, error) {
 }
 
 func GetSubtitles(movie string) []*Sub {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -68,9 +67,9 @@ func GetSubtitles(movie string) []*Sub {
 	return subs
 }
 func GetSubtitle(name string) *Sub {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -94,9 +93,9 @@ func GetSubtitle(name string) *Sub {
 	return nil
 }
 func InsertSubtitle(sub *Sub) {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -160,9 +159,9 @@ func UpdateSubtitleOffsetAsync(name string, offset time.Duration) {
 func UpdateSubtitleOffset(name string, offset time.Duration) {
 	log.Printf("update subtitle offset: %s, %d", name, offset)
 
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -175,9 +174,9 @@ func UpdateSubtitleOffset(name string, offset time.Duration) {
 }
 
 func UpdateSubtitleLanguage(name string, lang1, lang2 string) {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -204,9 +203,9 @@ func scanPlaying(scanner rowScanner) (*Playing, error) {
 }
 
 func GetPlaying(movie string) *Playing {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -285,9 +284,9 @@ func SavePlayingAsync(p *Playing) {
 func SavePlaying(p *Playing) {
 	log.Printf("Save playing: %v", p)
 
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()

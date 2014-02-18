@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 	// "download"
+	"filelock"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/nightlyone/lockfile"
 	"log"
 	// "task"
 	// "thunder"
@@ -64,9 +64,9 @@ func scanSubscribe(scanner myScanner) (*Subscribe, error) {
 }
 
 func GetSubscribes() []*Subscribe {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -88,9 +88,9 @@ func GetSubscribes() []*Subscribe {
 	return subscribes
 }
 func GetSubscribe(name string) *Subscribe {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -140,9 +140,9 @@ func GetBannerImage(name string) (bytes []byte) {
 		}
 	}()
 
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -157,9 +157,9 @@ func GetBannerImage(name string) (bytes []byte) {
 	return bytes
 }
 func SaveBannerImage(name string, bytes []byte) {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -171,9 +171,9 @@ func SaveBannerImage(name string, bytes []byte) {
 	}
 }
 func updateSubscribe(s *Subscribe) error {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -200,9 +200,9 @@ func updateSubscribe(s *Subscribe) error {
 	return err
 }
 func insertSubscribe(s *Subscribe) error {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -225,9 +225,9 @@ func insertSubscribe(s *Subscribe) error {
 	return err
 }
 func Exists(name string) (bool, error) {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()
@@ -256,9 +256,9 @@ func SaveSubscribe(s *Subscribe) (err error) {
 	return
 }
 func UpdateDuration(name string, duration time.Duration) error {
-	if len(lockfile.DefaultLock) > 0 {
-		lockfile.DefaultLock.Lock()
-		defer lockfile.DefaultLock.Unlock()
+	if filelock.DefaultLock != nil {
+		filelock.DefaultLock.Lock()
+		defer filelock.DefaultLock.Unlock()
 	}
 
 	db := openDb()

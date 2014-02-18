@@ -2,6 +2,7 @@ package main
 
 import (
 	"download"
+	"filelock"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -249,6 +250,7 @@ func (a *appDelegate) SearchSubtitleMenuItemClick() {
 
 func main() {
 	task.TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
+	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
 	runtime.LockOSThread()
 
