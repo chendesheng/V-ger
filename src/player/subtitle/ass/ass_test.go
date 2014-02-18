@@ -31,3 +31,17 @@ Dialogue: 1,0:00:40.72,0:00:44.70,Default,NTP,0,0,0,,{\bord0\shad0\fscx11\fscy14
 		t.Errorf("Expect empty but %s", items[0].Content[0].Content)
 	}
 }
+
+func TestParseB(t *testing.T) {
+	f, _ := os.Open("b.ass")
+	// bytes, _ := ioutil.ReadAll(f)
+	subs, err := Parse(f, 100, 100)
+
+	if err != nil {
+		t.Error(err)
+	}
+	// if len(subs) != 904 {
+	// t.Errorf("Expect 904 but %d", len(subs))
+	// }
+	println(len(subs))
+}

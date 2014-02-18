@@ -121,8 +121,9 @@ func downloadSubs(movieName, url string, search string) []string {
 		if err != nil {
 			return nil
 		}
+
 		if subname == "content" {
-			subname = s.Description
+			subname = s.Description + ".srt" //always use srt
 		}
 
 		subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
@@ -135,6 +136,8 @@ func downloadSubs(movieName, url string, search string) []string {
 			log.Print(err)
 		} else {
 			data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
+			data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
+
 			ioutil.WriteFile(subFile, data, 0666)
 
 			if util.CheckExt(subname, "rar", "zip") {
@@ -156,7 +159,6 @@ func downloadSubs(movieName, url string, search string) []string {
 		sub = strings.ToLower(sub)
 		bytes, err := ioutil.ReadFile(sub)
 		if err == nil {
-
 			InsertSubtitle(&Sub{movieName, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:], "", ""})
 		}
 		subs[i] = path.Base(sub)

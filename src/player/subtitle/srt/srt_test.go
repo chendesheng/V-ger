@@ -388,3 +388,11 @@ m 325 0 l 355 0 l 332 47 l 354 47 l 399 136 l 369 136 l 328 53 l 288 136 l 257 1
 		t.Errorf("Expect empty but %s", items[0].Content[0].Content)
 	}
 }
+
+func TestParse_d(t *testing.T) {
+	r, _ := os.Open("d.srt")
+	items, _ := Parse(r, 300, 300)
+	if len(items) != 709 {
+		t.Errorf("Expect 709 items but %d items.", len(items))
+	}
+}

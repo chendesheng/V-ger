@@ -63,7 +63,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if name == "content" {
-		name = arg["name"]
+		name = arg["name"] + ".srt"
 	}
 
 	subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
