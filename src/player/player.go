@@ -21,6 +21,7 @@ import (
 	"thunder"
 	"time"
 	"toutf8"
+	"unicode/utf8"
 	"util"
 )
 
@@ -112,6 +113,12 @@ func downloadSubs(movieName, url string, search string) []string {
 			log.Print(err)
 		} else {
 			data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
+
+			spaceBytes := make([]byte, 0, 4)
+			n := utf8.EncodeRune(spaceBytes, '　')
+			spaceBytes = spaceBytes[:n]
+			data = bytes.Replace(data, spaceBytes, []byte{' '}, -1)
+
 			data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
 
 			ioutil.WriteFile(subFile, data, 0666)
