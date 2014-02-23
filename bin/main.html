@@ -20,17 +20,35 @@
 		<div class="box-tasks-list" style="-webkit-overflow-scrolling:touch">
  		 	<!-- <h1></h1> -->
 		<!--	<h2>Speed is Fun!</h2>  -->
-
 			<ul id="subscribes">
-				<li ng-repeat="subscribe in subscribes" class="subscribe" ng-class="{highlight:subscribe.Name==task_filter.Subscribe}" ng-click="switch_subscribe(subscribe);">
+				<li class="subscribe" ng-class="{highlight:task_filter.Subscribe=='Single Tasks'}"
+					ng-click="switch_subscribe(singleTasks);">
 					<!-- <span class="subscribe-icon" ng-show="subscribe.Name!='Single Tasks'"> -->
-					<img ng-src="/subscribe/banner/{{subscribe.Name}}" alt="banner">
+					<img ng-src="/subscribe/banner/{{singleTasks.Name}}" alt="banner">
 					<!-- </span> -->
-					<span class="subscribe-menu-name">{{subscribe.Name}}</span>
-					<span class="badge" ng-show="subscribe.Badge<100&&subscribe.Badge>0">{{subscribe.Badge}}</span>
-					<span class="badge" ng-show="subscribe.Badge>99">99+</span>
+					<span class="subscribe-menu-name">{{singleTasks.Name}}</span>
+					<span class="badge" ng-show="singleTasks.Badge<100&&singleTasks.Badge>0">{{singleTasks.Badge}}</span>
+					<span class="badge" ng-show="singleTasks.Badge>99">99+</span>
 					<span class="clear"></span>
 				</li>
+
+				<li class="menu-head">TV Shows&nbsp;&nbsp;&nbsp;<a class="menu-edit" ng-click="toggle_menu_edit();">[edit]</a></li>
+				<ul>
+					<li ng-repeat="subscribe in subscribes" class="subscribe" ng-class="{highlight:subscribe.Name==task_filter.Subscribe, 'edit-mode': edit_menu}" ng-click="switch_subscribe(subscribe);">
+						<!-- <span class="subscribe-icon" ng-show="subscribe.Name!='Single Tasks'"> -->
+						<span class="delete" ng-show="edit_menu && (!subscribe.confirm_delete)" ng-click="tounsubscribe($event,subscribe);"></span>
+						<img ng-src="/subscribe/banner/{{subscribe.Name}}" alt="banner">
+						<!-- </span> -->
+						<span class="subscribe-menu-name">{{subscribe.Name}}</span>
+
+						<span class="delete-confirm" ng-show="subscribe.confirm_delete" ng-click="unsubscribe($event,subscribe);">Delete</span>
+						<span class="resort" ng-show="edit_menu" ng-click="unsubscribe($event,subscribe);"></span>
+
+						<span class="badge" ng-show="subscribe.Badge<100&&subscribe.Badge>0">{{subscribe.Badge}}</span>
+						<span class="badge" ng-show="subscribe.Badge>99">99+</span>
+						<span class="clear"></span>
+					</li>
+				</ul>
 			</ul>
 			<div id="subscribe-content" ng-class="{'show-info':currentSubscribe.Name!='Single Tasks'}">
 				<div class="subscribe-info">

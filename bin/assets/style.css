@@ -827,6 +827,82 @@ li.subscribe:hover img {
 .subscribe-menu-name {
 	float:left;
 }
+.menu-head {
+	border-bottom: solid 1px #333;
+	margin-bottom: 10px;
+}
+.menu-edit {
+	float:right;
+	font-size: smaller;
+	/*display: none;*/
+}
+/*.menu-head:hover .menu-edit {
+	display: block;
+}*/
+/*.subscribe .delete {
+	display: none;
+}
+.subscribe.edit-mode .delete {
+	display: inline-block !important;
+}
+*/
+.resort {
+	border-top: solid 2px #333;
+	border-bottom: solid 2px #333;
+	opacity: .5;
+	position: absolute;
+	right:0;
+	height: 6px;
+	width: 18px;
+	display: block;
+	top: 13px;
+	z-index: 0;
+}
+.resort:before {
+	content: '';
+	height: 2px;
+	/*opacity: 0.5;*/
+	position: absolute;
+	top: 2px;
+	left:0px;
+	width:18px;
+	background-color:#333;
+}
+.delete-confirm {
+	color:white;
+	background-color: red;
+	font-weight: lighter;
+	font-size: smaller;
+	height: 25px;
+	line-height: 25px;
+	padding: 0 3px 0 3px;
+	position: absolute;
+	right: 0px;
+	top: 6px;
+	z-index: 1;
+}
+.delete {
+	width: 14px;
+	height: 14px;
+	border-radius: 7px;
+	background-color: red;
+	position: absolute;
+	left: -20px;
+	top: 11px;
+}
+.delete:before {
+	width: 8px;
+	height: 2px;
+	background-color: white;
+	display: block;
+	position: absolute;
+	display: block;
+	z-index: 5;
+	left:3px;
+	top:6px;
+	content:'';
+}
+
 .badge {
 	border-radius: 7px;
 	background-color: red;

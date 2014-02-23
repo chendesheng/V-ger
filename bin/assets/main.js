@@ -58,7 +58,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					var item = data[i];
 					item.StartDate = new Date(Date.parse(item.StartDate))
 					if (item.Subscribe == '') {
-						item.Subscribe = 'Single Tasks';
+						item.Subscribe = $scope.singleTasks.Name;
 					}
 				};
 
@@ -92,8 +92,13 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					val.Badge = 0;
 					subscribeMap[val.Name] = val;
 				});
+				$scope.singleTasks.Badge = 0;
+				subscribeMap[$scope.singleTasks.Name] = $scope.singleTasks;
 
 				angular.forEach(tasks, function(val) {
+					if (subscribeMap[val.Subscribe] == null) {
+						return;
+					}
 					if ((val.Status == 'Downloading') || (val.Status == 'Queued')
 						|| (val.Status == 'Stopped')
 						|| ((val.Status=='Finished')&&(subscribeMap[val.Subscribe].Duration==0))
@@ -211,6 +216,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		function new_task(url) {
 			$scope.waiting = true;
 			if (url.indexOf('lixian.vip.xunlei.com') != -1 ||
+				url.indexOf('cdn.baidupcs.com') != -1 ||
 				url.indexOf('youtube.com') != -1 ||
 				/.*dmg|.*zip|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
 				$http.post('/new/', url).success(function(resp) {
@@ -229,7 +235,51 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			}
 		};
 
-		$scope.subscribes = [{Name:"Single Tasks"}];
+		$scope.subscribes = [];//[{Name:"Single Tasks"}];
+		$scope.edit_menu = false;
+		$scope.singleTasks = {Name:"Single Tasks", Badge:0, Duration:0};
+		$scope.toggle_menu_edit = function() {
+			if ($scope.edit_menu) {
+				$scope.edit_menu = false;
+				$('.menu-edit').html('[edit]');
+				angular.forEach($scope.subscribes, function(val) {
+					val.confirm_delete = false;
+				});
+			} else {
+				$scope.edit_menu = true;
+				$('.menu-edit').html('[done]');
+			}
+		};
+		$scope.tounsubscribe = function($event, subscribe) {
+			$event.stopPropagation();
+			angular.forEach($scope.subscribes, function(val) {
+				if (val.confirm_delete) {
+					val.confirm_delete = false;
+				}
+			});
+
+			subscribe.confirm_delete = true;
+		};
+
+		$scope.unsubscribe = function($event, subscribe) {
+			$event.stopPropagation();
+			for (var i = $scope.subscribes.length - 1; i >= 0; i--) {
+				var s = $scope.subscribes[i];
+				if (s.Name == subscribe.Name) {
+					$scope.subscribes.splice(i, 1);
+
+					if ($scope.currentSubscribe.Name == s.Name) {
+						var current = $scope.subscribes[0];
+						angular.forEach(current, function(v, k){
+							$scope.currentSubscribe[k] = current[k];
+						});
+
+						$scope.task_filter.Subscribe = $scope.currentSubscribe.Name;
+					}
+					break;
+				}
+			};
+		};
 		$scope.new_subscribe = function (url) {
 			$scope.waiting = true;
 			$http.post('/subscribe/new', url).success(function (data) {
@@ -251,7 +301,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 				$scope.new_url = '';
 			});
-		}
+		};
 		$scope.currentSubscribe = {Name:'Single Tasks'};
 		$scope.switch_subscribe = function(s) {
 			$scope.task_filter.Subscribe = s.Name;
@@ -281,6 +331,9 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				if (name == s.Name) {
 					return s;
 				}
+			}
+			if (name == $scope.singleTasks.Name) {
+				return $scope.singleTasks;
 			}
 
 			return $scope.subscribes[0];
@@ -351,7 +404,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					$scope.subtitles.push(data);
 					$scope.waiting = true;
 				}
-			}, function() {
+			}, function() {				
 				// if ($scope.ws_search_subtitles != null) {
 				// 	if ($scope.subtitles.length == 0) {
 				// 		$scope.nosubtitles = true;
@@ -359,8 +412,6 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				// 	$scope.waiting = false;
 				// 	$scope.ws_search_subtitles = null;
 				// }
-				$scope.waiting = false;
-				// $scope.ws_search_subtitles = null;
 			}, function() {
 				if ($scope.ws_search_subtitles != null) {
 					if ($scope.subtitles.length == 0) {
@@ -400,7 +451,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 		$scope.go = function() {
 			$scope.waiting = true
-			if (/www.yyets.com\/resource\/[0-9+]/.test($scope.new_url)) {
+
+			if (/www.yyets.com\/(php\/)?resource\/[0-9+]/.test($scope.new_url)) {
 				$scope.new_subscribe($scope.new_url);
 			} else if (/.+\:\/\/.+|^magnet\:\?.+/.test($scope.new_url)) {
 				new_task($scope.new_url);
