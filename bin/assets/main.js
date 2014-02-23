@@ -52,60 +52,101 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			$scope.config['shutdown-after-finish'] = (v == 'true');
 		})
 
+		function GetTasksMap() {
+			var tasks = $scope.tasks;
+			var tasksMap = {};
+			for (var i = tasks.length - 1; i >= 0; i--) {
+				var task = tasks[i];
+				tasksMap[task.Name] = task;
+			}
+
+			return tasksMap
+		}
+		function DeleteTask(name) {
+			var tasks = $scope.tasks;
+			for (var i = tasks.length - 1; i >= 0; i--) {
+				var task = tasks[i];
+				if (task.Name == name) {
+					tasks.splice(i, 1);
+					break;
+				}
+			}
+		}
+		function GetSubscribeMap() {
+			var subscribeMap = {};
+			angular.forEach($scope.subscribes, function(val, key) {
+				if (val.Badge == null) {
+					val.Badge = 0;
+				}
+
+				subscribeMap[val.Name] = val;
+			});
+
+			if ($scope.singleTasks.Badge == null) {
+				$scope.singleTasks.Badge = 0;
+			}
+
+			subscribeMap[$scope.singleTasks.Name] = $scope.singleTasks;
+
+			return subscribeMap
+		}
+
+		function IfCountBadge(task, subscribeMap) {
+			if (subscribeMap[task.Subscribe] == null) {
+				return false;
+			} 
+
+			return ((task.Status == 'Downloading') || (task.Status == 'Queued')
+				|| (task.Status == 'Stopped')
+				|| ((task.Status=='Finished')&&(subscribeMap[task.Subscribe].Duration==0))
+				|| ((task.Status=='Finished')&&(task.LastPlaying<subscribeMap[task.Subscribe].Duration)));
+		}
+
 		function monitor_process() {
 			monitor('/progress', function(data) {
+				var tasksMap = GetTasksMap();
+				var subscribeMap = GetSubscribeMap();
+
 				for (var i = data.length - 1; i >= 0; i--) {
 					var item = data[i];
 					item.StartDate = new Date(Date.parse(item.StartDate))
 					if (item.Subscribe == '') {
 						item.Subscribe = $scope.singleTasks.Name;
 					}
-				};
 
-				var collection = {};
-				for (var i = data.length - 1; i >= 0; i--) {
-					var item = data[i]
-					if (item.Status != "Deleted") {
-						collection[item.Name] = item;
-					}
-				};
-				var tasks = $scope.tasks;
-				for (var i = tasks.length - 1; i >= 0; i--) {
-					var task = tasks[i];
-					var source = collection[task.Name];
-					if (source) {
-						angular.forEach(source, function(val, key) {
-							task[key] = val;
-						});
-						delete collection[task.Name];
+					var t = tasksMap[item.Name];
+					if (t != null) {
+						if (item.Status == "Deleted") {
+							if (IfCountBadge(t, subscribeMap)) {
+								subscribeMap[t.Subscribe].Badge--;
+							}
+							DeleteTask(t.Name);
+						} else {
+							//assume subscribe never change
+							var prev = IfCountBadge(t, subscribeMap);
+							angular.forEach(item, function(val, key) {
+								t[key] = val;
+							});
+							var current = IfCountBadge(t, subscribeMap)
+							if (current && !prev) {
+								subscribeMap[t.Subscribe].Badge++;
+							}
+							if (!current && prev) {
+								subscribeMap[t.Subscribe].Badge--;
+							}
+						}
 					} else {
-						tasks.splice(i, 1);
-					}
-				}
+						if (item.Status == 'Deleted') {
+							continue;
+						}
 
-				angular.forEach(collection, function(val, key) {
-					tasks.push(val)
-				});
+						$scope.tasks.push(item);
 
-				var subscribeMap = {};
-				angular.forEach($scope.subscribes, function(val, key) {
-					val.Badge = 0;
-					subscribeMap[val.Name] = val;
-				});
-				$scope.singleTasks.Badge = 0;
-				subscribeMap[$scope.singleTasks.Name] = $scope.singleTasks;
-
-				angular.forEach(tasks, function(val) {
-					if (subscribeMap[val.Subscribe] == null) {
-						return;
+						if (IfCountBadge(item, subscribeMap)) {
+							subscribeMap[item.Subscribe].Badge++;
+						}
 					}
-					if ((val.Status == 'Downloading') || (val.Status == 'Queued')
-						|| (val.Status == 'Stopped')
-						|| ((val.Status=='Finished')&&(subscribeMap[val.Subscribe].Duration==0))
-						|| ((val.Status=='Finished')&&(val.LastPlaying<subscribeMap[val.Subscribe].Duration))) {
-						subscribeMap[val.Subscribe].Badge++;
-					}
-				});
+				};
 			}, monitor_process);
 		}
 

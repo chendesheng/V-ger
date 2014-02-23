@@ -396,8 +396,8 @@ func progressHandler(ws *websocket.Conn) {
 
 	for {
 		select {
-		case <-ch:
-			text, _ := json.Marshal(task.GetTasks())
+		case t := <-ch:
+			text, _ := json.Marshal([]*task.Task{t})
 			io.WriteString(ws, string(text))
 			break
 		case <-time.After(time.Second * 20):
