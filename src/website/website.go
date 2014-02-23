@@ -387,10 +387,12 @@ func progressHandler(ws *websocket.Conn) {
 
 	io.WriteString(ws, string(text))
 
-	ch := make(chan *task.Task)
+	ch := make(chan *task.Task, 20)
 	// log.Println("website watch task change ", ch)
 	task.WatchChange(ch)
 	defer task.RemoveWatch(ch)
+
+	// ws.SetDeadline(time.Now().Add(21 * time.Second))
 
 	for {
 		select {

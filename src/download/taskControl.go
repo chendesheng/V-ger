@@ -41,7 +41,7 @@ var baseDir string = util.ReadConfig("dir")
 var taskControls map[string]*taskControl = make(map[string]*taskControl)
 
 func monitorTask() {
-	ch := make(chan *task.Task)
+	ch := make(chan *task.Task, 20)
 	log.Println("task control watch task: ", ch)
 	task.WatchChange(ch)
 

@@ -2,21 +2,21 @@ package task
 
 import (
 	// "fmt"
-	"log"
+	// "log"
 	"sync"
-	"time"
+	// "time"
 )
 
 var watchers []chan *Task
-var watcherLock sync.Mutex = sync.Mutex{}
+var watchersLock sync.Mutex = sync.Mutex{}
 
 func WatchChange(ch chan *Task) {
 	if ch == nil {
 		panic("ch cannot be nil")
 	}
 
-	watcherLock.Lock()
-	defer watcherLock.Unlock()
+	watchersLock.Lock()
+	defer watchersLock.Unlock()
 
 	for _, w := range watchers {
 		if w == ch {
@@ -29,8 +29,8 @@ func WatchChange(ch chan *Task) {
 }
 
 func RemoveWatch(ch chan *Task) {
-	watcherLock.Lock()
-	defer watcherLock.Unlock()
+	watchersLock.Lock()
+	defer watchersLock.Unlock()
 
 	for i, w := range watchers {
 		if w == ch {
@@ -46,36 +46,13 @@ func RemoveWatch(ch chan *Task) {
 	}
 }
 
-//call this function after modify task file directly, like trash task.
-// func UpdateFiles() {
-// 	writeChangeEvent()
-// }
+func writeChangeEvent(t *Task) {
+	watchersLock.Lock()
+	defer watchersLock.Unlock()
 
-func writeChangeEvent(name string) {
-	// tks := GetTasks()
-
-	// println("write change event:", name)
-
-	t, err := GetTask(name)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// fmt.Printf("%v", t)
-
-	watcherLock.Lock()
-	copyWatchers := make([]chan *Task, len(watchers))
-	copy(copyWatchers, watchers)
-	watcherLock.Unlock()
-
-	for _, w := range copyWatchers {
-		select {
-		case w <- t:
-			break
-		case <-time.After(time.Second):
-			log.Printf("writeChangeEvent timeout: %v\n", w)
-			break
-		}
+	for _, w := range watchers {
+		go func(w chan *Task) {
+			w <- t
+		}(w)
 	}
 }

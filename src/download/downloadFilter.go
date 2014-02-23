@@ -16,11 +16,13 @@ type downloadFilter struct {
 }
 
 func (df *downloadFilter) active() {
+	url := df.url
+
 	chFinishes := make([]chan bool, df.routineNumber)
 	for i := 0; i < df.routineNumber; i++ {
 		chFinishes[i] = make(chan bool)
 		go func(ch chan bool) {
-			downloadRoutine(df.url, df.input, df.output, df.quit)
+			downloadRoutine(url, df.input, df.output, df.quit)
 			ch <- true
 		}(chFinishes[i])
 	}
@@ -33,11 +35,15 @@ func (df *downloadFilter) active() {
 }
 
 func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
+	// log.Print("download routine begin: ", url[:strings.Index(url, "?")])
+
 	for {
 		finalUrl, _, _, err := GetDownloadInfo(url)
 		if err == nil {
 			url = finalUrl
 			break
+		} else {
+			log.Print(err)
 		}
 
 		select {
@@ -47,9 +53,7 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 			time.Sleep(time.Second * 2)
 		}
 	}
-
-	// log.Print("download routine begin: ", url[:strings.Index(url, "?")])
-
+	log.Print("final download url:", url)
 	// log.Print(url)
 
 	for {

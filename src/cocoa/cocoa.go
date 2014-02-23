@@ -8,7 +8,7 @@ import (
 	// "log"
 	"runtime"
 	"task"
-	// "unsafe"
+	"time"
 	"util"
 )
 
@@ -38,20 +38,22 @@ func NewNoLimitMenuItem(target objc.Object) NSMenuItem {
 	}
 	return item
 }
-func watchTaskChange(chTaskChange chan *task.Task) {
-	watcher := make(chan *task.Task)
-	task.WatchChange(watcher)
 
-	for t := range watcher {
-		go func() {
-			chTaskChange <- t
-		}()
-	}
-}
+// func watchTaskChange(chTaskChange chan *task.Task) {
+// 	watcher := make(chan *task.Task)
+// 	task.WatchChange(watcher)
+
+// 	for t := range watcher {
+// 		go func() {
+// 			chTaskChange <- t
+// 		}()
+// 	}
+// }
 func Start() {
 	runtime.LockOSThread()
 
 	pool := NewNSAutoreleasePool()
+	defer pool.Drain()
 
 	app := NSSharedApplication()
 
@@ -60,13 +62,14 @@ func Start() {
 
 	delegate.ApplicationDidFinishLaunching(objc.NilObject())
 
-	chTaskChange := make(chan *task.Task)
-	go watchTaskChange(chTaskChange)
+	chTaskChange := make(chan *task.Task, 20)
+	// go watchTaskChange(chTaskChange)
+	task.WatchChange(chTaskChange)
 	for {
-		pool.Release()
+		pool.Drain()
 		pool = NewNSAutoreleasePool()
 
-		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(1),
+		event := app.NextEventMatchingMask(0xffffff, NSDateWithTimeIntervalSinceNow(0.1),
 			"kCFRunLoopDefaultMode", true)
 
 		app.SendEvent(event)
@@ -75,7 +78,7 @@ func Start() {
 		case t := <-chTaskChange:
 			delegate.updateStatusBar(t)
 			break
-		default:
+		case <-time.After(50 * time.Millisecond):
 			break
 		}
 	}
