@@ -40,3 +40,15 @@ func (lk *FLock) Unlock() error {
 }
 
 var DefaultLock *FLock
+
+func Lock() {
+	if DefaultLock != nil {
+		DefaultLock.Lock()
+	}
+}
+
+func Unlock() {
+	if DefaultLock != nil {
+		DefaultLock.Unlock()
+	}
+}

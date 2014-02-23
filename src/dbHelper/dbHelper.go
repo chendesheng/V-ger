@@ -2,6 +2,7 @@ package dbHelper
 
 import (
 	"database/sql"
+	"filelock"
 	"log"
 )
 
@@ -18,11 +19,19 @@ func Init(driverName, dataSourceName string) {
 }
 
 func Open() *sql.DB {
+	filelock.Lock()
+
 	db, err := sql.Open(globalCtx.driverName, globalCtx.dataSourceName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return db
+}
+
+func Close(db *sql.DB) {
+	db.Close()
+
+	filelock.Unlock()
 }
 
 type RowScanner interface {

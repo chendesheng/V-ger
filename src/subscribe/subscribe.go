@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 	// "download"
-	"filelock"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
@@ -52,13 +51,9 @@ func scanSubscribe(scanner dbHelper.RowScanner) (*Subscribe, error) {
 }
 
 func GetSubscribes() []*Subscribe {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
+
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe`, subscribeColumnes))
 	if err != nil {
 		log.Fatal(err)
@@ -76,13 +71,8 @@ func GetSubscribes() []*Subscribe {
 	return subscribes
 }
 func GetSubscribe(name string) *Subscribe {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe where Name=?`, subscribeColumnes), name)
 	if err != nil {
 		log.Print(err.Error())
@@ -127,14 +117,8 @@ func GetBannerImage(name string) (bytes []byte) {
 			bannerCacheLock.Unlock()
 		}
 	}()
-
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	bytes = make([]byte, 0)
 	err := db.QueryRow(`select BannerImage from subscribe where Name=?`, name).Scan(&bytes)
@@ -145,13 +129,8 @@ func GetBannerImage(name string) (bytes []byte) {
 	return bytes
 }
 func SaveBannerImage(name string, bytes []byte) {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	_, err := db.Exec("update subscribe set BannerImage=? where Name=?", bytes, name)
 	if err != nil {
@@ -159,13 +138,8 @@ func SaveBannerImage(name string, bytes []byte) {
 	}
 }
 func updateSubscribe(s *Subscribe) error {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	autodownload := 0
 	if s.Autodownload {
@@ -188,13 +162,8 @@ func updateSubscribe(s *Subscribe) error {
 	return err
 }
 func insertSubscribe(s *Subscribe) error {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	autodownload := 0
 	if s.Autodownload {
@@ -213,13 +182,8 @@ func insertSubscribe(s *Subscribe) error {
 	return err
 }
 func Exists(name string) (bool, error) {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 	var count int
 	err := db.QueryRow("select count(*) from subscribe where Name=?", name).Scan(&count)
 
@@ -244,13 +208,8 @@ func SaveSubscribe(s *Subscribe) (err error) {
 	return
 }
 func UpdateDuration(name string, duration time.Duration) error {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	println("update duration:", name, duration)
 

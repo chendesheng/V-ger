@@ -18,7 +18,6 @@ import (
 	// "regexp"
 	"database/sql"
 	"dbHelper"
-	"filelock"
 	_ "github.com/mattn/go-sqlite3"
 	"strings"
 	"time"
@@ -86,9 +85,8 @@ func newTask(name string, url string, size int64) *Task {
 	return t
 }
 func GetTask(name string) (*Task, error) {
-	// println("get task:", name)
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Name=?`, taskColumnes), name))
 	if err != nil {
 		return nil, err
@@ -98,13 +96,8 @@ func GetTask(name string) (*Task, error) {
 	}
 }
 func ExistsEpisode(subscribeName string, season, episode int) (bool, error) {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 	var count int
 	err := db.QueryRow("select count(*) from task where Subscribe=? and Season=? and Episode=?",
 		subscribeName, season, episode).Scan(&count)
@@ -144,13 +137,8 @@ func scanTask(scanner dbHelper.RowScanner) (*Task, error) {
 	}
 }
 func GetTasks() []*Task {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 	rows, err := db.Query(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie`, taskColumnes))
 	if err != nil {
 		log.Fatal(err)
@@ -169,13 +157,8 @@ func GetTasks() []*Task {
 }
 
 func GetDownloadingTask() (*Task, bool) {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
 	if err != nil {
 		return nil, false
@@ -184,26 +167,17 @@ func GetDownloadingTask() (*Task, bool) {
 	}
 }
 func HasDownloadingOrPlaying() bool {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
+
 	var count int
 	db.QueryRow("select count(*) from task where Statue='Downloading' or Status='Playing'").Scan(&count)
 
 	return count > 0
 }
 func Exists(name string) (bool, error) {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 	var count int
 	err := db.QueryRow("select count(*) from task where Name=?", name).Scan(&count)
 
@@ -211,13 +185,8 @@ func Exists(name string) (bool, error) {
 }
 
 func updateTask(t *Task) error {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	_, err := db.Exec(`update task set
 		URL=?,
@@ -252,13 +221,8 @@ func updateTask(t *Task) error {
 }
 
 func insertTask(t *Task) error {
-	if filelock.DefaultLock != nil {
-		filelock.DefaultLock.Lock()
-		defer filelock.DefaultLock.Unlock()
-	}
-
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	_, err := db.Exec(fmt.Sprintf(`
 			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
@@ -303,7 +267,7 @@ func SaveTask(t *Task) (err error) {
 
 func NumOfDownloadingTasks() int {
 	db := dbHelper.Open()
-	defer db.Close()
+	defer dbHelper.Close(db)
 
 	cnt := 0
 	err := db.QueryRow("select count(*) from task where Status='Downloading'").Scan(&cnt)
