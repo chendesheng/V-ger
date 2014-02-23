@@ -56,6 +56,10 @@ type displayingItem struct {
 }
 
 func (s *Subtitle) printSub(pos int) {
+	if pos >= len(s.items) {
+		return
+	}
+
 	item := s.items[pos]
 	content := ""
 	if len(item.Content) > 0 {
@@ -83,21 +87,20 @@ func (s *Subtitle) Play() {
 			break
 		case arg := <-s.chanGetSubTime:
 			pos, _ := s.findPos(arg.t)
+			if pos >= len(s.items) {
+				arg.res <- 0
+				break
+			}
 
-			s.printSub(pos)
 			if arg.offset < 0 && s.calcFrom(pos) > arg.t {
 				pos--
 			}
-
-			s.printSub(pos)
 
 			// pos += arg.offset
 			// println("pos:", pos)
 			for s.checkPos(pos, arg.t) {
 				pos += arg.offset
 			}
-
-			s.printSub(pos)
 
 			for {
 				if pos < 0 {
@@ -158,6 +161,7 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool
 			}
 		}
 	}
+
 }
 
 func (s *Subtitle) Stop() {

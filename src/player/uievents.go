@@ -33,7 +33,13 @@ func (m *movie) uievents() {
 			var offset time.Duration
 			if m.s != nil {
 				t := m.c.GetTime()
-				offset = m.s.GetSubtime(t, -1) - t
+				subTime := m.s.GetSubtime(t, -1)
+
+				if subTime == 0 {
+					offset = -10 * time.Second
+				} else {
+					offset = subTime - t
+				}
 			} else {
 				offset = -10 * time.Second
 			}
@@ -43,7 +49,14 @@ func (m *movie) uievents() {
 			var offset time.Duration
 			if m.s != nil {
 				t := m.c.GetTime()
-				offset = m.s.GetSubtime(t, 1) - t
+				subTime := m.s.GetSubtime(t, 1)
+				println("subtime:", subTime)
+
+				if subTime == 0 {
+					offset = 10 * time.Second
+				} else {
+					offset = subTime - t
+				}
 			} else {
 				offset = 10 * time.Second
 			}
