@@ -1,29 +1,15 @@
 package shared
 
 import (
-	"database/sql"
+	// "database/sql"
+	"dbHelper"
 	"filelock"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"time"
 )
 
-var DbFile = ""
-
-func openDb() *sql.DB {
-	db, err := sql.Open("sqlite3", DbFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return db
-}
-
-type rowScanner interface {
-	Scan(...interface{}) error
-}
-
-func scanSub(scanner rowScanner) (*Sub, error) {
+func scanSub(scanner dbHelper.RowScanner) (*Sub, error) {
 	var sub Sub
 
 	var offset int64
@@ -43,7 +29,7 @@ func GetSubtitles(movie string) []*Sub {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	println("get local subtitles:", movie)
@@ -72,7 +58,7 @@ func GetSubtitle(name string) *Sub {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	sql := `select Movie, Name, Offset, Content, Type, Lang1, Lang2 from subtitle where Name=?`
@@ -98,7 +84,7 @@ func InsertSubtitle(sub *Sub) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	var count int
@@ -164,7 +150,7 @@ func UpdateSubtitleOffset(name string, offset time.Duration) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	_, err := db.Exec("update subtitle set Offset=? where Name=?", int64(offset), name)
@@ -179,7 +165,7 @@ func UpdateSubtitleLanguage(name string, lang1, lang2 string) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	_, err := db.Exec("update subtitle set Lang1=?,Lang2=? where Name=?", lang1, lang2, name)
@@ -188,7 +174,7 @@ func UpdateSubtitleLanguage(name string, lang1, lang2 string) {
 	}
 }
 
-func scanPlaying(scanner rowScanner) (*Playing, error) {
+func scanPlaying(scanner dbHelper.RowScanner) (*Playing, error) {
 	var p Playing
 	var lastPos, duration int64
 	err := scanner.Scan(&p.Movie, &lastPos, &p.SoundStream, &p.Sub1, &p.Sub2, &duration)
@@ -208,7 +194,7 @@ func GetPlaying(movie string) *Playing {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	sql := `select Movie, LastPos, SoundStream, Sub1, Sub2, Duration from Playing where Movie=?`
@@ -234,7 +220,7 @@ func GetPlaying(movie string) *Playing {
 }
 
 func CreateOrGetPlaying(movie string) *Playing {
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	var count int
@@ -289,7 +275,7 @@ func SavePlaying(p *Playing) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	var count int

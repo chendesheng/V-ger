@@ -1,7 +1,7 @@
 package subscribe
 
 import (
-	"database/sql"
+	// "database/sql"
 	"sync"
 	"time"
 	// "download"
@@ -12,6 +12,7 @@ import (
 	// "task"
 	// "thunder"
 	// "time"
+	"dbHelper"
 )
 
 type Subscribe struct {
@@ -29,21 +30,8 @@ var subscribeColumnes string = `Name,
 				Autodownload,
 				Banner,
 				Duration`
-var DbPath string
 
-func openDb() *sql.DB {
-	db, err := sql.Open("sqlite3", DbPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
-}
-
-type myScanner interface {
-	Scan(...interface{}) error
-}
-
-func scanSubscribe(scanner myScanner) (*Subscribe, error) {
+func scanSubscribe(scanner dbHelper.RowScanner) (*Subscribe, error) {
 	var s Subscribe
 	var autodownoad int
 	var duration int64
@@ -69,7 +57,7 @@ func GetSubscribes() []*Subscribe {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe`, subscribeColumnes))
 	if err != nil {
@@ -93,7 +81,7 @@ func GetSubscribe(name string) *Subscribe {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe where Name=?`, subscribeColumnes), name)
 	if err != nil {
@@ -145,7 +133,7 @@ func GetBannerImage(name string) (bytes []byte) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	bytes = make([]byte, 0)
@@ -162,7 +150,7 @@ func SaveBannerImage(name string, bytes []byte) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	_, err := db.Exec("update subscribe set BannerImage=? where Name=?", bytes, name)
@@ -176,7 +164,7 @@ func updateSubscribe(s *Subscribe) error {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	autodownload := 0
@@ -205,7 +193,7 @@ func insertSubscribe(s *Subscribe) error {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	autodownload := 0
@@ -230,7 +218,7 @@ func Exists(name string) (bool, error) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	var count int
 	err := db.QueryRow("select count(*) from subscribe where Name=?", name).Scan(&count)
@@ -261,7 +249,7 @@ func UpdateDuration(name string, duration time.Duration) error {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	println("update duration:", name, duration)

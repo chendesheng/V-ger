@@ -1,16 +1,14 @@
 package main
 
 import (
+	"dbHelper"
 	"filelock"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"os"
 	"path"
-	"player/shared"
 	"runtime"
-	"subscribe"
-	"task"
 	"thunder"
 	"time"
 	"util"
@@ -50,9 +48,7 @@ func init() {
 		}
 	}()
 
-	task.TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
-	subscribe.DbPath = task.TaskDir
-	shared.DbFile = task.TaskDir
+	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 
 	// only block when file locked by another process
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")

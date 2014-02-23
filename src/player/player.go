@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bytes"
+	"dbHelper"
 	"download"
 	"filelock"
 	"fmt"
 	"io/ioutil"
 	"log"
+	. "logger"
 	"os"
 	"os/exec"
 	"path"
+	"player/gui"
 	. "player/shared"
 	"runtime"
 	"strings"
@@ -18,18 +22,7 @@ import (
 	"time"
 	"toutf8"
 	"util"
-
-	// . "player/shared"
-	// "website"
-	"bytes"
-	. "logger"
-	"player/gui"
-	"subscribe"
-	// . "player/libav"
 )
-
-// var filename string
-// var launchedFromGUI bool
 
 func init() {
 	InitLog(util.ReadConfig("playerlog"))
@@ -37,23 +30,6 @@ func init() {
 	log.Print("log initialized.")
 
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
-
-	DbFile = util.ReadConfig("dir") + "/vger.db"
-	subscribe.DbPath = DbFile
-
-	// for i, s := range os.Args[1:] {
-	// 	log.Printf("Args[%d]:%s", i+1, s)
-	// 	//Mac OS X assigns a unique process serial number ("PSN") to all apps launched via GUI. Call flag.Prase will crash app if not remove it.
-	// 	if strings.HasPrefix(s, "-psn") {
-	// 		// os.Args[i] = ""
-	// 		launchedFromGUI = true
-	// 	} else {
-	// 		filename = s
-	// 		break
-	// 	}
-	// }
-
-	// flag.Parse()
 }
 func findSubs(base string) []string {
 	infoes, err := ioutil.ReadDir(base)
@@ -251,7 +227,8 @@ func (a *appDelegate) SearchSubtitleMenuItemClick() {
 }
 
 func main() {
-	task.TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
+	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
+
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
 	runtime.LockOSThread()

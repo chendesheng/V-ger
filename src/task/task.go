@@ -17,27 +17,12 @@ import (
 	// "strconv"
 	// "regexp"
 	"database/sql"
+	"dbHelper"
 	"filelock"
 	_ "github.com/mattn/go-sqlite3"
 	"strings"
 	"time"
 )
-
-var TaskDir string
-
-func init() {
-	watchers = make([]chan *Task, 0)
-	// TaskDir = path.Join(util.ReadConfig("dir"), "vger.db")
-	// log.Print("Task dir:", TaskDir)
-
-	// _, err := ioutil.ReadDir(TaskDir)
-	// if os.IsNotExist(err) {
-	// 	os.Mkdir(TaskDir, 0777)
-	// }
-
-	// db := openDb()
-	// defer db.Close()
-}
 
 type Task struct {
 	URL  string
@@ -55,9 +40,6 @@ type Task struct {
 	NameHash   string
 	Est        time.Duration
 
-	// Autoshutdown bool
-
-	Subs        []string
 	LastPlaying time.Duration
 
 	Original  string
@@ -80,21 +62,7 @@ var taskColumnes string = `Name,
 				Subscribe,
 				Original,
 				Season,
-				Episode` //lastPos field move to table playing, require join table
-
-// func SetAutoshutdown(name string, onOrOff bool) {
-// 	if t, err := GetTask(name); err == nil {
-// 		t.Autoshutdown = onOrOff
-// 		SaveTask(t)
-// 	}
-// }
-
-// func taskInfoFileName(name string) string {
-// 	if !strings.HasSuffix(name, ".vger-task.txt") {
-// 		name = fmt.Sprint(name, ".vger-task.txt")
-// 	}
-// 	return path.Join(TaskDir, name)
-// }
+				Episode`
 
 func hashName(name string) string {
 	return strings.TrimRight(base64.URLEncoding.EncodeToString([]byte(name)), "=")
@@ -119,7 +87,7 @@ func newTask(name string, url string, size int64) *Task {
 }
 func GetTask(name string) (*Task, error) {
 	// println("get task:", name)
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Name=?`, taskColumnes), name))
 	if err != nil {
@@ -135,7 +103,7 @@ func ExistsEpisode(subscribeName string, season, episode int) (bool, error) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	var count int
 	err := db.QueryRow("select count(*) from task where Subscribe=? and Season=? and Episode=?",
@@ -143,19 +111,7 @@ func ExistsEpisode(subscribeName string, season, episode int) (bool, error) {
 	return count > 0, err
 }
 
-func openDb() *sql.DB {
-	db, err := sql.Open("sqlite3", TaskDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
-}
-
-type taskScanner interface {
-	Scan(...interface{}) error
-}
-
-func scanTask(scanner taskScanner) (*Task, error) {
+func scanTask(scanner dbHelper.RowScanner) (*Task, error) {
 	var lastPlaying sql.NullInt64
 
 	var t Task
@@ -193,7 +149,7 @@ func GetTasks() []*Task {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	rows, err := db.Query(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie`, taskColumnes))
 	if err != nil {
@@ -206,8 +162,6 @@ func GetTasks() []*Task {
 		t, err := scanTask(rows)
 		if err == nil {
 			tasks = append(tasks, t)
-
-			// println(t.LastPlaying)
 		}
 	}
 
@@ -220,7 +174,7 @@ func GetDownloadingTask() (*Task, bool) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
 	if err != nil {
@@ -235,7 +189,7 @@ func HasDownloadingOrPlaying() bool {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	var count int
 	db.QueryRow("select count(*) from task where Statue='Downloading' or Status='Playing'").Scan(&count)
@@ -248,7 +202,7 @@ func Exists(name string) (bool, error) {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 	var count int
 	err := db.QueryRow("select count(*) from task where Name=?", name).Scan(&count)
@@ -262,7 +216,7 @@ func updateTask(t *Task) error {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	_, err := db.Exec(`update task set
@@ -303,7 +257,7 @@ func insertTask(t *Task) error {
 		defer filelock.DefaultLock.Unlock()
 	}
 
-	db := openDb()
+	db := dbHelper.Open()
 	defer db.Close()
 
 	_, err := db.Exec(fmt.Sprintf(`
@@ -339,10 +293,23 @@ func SaveTask(t *Task) (err error) {
 	}
 
 	if err == nil {
-		go writeChangeEvent(t.Name)
+		go writeChangeEvent(t)
 	} else {
 		log.Print(err)
 	}
 
 	return
+}
+
+func NumOfDownloadingTasks() int {
+	db := dbHelper.Open()
+	defer db.Close()
+
+	cnt := 0
+	err := db.QueryRow("select count(*) from task where Status='Downloading'").Scan(&cnt)
+	if err != nil {
+		log.Print(err)
+		return 0
+	}
+	return cnt
 }

@@ -108,17 +108,6 @@ func LimitSpeed(name string, speed int64) error {
 	}
 }
 
-func NumOfDownloadingTasks() int {
-	n := 0
-	for _, t := range GetTasks() {
-		if t.Status == "Downloading" {
-			n++
-		}
-	}
-	fmt.Println("num of downloading tasks ", n)
-	return n
-}
-
 func QueueDownloadingTask() error {
 	tasks := GetTasks()
 
