@@ -6,18 +6,18 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"download"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"os/exec"
 	"path"
 	"task"
 	// "regexp"
 	"strings"
 	"subtitles"
+	"unicode/utf8"
 	"util"
 )
 
@@ -36,7 +36,13 @@ func subtitlesSearchHandler(ws *websocket.Conn) {
 	if t, _ = task.GetTask(movieName); t != nil {
 		url = t.URL
 	}
-	go subtitles.SearchSubtitles(util.CleanMovieName(movieName), url, result)
+
+	var search = util.CleanMovieName(movieName)
+	if t != nil && len(t.Subscribe) != 0 && t.Season > 0 {
+		search = fmt.Sprintf("%s s%2de%2d", t.Subscribe, t.Season, t.Episode)
+	}
+
+	go subtitles.SearchSubtitles(search, url, result)
 
 	for s := range result {
 		log.Printf("%v", s)
@@ -77,17 +83,19 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
-
-	ioutil.WriteFile(subFile, data, 0666)
-
 	if util.CheckExt(name, "rar", "zip") {
-		cmd := exec.Command("./unar", subFile, "-f", "-o", subFileDir)
+		ioutil.WriteFile(subFile, data, 0666)
+		util.Extract("./unar", subFile)
+	} else {
+		data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
 
-		if err := cmd.Run(); err != nil {
-			w.Write([]byte(err.Error()))
-		} else {
-			os.Remove(subFile)
-		}
+		spaceBytes := make([]byte, 4)
+		n := utf8.EncodeRune(spaceBytes, '　')
+		spaceBytes = spaceBytes[:n]
+		data = bytes.Replace(data, spaceBytes, []byte{' '}, -1)
+
+		data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
+
+		ioutil.WriteFile(subFile, data, 0666)
 	}
 }

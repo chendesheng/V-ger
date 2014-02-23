@@ -62,3 +62,7 @@ bin/playerguitest
 src/player/gui/cocoa/libcocoa.a
 
 src/player/gui/cocoa/libcocoa.a
+
+src/.DS_Store
+
+src/.DS_Store

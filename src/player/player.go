@@ -10,7 +10,6 @@ import (
 	"log"
 	. "logger"
 	"os"
-	"os/exec"
 	"path"
 	"player/gui"
 	. "player/shared"
@@ -32,6 +31,7 @@ func init() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
 }
+
 func findSubs(base string) []string {
 	infoes, err := ioutil.ReadDir(base)
 	if err == nil {
@@ -112,26 +112,26 @@ func downloadSubs(movieName, url string, search string) []string {
 		if err != nil {
 			log.Print(err)
 		} else {
-			data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
-
-			spaceBytes := make([]byte, 0, 4)
-			n := utf8.EncodeRune(spaceBytes, '　')
-			spaceBytes = spaceBytes[:n]
-			data = bytes.Replace(data, spaceBytes, []byte{' '}, -1)
-
-			data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
-
-			ioutil.WriteFile(subFile, data, 0666)
-
 			if util.CheckExt(subname, "rar", "zip") {
-				log.Print(path.Join(path.Dir(os.Args[0]), "unar"))
-				cmd := exec.Command(path.Join(path.Dir(os.Args[0]), "unar"), subFile, "-f", "-o", subFileDir)
+				ioutil.WriteFile(subFile, data, 0666)
 
-				if err := cmd.Run(); err != nil {
-					log.Print(err)
-				} else {
-					os.Remove(subFile)
+				unar := path.Join(path.Dir(os.Args[0]), "unar")
+				if os.Args[0] == "." {
+					unar = "./unar"
 				}
+				log.Print(unar)
+				util.Extract(unar, subFile)
+			} else {
+				data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
+
+				spaceBytes := make([]byte, 4)
+				n := utf8.EncodeRune(spaceBytes, '　')
+				spaceBytes = spaceBytes[:n]
+				data = bytes.Replace(data, spaceBytes, []byte{' '}, -1)
+
+				data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
+
+				ioutil.WriteFile(subFile, data, 0666)
 			}
 		}
 	}
