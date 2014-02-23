@@ -396,3 +396,10 @@ func TestParse_d(t *testing.T) {
 		t.Errorf("Expect 709 items but %d items.", len(items))
 	}
 }
+func TestParse_e(t *testing.T) {
+	r, _ := os.Open("e.srt")
+	items, _ := Parse(r, 300, 300)
+	if len(items) != 701 {
+		t.Errorf("Expect 709 items but %d items.", len(items))
+	}
+}

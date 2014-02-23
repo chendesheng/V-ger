@@ -208,7 +208,7 @@ func parseAttributedString(text string) []AttributedString {
 }
 
 func parseTime(line string) (bool, time.Duration, time.Duration) {
-	r := regexp.MustCompile(`([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[,.]([0-9]{1,3})\s+-->\s+([0-9]{1,2}):([0-9]{1,2}):([0-9]{2})[,.]([0-9]{1,3})`)
+	r := regexp.MustCompile(`([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[,.]([0-9]{1,3}).*-->.*([0-9]{1,2}):([0-9]{1,2}):([0-9]{2})[,.]([0-9]{1,3})`)
 	if r.MatchString(line) {
 		matches := r.FindStringSubmatch(line)
 		// fmt.Printf("%v", matches)
