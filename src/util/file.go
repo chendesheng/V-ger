@@ -27,7 +27,6 @@ func IsPathExists(path string) bool {
 
 func CheckExt(filename string, exts ...string) bool {
 	ext := path.Ext(filename)[1:]
-	println("ext:", ext)
 
 	for _, e := range exts {
 		if e == ext {
@@ -47,6 +46,31 @@ func GetFileSize(file string) int64 {
 
 	}
 	return 0
+}
+
+func EmulateFiles(dir string, fn func(string), exts ...string) {
+	f, err := os.Open(dir)
+	defer f.Close()
+
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	files, err := f.Readdir(-1)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	for _, file := range files {
+		name := file.Name()
+		if file.IsDir() {
+			EmulateFiles(path.Join(dir, name), fn, exts...)
+		} else if CheckExt(name, exts...) {
+			fn(path.Join(dir, name))
+		}
+	}
 }
 
 func extractOneFile(unarPath, filename string) {

@@ -31,3 +31,16 @@ func TestExtract(t *testing.T) {
 		return
 	}
 }
+
+func TestEmulateFiles(t *testing.T) {
+	files := make([]string, 0)
+	EmulateFiles("./testfolder", func(filename string) {
+		files = append(files, filename)
+	}, "txt")
+
+	if len(files) != 1 {
+		t.Errorf("Expect 1 files but %d", len(files))
+	}
+
+	println(files[0])
+}

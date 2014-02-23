@@ -271,6 +271,7 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 		s.Lang1, s.Lang2 = detectLanguage(s.items)
 		UpdateSubtitleLanguage(s.Name, s.Lang1, s.Lang2)
 	}
+
 	simplized(s.items)
 
 	if err != nil {

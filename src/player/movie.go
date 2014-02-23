@@ -154,37 +154,34 @@ func (m *movie) setupSubtitles(subFiles []string) {
 			SavePlayingAsync(m.p)
 		}
 
+		var s1, s2 *Subtitle
 		if len(m.p.Sub1) > 0 {
-			m.s = NewSubtitle(m.p.Sub1, m.w, m.c, float64(width), float64(height))
-			if m.s != nil {
-				m.s.IsMainOrSecondSub = true
+			s1 = NewSubtitle(m.p.Sub1, m.w, m.c, float64(width), float64(height))
+			if s1 != nil {
+				s1.IsMainOrSecondSub = true
 
-				if m.s != nil {
-					go m.s.Play()
+				if s1 != nil {
+					go s1.Play()
 				}
 			}
 		}
 
 		if len(m.p.Sub2) > 0 {
-			if m.s == nil {
-				m.s = NewSubtitle(m.p.Sub2, m.w, m.c, float64(width), float64(height))
-				if m.s != nil {
-					m.s.IsMainOrSecondSub = false
+			s2 = NewSubtitle(m.p.Sub1, m.w, m.c, float64(width), float64(height))
+			if s2 != nil {
+				s2.IsMainOrSecondSub = false
 
-					if m.s != nil {
-						go m.s.Play()
-					}
-				}
-			} else {
-				m.s2 = NewSubtitle(m.p.Sub2, m.w, m.c, float64(width), float64(height))
-				if m.s2 != nil {
-					m.s2.IsMainOrSecondSub = false
-
-					if m.s2 != nil {
-						go m.s2.Play()
-					}
+				if s2 != nil {
+					go s2.Play()
 				}
 			}
+		}
+
+		if s1 != nil {
+			m.s = s1
+			m.s2 = s2
+		} else {
+			m.s = s2
 		}
 
 		if m.s == nil && m.s2 == nil {
@@ -194,13 +191,14 @@ func (m *movie) setupSubtitles(subFiles []string) {
 			for _, file := range subFiles {
 				s := NewSubtitle(file, m.w, m.c, float64(width), float64(height))
 				fmt.Printf("%v", s)
-				if s.Lang1 == "en" && len(s.Lang2) == 0 {
+				if en != nil && s.Lang1 == "en" && len(s.Lang2) == 0 {
 					en = s
 				}
-				if s.Lang1 == "cn" && len(s.Lang2) == 0 {
+				if cn != nil && s.Lang1 == "cn" && len(s.Lang2) == 0 {
 					cn = s
 				}
-				if len(s.Lang1) > 0 && len(s.Lang2) > 0 {
+
+				if double != nil && len(s.Lang1) > 0 && len(s.Lang2) > 0 {
 					double = s
 				}
 			}

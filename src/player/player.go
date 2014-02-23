@@ -90,6 +90,9 @@ func downloadSubs(movieName, url string, search string) []string {
 	thunder.Login()
 	go subtitles.SearchSubtitles(search, url, chSubs)
 
+	subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
+	util.MakeSurePathExists(subFileDir)
+
 	for s := range chSubs {
 		log.Printf("%v", s)
 		// text, _ := json.Marshal(s)
@@ -103,8 +106,6 @@ func downloadSubs(movieName, url string, search string) []string {
 			subname = s.Description + ".srt" //always use srt
 		}
 
-		subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
-		util.MakeSurePathExists(subFileDir)
 		subFile := path.Join(subFileDir, subname)
 
 		println("subfile:", subFile)
@@ -136,16 +137,32 @@ func downloadSubs(movieName, url string, search string) []string {
 		}
 	}
 
-	dir := util.ReadConfig("dir")
-	subs := findSubs(path.Join(dir, "subs", movieName))
-	for i, sub := range subs {
-		sub = strings.ToLower(sub)
-		bytes, err := ioutil.ReadFile(sub)
+	subs := make([]string, 0)
+	util.EmulateFiles(subFileDir, func(filename string) {
+		log.Print("try convert to utf8:", filename)
+
+		utf8Text, _, err := toutf8.ConverToUTF8(filename)
 		if err == nil {
-			InsertSubtitle(&Sub{movieName, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:], "", ""})
+			log.Print("convert to utf8 success")
+			ioutil.WriteFile(filename, []byte(utf8Text), 0666)
+			name := path.Base(filename)
+			InsertSubtitle(&Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
+			subs = append(subs, name)
 		}
-		subs[i] = path.Base(sub)
-	}
+	}, "srt", "ass")
+
+	// dir := util.ReadConfig("dir")
+	// subs := findSubs(path.Join(dir, "subs", movieName))
+	// for i, sub := range subs {
+	// 	sub = strings.ToLower(sub)
+	// 	bytes, err := ioutil.ReadFile(sub)
+	// 	if err == nil {
+	// 		InsertSubtitle(&Sub{movieName, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:], "", ""})
+	// 	}
+	// 	subs[i] = path.Base(sub)
+	// }
+
+	log.Printf("%v", subs)
 	return subs
 }
 
@@ -154,21 +171,27 @@ type appDelegate struct {
 
 var mv *movie
 
+func SearchDownloadSubtitle() {
+	name := mv.p.Movie
+	mv.w.SendShowMessage("Downloading subtitles...", false)
+	defer mv.w.SendHideMessage()
+	tk, _ := task.GetTask(name)
+	var search = util.CleanMovieName(name)
+	if tk != nil && len(tk.Subscribe) != 0 && tk.Season > 0 {
+		search = fmt.Sprintf("%s s%2de%2d", tk.Subscribe, tk.Season, tk.Episode)
+	}
+	subFiles := downloadSubs(name, tk.URL, search)
+	if len(subFiles) == 0 {
+		mv.w.SendShowMessage("No subtitle", true)
+		return
+	}
+	mv.setupSubtitles(subFiles)
+}
+
 func (a *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 	name := path.Base(filename)
 
-	// dir := util.ReadConfig("dir")
-	// subs := findSubs(path.Join(dir, "subs", name))
-	// for i, sub := range subs {
-	// 	sub = strings.ToLower(sub)
-	// 	bytes, err := ioutil.ReadFile(sub)
-	// 	if err == nil {
-	// 		InsertSubtitle(&Sub{name, path.Base(sub), 0, string(bytes), path.Ext(sub)[1:]})
-	// 	}
-
-	// 	subs[i] = path.Base(sub)
-	// }
 	subs := make([]string, 0)
 	local := GetSubtitles(name)
 	if len(local) > 0 {
@@ -182,32 +205,10 @@ func (a *appDelegate) OpenFile(filename string) bool {
 	mv = &m
 	m.p = CreateOrGetPlaying(name)
 
-	// go func() {
-	// 	ticker := time.Tick(3 * time.Second)
-	// 	for _ = range ticker {
-	// 		m.p.LastPos = m.c.GetTime()
-	// 		SavePlaying(m.p)
-	// 	}
-	// }()
-
-	// log.Print("sub: ", sub)
 	m.open(filename, subs)
 
 	if len(subs) == 0 {
-		go func() {
-			m.w.SendShowMessage("Downloading subtitles...", false)
-			defer m.w.SendHideMessage()
-			tk, _ := task.GetTask(name)
-			var search = util.CleanMovieName(name)
-			if tk != nil && len(tk.Subscribe) != 0 && tk.Season > 0 {
-				search = fmt.Sprintf("%s s%2de%2d", tk.Subscribe, tk.Season, tk.Episode)
-			}
-			subFiles := downloadSubs(name, tk.URL, search)
-			if len(subFiles) == 0 {
-				m.w.SendShowMessage("No subtitle", true)
-			}
-			m.setupSubtitles(subFiles)
-		}()
+		go SearchDownloadSubtitle()
 	}
 
 	go m.decode(name)
@@ -224,17 +225,7 @@ func (a *appDelegate) WillTerminate() {
 func (a *appDelegate) SearchSubtitleMenuItemClick() {
 	log.Print("SearchSubtitleMenuItemClick")
 
-	res := make(chan subtitles.Subtitle)
-	tk, _ := task.GetTask(mv.p.Movie)
-	url := ""
-	if tk != nil {
-		url = tk.URL
-	}
-	subtitles.SearchSubtitles(mv.p.Movie, url, res)
-	for sub := range res {
-		// mv.w.ShowSubList()
-		println(sub.URL)
-	}
+	go SearchDownloadSubtitle()
 }
 
 func main() {

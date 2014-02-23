@@ -72,10 +72,21 @@ void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selecte
 }
 
 void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t selected1, int32_t selected2) {
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+
     NSWindow* w = (NSWindow*)wptr;
 
     NSMenu *menubar = [NSApp mainMenu];
+    NSArray *menus = [menubar itemArray];
+    for (NSMenuItem *menu in menus) {
+        if ([menu title] == @"Subtitle") {
+            [menubar removeItem:menu];
+            break;
+        }
+    }
+
     NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
+    [subtitleMenuItem setTitle:@"Subtitle"];
     [menubar addItem:subtitleMenuItem];
     NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
 
@@ -102,6 +113,8 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
     }
 
     [subtitleMenuItem setSubmenu:subtitleMenu];
+
+    [pool drain];
 }
 
 void* newWindow(char* title, int width, int height) {
