@@ -195,7 +195,11 @@ func (a *appDelegate) OpenFile(filename string) bool {
 			if tk != nil && len(tk.Subscribe) != 0 && tk.Season > 0 {
 				search = fmt.Sprintf("%s s%2de%2d", tk.Subscribe, tk.Season, tk.Episode)
 			}
-			m.setupSubtitles(downloadSubs(name, tk.URL, search))
+			subFiles := downloadSubs(name, tk.URL, search)
+			if len(subFiles) == 0 {
+				m.w.SendShowMessage("No subtitle", true)
+			}
+			m.setupSubtitles(subFiles)
 		}()
 	}
 

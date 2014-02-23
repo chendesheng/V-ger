@@ -187,17 +187,20 @@ func GetPlaying(movie string) *Playing {
 	}
 }
 
-func CreateOrGetPlaying(movie string) *Playing {
+func PlayingExists(movie string) bool {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
 
 	var count int
 	err := db.QueryRow("select count(*) from playing where Movie=?", movie).Scan(&count)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
+	return count > 0
+}
 
-	if count == 0 {
+func CreateOrGetPlaying(movie string) *Playing {
+	if !PlayingExists(movie) {
 		SavePlaying(&Playing{movie, 0, -1, "", "", 0})
 	}
 
