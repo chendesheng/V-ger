@@ -29,28 +29,6 @@ import (
 	"util"
 )
 
-func pick(arr []string, emptyMessage string) (int, string) {
-	if len(arr) == 0 {
-		if emptyMessage != "" {
-			fmt.Println(emptyMessage)
-		}
-		return -1, ""
-	}
-
-	for i, item := range arr {
-		fmt.Printf("[%d] %s\n", i+1, item)
-	}
-
-	next := ""
-	i := 0
-	fmt.Scanf("%d%s", &i, &next)
-	i--
-	if i >= 0 && i < len(arr) {
-		return i, next
-	}
-	fmt.Println("pick wrong number.")
-	return -1, ""
-}
 func checkIfSubtitle(input string) bool {
 	return !(strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:"))
 }
@@ -193,8 +171,7 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 
 	files, err := thunder.NewTask(url, verifycode)
 	if err == nil {
-		text, _ := json.Marshal(files)
-		w.Write([]byte(text))
+		writeJson(w, files)
 	} else {
 		writeError(w, err)
 	}
@@ -229,17 +206,14 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		text, _ := json.Marshal(s1)
-		w.Write([]byte(text))
+		writeJson(w, s1)
 	} else {
 		subscribe.SaveSubscribe(s)
 
 		for _, t := range tasks {
 			task.SaveTask(t)
 		}
-
-		text, _ := json.Marshal(s)
-		w.Write([]byte(text))
+		writeJson(w, s)
 	}
 }
 func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
@@ -288,8 +262,7 @@ func subscribeHandler(w http.ResponseWriter, r *http.Request) {
 			writeError(w, err)
 		}
 	}()
-	text, _ := json.Marshal(subscribe.GetSubscribes())
-	w.Write([]byte(text))
+	writeJson(w, subscribe.GetSubscribes())
 }
 
 func thunderVerifyCodeHandler(w http.ResponseWriter, r *http.Request) {
@@ -320,8 +293,7 @@ func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
 
 	files, err := thunder.NewTaskWithTorrent(input)
 	if err == nil {
-		text, _ := json.Marshal(files)
-		w.Write([]byte(text))
+		writeJson(w, files)
 	} else {
 		writeError(w, err)
 	}
@@ -349,8 +321,7 @@ func limitHandler(w http.ResponseWriter, r *http.Request) {
 }
 func configHandler(w http.ResponseWriter, r *http.Request) {
 	configs := util.ReadAllConfigs()
-	text, _ := json.Marshal(configs)
-	w.Write([]byte(text))
+	writeJson(w, configs)
 }
 func configSimultaneousHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
@@ -383,9 +354,10 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 
 func progressHandler(ws *websocket.Conn) {
 	tasks := task.GetTasks()
-	text, _ := json.Marshal(tasks)
-
-	io.WriteString(ws, string(text))
+	err := writeJson(ws, tasks)
+	if err != nil {
+		return
+	}
 
 	ch := make(chan *task.Task, 20)
 	// log.Println("website watch task change ", ch)
@@ -397,8 +369,10 @@ func progressHandler(ws *websocket.Conn) {
 	for {
 		select {
 		case t := <-ch:
-			text, _ := json.Marshal([]*task.Task{t})
-			io.WriteString(ws, string(text))
+			writeJson(ws, []*task.Task{t})
+			if err != nil {
+				return
+			}
 			break
 		case <-time.After(time.Second * 20):
 			//close connection every 20 seconds
@@ -436,6 +410,15 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 func writeError(w http.ResponseWriter, err error) {
 	log.Print(err)
 	w.Write([]byte(err.Error()))
+}
+func writeJson(w io.Writer, obj interface{}) error {
+	text, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	} else {
+		_, err := w.Write(text)
+		return err
+	}
 }
 func videoHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[7:])
