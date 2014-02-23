@@ -1,10 +1,12 @@
 package util
 
 import (
-	// "io/ioutil"
+	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"path"
-	// "strings"
+	"strings"
 )
 
 func MakeSurePathExists(path string) (error, bool) {
@@ -45,4 +47,33 @@ func GetFileSize(file string) int64 {
 
 	}
 	return 0
+}
+
+func extractOneFile(unarPath, filename string) {
+	dir := path.Dir(filename)
+	cmd := exec.Command(unarPath, filename, "-f", "-o", dir)
+
+	if err := cmd.Run(); err != nil {
+		log.Print(err)
+	} else {
+		os.Remove(filename)
+	}
+}
+func Extract(unarPath string, filename string) {
+	if CheckExt(filename, "rar", "zip") {
+		extractOneFile(unarPath, filename)
+
+		dir := filename[:len(filename)-len(path.Ext(filename))]
+
+		infoes, err := ioutil.ReadDir(dir)
+		if err != nil {
+			log.Print(err)
+			return
+		}
+
+		for _, f := range infoes {
+			filename := strings.ToLower(path.Join(dir, f.Name()))
+			extractOneFile(unarPath, filename)
+		}
+	}
 }
