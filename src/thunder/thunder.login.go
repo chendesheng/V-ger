@@ -32,7 +32,7 @@ func Login() error {
 	password := config["thunder-password"]
 
 	gdriveid, _, err := Login2(util.ReadConfig("gdriveid"), user, password)
-	if err != nil {
+	if err == nil {
 		util.SaveConfig("gdriveid", gdriveid)
 	}
 	return err
@@ -89,6 +89,8 @@ func Login2(gdriveid string, user, password string) (string, string, error) {
 		return "", "", err
 	}
 
+	println(html)
+
 	gdriveidReg := regexp.MustCompile(`input type="hidden" id="cok" value="([^"]+)"`)
 	matches := gdriveidReg.FindStringSubmatch(html)
 	if matches == nil {
@@ -119,6 +121,8 @@ func setCookie(name, value string) {
 		Expires: time.Now().AddDate(100, 0, 0),
 	}
 	cookies := []*http.Cookie{&cookie}
-	url, _ := url.Parse("http://vip.lixian.xunlei.com")
+	url, _ := url.Parse("http://lixian.vip.xunlei.com")
 	http.DefaultClient.Jar.SetCookies(url, cookies)
+
+	http.DefaultClient.Get("http://lixian.vip.xunlei.com")
 }
