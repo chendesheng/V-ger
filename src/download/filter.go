@@ -5,6 +5,7 @@ import (
 	"log"
 	"task"
 	// "time"
+	"util"
 )
 
 type filter interface {
@@ -46,7 +47,7 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	df := &downloadFilter{
 		basicFilter{nil, make(chan *block), quit},
 		url,
-		5,
+		util.ReadIntConfig("max-connection"),
 	}
 
 	sf := &sortFilter{

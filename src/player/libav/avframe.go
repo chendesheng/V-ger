@@ -114,3 +114,7 @@ func (frame *AVFrame) Flip(height int) {
 	pic.linesize[2] *= -1
 	pic.linesize[3] *= -1
 }
+
+func (frame *AVFrame) Free() {
+	C.avcodec_free_frame(&frame.ptr)
+}

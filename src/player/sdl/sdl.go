@@ -30,3 +30,11 @@ func PauseAudio(vol int) {
 func QuitSubSystem(flags uint) {
 	C.SDL_QuitSubSystem(C.Uint32(flags))
 }
+
+func CloseAudio() {
+	C.SDL_CloseAudio()
+}
+
+func Quit() {
+	C.SDL_Quit()
+}

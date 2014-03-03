@@ -21,7 +21,6 @@ func init() {
 type Window struct {
 	ptr unsafe.Pointer
 
-	FuncDraw                []func()
 	FuncTimerTick           []func()
 	FuncKeyDown             []func(int)
 	FuncOnFullscreenChanged []func(bool)
@@ -77,12 +76,63 @@ func (w *Window) Destory() {
 	w.texture.Delete()
 }
 
-func (w *Window) DrawSubtitle() {
-
-}
-
 func (w *Window) GetWindowSize() (int, int) {
 	return int(C.getWindowWidth(w.ptr)), int(C.getWindowHeight(w.ptr))
+}
+
+func (w *Window) IsFullScreen() bool {
+	width, height := w.GetWindowSize()
+	swidth, sheight := GetScreenSize()
+
+	return width == swidth && height == sheight
+}
+
+func (w *Window) SetTitle(title string) {
+	ctitle := C.CString(title)
+	defer C.free(unsafe.Pointer(ctitle))
+
+	C.setWindowTitle(w.ptr, ctitle)
+}
+
+func (w *Window) SetSize(width, height int) {
+	w.originalWidth, w.originalHeight = width, height
+
+	sw, sh := GetScreenSize()
+
+	if w.IsFullScreen() {
+		w.ToggleFullScreen()
+	}
+
+	if width > int(0.8*float64(sw)) || height > int(0.8*float64(sh)) {
+		C.setWindowSize(w.ptr, C.int(0.8*float64(width)), C.int(0.8*float64(height)))
+	} else {
+		C.setWindowSize(w.ptr, C.int(width), C.int(height))
+	}
+
+	if width%4 != 0 {
+		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
+	}
+
+	if w.texture != 0 {
+		w.texture.Delete()
+	}
+
+	texture := gl.GenTexture()
+	texture.Bind(gl.TEXTURE_2D)
+
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0,
+		gl.RGB, gl.UNSIGNED_BYTE, make([]byte, width*height*3)) //alloc memory
+
+	gl.Enable(gl.TEXTURE_2D)
+	gl.Disable(gl.DEPTH_TEST) //disable 3d
+	gl.ShadeModel(gl.SMOOTH)
+	gl.ClearColor(0, 0, 0, 1)
+
+	w.texture = texture
 }
 
 func NewWindow(title string, width, height int) *Window {
@@ -112,41 +162,28 @@ func NewWindow(title string, width, height int) *Window {
 	C.showWindow(ptr)
 	C.makeWindowCurrentContext(ptr) //must make current context before do texture bind or we will get a all white window
 
-	if width%4 != 0 {
-		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
-	}
+	return w
+}
 
-	texture := gl.GenTexture()
-	texture.Bind(gl.TEXTURE_2D)
-
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0,
-		gl.RGB, gl.UNSIGNED_BYTE, make([]byte, width*height*3)) //alloc memory
-
-	gl.Enable(gl.TEXTURE_2D)
-	gl.Disable(gl.DEPTH_TEST) //disable 3d
-	gl.ShadeModel(gl.SMOOTH)
-	gl.ClearColor(0, 0, 0, 1)
-
-	w.texture = texture
-
-	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) {
-		if keycode == KEY_ESCAPE {
-			C.windowToggleFullScreen(w.ptr)
-		}
-	})
-
+func (w *Window) InitEvents() {
 	w.FuncOnFullscreenChanged = append(w.FuncOnFullscreenChanged, func(b bool) {
 		if w.currentMessagePtr != 0 {
 			w.HideText(w.currentMessagePtr)
 			w.currentMessagePtr = w.ShowText(w.currentMessage)
 		}
 	})
+}
 
-	return w
+func (w *Window) ClearEvents() {
+	w.FuncOnFullscreenChanged = nil
+	w.FuncOnProgressChanged = nil
+	w.FuncKeyDown = nil
+	w.FuncAudioMenuClicked = nil
+	w.FuncSubtitleMenuClicked = nil
+}
+
+func (w *Window) ToggleFullScreen() {
+	C.windowToggleFullScreen(w.ptr)
 }
 
 func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
@@ -217,6 +254,9 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 func (w *Window) hideStartupView() {
 	C.windowHideStartupView(w.ptr)
 }
+func (w *Window) ShowStartupView() {
+	C.windowShowStartupView(w.ptr)
+}
 func (w *Window) SendShowProgress(p *PlayProgressInfo) {
 	w.ChanShowProgress <- p
 }
@@ -268,8 +308,8 @@ func (w *Window) ShowText(s *SubItem) uintptr {
 		cstr := C.CString(str.Content)
 		defer C.free(unsafe.Pointer(cstr))
 
-		println("content:", str.Content)
-		println("color:", str.Color)
+		// println("content:", str.Content)
+		// println("color:", str.Color)
 		items = append(items, C.SubItem{cstr, C.int(str.Style), C.uint(str.Color)})
 	}
 

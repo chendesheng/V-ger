@@ -40,8 +40,25 @@ func goOnSearchSubtitleMenuItemClick() {
 	}
 }
 
+//export goOnOpenOpenPanel
+func goOnOpenOpenPanel() {
+	if appDelegate != nil {
+		appDelegate.OnOpenOpenPanel()
+	}
+}
+
+//export goOnCloseOpenPanel
+func goOnCloseOpenPanel(filename *_Ctype_char) {
+	if appDelegate != nil {
+		name := C.GoString(filename)
+		appDelegate.OnCloseOpenPanel(name)
+	}
+}
+
 type AppDelegate interface {
 	OpenFile(string) bool
+	OnOpenOpenPanel()
+	OnCloseOpenPanel(filename string)
 	WillTerminate()
 	SearchSubtitleMenuItemClick()
 }
@@ -53,4 +70,9 @@ func Initialize(d AppDelegate) {
 
 	log.Println("before initialize")
 	C.initialize()
+}
+
+func GetScreenSize() (int, int) {
+	sz := C.getScreenSize()
+	return int(sz.width), int(sz.height)
 }

@@ -26,6 +26,10 @@ func (ctx *SwsContext) Scale(frame1 AVFrame, frame2 AVPicture) {
 		0, frame1.ptr.height, (**C.uint8_t)(&frame2.ptr.data[0]), (*C.int)(&frame2.ptr.linesize[0]))
 }
 
+func (ctx *SwsContext) Free() {
+	C.sws_freeContext(ctx.ptr)
+}
+
 const (
 	SWS_FAST_BILINEAR = 1 << iota
 	SWS_BILINEAR

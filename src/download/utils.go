@@ -29,10 +29,33 @@ func addRangeHeader(req *http.Request, from, to int64) {
 	}
 }
 
-func openOrCreateFileRW(path string, position int64) (*os.File, error) {
+type secureWriter os.File
+
+func (w *secureWriter) WriteAt(p []byte, off int64) (n int, err error) {
+	f := (*os.File)(w)
+	n, err = f.WriteAt(p, off)
+
+	if err == nil {
+		b := make([]byte, 1)
+		f.ReadAt(b, off+int64(n)-1)
+		if b[0] != p[n-1] {
+			println("write error")
+			return 0, fmt.Errorf("Write Error")
+		}
+	}
+
+	return n, err
+}
+
+func (w *secureWriter) Close() {
+	f := (*os.File)(w)
+	f.Close()
+}
+
+func openOrCreateFileRW(path string, position int64) (*secureWriter, error) {
 	// log.Print("open or create file " + path)
 
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +67,7 @@ func openOrCreateFileRW(path string, position int64) (*os.File, error) {
 	if offset != position {
 		return nil, fmt.Errorf("\nerror offset")
 	}
-	return f, nil
+	return (*secureWriter)(f), nil
 }
 func getFileInfo(header http.Header) (name string, size int64) {
 	// log.Printf("%v\n", header)

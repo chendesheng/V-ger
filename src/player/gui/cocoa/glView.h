@@ -27,4 +27,5 @@
 -(void)setTextView2:(TextView*)tv;
 -(void)setStartupView:(StartupView*)sv;
 -(void)hideStartupView;
+-(void)showStartupView;
 @end

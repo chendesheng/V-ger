@@ -303,6 +303,8 @@ h1, h2 {
 	overflow: auto;
 	margin: 0;
 	box-sizing: border-box;
+
+	-webkit-transform: translateZ(0);
 	/*border-right: solid 1px #383022;*/
 	/*position: fixed;	*/
 }
@@ -509,9 +511,11 @@ h3 {
 	background-color: #383022;
 }
 .task-infoes .progress-box {
-	margin-top:  2px;
-	height: 2px;
 	display: block;
+	height: 2px;
+	position: absolute;
+	top: 50%;
+	margin-top: -1px;
 }
 .task-infoes .progress div {
 	width: 100%;
@@ -536,41 +540,86 @@ h3 {
 	float: left;
 	width: 16px;
 	height: 16px;
-	margin:15px 5px 0 0;
+	top: 50%;
+	position: absolute;
+	margin: -8px 0 0 0;
 }
 .task-infoes .middle-actions {
-	float: left;
+	margin-left: 20px;
+	height: 50px;
+	position: relative;
 }
 .task-infoes .info {
-	width: 110px;
-	float: right;
-}
-.task-infoes .last-played {
-	margin-left: 10px;
+	margin-left:15px;
 }
 .resume {
-	background-image: url('/assets/resume.png');
+	/*background-image: url('/assets/resume.png');
 	background-position: center;
-	background-repeat: no-repeat;
+	background-repeat: no-repeat;*/
 	outline: none;
+	width: 0px !important;
+	height: 0px !important;
+	border-style: solid;
+	border-width: 6px 0 6px 10.4px;
+	border-color: transparent transparent transparent #A5A5A5;
+	padding: 0;
+	margin-top: 2px;
+	margin-left: 2px;
+	background: none;
+
+	-webkit-transition: border-color 0.1s linear;
+	-moz-transition: border-color 0.1s linear;
+	-o-transition: border-color 0.1s linear;
+	-ms-transition: border-color 0.1s linear;
+	transition: border-color 0.1s linear;
+	height: 12px;
+	display: inline-block;
 }
 .resume:hover {
-	background-image: url('/assets/resume_hovered.png');
+	border-color: transparent transparent transparent #7a7a7a
 }
 .resume:active {
-	background-image: url('/assets/resume_pressed.png');
+	border-color: transparent transparent transparent #6a6a6a
 }
 .stop {
-	background-image: url('/assets/stop.png');
+/*	background-image: url('/assets/stop.png');
 	background-position: center;
-	background-repeat: no-repeat;
+	background-repeat: no-repeat;*/
 	outline: none;
+	padding: 0;
+	margin-top: 2px;
+	margin-left: 1px;
+	border-style: solid;
+	border-width: 0 0 0 4px;
+	border-color: #A5A5A5;
+	width: 12px;
+	position: relative;
+	
+	-webkit-transition: border-color 0.1s linear;
+	-moz-transition: border-color 0.1s linear;
+	-o-transition: border-color 0.1s linear;
+	-ms-transition: border-color 0.1s linear;
+	transition: border-color 0.1s linear;
+	height: 12px;
+	display: inline-block;
+}
+.stop:after {
+	content: '';
+	position: absolute;
+	border-style: solid;
+	border-width: 0 0 0 4px;
+	border-color: inherit;
+	width: 4px;
+	display: block;
+	height: 12px;
+	left: 3px;
+	top: 0;
 }
 .stop:hover {
-	background-image: url('/assets/stop_hovered.png');
+	border-color: #7a7a7a;
 }
 .stop:active {
-	background-image: url('/assets/stop_pressed.png');
+	border-color: #6a6a6a;
 }
 .unread {
 	width:14px !important;
@@ -645,8 +694,9 @@ h3 {
 	background-image: url('/assets/speed_pressed.png');
 }
 .task-infoes .row-3rd {
-	margin-top: 5px;
 	font-size: 0.8em;
+	position: absolute;
+	bottom: 0;
 }
 .task-infoes .action-limit {
 	font-size: 0.7em;
@@ -660,12 +710,14 @@ h3 {
 	padding: 0 30px 20px 30px;
 }
 .name {
-	cursor: default;
 	overflow: hidden;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	width: 450px;
+	text-align: ;
+	cursor: default;
+	vertical-align: top;
 }
 .name a {
 	color: inherit;
@@ -681,6 +733,13 @@ h3 {
 }
 .task {
 	overflow: hidden;
+}
+.task-loading {
+	width:100%;
+	height:100%;
+	padding: 20px 0 0 20px;
+	font-size: 1.3em;
+	font-weight: 700;
 }
 /*.task.ng-enter .task-infoes, 
 .task.ng-leave .task-infoes,*/
@@ -773,12 +832,11 @@ li.subscribe {
 	font-weight: 700;
 	font-size: 15px;
 
-	-webkit-transition: color 0.2s linear;
-	-moz-transition: color 0.2s linear;
-	-ms-transition: color 0.2s linear;
-	-o-transition: color 0.2s linear;
-	transition: color 0.2s linear;
-
+	-webkit-transition: color 0.1s linear;
+	-moz-transition: color 0.1s linear;
+	-ms-transition: color 0.1s linear;
+	-o-transition: color 0.1s linear;
+	transition: color 0.1s linear;
 
 	/*padding-bottom: 5px !important;*/
 	/*margin-bottom: 15px;*/
@@ -787,16 +845,19 @@ li.subscribe {
 	height: 40px;
 	vertical-align: middle;
 
+	/*-webkit-transform: translateZ(0);*/
 	/*opacity: 0.5;*/
 }
 
 li.subscribe:hover {
 	color: #383022;
 	opacity: 1;
+	font-weight: 700;
 }
 li.subscribe.highlight {
 	color: #383022;
 	opacity: 1;
+	font-weight: 700;
 }
 .subscribe-icon {
 /*	width: 20px;
@@ -813,16 +874,18 @@ li.subscribe img {
 	float:left;
 	margin-top: 2px;
 	opacity: 0.6;
-	
-	-webkit-transition: opacity 0.2s linear;
-	-moz-transition: opacity 0.2s linear;
-	-ms-transition: opacity 0.2s linear;
-	-o-transition: opacity 0.2s linear;
-	transition: opacity 0.2s linear;
+
+	-webkit-transition: opacity 0.1s linear;
+	-moz-transition: opacity 0.1s linear;
+	-ms-transition: opacity 0.1s linear;
+	-o-transition: opacity 0.1s linear;
+	transition: opacity 0.1s linear;
+
 }
 li.subscribe.highlight img,
 li.subscribe:hover img {
 	opacity: 1;
+	-webkit-transform: translateZ(0);
 }
 .subscribe-menu-name {
 	float:left;
@@ -919,7 +982,8 @@ li.subscribe:hover img {
 	padding: 0px 4px 0px 4px;
 	min-width: 6px;
 	font-family: helvetica Neue;
-	font-weight: lighter;
+	font-weight: 500;
+	opacity: 1;
 }
 .subscribe-info {
 	border-bottom: solid 1px #383022;

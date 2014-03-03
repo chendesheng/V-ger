@@ -13,20 +13,9 @@ import (
 	// "runtime"
 	"strings"
 	"time"
-	"util"
 )
 
-var networkTimeout time.Duration
-
-func init() {
-	networkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
-
-	// http.DefaultTransport.(*http.Transport).Dial = func(network, addr string) (net.Conn, error) {
-	// 	c, err := net.Dial(network, addr)
-	// 	log.Printf("%v", c)
-	// 	return c, err
-	// }
-}
+var NetworkTimeout time.Duration
 
 func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)

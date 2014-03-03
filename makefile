@@ -15,7 +15,6 @@ gui:
 	$(CC) $(P_SRC)/*.m -c -I$(P_INC)
 	libtool -static -o $(P_SRC)/libcocoa.a *.o
 	go install -a player/gui
-	go install playerguitest
 	rm *.o
 
 # exe:

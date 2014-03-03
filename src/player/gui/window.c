@@ -38,3 +38,10 @@ void onWillTerminate() {
 void onSearchSubtitleMenuItemClick() {
 	goOnSearchSubtitleMenuItemClick();
 }
+
+void onOpenOpenPanel() {
+	goOnOpenOpenPanel();
+}
+void onCloseOpenPanel(char* filename) {
+	goOnCloseOpenPanel(filename);
+}

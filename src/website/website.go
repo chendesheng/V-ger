@@ -227,7 +227,7 @@ func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
 		bytes := subscribe.GetBannerImage(name)
 		if len(bytes) > 0 {
 			h := w.Header()
-			h.Add("max-age", "600")
+			h.Add("Cache-Control", "max-age=3600")
 			w.Write(bytes)
 		} else {
 			resp, err := http.Get(s.Banner)
@@ -245,7 +245,7 @@ func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		if name == "Single Tasks" {
+		if name == "Single Tasks" || name == "Downloads" {
 			// ioutil.ReadFile("filename")
 			http.ServeFile(w, r, "assets/vger.png")
 		} else {
@@ -354,9 +354,24 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 
 func progressHandler(ws *websocket.Conn) {
 	tasks := task.GetTasks()
-	err := writeJson(ws, tasks)
-	if err != nil {
-		return
+	cnt := 50
+	tks := make([]*task.Task, 0)
+	for _, t := range tasks {
+		tks = append(tks, t)
+		if len(tks) == cnt {
+			err := writeJson(ws, tks)
+			if err != nil {
+				return
+			}
+
+			tks = tks[0:0]
+		}
+	}
+	if len(tks) > 0 {
+		err := writeJson(ws, tks)
+		if err != nil {
+			return
+		}
 	}
 
 	ch := make(chan *task.Task, 20)
@@ -369,7 +384,7 @@ func progressHandler(ws *websocket.Conn) {
 	for {
 		select {
 		case t := <-ch:
-			writeJson(ws, []*task.Task{t})
+			err := writeJson(ws, []*task.Task{t})
 			if err != nil {
 				return
 			}

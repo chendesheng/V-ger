@@ -41,6 +41,9 @@ type movie struct {
 
 	chCtrl      chan ctrlArg
 	chSeekPause chan time.Duration
+
+	quit        chan bool
+	finishClose chan bool
 }
 
 func (m *movie) setupAudio() {
@@ -67,7 +70,9 @@ func (m *movie) setupAudio() {
 		}
 
 		selected := audioStreams[0].Index()
-		for _, stream := range audioStreams {
+		for i := len(audioStreams) - 1; i >= 0; i-- {
+			stream := audioStreams[i]
+
 			dic := stream.MetaData()
 			mp := dic.Map()
 			language := strings.ToLower(mp["language"])
@@ -87,7 +92,11 @@ func (m *movie) setupAudio() {
 
 		if len(audioStreams) > 1 {
 			m.w.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
+		} else {
+			HideAudioMenu()
 		}
+	} else {
+		HideAudioMenu()
 	}
 }
 
@@ -163,6 +172,8 @@ func (m *movie) setupSubtitles(subFiles []string) {
 				if s1 != nil {
 					go s1.Play()
 				}
+			} else {
+				m.p.Sub1 = ""
 			}
 		}
 
@@ -174,6 +185,8 @@ func (m *movie) setupSubtitles(subFiles []string) {
 				if s2 != nil {
 					go s2.Play()
 				}
+			} else {
+				m.p.Sub2 = ""
 			}
 		}
 
@@ -190,16 +203,17 @@ func (m *movie) setupSubtitles(subFiles []string) {
 			var en, cn, double *Subtitle
 			for _, file := range subFiles {
 				s := NewSubtitle(file, m.w, m.c, float64(width), float64(height))
-				fmt.Printf("%v", s)
-				if en != nil && s.Lang1 == "en" && len(s.Lang2) == 0 {
-					en = s
-				}
-				if cn != nil && s.Lang1 == "cn" && len(s.Lang2) == 0 {
-					cn = s
-				}
+				if s != nil {
+					if en == nil && s.Lang1 == "en" && len(s.Lang2) == 0 {
+						en = s
+					}
+					if cn == nil && s.Lang1 == "cn" && len(s.Lang2) == 0 {
+						cn = s
+					}
 
-				if double != nil && len(s.Lang1) > 0 && len(s.Lang2) > 0 {
-					double = s
+					if double == nil && len(s.Lang1) > 0 && len(s.Lang2) > 0 {
+						double = s
+					}
 				}
 			}
 
@@ -248,8 +262,14 @@ func (m *movie) setupSubtitles(subFiles []string) {
 			selected1 = 0
 		}
 
-		log.Printf("selected1:%d, selected2:%d", selected1, selected2)
-		m.w.InitSubtitleMenu(names, tags, selected1, selected2)
+		if len(names) > 0 {
+			m.w.InitSubtitleMenu(names, tags, selected1, selected2)
+		} else {
+			HideSubtitleMenu()
+		}
+	} else {
+		println("remove subtitle menu")
+		HideSubtitleMenu()
 	}
 }
 
@@ -381,7 +401,7 @@ func (m *movie) openHttp(file string) (AVFormatContext, string) {
 	return ctx, name
 }
 
-func (m *movie) open(file string, subFiles []string) {
+func (m *movie) open(w *Window, file string, subFiles []string) {
 	println("open ", file)
 
 	var ctx AVFormatContext
@@ -416,7 +436,11 @@ func (m *movie) open(file string, subFiles []string) {
 	m.c = NewClock(duration)
 
 	m.setupVideo()
-	m.w = NewWindow(filename, m.v.Width, m.v.Height)
+	m.w = w
+	// m.w = NewWindow(filename, m.v.Width, m.v.Height)
+	w.InitEvents()
+	w.SetTitle(filename)
+	w.SetSize(m.v.Width, m.v.Height)
 	m.v.SetRender(m.w)
 
 	m.uievents()
@@ -426,6 +450,7 @@ func (m *movie) open(file string, subFiles []string) {
 	m.setupSubtitles(subFiles)
 
 	start, _, _ := m.v.Seek(m.p.LastPos)
+	// start := m.p.LastPos
 	m.p.LastPos = start
 	m.p.Duration = duration
 
@@ -488,6 +513,8 @@ func (m *movie) SendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 		select {
 		case ch <- &pkt:
 			return true
+		case <-m.quit:
+			return false
 		}
 	}
 	return false
@@ -513,16 +540,35 @@ const (
 )
 
 func (m *movie) decode(name string) {
+	defer func() {
+		if m.a != nil {
+			m.a.Close()
+		}
+		if m.v != nil {
+			m.v.Close()
+		}
+		m.c.Reset()
+		m.ctx.CloseInput()
+
+		if m.finishClose != nil {
+			close(m.finishClose)
+		}
+	}()
+
 	packet := AVPacket{}
 	ctx := m.ctx
 	go func() {
 		ticker := time.NewTicker(time.Second)
 		for {
-			m.c.WaitUtilRunning()
+			if m.c.WaitUtilRunning(m.quit) {
+				return
+			}
 
 			select {
 			case <-ticker.C:
 				m.showProgress(name)
+			case <-m.quit:
+				return
 			}
 		}
 	}()
@@ -554,6 +600,9 @@ func (m *movie) decode(name string) {
 							}
 						}
 						break
+					case <-m.quit:
+						packet.Free()
+						return
 					}
 
 					t := m.c.GetTime()
@@ -611,22 +660,12 @@ func (m *movie) decode(name string) {
 				}
 			case <-time.After(100 * time.Millisecond):
 				break
+			case <-m.quit:
+				return
 			}
 
 		}
-		println(bufferring)
-	}
-}
-
-func (m *movie) play() {
-	go m.v.Play()
-
-	if m.w != nil {
-		PollEvents()
-	} else {
-		for {
-			<-time.After(time.Millisecond)
-		}
+		// println(bufferring)
 	}
 }
 
@@ -694,4 +733,30 @@ func (m *movie) Seek(t time.Duration) time.Duration {
 func (m *movie) SeekEnd(t time.Duration) {
 	m.chSeekPause <- t
 	println("seek end:", t.String())
+}
+
+func (m *movie) Close() {
+	m.w.FlushImageBuffer()
+	m.w.RefreshContent(nil)
+	m.w.ShowStartupView()
+
+	SavePlayingAsync(m.p)
+
+	m.finishClose = make(chan bool)
+	close(m.quit)
+	// time.Sleep(100 * time.Millisecond)
+
+	m.w.ClearEvents()
+
+	if m.s != nil {
+		m.s.Stop()
+		m.s = nil
+	}
+
+	if m.s2 != nil {
+		m.s2.Stop()
+		m.s2 = nil
+	}
+
+	<-m.finishClose
 }

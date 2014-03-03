@@ -42,7 +42,7 @@ func subtitlesSearchHandler(ws *websocket.Conn) {
 		search = fmt.Sprintf("%s s%2de%2d", t.Subscribe, t.Season, t.Episode)
 	}
 
-	go subtitles.SearchSubtitles(search, url, result)
+	go subtitles.SearchSubtitles(search, url, result, nil)
 
 	for s := range result {
 		log.Printf("%v", s)

@@ -1,7 +1,9 @@
 package main
 
 import (
+	// "cocoa/cookiejar"
 	"dbHelper"
+	"download"
 	"filelock"
 	"log"
 	"net/http"
@@ -28,10 +30,9 @@ func init() {
 		}
 	}
 
-	if http.DefaultClient.Jar == nil {
-		jar, _ := cookiejar.New(nil)
-		http.DefaultClient.Jar = jar
-	}
+	// http.DefaultClient.Jar = &cookiejar.SafariCookieJar{}
+	jar, _ := cookiejar.New(nil)
+	http.DefaultClient.Jar = jar
 
 	util.SaveConfig("shutdown-after-finish", "false")
 
@@ -50,6 +51,8 @@ func init() {
 
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 
-	// only block when file locked by another process
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
+
+	download.BaseDir = util.ReadConfig("dir")
+	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 }

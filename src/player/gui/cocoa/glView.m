@@ -64,8 +64,6 @@
 }
 
 - (void)mouseDown:(NSEvent *)event {
-    NSLog(@"mouseDown");
-
     self->currentCursor = self->noneCursor;
     [self cursorUpdate:nil];
 }
@@ -83,7 +81,6 @@
 }
 
 - (void)updateTrackingAreas {
-    NSLog(@"updateTrackingAreas");
     if (trackingArea != nil) {
         [self removeTrackingArea:trackingArea];
         [trackingArea release];
@@ -106,12 +103,10 @@
 }
 
 - (void)keyDown:(NSEvent *)event {
-    NSLog(@"keyDown");
     onKeyDown([self window], [event keyCode]);
 }
 
 - (void)keyUp:(NSEvent *)event {
-    NSLog(@"keyUp");
 }
 
 -(void)showProgress:(char*)left right:(char*)right percent:(double)percent percent2:(double)percent2 {
@@ -398,6 +393,8 @@
             return tv;
         }
     }
+
+    return nil;
 }
 -(void)hideText:(TextView*)tv {
     if (tv == self->textView) {
@@ -447,5 +444,10 @@
 }
 -(void)hideStartupView {
     [self->startupView setHidden:YES];
+}
+-(void)showStartupView {
+    [self->startupView setHidden:NO];
+
+    [self setNeedsDisplay:YES];
 }
 @end

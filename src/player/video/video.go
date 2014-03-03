@@ -39,6 +39,7 @@ type Video struct {
 	// ChanPacket  chan *AVPacket
 	ChanDecoded chan *VideoFrame
 	ChanFlush   chan bool
+	flushQuit   chan bool
 	quit        chan bool
 	r           VideoRender
 }
@@ -110,6 +111,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 
 	v.ChanDecoded = make(chan *VideoFrame, 10)
 	v.ChanFlush = make(chan bool)
+	v.flushQuit = make(chan bool)
 	v.quit = make(chan bool)
 
 	log.Print("new video success")
@@ -212,23 +214,31 @@ func (v *Video) FlushBuffer() {
 		case <-v.ChanDecoded:
 			break
 		default:
-			close(v.quit)
-			v.quit = make(chan bool)
+			close(v.flushQuit)
+			v.flushQuit = make(chan bool)
 			return
 		}
 	}
 }
 
 func (v *Video) Play() {
-	for data := range v.ChanDecoded {
-		if v.c.WaitUtilWithQuit(data.Pts, v.quit) {
-			continue
+	for {
+		select {
+		case data := <-v.ChanDecoded:
+			if v.c.WaitUtilWithQuit(data.Pts, v.flushQuit) {
+				continue
+			}
+
+			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
+			v.r.SendDrawImage(data.Img)
+
+			if v.c.WaitUtilRunning(v.quit) {
+				return
+			}
+			break
+		case <-v.quit:
+			return
 		}
-
-		// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
-		v.r.SendDrawImage(data.Img)
-
-		v.c.WaitUtilRunning()
 	}
 }
 func (v *Video) SetRender(r VideoRender) {
@@ -261,4 +271,15 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 	}
 
 	return t, nil, errors.New("drop frame error")
+}
+
+func (v *Video) Close() {
+	v.FlushBuffer()
+	close(v.quit)
+
+	v.swsCtx.Free()
+	v.frame.Free()
+	pic := v.pictureRGB.Frame()
+	pic.Free()
+	v.codec.Close()
 }

@@ -31,6 +31,10 @@ func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, quit ch
 			}
 			for {
 				// println("writeAt:", b.from, len(b.data))
+				if (b.to - b.from) != int64(len(b.data)) {
+					log.Printf("wrong block:%d,%d,%d", b.from, b.to, len(b.data))
+				}
+
 				_, err := w.WriteAt(b.data, b.from)
 
 				if err == nil {

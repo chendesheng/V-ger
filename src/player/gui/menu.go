@@ -11,6 +11,14 @@ import (
 	"unsafe"
 )
 
+func HideSubtitleMenu() {
+	C.hideSubtitleMenu()
+}
+
+func HideAudioMenu() {
+	C.hideAudioMenu()
+}
+
 func (w *Window) InitAudioMenu(names []string, tags []int32, selected int) {
 	if len(names) == 0 {
 		return

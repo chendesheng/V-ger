@@ -37,7 +37,7 @@ func ensureQuit(quit chan bool) {
 	}
 }
 
-var baseDir string = util.ReadConfig("dir")
+var BaseDir string
 var taskControls map[string]*taskControl = make(map[string]*taskControl)
 
 func monitorTask() {
@@ -58,11 +58,7 @@ func monitorTask() {
 				tc.stopDownload()
 				delete(taskControls, t.Name)
 
-				dir := util.ReadConfig("dir")
-				err := native.MoveFileToTrash(path.Join(dir, t.Subscribe), t.Name)
-				if err != nil {
-					log.Println(err)
-				}
+				go trashTask(t)
 			}
 			if t.Status == "Finished" {
 				delete(taskControls, t.Name)
@@ -87,16 +83,19 @@ func monitorTask() {
 				taskControls[t.Name] = tc
 				go download(tc)
 			}
-			if t.Status == "Deleted" {
-				dir := util.ReadConfig("dir")
-				err := native.MoveFileToTrash(dir, path.Join(t.Subscribe, t.Name))
-				if err != nil {
-					log.Println(err)
-				}
+			if t.Status == "Deleted" || t.Status == "New" {
+				go trashTask(t)
 			}
 		}
 	}
 }
+func trashTask(t *task.Task) {
+	err := native.MoveFileToTrash(path.Join(BaseDir, t.Subscribe), t.Name)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func Start() {
 	go monitorTask()
 
@@ -111,6 +110,16 @@ func Start() {
 
 			tc := &taskControl{nil, t, nil}
 			taskControls[t.Name] = tc
+
+			filesize := util.GetFileSize(path.Join(BaseDir, t.Subscribe, t.Name))
+			if t.DownloadedSize > filesize {
+				t.DownloadedSize = filesize
+				if t.DownloadedSize > 1000 {
+					t.DownloadedSize -= 1000
+				}
+				task.SaveTask(t)
+			}
+
 			go download(tc)
 		}
 	}
@@ -125,7 +134,7 @@ func download(tc *taskControl) {
 		return
 	}
 
-	dir := path.Join(baseDir, t.Subscribe)
+	dir := path.Join(BaseDir, t.Subscribe)
 	if _, exists := util.MakeSurePathExists(dir); !exists {
 		s := subscribe.GetSubscribe(t.Subscribe)
 		if s != nil {

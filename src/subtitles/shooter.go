@@ -53,7 +53,7 @@ func getSub(n *html.Node) (Subtitle, error) {
 
 	return sub, nil
 }
-func shooterSearch(name string, result chan Subtitle) error {
+func shooterSearch(name string, result chan Subtitle, quit chan bool) error {
 	loadmain = ""
 
 	resp, err := http.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
@@ -76,7 +76,13 @@ func shooterSearch(name string, result chan Subtitle) error {
 					s, err := getSub(c)
 					if err == nil {
 						// log.Printf("%v", s)
-						result <- s
+						select {
+						case result <- s:
+							break
+						case <-quit:
+							return
+						}
+
 						if count++; count > 10 {
 							return
 						}

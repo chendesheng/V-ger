@@ -36,6 +36,11 @@ void initialize() {
     [searchSubtitleMenuItem setTarget: appDelegate];
     [appMenu addItem:searchSubtitleMenuItem];
 
+    NSMenuItem *openFileMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Open..."
+        action:@selector(openFileMenuItemClick:) keyEquivalent:@"o"] autorelease];
+    [openFileMenuItem setTarget: appDelegate];
+    [appMenu addItem:openFileMenuItem];
+
     id appName = [[NSProcessInfo processInfo] processName];
     id quitTitle = [@"Quit " stringByAppendingString:appName];
     id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
@@ -45,76 +50,109 @@ void initialize() {
 
     [appMenuItem setSubmenu:appMenu];
 }
+void hideMenuNSString(NSString* title) {
+    NSLog(@"remove subtitle menu %@", title);
 
-void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
-    NSWindow* w = (NSWindow*)wptr;
-
-    NSMenu *menubar = [NSApp mainMenu];
-    NSMenuItem* audioMenuItem = [[NSMenuItem new] autorelease];
-    [menubar addItem:audioMenuItem];
-    NSMenu* audioMenu = [[NSMenu alloc] initWithTitle:@"Audio"];
-
-    for (int i = 0; i < len; i++) {
-        char* name = names[i];
-        int tag = tags[i];
-        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
-            action:@selector(audioMenuItemClick:) keyEquivalent:@""];
-        [item setTarget: w];
-        [item setTag: tag];
-        [audioMenu addItem:item];
-
-        if (tag == selected) {
-            [item setState: NSOnState];
+    NSMenu* menubar = [NSApp mainMenu];
+    NSArray* menus = [menubar itemArray];
+    for (NSMenuItem* menu in menus) {
+        NSLog(@"compare %@ to %@", [menu title], title);
+        if ([menu title] == title) {
+            NSLog(@"remove menu item");
+            [menubar removeItem:menu];
+            break;
         }
     }
+}
+void hideSubtitleMenu() {
+    hideMenuNSString(@"Subtitle");
+}
+void hideAudioMenu() {
+    hideMenuNSString(@"Audio");
+}
+void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
+    hideAudioMenu();
 
-    [audioMenuItem setSubmenu:audioMenu];
+    if (len > 0) {
+        NSWindow* w = (NSWindow*)wptr;
+
+        NSMenu *menubar = [NSApp mainMenu];
+        NSMenuItem* audioMenuItem = [[NSMenuItem new] autorelease];
+        [audioMenuItem setTitle:@"Audio"];
+        [menubar addItem:audioMenuItem];
+        NSMenu* audioMenu = [[NSMenu alloc] initWithTitle:@"Audio"];
+
+        for (int i = 0; i < len; i++) {
+            char* name = names[i];
+            int tag = tags[i];
+            NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
+                action:@selector(audioMenuItemClick:) keyEquivalent:@""];
+            [item setTarget: w];
+            [item setTag: tag];
+            [audioMenu addItem:item];
+
+            if (tag == selected) {
+                [item setState: NSOnState];
+            }
+        }
+        [audioMenuItem setSubmenu:audioMenu];
+    }
 }
 
 void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t selected1, int32_t selected2) {
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
-    NSWindow* w = (NSWindow*)wptr;
+    hideSubtitleMenu();
 
-    NSMenu *menubar = [NSApp mainMenu];
-    NSArray *menus = [menubar itemArray];
-    for (NSMenuItem *menu in menus) {
-        if ([menu title] == @"Subtitle") {
-            [menubar removeItem:menu];
-            break;
+    NSLog(@"len:%d", len);
+
+    if (len > 0) {
+        NSWindow* w = (NSWindow*)wptr;
+
+        NSMenu* menubar = [NSApp mainMenu];
+        NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
+        [subtitleMenuItem setTitle:@"Subtitle"];
+        [menubar addItem:subtitleMenuItem];
+        NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
+
+        for (int i = 0; i < len; i++) {
+            char* name = names[i];
+            int tag = tags[i];
+            NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
+                action:@selector(subtitleMenuItemClick:) keyEquivalent:@""];
+            [item setTarget: w];
+            [item setTag: tag];
+            [subtitleMenu addItem:item];
+
+            if (tag == selected1) {
+                [item setState: NSOnState];
+            }
+
+            if (tag == selected2) {
+                [item setState: NSOnState];
+            }
         }
+
+        [subtitleMenuItem setSubmenu:subtitleMenu];
     }
-
-    NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
-    [subtitleMenuItem setTitle:@"Subtitle"];
-    [menubar addItem:subtitleMenuItem];
-    NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
-
-    NSLog(@"selected1:%d,selected2:%d", selected1, selected2);
-
-    for (int i = 0; i < len; i++) {
-        char* name = names[i];
-        int tag = tags[i];
-        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
-            action:@selector(subtitleMenuItemClick:) keyEquivalent:@""];
-        [item setTarget: w];
-        [item setTag: tag];
-        [subtitleMenu addItem:item];
-
-        if (tag == selected1) {
-            NSLog(@"subtitle 1 NSOnState");
-            [item setState: NSOnState];
-        }
-
-        if (tag == selected2) {
-            NSLog(@"subtitle 2 NSOnState");
-            [item setState: NSOnState];
-        }
-    }
-
-    [subtitleMenuItem setSubmenu:subtitleMenu];
 
     [pool drain];
+}
+
+void setWindowTitle(void* wptr, char* title) {
+    Window* w = (Window*)wptr;
+    [w setTitle:[NSString stringWithUTF8String:title]];
+}
+
+void setWindowSize(void* wptr, int width, int height) {
+    Window* w = (Window*)wptr;
+
+    NSRect frame = [w frame];
+    frame.origin.y -= (height - frame.size.height)/2;
+    frame.origin.x -= (width - frame.size.width)/2;
+    frame.size = NSMakeSize(width, height);
+
+    [w setFrame:frame display:YES animate:YES];
 }
 
 void* newWindow(char* title, int width, int height) {
@@ -164,6 +202,7 @@ void* newWindow(char* title, int width, int height) {
 
     StartupView* sv = [[StartupView alloc] initWithFrame:[v frame]];
     [v addSubview:sv];
+    [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
     [v setStartupView:sv];
 
@@ -242,6 +281,10 @@ void windowHideStartupView(void* ptr) {
     Window* w = (Window*)ptr;
     [[w contentView] hideStartupView];
 }
+void windowShowStartupView(void* ptr) {
+    Window* w = (Window*)ptr;
+    [[w contentView] showStartupView];
+}
 void windowToggleFullScreen(void* ptr) {
     Window* w = (Window*)ptr;
     [w toggleFullScreen:nil];
@@ -267,4 +310,12 @@ void *newDialog(char* title, int width, int height) {
     [pool drain];
 
     return dialog;
+}
+
+CSize getScreenSize() {
+    NSSize sz = [[NSScreen mainScreen] frame].size;
+    CSize csz;
+    csz.width = (int)sz.width;
+    csz.height = (int)sz.height;
+    return csz;
 }

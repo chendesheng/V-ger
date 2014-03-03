@@ -164,25 +164,30 @@ func (c *Clock) resume() {
 func (c *Clock) Reset() {
 	c.Lock()
 	defer c.Unlock()
-
+	// println(c)
 	c.base = time.Now()
 	c.pausedTime = 0
 	c.status = "running"
 }
 
-func (c *Clock) waitUntilRunning() bool {
+func (c *Clock) waitUntilRunning(quit chan bool) bool {
 	var ch chan bool
 	var status string
+	// println("clock:", c)
+	// println("quit:", quit)
 	c.Lock()
 	ch = c.wait
 	status = c.status
 	c.Unlock()
 
 	if status == "paused" {
-		<-ch
-		println("after paused")
-
-		return true
+		select {
+		case <-ch:
+			println("after paused")
+			return false
+		case <-quit:
+			return true
+		}
 	}
 
 	return false
@@ -201,8 +206,8 @@ func (c *Clock) After(d time.Duration) {
 	// c.SetTime(b + d)
 }
 
-func (c *Clock) WaitUtilRunning() bool {
-	return c.waitUntilRunning()
+func (c *Clock) WaitUtilRunning(quit chan bool) bool {
+	return c.waitUntilRunning(quit)
 }
 
 type beforeWait func()

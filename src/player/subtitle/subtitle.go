@@ -78,7 +78,7 @@ func (s *Subtitle) Play() {
 	for {
 		select {
 		case arg := <-chRes:
-			println("res from show:", arg.Id, arg.Handle)
+			// println("res from show:", arg.Id, arg.Handle)
 			s.items[arg.Id].Handle = arg.Handle
 			break
 		case arg := <-s.ChanOffset:
@@ -136,7 +136,7 @@ func (s *Subtitle) Play() {
 					item.Handle = 0
 				}
 			}
-			break
+			return
 		}
 	}
 }
@@ -275,7 +275,7 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 	simplized(s.items)
 
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 		return nil
 	}
 

@@ -26,7 +26,7 @@ func yyetsParseSub(n *html.Node) Subtitle {
 	sub.Source = "YYets"
 	return sub
 }
-func yyetsSearchSubtitles(name string, result chan Subtitle) error {
+func yyetsSearchSubtitles(name string, result chan Subtitle, quit chan bool) error {
 	resp, err := http.Get("http://www.yyets.com/search/index?type=subtitle&order=uptime&keyword=" + url.QueryEscape(name))
 	if err != nil {
 		return err
@@ -47,7 +47,12 @@ func yyetsSearchSubtitles(name string, result chan Subtitle) error {
 				for _, c := range getTag(n, "li")[1:] { //skip first item, first item is ad
 					s := yyetsParseSub(c)
 					// log.Printf("%v", s)
-					result <- s
+					select {
+					case result <- s:
+						break
+					case <-quit:
+						return
+					}
 
 					if count++; count > 10 {
 						return

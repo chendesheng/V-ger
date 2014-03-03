@@ -44,10 +44,10 @@ func readBody(resp *http.Response) string {
 	return text
 }
 
-func SearchSubtitles(name string, url string, result chan Subtitle) {
+func SearchSubtitles(name string, url string, result chan Subtitle, quit chan bool) {
 	yyetsFinish := make(chan bool)
 	go func() {
-		err := yyetsSearchSubtitles(name, result)
+		err := yyetsSearchSubtitles(name, result, quit)
 		if err != nil {
 			log.Println(err)
 		}
@@ -56,7 +56,7 @@ func SearchSubtitles(name string, url string, result chan Subtitle) {
 
 	shooterFinish := make(chan bool)
 	go func() {
-		err := shooterSearch(name, result)
+		err := shooterSearch(name, result, quit)
 		if err != nil {
 			log.Println(err)
 		}
@@ -74,7 +74,7 @@ func SearchSubtitles(name string, url string, result chan Subtitle) {
 				}
 			}()
 
-			err := kankanSearch(url, result)
+			err := kankanSearch(url, result, quit)
 			if err != nil {
 				log.Print(err)
 			}
@@ -91,11 +91,12 @@ func SearchSubtitles(name string, url string, result chan Subtitle) {
 	close(result)
 }
 
-func SearchSubtitlesMaxCount(name string, result chan Subtitle, maxcnt int) {
+func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxcnt int, quit chan bool) {
 	yyetsRes := make(chan Subtitle)
+	yyetsQuit := make(chan bool)
 	yyetsCnt := 0
 	go func() {
-		err := yyetsSearchSubtitles(name, yyetsRes)
+		err := yyetsSearchSubtitles(name, yyetsRes, yyetsQuit)
 		if err != nil {
 			log.Println(err)
 		}
@@ -103,38 +104,72 @@ func SearchSubtitlesMaxCount(name string, result chan Subtitle, maxcnt int) {
 	}()
 
 	shooterRes := make(chan Subtitle)
+	shooterQuit := make(chan bool)
 	shooterCnt := 0
 	go func() {
-		err := shooterSearch(name, shooterRes)
+		err := shooterSearch(name, shooterRes, shooterQuit)
 		if err != nil {
 			log.Println(err)
 		}
 		close(shooterRes)
 	}()
 
-	var yyetsFinish, shoooterFinish bool
-	var s Subtitle
-	for !(yyetsFinish && shoooterFinish) {
-		select {
-		case s, yyetsFinish = <-yyetsRes:
-			yyetsCnt++
-			if yyetsCnt < maxcnt {
-				result <- s
-			}
-			break
-		case s, shoooterFinish = <-shooterRes:
-			shooterCnt++
-			if shooterCnt < maxcnt {
-				result <- s
-			}
-			break
-		}
+	kankanFinish := make(chan bool)
+	if len(url) > 0 && strings.Contains(url, "gdl.lixian.vip.xunlei.com") {
+		go func() {
+			defer close(kankanFinish)
+			defer func() {
+				r := recover()
+				if r != nil {
+					log.Print(r.(error))
+				}
+			}()
 
-		if yyetsCnt >= maxcnt && shooterCnt >= maxcnt {
+			err := kankanSearch(url, result, quit)
+			if err != nil {
+				log.Print(err)
+			}
+
+		}()
+	} else {
+		close(kankanFinish)
+	}
+
+	yyetsOK, shoooterOK := true, true
+	var s Subtitle
+	for yyetsOK || shoooterOK {
+		select {
+		case s, yyetsOK = <-yyetsRes:
+			if yyetsOK {
+				yyetsCnt++
+				if yyetsCnt < maxcnt {
+					println("yyets:", s.Description)
+					result <- s
+				} else {
+					close(yyetsQuit)
+					yyetsOK = false
+				}
+			}
+			break
+		case s, shoooterOK = <-shooterRes:
+			if shoooterOK {
+				shooterCnt++
+				if shooterCnt < maxcnt {
+					println("shooter:", s.Description)
+					result <- s
+				} else {
+					close(shooterQuit)
+					shoooterOK = false
+				}
+			}
+			break
+		case <-quit:
 			close(result)
+			return
 		}
 	}
 
+	<-kankanFinish
 	close(result)
 }
 func QuickDownload(url string) ([]byte, error) {

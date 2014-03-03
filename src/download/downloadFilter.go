@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"runtime"
 	"strings"
 	"time"
@@ -54,7 +55,7 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 			time.Sleep(time.Second * 2)
 		}
 	}
-	log.Print("final download url:", url)
+	// log.Print("final download url:", url)
 
 	if strings.Contains(url, "192.168.1.1") {
 		//AUSU router may redirect to error_page.html, download from this url will crap target file.
@@ -80,6 +81,13 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 		req := createDownloadRequest(url, b.from, b.to-1)
 
 		resp, err := http.DefaultClient.Do(req)
+
+		// data, _ := httputil.DumpRequest(req, true)
+		// println(string(data))
+
+		// data, _ = httputil.DumpResponse(resp, false)
+		// println(string(data))
+
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -90,6 +98,7 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 				log.Print(err)
 			}
 			if err == nil && int64(len(data)) == size {
+
 				b.data = data
 				select {
 				case output <- b:
@@ -97,6 +106,10 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 				case <-quit:
 					return
 				}
+			} else {
+				bytes, _ := httputil.DumpResponse(resp, false)
+				log.Print(string(bytes))
+				log.Printf("download wrong data:%d,%d,%d", b.from, b.to, len(b.data))
 			}
 		}
 
@@ -114,7 +127,7 @@ func readWithTimeout(req *http.Request, resp *http.Response, size int64, quit ch
 	finish := make(chan error)
 	go func() {
 		select {
-		case <-time.After(networkTimeout): //cancelRequest if time.After before close(finish)
+		case <-time.After(NetworkTimeout): //cancelRequest if time.After before close(finish)
 			cancelRequest(req)
 		case <-quit:
 			cancelRequest(req)

@@ -183,6 +183,10 @@ func (ctx *AVFormatContext) SetPb(pb AVIOContext) {
 	ctx.ptr.flags |= AVFMT_FLAG_CUSTOM_IO
 }
 
+func (ctx *AVFormatContext) CloseInput() {
+	C.avformat_close_input(&ctx.ptr)
+}
+
 // func (ctx *AVFormatContext) FindStreamInfo(count int) []map[string]string {
 // 	var dices *C.AVDictionary
 // 	C.avformat_find_stream_info(ctx.ptr, &dices)

@@ -88,3 +88,7 @@ func (picture *AVPicture) RGBBytes(width, height int) []byte {
 
 	return outBytes
 }
+
+func (picture *AVPicture) Frame() AVFrame {
+	return AVFrame{ptr: (*C.AVFrame)(unsafe.Pointer(picture.ptr))}
+}

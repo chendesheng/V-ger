@@ -118,3 +118,7 @@ func (ctx *AVCodecContext) Timebase() AVRational {
 func (ctx *AVCodecContext) FlushBuffer() {
 	C.avcodec_flush_buffers(ctx.ptr)
 }
+
+func (ctx *AVCodecContext) Close() {
+	C.avcodec_close(ctx.ptr)
+}

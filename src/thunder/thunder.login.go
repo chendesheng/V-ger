@@ -89,7 +89,7 @@ func Login2(gdriveid string, user, password string) (string, string, error) {
 		return "", "", err
 	}
 
-	println(html)
+	// println(html)
 
 	gdriveidReg := regexp.MustCompile(`input type="hidden" id="cok" value="([^"]+)"`)
 	matches := gdriveidReg.FindStringSubmatch(html)

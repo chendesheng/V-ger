@@ -7,15 +7,20 @@ import (
 	"player/gui"
 	// . "player/video"
 	// . "player/libav"
+	"log"
 	"time"
 )
 
 func (m *movie) uievents() {
 	m.w.FuncAudioMenuClicked = append(m.w.FuncAudioMenuClicked, func(i int) {
 		go func() {
-			m.a.setCurrentStream(i)
+			log.Printf("Audio menu click:%d", i)
+
 			m.p.SoundStream = i
 			SavePlayingAsync(m.p)
+
+			m.a.Close()
+			m.a.setCurrentStream(i)
 		}()
 	})
 
@@ -119,6 +124,9 @@ func (m *movie) uievents() {
 					UpdateSubtitleOffsetAsync(m.s2.Name, offset)
 				}
 			}()
+			break
+		case gui.KEY_ESCAPE:
+			m.w.ToggleFullScreen()
 			break
 		}
 	})
