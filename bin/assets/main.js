@@ -45,7 +45,6 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.config = {
 			'max-speed': '0'
 		};
-		$scope.task_filter = {Subscribe:'Single Tasks'}
 		$http.get('/config').success(function(resp) {
 			$scope.config = resp;
 			var v = $scope.config['shutdown-after-finish'];
@@ -82,13 +81,6 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				subscribeMap[val.Name] = val;
 			});
 
-			if ($scope.singleTasks.Badge == null) {
-				$scope.singleTasks.Badge = 0;
-			}
-
-			subscribeMap[$scope.singleTasks.Name] = $scope.singleTasks;
-
-
 			if ($scope.downloadTasks.Badge == null) {
 				$scope.downloadTasks.Badge = 0;
 			}
@@ -118,7 +110,6 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					var item = data[i];
 					item.StartDate = new Date(Date.parse(item.StartDate))
 					if (item.Subscribe == '') {
-						item.Subscribe = $scope.singleTasks.Name;
 					}
 
 					var t = tasksMap[item.Name];
@@ -283,17 +274,21 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			}
 		};
 
-		$scope.subscribes = [];//[{Name:"Single Tasks"}];
+		$scope.subscribes = [];
 		$scope.edit_menu = false;
-		$scope.singleTasks = {Name:"Single Tasks", Badge:0, Duration:0};
 		$scope.downloadTasks = {
 			Name:"Downloads", 
 			Badge:0, 
 			Duration:0, 
 			filter: function (task) {
-				return task.Status == 'Downloading' || task.Status == 'Stopped' || task.Status == 'Paused' || task.Status == 'Queued';
-			}
+				return task.Status == 'Downloading' || task.Status == 'Stopped' 
+					|| task.Status == 'Paused' || task.Status == 'Queued' || task.Subscribe == '';
+			},
+			orderby: ['-StartTime']
 		};
+		$scope.task_filter = $scope.downloadTasks.filter;
+		$scope.task_order = $scope.downloadTasks.orderby;
+
 
 		$scope.toggle_menu_edit = function() {
 			if ($scope.edit_menu) {
@@ -359,15 +354,17 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				$scope.new_url = '';
 			});
 		};
-		$scope.currentSubscribe = {Name:'Single Tasks'};
+		$scope.currentSubscribe = {Name:'Downloads'};
 		$scope.switch_subscribe = function(s) {
 			if (s.Name == $scope.downloadTasks.Name) {
 				delete $scope.task_filter.Subscribe;
 				$scope.task_filter = $scope.downloadTasks.filter;
+				$scope.task_order = $scope.downloadTasks.orderby;
 			} else {
 				$scope.task_filter = {
 					Subscribe: s.Name
 				};
+				$scope.task_order = ['-Season', '-Episode', '-StartTime'];
 			}
 
 			var current = get_subscribe(s.Name);
@@ -396,9 +393,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					return s;
 				}
 			}
-			if (name == $scope.singleTasks.Name) {
-				return $scope.singleTasks;
-			}
+
 			if (name == $scope.downloadTasks.Name) {
 				return $scope.downloadTasks;
 			}
