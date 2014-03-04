@@ -104,9 +104,6 @@ func (api *cocoaNativeAPI) MoveFileToTrash(dir, name string) error {
 }
 
 func (api *cocoaNativeAPI) SetIcon(dir string, r io.Reader) {
-	pool := NewNSAutoreleasePool()
-	defer pool.Drain()
-
 	goimg, err := jpeg.Decode(r)
 	if err != nil {
 		println(err.Error())
@@ -133,23 +130,15 @@ func (api *cocoaNativeAPI) SetIcon(dir string, r io.Reader) {
 	buf := bytes.NewBuffer(nil)
 	png.Encode(buf, newimg)
 	b, _ := ioutil.ReadAll(buf)
+
+	pool := NewNSAutoreleasePool()
+	defer pool.Drain()
+
 	data := DataWithBytes(b)
 
-	// data.WriteToFile("/Volumes/Data/Downloads/Video/Girls/c.jpg", true)
-
 	img := NSImage{objc.GetClass("NSImage").Alloc()}
-	img.AutoRelease()
-
 	img.InitWithData(data)
-
-	// bmp1 := NSBitmapImageRep{img.Representations().ObjectAtIndex(0)}
-	// data1 := bmp1.RepresentationUsingType(NSPNGFileType, NSDictionary{objc.NilObject()})
-	// // data1.WriteToFile("/Volumes/Data/Downloads/Video/Girls/d.jpg", true)
-	// bf := bytes.NewBuffer(data1.Bytes())
-	// _, err = png.Decode(bf)
-	// if err != nil {
-	// 	log.Print(err)
-	// }
+	img.AutoRelease()
 
 	w := NSSharedWorkspace()
 	w.SetIcon(img, dir, NSExcludeQuickDrawElementsIconCreationOption)

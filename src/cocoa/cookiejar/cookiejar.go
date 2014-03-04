@@ -12,7 +12,7 @@ import (
 )
 
 type SafariCookieJar struct {
-	sync.RWMutex
+	sync.Mutex
 }
 
 func (jar *SafariCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
@@ -22,6 +22,7 @@ func (jar *SafariCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
 
 	pool := NewNSAutoreleasePool()
 	defer pool.Drain()
+
 	cs := NSSharedHTTPCookieStorage()
 	for _, c := range cookies {
 		// println(c.String())
@@ -33,8 +34,8 @@ func (jar *SafariCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
 }
 
 func (jar *SafariCookieJar) Cookies(u *url.URL) []*http.Cookie {
-	jar.RLock()
-	defer jar.RUnlock()
+	jar.Lock()
+	defer jar.Unlock()
 
 	pool := NewNSAutoreleasePool()
 	defer pool.Drain()
@@ -46,10 +47,6 @@ func (jar *SafariCookieJar) Cookies(u *url.URL) []*http.Cookie {
 	for _, c := range cs.CookiesForURL(URLWithString(u.String())) {
 		val := c.Value()
 
-		// expires := time.Time{}
-		// if !c.IsSessionOnly() {
-		// 	expires = c.ExpiresDate()
-		// }
 		cookies = append(cookies, &http.Cookie{
 			Name:     c.Name(),
 			Value:    val,
@@ -61,10 +58,5 @@ func (jar *SafariCookieJar) Cookies(u *url.URL) []*http.Cookie {
 		})
 	}
 
-	// if strings.Contains(u.String(), "xunlei") {
-	// 	println("get cookie:", u.String())
-	// 	fmt.Printf("get cookies: %v\n", cookies)
-	// }
 	return cookies
-
 }
