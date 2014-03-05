@@ -27,16 +27,17 @@ func New(filename string) (*FLock, error) {
 }
 
 func (lk *FLock) Lock() error {
-	err := syscall.Flock(int(lk.Fd()), syscall.LOCK_EX)
 	lk.Mutex.Lock()
+	err := syscall.Flock(int(lk.Fd()), syscall.LOCK_EX)
 	return err
 }
 
 func (lk *FLock) Unlock() error {
 	// f := (*os.File)(lk)
 	//f.Close()
+	err := syscall.Flock(int(lk.Fd()), syscall.LOCK_EX|syscall.LOCK_UN)
 	lk.Mutex.Unlock()
-	return syscall.Flock(int(lk.Fd()), syscall.LOCK_EX|syscall.LOCK_UN)
+	return err
 }
 
 var DefaultLock *FLock
