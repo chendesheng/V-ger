@@ -64,21 +64,58 @@
 }
 
 - (void)mouseDown:(NSEvent *)event {
+    if (self->currentCursor == self->noneCursor) {
+        return;
+    }
+
     self->currentCursor = self->noneCursor;
-    [self cursorUpdate:nil];
+    [self->progressView setHidden:YES];
+
+    NSView* target = [self superview];
+
+    // if ([[self->frameView subviews] lastObject] != target) {
+        [target removeFromSuperview];
+        [self->frameView addSubview:target positioned:NSWindowAbove relativeTo:nil];
+
+        [self->win makeFirstResponder:self];
+    // }
+
+    // for (NSView* subv in target.subviews) {
+    //     if (subv != self) {
+    //         [subv setHidden:YES];
+    //     }
+    // }
 }
 
 -(BOOL)mouseDownCanMoveWindow {
     return YES;
 }
 - (void)mouseMoved:(NSEvent *)event {
+    if (self->currentCursor == [NSCursor arrowCursor]) {
+        return;
+    }
+
     self->currentCursor = [NSCursor arrowCursor];
-    [self cursorUpdate:nil];
+    [self->progressView setHidden:NO];
+
+    NSView* target = [self superview];
+    // if ([[self->frameView subviews] objectAtIndex:0] != target) {
+        [target removeFromSuperview];
+        [self->frameView addSubview:target positioned:NSWindowBelow relativeTo:nil];
+
+        [self->win makeFirstResponder:self];
+    // }
+
+    // for (NSView* subv in target.subviews) {
+    //     if (subv != self) {
+    //         [subv setHidden:NO];
+    //     }
+    // }
 }
 
-- (void)viewDidChangeBackingProperties {
-    NSLog(@"viewDidChangeBackingProperties");
-}
+// - (void)viewDidChangeBackingProperties {
+//     NSLog(@"viewDidChangeBackingProperties");
+// }
 
 - (void)updateTrackingAreas {
     if (trackingArea != nil) {

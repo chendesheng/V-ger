@@ -281,8 +281,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			Badge:0, 
 			Duration:0, 
 			filter: function (task) {
-				return task.Status == 'Downloading' || task.Status == 'Stopped' 
-					|| task.Status == 'Paused' || task.Status == 'Queued' || task.Subscribe == '';
+				return task.Status != 'New';
 			},
 			orderby: ['-StartTime']
 		};

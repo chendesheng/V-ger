@@ -3,9 +3,7 @@
 #import "progressView.h"
 #import "textView.h"
 #import "startupView.h"
-@interface GLView : NSOpenGLView 
-
-{
+@interface GLView : NSOpenGLView {
     NSTrackingArea* trackingArea;
     NSCursor* noneCursor;
     ProgressView* progressView;
@@ -14,6 +12,9 @@
     NSCursor* currentCursor;
     StartupView* startupView;
     NSSize originalSize;
+@public
+    NSView* frameView;
+    NSWindow* win;
 }
 
 -(id)initWithFrame2:(NSRect)frame;
