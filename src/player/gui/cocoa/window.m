@@ -7,7 +7,7 @@
 
 	NSLog(@"%dx%d", w, h);
 
-    self = [super initWithContentRect:NSMakeRect(0, 0, w, h)
+    self = [super initWithContentRect:NSMakeRect(0, 0, w, h-22)
     	styleMask:styleMask
     	backing:NSBackingStoreBuffered
       	defer:NO];
@@ -15,12 +15,14 @@
     [self setTitle:title];
     // [self setContentAspectRatio:NSMakeSize(w, h)];
     self->customAspectRatio = NSMakeSize(w, h);
-    [self setOpaque:YES];
     [self setHasShadow:YES];
     [self setContentMinSize:NSMakeSize(500, 500*h/w)];
     [self setAcceptsMouseMovedEvents:YES];
 	[self setRestorable:NO];
     [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+
+    // [self setBackgroundColor:[NSColor clearColor]];
+    [self setOpaque:YES];
 
     [self center];
 
@@ -34,14 +36,14 @@
     return YES;
 }
 - (void)setContentViewNeedsDisplay:(BOOL)b {
-	[[self contentView] setNeedsDisplay:b];
+	[self->glView setNeedsDisplay:b];
 }
 - (void)timerTick:(NSEvent *)event {
 	onTimerTick((void*)self);
 }
 - (void)makeCurrentContext {
     [NSOpenGLContext clearCurrentContext];
-    [[[self contentView] openGLContext] makeCurrentContext];
+    [[self->glView openGLContext] makeCurrentContext];
 }
 
 - (void)audioMenuItemClick:(id)sender {

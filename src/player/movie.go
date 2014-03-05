@@ -44,6 +44,8 @@ type movie struct {
 
 	quit        chan bool
 	finishClose chan bool
+
+	subFiles []string
 }
 
 func (m *movie) setupAudio() {
@@ -105,8 +107,11 @@ func (m *movie) setupSubtitles(subFiles []string) {
 		tags := make([]int32, 0)
 		names := make([]string, 0)
 
+		m.subFiles = subFiles
+
 		m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
-			go func(m *movie, subFiles []string) {
+			go func(m *movie) {
+				subFiles = m.subFiles
 				if showOrHide {
 					// m.s.Stop()
 					width, height := m.w.GetWindowSize()
@@ -150,7 +155,7 @@ func (m *movie) setupSubtitles(subFiles []string) {
 				}
 
 				SavePlayingAsync(m.p)
-			}(m, subFiles)
+			}(m)
 		})
 
 		println("play subtitle:", subFiles)

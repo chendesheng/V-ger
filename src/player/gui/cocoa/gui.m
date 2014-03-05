@@ -10,6 +10,7 @@
 #import "popupView.h"
 #import "subtitleView.h"
 #import "startupView.h"
+#import "titlebarView.h"
 #import "app.h"
 
 void initialize() {
@@ -120,6 +121,7 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
             int tag = tags[i];
             NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
                 action:@selector(subtitleMenuItemClick:) keyEquivalent:@""];
+            [item autorelease];
             [item setTarget: w];
             [item setTag: tag];
             [subtitleMenu addItem:item];
@@ -167,8 +169,74 @@ void* newWindow(char* title, int width, int height) {
     wd->window = w;
 	[w setDelegate:(id)wd];
 
-	GLView* v = [[GLView alloc] initWithFrame2: [w frame]];
-	[w setContentView:v];
+	GLView* v = [[GLView alloc] initWithFrame2:NSMakeRect(0,0,width,height)];
+    w->glView = v;
+	// [w setContentView:v];
+    // BlurView* topbv = [[BlurView alloc] initWithFrame:NSMakeRect(0, height-30,width,30)];
+    // w->titlebarView = topbv;
+
+    NSView* rv = [[w contentView] superview];
+
+    v->frameView = rv;
+    // [topbv setAutoresizingMask:NSViewWidthSizable];
+
+    // TitlebarView* tbarv = [[TitlebarView alloc] initWithFrame:NSMakeRect(0, 0, width, 30)];
+    // [topbv addSubview:tbarv];
+    // [tbarv setAutoresizingMask:NSViewWidthSizable];
+
+
+
+    // for (NSView* subv in rv.subviews) {
+    //     if (subv != [w contentView]) {
+    //         [subv removeFromSuperview];
+    //         [topbv addSubview:subv];
+    //     }
+    // }
+    // NSView *v0 = [rv.subviews objectAtIndex:0];
+    // NSView *v1 = [rv.subviews objectAtIndex:1];
+    // NSView *v2 = [rv.subviews objectAtIndex:2];
+    // NSView *v3 = [rv.subviews objectAtIndex:3];
+
+    // if (v0 != [w contentView]) {
+    //     [v0 removeFromSuperview];
+    //     [topbv addSubview:v0];
+    // }
+    // if (v1 != [w contentView]) {
+    //     [v1 removeFromSuperview];
+    //     [topbv addSubview:v1];
+    // }
+    // if (v2 != [w contentView]) {
+    //     [v2 removeFromSuperview];
+    //     [topbv addSubview:v2];
+    // }
+    // if (v3 != [w contentView]) {
+    //     [v3 removeFromSuperview];
+    //     [topbv addSubview:v3];
+    // }
+
+    // [tbarv setTitle:[NSString stringWithUTF8String:title]];
+
+    NSView* roundView = [[NSView alloc] initWithFrame:NSMakeRect(0,0,width,height)];
+    roundView.wantsLayer = YES;
+    roundView.layer.masksToBounds = YES;
+    roundView.layer.cornerRadius = 4.1;
+    [roundView addSubview:v];
+
+    [[[w contentView] superview] addSubview:roundView positioned:NSWindowBelow relativeTo:nil];
+
+    // [rv addSubview:topbv];
+
+
+    [roundView setFrame:NSMakeRect(0, 0, width, height)];
+    [roundView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+    [v setFrame:NSMakeRect(0,0,width,height)];
+    [v setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+
+
+    [rv setWantsLayer:YES];
+    rv.layer.cornerRadius=4.1;
+    rv.layer.masksToBounds=YES;
+
 
 
     TextView* tv = [[TextView alloc] initWithFrame:NSMakeRect(0, 30, width, 0)];
@@ -191,6 +259,9 @@ void* newWindow(char* title, int width, int height) {
 
     [v setProgressView:pv];
 
+    [w makeFirstResponder:v];
+    v->win = w;
+
     // BlurView* bvPopup = [[BlurView alloc] initWithFrame:NSMakeRect(200,40,400,500)];
     // [v addSubview:bvPopup];
     // [bvPopup setAutoresizingMask:NSViewWidthSizable];
@@ -205,6 +276,7 @@ void* newWindow(char* title, int width, int height) {
     [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
     [v setStartupView:sv];
+    // [sv setNeedsDisplay:NO];
 
 
     NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/100.0 
@@ -259,31 +331,31 @@ void refreshWindowContent(void*wptr) {
 
 int getWindowWidth(void* ptr) {
     Window* w = (Window*)ptr;
-    return (int)([[w contentView] frame].size.width);
+    return (int)([w->glView frame].size.width);
 }
 int getWindowHeight(void* ptr) {
     Window* w = (Window*)ptr;
-    return (int)([[w contentView] frame].size.height);
+    return (int)([w->glView frame].size.height);
 }
 void showWindowProgress(void* ptr, char* left, char* right, double percent, double percent2) {
     Window* w = (Window*)ptr;
-    [[w contentView] showProgress:left right:right percent:percent percent2:percent2];
+    [w->glView showProgress:left right:right percent:percent percent2:percent2];
 }
 void* showText(void* ptr, SubItem* items, int length, int position, double x, double y) {
     Window* w = (Window*)ptr;
-    return [[w contentView] showText:items length:length position:position x:x y:y];
+    return [w->glView showText:items length:length position:position x:x y:y];
 }
 void hideText(void* ptrWin, void* ptrText) {
     Window* w = (Window*)ptrWin;
-    [[w contentView] hideText:ptrText];
+    [w->glView hideText:ptrText];
 }
 void windowHideStartupView(void* ptr) {
     Window* w = (Window*)ptr;
-    [[w contentView] hideStartupView];
+    [w->glView hideStartupView];
 }
 void windowShowStartupView(void* ptr) {
     Window* w = (Window*)ptr;
-    [[w contentView] showStartupView];
+    [w->glView showStartupView];
 }
 void windowToggleFullScreen(void* ptr) {
     Window* w = (Window*)ptr;
