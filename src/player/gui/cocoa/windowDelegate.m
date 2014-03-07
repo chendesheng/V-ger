@@ -24,36 +24,45 @@
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
+    Window* w = (Window*)[notification object];
+    [w->glView hideCursor];
+    [w->glView hideProgress];
+
     onFullscreenChanged((void*)[notification object], 1);
 }
-- (void)windowWillExitFullScreen:(NSNotification *)notification
-{ 
-    // NSLog(@"windowWillExitFullScreen");
-}
-- (void)updateRoundCorner {
-    Window* w = (Window*)(self->window);
-    NSView* rv = [[w contentView] superview];
-    [rv setWantsLayer:YES];
-    rv.layer.cornerRadius=4.3;
-    rv.layer.masksToBounds=YES;
-    [rv setNeedsDisplay:YES];
-}
+// - (void)windowWillExitFullScreen:(NSNotification *)notification
+// { 
+//     // NSLog(@"windowWillExitFullScreen");
+// }
+// - (void)updateRoundCorner {
+//     Window* w = (Window*)(self->window);
+//     NSView* rv = [[w contentView] superview];
+//     [rv setWantsLayer:YES];
+//     rv.layer.cornerRadius=4.3;
+//     rv.layer.masksToBounds=YES;
+//     [rv setNeedsDisplay:YES];
+// }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
-    [self updateRoundCorner];
+    Window* w = (Window*)[notification object];
 
-    Window* w = (Window*)(self->window);
+    [w updateRoundCorner];
+
+    [w->glView hideCursor];
+    [w->glView hideProgress];
+
     w->customAspectRatio = self->savedAspectRatio;
 
     onFullscreenChanged((void*)[notification object], 0);
 }
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
     // NSLog(@"windowWillResize");
-    [self updateRoundCorner];
+    Window* w = (Window*)sender;
+    [w updateRoundCorner];
  
 	NSRect r;
-	Window* w = (Window*)sender;
+
 
 	r = NSMakeRect([w frame].origin.x, [w frame].origin.y,
 	frameSize.width, frameSize.height);
@@ -67,6 +76,7 @@
 	return r.size;
 }
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
-    [self updateRoundCorner];
+    Window* w = (Window*)[notification object];
+    [w updateRoundCorner];
 }
 @end

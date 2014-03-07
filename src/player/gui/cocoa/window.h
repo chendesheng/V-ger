@@ -14,4 +14,5 @@
 - (void)setContentViewNeedsDisplay:(BOOL)b;
 - (void)timerTick:(NSEvent *)event;
 - (void)makeCurrentContext;
+- (void)updateRoundCorner;
 @end

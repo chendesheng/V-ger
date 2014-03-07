@@ -86,4 +86,11 @@
         onSubtitleMenuClicked(self, [subtitleMenuItem tag], 1);
     }
 }
+- (void)updateRoundCorner {
+    NSView* rv = [[self contentView] superview];
+    [rv setWantsLayer:YES];
+    rv.layer.cornerRadius=4.3;
+    rv.layer.masksToBounds=YES;
+    [rv setNeedsDisplay:YES];
+}
 @end

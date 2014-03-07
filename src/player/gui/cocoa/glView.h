@@ -29,4 +29,8 @@
 -(void)setStartupView:(StartupView*)sv;
 -(void)hideStartupView;
 -(void)showStartupView;
+-(void)showProgress;
+-(void)showCursor;
+-(void)hideProgress;
+-(void)hideCursor;
 @end
