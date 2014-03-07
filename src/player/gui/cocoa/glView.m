@@ -86,11 +86,16 @@
     [self->progressView setHidden:YES];
 
     NSView* target = [self superview];
-    if ([[self->frameView subviews] lastObject] != target) {
-        [target removeFromSuperview];
-        [self->frameView addSubview:target positioned:NSWindowAbove relativeTo:nil];
 
-        [self->win makeFirstResponder:self];
+    if ([[self->frameView subviews] lastObject] != target) { //avoid change first responder
+        NSArray* views = [[self->frameView subviews] copy];
+        for (NSView* v in views) {
+            if (v != target) {
+                [v removeFromSuperview];
+                [self->frameView addSubview:v positioned:NSWindowBelow relativeTo:nil];
+            }
+        }
+        [views release];
     }
 }
 -(void)showProgress {

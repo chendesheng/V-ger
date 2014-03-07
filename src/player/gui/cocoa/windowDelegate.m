@@ -34,14 +34,6 @@
 // { 
 //     // NSLog(@"windowWillExitFullScreen");
 // }
-// - (void)updateRoundCorner {
-//     Window* w = (Window*)(self->window);
-//     NSView* rv = [[w contentView] superview];
-//     [rv setWantsLayer:YES];
-//     rv.layer.cornerRadius=4.3;
-//     rv.layer.masksToBounds=YES;
-//     [rv setNeedsDisplay:YES];
-// }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
@@ -61,22 +53,36 @@
     Window* w = (Window*)sender;
     [w updateRoundCorner];
  
-	NSRect r;
-
-
-	r = NSMakeRect([w frame].origin.x, [w frame].origin.y,
-	frameSize.width, frameSize.height);
+	NSRect r = NSMakeRect([w frame].origin.x, [w frame].origin.y, frameSize.width, frameSize.height);
 
 	NSSize aspectRatio = w->customAspectRatio;
 	// r = [w contentRectForFrameRect:r];
 	r.size.height = r.size.width * aspectRatio.height / aspectRatio.width;
 	// r = [w frameRectForContentRect:r];
 
-    [w->titlebarView setFrame:NSMakeRect(0, r.size.height-30, r.size.width, 30)];
 	return r.size;
 }
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
+    NSLog(@"windowDidEndLiveResize");
     Window* w = (Window*)[notification object];
     [w updateRoundCorner];
+    
+    onFullscreenChanged((void*)[notification object], 0);
+}
+- (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)newFrame {
+    // NSLog(@"windowWillUseStandardFrame:%lf,%lf,%lf,%lf", newFrame.origin.x, newFrame.origin.y, newFrame.size.width, newFrame.size.height);
+
+    Window* w = (Window*)window;
+    NSRect r = newFrame;
+    NSSize aspectRatio = w->customAspectRatio;
+    double d = aspectRatio.width/aspectRatio.height;
+    if (r.size.width > r.size.height*d) {
+        r.size.width = r.size.height * d;
+    } else {
+        r.size.height = r.size.width / d;
+    }
+    r.origin.x += (newFrame.size.width - r.size.width)/2;
+    r.origin.y += (newFrame.size.height - r.size.height)/2;
+    return r;
 }
 @end
