@@ -10,7 +10,6 @@
 #import "popupView.h"
 #import "subtitleView.h"
 #import "startupView.h"
-#import "titlebarView.h"
 #import "app.h"
 
 void initialize() {

@@ -64,6 +64,10 @@
 }
 
 - (void)mouseDown:(NSEvent *)event {
+    if (event.clickCount == 2) {
+        [self->win toggleFullScreen:nil];
+    }
+
     if (self->currentCursor == self->noneCursor) {
         return;
     }
@@ -73,44 +77,44 @@
 
     NSView* target = [self superview];
 
-    // if ([[self->frameView subviews] lastObject] != target) {
+    if ([[self->frameView subviews] lastObject] != target) {
         [target removeFromSuperview];
         [self->frameView addSubview:target positioned:NSWindowAbove relativeTo:nil];
 
         [self->win makeFirstResponder:self];
-    // }
-
-    // for (NSView* subv in target.subviews) {
-    //     if (subv != self) {
-    //         [subv setHidden:YES];
-    //     }
-    // }
+    }
 }
 
 -(BOOL)mouseDownCanMoveWindow {
     return YES;
 }
 - (void)mouseMoved:(NSEvent *)event {
-    if (self->currentCursor == [NSCursor arrowCursor]) {
-        return;
+    NSPoint curPoint = [event locationInWindow];
+    NSSize sz = [self->win frame].size;
+    if (curPoint.x >= 0 && curPoint.y >=0 && curPoint.x < sz.width && curPoint.y < sz.height) {
+        self->currentCursor = [NSCursor arrowCursor];
+        [self->progressView setHidden:NO];
+
+        NSView* target = [self superview];
+        if ([[self->frameView subviews] objectAtIndex:0] != target) {
+            [target removeFromSuperview];
+            [self->frameView addSubview:target positioned:NSWindowBelow relativeTo:nil];
+
+            [self->win makeFirstResponder:self];
+        }
+    } else {
+        self->currentCursor = [NSCursor arrowCursor];
+        [self->progressView setHidden:YES];
+
+        NSView* target = [self superview];
+
+        if ([[self->frameView subviews] lastObject] != target) {
+            [target removeFromSuperview];
+            [self->frameView addSubview:target positioned:NSWindowAbove relativeTo:nil];
+
+            [self->win makeFirstResponder:self];
+        }
     }
-
-    self->currentCursor = [NSCursor arrowCursor];
-    [self->progressView setHidden:NO];
-
-    NSView* target = [self superview];
-    // if ([[self->frameView subviews] objectAtIndex:0] != target) {
-        [target removeFromSuperview];
-        [self->frameView addSubview:target positioned:NSWindowBelow relativeTo:nil];
-
-        [self->win makeFirstResponder:self];
-    // }
-
-    // for (NSView* subv in target.subviews) {
-    //     if (subv != self) {
-    //         [subv setHidden:NO];
-    //     }
-    // }
 }
 
 // - (void)viewDidChangeBackingProperties {
