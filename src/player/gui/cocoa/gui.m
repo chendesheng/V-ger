@@ -153,7 +153,11 @@ void setWindowSize(void* wptr, int width, int height) {
     frame.origin.x -= (width - frame.size.width)/2;
     frame.size = NSMakeSize(width, height);
 
+    w->customAspectRatio = NSMakeSize(width, height);
+
     [w setFrame:frame display:YES animate:YES];
+
+
 }
 
 void* newWindow(char* title, int width, int height) {
@@ -165,7 +169,6 @@ void* newWindow(char* title, int width, int height) {
 		width:width height:height];
 	
     WindowDelegate* wd = (WindowDelegate*)[[WindowDelegate alloc] init];
-    wd->window = w;
 	[w setDelegate:(id)wd];
 
 	GLView* v = [[GLView alloc] initWithFrame2:NSMakeRect(0,0,width,height)];

@@ -15,7 +15,7 @@
     NSRect frame = [mainScreen frame];
     // NSLog(@"%lf %lf", frame.size.width, frame.size.height);
     
-    Window* w = (Window*)(self->window);
+    Window* w = (Window*)[notification object];
     self->savedAspectRatio = w->customAspectRatio;
     w->customAspectRatio = frame.size;
 
@@ -88,7 +88,7 @@
 //lost focus
 -(void)windowDidResignKey:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
-        
+
     [w->glView hideCursor];
     [w->glView hideProgress];
 }

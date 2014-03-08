@@ -2,7 +2,6 @@
 @interface WindowDelegate : NSObject<NSWindowDelegate>
 {
 @public
-	NSWindow* window;
 	NSSize savedAspectRatio;
 }
 
