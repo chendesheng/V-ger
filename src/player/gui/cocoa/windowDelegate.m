@@ -85,4 +85,11 @@
     r.origin.y += (newFrame.size.height - r.size.height)/2;
     return r;
 }
+//lost focus
+-(void)windowDidResignKey:(NSNotification *)notification {
+    Window* w = (Window*)[notification object];
+        
+    [w->glView hideCursor];
+    [w->glView hideProgress];
+}
 @end

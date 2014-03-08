@@ -102,23 +102,20 @@
     [self->progressView setHidden:NO];
 
     NSView* target = [self superview];
-    if ([[self->frameView subviews] objectAtIndex:0] != target) {
-        [target removeFromSuperview];
-        [self->frameView addSubview:target positioned:NSWindowBelow relativeTo:nil];
-
-        [self->win makeFirstResponder:self];
+    if ([[self->frameView subviews] objectAtIndex:0] != target) { //avoid change first responder
+        NSArray* views = [[self->frameView subviews] copy];
+        for (NSView* v in views) {
+            if (v != target) {
+                [v removeFromSuperview];
+                [self->frameView addSubview:v positioned:NSWindowAbove relativeTo:nil];
+            }
+        }
+        [views release];
     }
 }
 - (void)mouseMoved:(NSEvent *)event {
     [self showCursor];
-
-    NSPoint curPoint = [event locationInWindow];
-    NSSize sz = [self->win frame].size;
-    if (curPoint.x >= 0 && curPoint.y >=0 && curPoint.x < sz.width && curPoint.y < sz.height) {
-        [self showProgress];
-    } else {
-        [self hideProgress];
-    }
+    [self showProgress];
 }
 
 // - (void)viewDidChangeBackingProperties {

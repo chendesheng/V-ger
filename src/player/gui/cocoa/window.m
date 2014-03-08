@@ -6,8 +6,8 @@
 		| NSMiniaturizableWindowMask | NSResizableWindowMask;
 
 	NSLog(@"%dx%d", w, h);
-
-    self = [super initWithContentRect:NSMakeRect(0, 0, w, h-22)
+    // NSRect rt = [super contentRectForFrameRect:NSMakeRect(0,0,w,h)];
+    self = [super initWithContentRect:NSMakeRect(0,0,w,h-22)
     	styleMask:styleMask
     	backing:NSBackingStoreBuffered
       	defer:NO];
