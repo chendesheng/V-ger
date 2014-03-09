@@ -472,7 +472,7 @@ func Run() {
 	go Monitor()
 
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "assets/vger.png")
+		http.ServeFile(w, r, "assets/favicon.png")
 	})
 
 	http.HandleFunc("/assets/", assetsHandler)

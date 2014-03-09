@@ -16,21 +16,21 @@
 <body ng-controller="tasks_ctrl">
 
 	<div id="tasks" ng-show="tasks.length>0">
-
 		<div class="box-tasks-list" style="-webkit-overflow-scrolling:touch">
- 		 	<!-- <h1></h1> -->
-		<!--	<h2>Speed is Fun!</h2>  -->
-			<ul id="subscribes">
-				<li class="subscribe" ng-class="{highlight:currentSubscribe.Name==downloadTasks.Name}"
-					ng-click="switch_subscribe(downloadTasks);">
-					<img ng-src="/subscribe/banner/{{downloadTasks.Name}}" alt="banner">
-					<span class="subscribe-menu-name">{{downloadTasks.Name}}</span>
-					<span class="badge" ng-show="downloadTasks.Badge<100&&downloadTasks.Badge>0">{{downloadTasks.Badge}}</span>
-					<span class="badge" ng-show="downloadTasks.Badge>99">99+</span>
-					<span class="clear"></span>
-				</li>
+			<div id="subscribes">
+				<ul id="subscribes-head">
+					<li class="subscribe" ng-class="{highlight:currentSubscribe.Name==downloadTasks.Name}"
+						ng-click="switch_subscribe(downloadTasks);">
+						<img ng-src="/subscribe/banner/{{downloadTasks.Name}}" alt="banner">
+						<span class="subscribe-menu-name">{{downloadTasks.Name}}</span>
+						<span class="badge" ng-show="downloadTasks.Badge<100&&downloadTasks.Badge>0">{{downloadTasks.Badge}}</span>
+						<span class="badge" ng-show="downloadTasks.Badge>99">99+</span>
+						<span class="clear"></span>
+					</li>
 
-				<li class="menu-head">TV Shows&nbsp;&nbsp;&nbsp;<a class="menu-edit" ng-click="toggle_menu_edit();">[edit]</a></li>
+					<li class="menu-head">TV Shows&nbsp;&nbsp;&nbsp;<a class="menu-edit" ng-click="toggle_menu_edit();">[edit]</a></li>
+				</ul>
+				<div id="tvshow-list">
 				<ul>
 					<li ng-repeat="subscribe in subscribes" class="subscribe" ng-class="{highlight:subscribe.Name==task_filter.Subscribe, 'edit-mode': edit_menu}" ng-click="switch_subscribe(subscribe);">
 						<!-- <span class="subscribe-icon" ng-show="subscribe.Name!='Single Tasks'"> -->
@@ -47,7 +47,8 @@
 						<span class="clear"></span>
 					</li>
 				</ul>
-			</ul>
+				</div>
+			</div>
 			<div id="subscribe-content" ng-class="{'show-info':(currentSubscribe.Name!=downloadTasks.Name)}">
 				<div class="subscribe-info">
 					<img ng-src="/subscribe/banner/{{currentSubscribe.Name}}" style="float:left">
@@ -105,14 +106,8 @@
 					       		</div>
 					       	</div>
 
-			       			<!-- <div>
-					       		<span style="display:none;">[{{task.StartDate.format()}}]</span>
-					       		<span style="display:none;" class="elapsed">Elapsed. {{parse_duration(task.ElapsedTime)}}</span>
-					       	</div> -->
-
 			       			<button ng-show="task.Status!='New'" class="close" ng-click="move_to_trash(task);" title="Trash"></button>
-<!-- 
-			       			<input type="button" class="download" ng-show="task.Status=='New'" ng-click="download_task(task);" title="Download" value="&darr;"/> -->
+
 			       			<div class="cloud-download" ng-show="task.Status=='New'" ng-click="download_task(task);" title="Download">
 			       				<div class="arrow-down"></div>
 			       			</div>

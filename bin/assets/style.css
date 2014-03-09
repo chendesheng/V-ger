@@ -338,6 +338,16 @@ h1, h2 {
 #tasks ul {
 	padding: 0;
 }
+#tvshow-list {
+	height: 100%;
+	overflow: auto;
+}
+#tvshow-list ul {
+	padding-top:8px;
+	margin-top: 0;
+	margin-bottom: 5px;
+	padding-left:20px;
+}
 .overlay ul {
 	padding: 0 40px !important;
 }
@@ -357,7 +367,7 @@ h1, h2 {
 #subscribes {
 	float:left;
 	/*height: 100%;*/
-	padding: 10px 0px 0 30px !important;
+	padding: 73px 0px 0 6px !important;
 	width: 210px;
 	height: 100%;
 	overflow: auto;
@@ -367,7 +377,21 @@ h1, h2 {
 	-webkit-transform: translateZ(0);
 	/*border-right: solid 1px #383022;*/
 	/*position: fixed;	*/
+
 }
+#subscribes-head {
+	position: absolute;
+	top:0;
+	left:6px;
+	padding:0 0 0 20px !important;
+	margin:9px 0 0 0;
+	width:184px;
+}
+#subscribes-head li {
+	padding:0;
+	margin:0;
+}
+
 #subscribes li {
 	cursor: pointer;
 	position: relative;
@@ -953,6 +977,9 @@ li.subscribe:hover img {
 .menu-head {
 	border-bottom: solid 1px #333;
 	margin-bottom: 10px;
+	height:25px;
+	line-height: 25px;
+	box-sizing: border-box;
 }
 .menu-edit {
 	float:right;
