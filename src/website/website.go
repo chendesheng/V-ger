@@ -471,7 +471,9 @@ func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
 func Run() {
 	go Monitor()
 
-	http.Handle("/favicon.ico", http.NotFoundHandler())
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "assets/vger.png")
+	})
 
 	http.HandleFunc("/assets/", assetsHandler)
 

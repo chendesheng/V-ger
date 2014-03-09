@@ -78,7 +78,9 @@ func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
 				} else {
 					subscribe.SaveBannerImage(name, bytes)
 
-					w.Write(subscribe.GetBannerImage(name))
+					h := w.Header()
+					h.Add("Cache-Control", "max-age=3153600000") //100 years
+					w.Write(bytes)
 				}
 			}
 		}
