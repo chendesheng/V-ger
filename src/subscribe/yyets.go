@@ -89,6 +89,7 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 					// }
 				}
 				s.Name = strings.TrimLeft(s.Name, ".")
+				s.Name = strings.TrimSpace(s.Name)
 				s.Name = strings.Replace(s.Name, "/", "|", -1)
 				s.Name = strings.Replace(s.Name, "\\", "|", -1)
 			}
