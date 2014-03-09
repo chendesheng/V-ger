@@ -150,7 +150,7 @@ func UpdateSubtitleLanguage(name string, lang1, lang2 string) {
 func scanPlaying(scanner dbHelper.RowScanner) (*Playing, error) {
 	var p Playing
 	var lastPos, duration int64
-	err := scanner.Scan(&p.Movie, &lastPos, &p.SoundStream, &p.Sub1, &p.Sub2, &duration)
+	err := scanner.Scan(&p.Movie, &lastPos, &p.SoundStream, &p.Sub1, &p.Sub2, &duration, &p.Volume)
 	if err == nil {
 		p.LastPos = time.Duration(lastPos)
 		p.Duration = time.Duration(duration)
@@ -165,7 +165,7 @@ func GetPlaying(movie string) *Playing {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
 
-	sql := `select Movie, LastPos, SoundStream, Sub1, Sub2, Duration from Playing where Movie=?`
+	sql := `select Movie, LastPos, SoundStream, Sub1, Sub2, Duration, Volume from Playing where Movie=?`
 	rows, err := db.Query(sql, movie)
 	if err != nil {
 		log.Println(err)
@@ -201,7 +201,7 @@ func PlayingExists(movie string) bool {
 
 func CreateOrGetPlaying(movie string) *Playing {
 	if !PlayingExists(movie) {
-		SavePlaying(&Playing{movie, 0, -1, "", "", 0})
+		SavePlaying(&Playing{movie, 0, -1, "", "", 0, 50})
 	}
 
 	return GetPlaying(movie)
@@ -250,14 +250,14 @@ func SavePlaying(p *Playing) {
 	}
 
 	if count == 0 {
-		sql := "insert into playing(Movie, LastPos, SoundStream, Sub1, Sub2, Duration) values (?,?,?,?,?,?)"
-		_, err := db.Exec(sql, p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2, p.Duration)
+		sql := "insert into playing(Movie, LastPos, SoundStream, Sub1, Sub2, Duration, Volume) values (?,?,?,?,?,?,?)"
+		_, err := db.Exec(sql, p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2, p.Duration, p.Volume)
 		if err != nil {
 			log.Print(err)
 		}
 	} else {
-		_, err := db.Exec("update playing set Movie=?,LastPos=?,SoundStream=?,Sub1=?,Sub2=?,Duration=? where Movie=?",
-			p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2, p.Duration, p.Movie)
+		_, err := db.Exec("update playing set Movie=?,LastPos=?,SoundStream=?,Sub1=?,Sub2=?,Duration=?,Volume=? where Movie=?",
+			p.Movie, p.LastPos, p.SoundStream, p.Sub1, p.Sub2, p.Duration, p.Volume, p.Movie)
 		if err != nil {
 			log.Print(err)
 		}

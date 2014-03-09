@@ -45,3 +45,7 @@ void onOpenOpenPanel() {
 void onCloseOpenPanel(char* filename) {
 	goOnCloseOpenPanel(filename);
 }
+
+void onMouseWheel(void* wptr, double deltaY) {
+	goOnMouseWheel(wptr, deltaY);
+}

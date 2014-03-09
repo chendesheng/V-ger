@@ -1,7 +1,9 @@
 package main
 
 import (
+	// "fmt"
 	"log"
+	// "math"
 	// "math"
 	. "player/clock"
 
@@ -38,6 +40,11 @@ type audio struct {
 
 	quit       chan bool
 	quitFinish chan bool
+	volume     byte
+
+	audioSpec sdl.AudioSpec
+
+	silence []byte
 }
 
 func (a *audio) setCurrentStream(index int) {
@@ -129,6 +136,7 @@ func (a *audio) skipBuffer(samples int) int {
 
 	return buffersamples - len(a.audioBuffer)/bytesPerSample
 }
+
 func (a *audio) initsdl() {
 	codecCtx := a.codecCtx
 	a.quit = make(chan bool)
@@ -157,18 +165,31 @@ func (a *audio) initsdl() {
 			return
 		}
 
+		if length > len(a.silence) {
+			a.silence = make([]byte, length)
+		}
+
+		stream.Write(a.silence[:length])
+
 		codecCtx := a.codecCtx
 		frame := a.frame
 
 		for length > 0 {
 			if len(a.audioBuffer) > 0 { //try get from buffer first
 				if length < len(a.audioBuffer) { //buffer has enough data
-					stream.Write(a.audioBuffer[:length])
+					// stream.Write(volume(a.audioBuffer[:length], a.volume))
+					sdl.MixAudioFormat(stream, a.audioBuffer[:length], a.audioSpec.Format(), int(float64(a.volume)/100*sdl.MIX_MAXVOLUME))
+					// fmt.Print(stream.Bytes(200))
+
 					stream.Offset(length)
 					a.audioBuffer = a.audioBuffer[length:]
 					return
 				} else {
-					stream.Write(a.audioBuffer)
+					// stream.Write(volume(a.audioBuffer, a.volume))
+					// println(a.audioSpec.Format())
+					sdl.MixAudioFormat(stream, a.audioBuffer, a.audioSpec.Format(), int(float64(a.volume)/100*sdl.MIX_MAXVOLUME))
+					// fmt.Print(stream.Bytes(200))
+
 					stream.Offset(len(a.audioBuffer))
 					length -= len(a.audioBuffer)
 					a.audioBuffer = a.audioBuffer[0:0]
@@ -185,7 +206,7 @@ func (a *audio) initsdl() {
 
 						if !ok {
 							//write silence audio
-							stream.Write(make([]byte, length))
+							stream.Write(a.silence[:length])
 							return
 						}
 
@@ -246,6 +267,7 @@ func (a *audio) initsdl() {
 						if gotFrame {
 							data := a.resampleFrame(frame)
 							bytes := data.Bytes()
+
 							a.audioBuffer = append(a.audioBuffer, bytes...)
 							data.Free()
 						}
@@ -271,18 +293,10 @@ func (a *audio) initsdl() {
 	if obtained.IsNil() {
 		println("sdl get nil obtained audio spec")
 	}
+	a.audioSpec = obtained
 
 	println("sdl play")
 	sdl.PauseAudio(0)
-}
-
-func (a *audio) Pause(b bool) {
-	// if b {
-	// 	// a.flushBuffer()
-	// 	sdl.PauseAudio(1)
-	// } else {
-	// 	sdl.PauseAudio(0)
-	// }
 }
 
 func (a *audio) resampleFrame(frame AVFrame) AVObject {
@@ -351,6 +365,23 @@ func (a *audio) Close() {
 	<-a.quitFinish
 
 	sdl.CloseAudio()
+}
+
+func (a *audio) IncreaseVolume() byte {
+	a.volume++
+
+	if a.volume > 100 {
+		a.volume = 100
+	}
+	return a.volume
+}
+func (a *audio) DecreaseVolume() byte {
+	a.volume--
+
+	if a.volume < 0 {
+		a.volume = 0
+	}
+	return a.volume
 }
 
 // func (a *audio) realtimeClock() time.Duration {

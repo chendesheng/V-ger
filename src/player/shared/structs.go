@@ -38,6 +38,7 @@ type Playing struct {
 	Sub1        string
 	Sub2        string
 	Duration    time.Duration
+	Volume      byte
 }
 
 func (item *SubItem) IsInDefaultPosition() bool {

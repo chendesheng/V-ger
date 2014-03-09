@@ -11,7 +11,6 @@
         // Initialization code here.
         trackingArea = nil;
 
-        [self updateTrackingAreas];
 
         NSOpenGLPixelFormatAttribute attrs[] = {
      
@@ -35,6 +34,8 @@
         self->noneCursor = [[NSCursor alloc] initWithImage:data
                                                   hotSpot:NSZeroPoint];
         [data release];
+
+        [self updateTrackingAreas];
     }
     
     return self;
@@ -128,7 +129,7 @@
         [trackingArea release];
     }
 
-    NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+    NSTrackingAreaOptions options = NSTrackingMouseMoved |
                                     NSTrackingActiveInKeyWindow |
                                     NSTrackingCursorUpdate |
                                     NSTrackingInVisibleRect;
@@ -455,26 +456,8 @@
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
-    // setModeCursor(window, window->cursorMode);
     NSCursor* cur = self->currentCursor;
     [cur set];
-
-    if (cur == [NSCursor arrowCursor]) {
-        [self->progressView setHidden:NO];
-        
-        // NSRect frame = [self->textView frame];
-        // frame.origin.y = 60;
-        // [self->textView setFrame:frame];
-        // [self->textView setNeedsDisplay:YES];
-    }
-    else {
-        [self->progressView setHidden:YES];
-        
-        // NSRect frame = [self->textView frame];
-        // frame.origin.y = 20;
-        // [self->textView setFrame:frame];
-        // [self->textView setNeedsDisplay:YES];
-    }
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -491,5 +474,10 @@
     [self->startupView setHidden:NO];
 
     [self setNeedsDisplay:YES];
+}
+- (void)scrollWheel:(NSEvent *)event
+{
+    NSLog(@"scrollWheel:%lf", [event deltaY]);
+    onMouseWheel(self->win, [event deltaY]);
 }
 @end

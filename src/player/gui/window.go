@@ -27,6 +27,7 @@ type Window struct {
 	FuncOnProgressChanged   []func(int, float64)
 	FuncAudioMenuClicked    []func(int)
 	FuncSubtitleMenuClicked []func(int, bool)
+	FuncMouseWheelled       []func(float64)
 
 	texture gl.Texture
 
@@ -180,6 +181,7 @@ func (w *Window) ClearEvents() {
 	w.FuncKeyDown = nil
 	w.FuncAudioMenuClicked = nil
 	w.FuncSubtitleMenuClicked = nil
+	w.FuncMouseWheelled = nil
 }
 
 func (w *Window) ToggleFullScreen() {
@@ -460,5 +462,14 @@ func goOnSubtitleMenuClicked(ptr unsafe.Pointer, tag int, showOrHide int) {
 
 	for _, fn := range w.FuncSubtitleMenuClicked {
 		fn(tag, showOrHide != 0)
+	}
+}
+
+//export goOnMouseWheel
+func goOnMouseWheel(ptr unsafe.Pointer, deltaY float64) {
+	w := windows[ptr]
+
+	for _, fn := range w.FuncMouseWheelled {
+		fn(deltaY)
 	}
 }

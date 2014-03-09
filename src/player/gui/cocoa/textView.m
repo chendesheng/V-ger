@@ -147,4 +147,8 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 - (BOOL)acceptsFirstResponder {
     return NO;
 }
+- (NSView*)hitTest:(NSPoint)aPoint
+{
+    return nil;
+}
 @end

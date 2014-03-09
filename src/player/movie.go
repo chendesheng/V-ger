@@ -88,7 +88,11 @@ func (m *movie) setupAudio() {
 			}
 		}
 
-		m.a = &audio{streams: audioStreams}
+		m.a = &audio{
+			streams: audioStreams,
+			volume:  m.p.Volume,
+		}
+
 		m.a.setCurrentStream(selected)
 		m.a.c = m.c
 

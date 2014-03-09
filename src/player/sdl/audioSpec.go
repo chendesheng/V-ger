@@ -36,6 +36,10 @@ func (spec *AudioSpec) SetSamples(samples int) { //audio buffer size
 	spec.ptr.samples = C.Uint16(samples)
 }
 
+func (spec *AudioSpec) Format() int {
+	return int(spec.ptr.format)
+}
+
 var callback func(userdata Object, stream Object, length int)
 
 //export goCallback

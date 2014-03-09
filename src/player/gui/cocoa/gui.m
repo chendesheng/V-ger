@@ -224,7 +224,7 @@ void* newWindow(char* title, int width, int height) {
     roundView.layer.cornerRadius = 4.1;
     [roundView addSubview:v];
 
-    [[[w contentView] superview] addSubview:roundView positioned:NSWindowBelow relativeTo:nil];
+    [rv addSubview:roundView positioned:NSWindowBelow relativeTo:nil];
 
     // [rv addSubview:topbv];
 

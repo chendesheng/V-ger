@@ -2,8 +2,10 @@ package sdl
 
 //#include "stdlib.h"
 //#include "string.h"
+//#include "sdl2/sdl.h"
 import "C"
 import (
+	"reflect"
 	"unsafe"
 )
 
@@ -20,9 +22,9 @@ type Object struct {
 // 	}
 // }
 
-func (obj *Object) SetSize(sz int) {
-	obj.size = sz
-}
+// func (obj *Object) SetSize(sz int) {
+// 	obj.size = sz
+// }
 
 // func (obj *Object) Size() int {
 // 	return obj.size
@@ -44,6 +46,36 @@ func (obj *Object) Offset(offset int) {
 		obj.pos = uintptr(obj.ptr)
 	}
 	obj.pos += uintptr(offset)
+}
+
+func MallocObject(size int) Object {
+	obj := Object{}
+	obj.ptr = unsafe.Pointer(C.malloc(C.size_t(size)))
+	obj.size = size
+
+	C.SDL_memset(obj.ptr, 0, C.size_t(size))
+	return obj
+}
+func (obj *Object) Free() {
+	C.free(obj.ptr)
+}
+
+func (obj *Object) Pointer() unsafe.Pointer {
+	return unsafe.Pointer(obj.pos)
+}
+
+func (obj *Object) Size() int {
+	return int(obj.pos - uintptr(obj.ptr))
+}
+
+func (obj *Object) Bytes(size int) []byte {
+	var bytes []byte
+	header := (*reflect.SliceHeader)(unsafe.Pointer(&bytes))
+	header.Len = size
+	header.Cap = header.Len
+	header.Data = uintptr(obj.ptr)
+
+	return bytes
 }
 
 // func (obj *Object) WriteUInt64(data uint64) {

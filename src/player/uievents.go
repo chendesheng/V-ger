@@ -171,4 +171,37 @@ func (m *movie) uievents() {
 			m.s2.SeekRefresh(t)
 		}
 	})
+
+	var chVolume chan byte
+	m.w.FuncMouseWheelled = append(m.w.FuncMouseWheelled, func(deltaY float64) {
+		if chVolume == nil {
+			chVolume = make(chan byte, 100)
+			go func() {
+				for {
+					select {
+					case <-time.Tick(time.Second * 2):
+						m.w.SendHideMessage()
+
+						close(chVolume)
+						chVolume = nil
+						return
+					case volume := <-chVolume:
+						m.p.Volume = volume
+						SavePlaying(m.p)
+						m.w.SendShowMessage(fmt.Sprintf("Volume: %d%%", volume), false)
+						break
+					}
+				}
+			}()
+		}
+		if deltaY == 0 {
+			return
+		}
+
+		if deltaY > 0 {
+			chVolume <- m.a.DecreaseVolume()
+		} else {
+			chVolume <- m.a.IncreaseVolume()
+		}
+	})
 }
