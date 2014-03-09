@@ -111,10 +111,11 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 }
 func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	resp, err := http.Get(url)
+	defer resp.Body.Close()
+
 	if err != nil {
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
 
 	s, t, err := parse(resp.Body)
 	if err != nil {
@@ -123,6 +124,9 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	s.URL = url
 
 	return s, t, err
+}
+func ParseReader(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
+	return parse(r)
 }
 
 func downloadBannerImage(url string) (string, error) {
