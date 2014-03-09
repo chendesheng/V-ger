@@ -157,6 +157,10 @@ func saveProgress(name string, speed float64, total int64, elapsedTime time.Dura
 		t.ElapsedTime = elapsedTime
 		t.Speed = speed
 		t.Est = est
-		task.SaveTask(t)
+
+		if err := task.SaveTask(t); err != nil {
+			log.Print(err)
+			task.SaveTask(t)
+		}
 	}
 }
