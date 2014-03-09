@@ -66,3 +66,5 @@ src/player/gui/cocoa/libcocoa.a
 src/.DS_Store
 
 src/.DS_Store
+
+bin/pprof_mac_fix

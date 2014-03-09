@@ -14,6 +14,7 @@ import (
 	"player/gui"
 	. "player/shared"
 	"runtime"
+	// "runtime/pprof"
 	// "strings"
 	"subtitles"
 	"task"
@@ -208,6 +209,11 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	}
 }
 func main() {
+	// f, err := os.Create("profile-" + time.Now().String() + ".prof")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
 	// go website.Run()
 
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))

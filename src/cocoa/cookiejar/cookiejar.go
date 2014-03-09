@@ -6,7 +6,7 @@ import (
 	. "github.com/mkrautz/objc/Foundation"
 	"net/http"
 	"net/url"
-	// "strings"
+	"strings"
 	// "time"
 	"sync"
 )
@@ -26,10 +26,12 @@ func (jar *SafariCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
 	cs := NSSharedHTTPCookieStorage()
 	for _, c := range cookies {
 		// println(c.String())
-		if len(c.Domain) > 0 && c.Domain[0] != '.' {
-			c.Domain = "." + c.Domain
+		if !strings.Contains(c.Value, ",") {
+			if len(c.Domain) > 0 && c.Domain[0] != '.' {
+				c.Domain = "." + c.Domain
+			}
+			cs.SetCookieForURL(NewCookie(c, u.String()), URLWithString(u.String()), NSURL{objc.NilObject()})
 		}
-		cs.SetCookieForURL(NewCookie(c, u.String()), URLWithString(u.String()), NSURL{objc.NilObject()})
 	}
 }
 
@@ -47,15 +49,17 @@ func (jar *SafariCookieJar) Cookies(u *url.URL) []*http.Cookie {
 	for _, c := range cs.CookiesForURL(URLWithString(u.String())) {
 		val := c.Value()
 
-		cookies = append(cookies, &http.Cookie{
-			Name:     c.Name(),
-			Value:    val,
-			Domain:   c.Domain(),
-			Path:     c.Path(),
-			Expires:  c.ExpiresDate(),
-			Secure:   c.IsSecure(),
-			HttpOnly: c.IsHttpOnly(),
-		})
+		if !strings.Contains(val, ",") {
+			cookies = append(cookies, &http.Cookie{
+				Name:     c.Name(),
+				Value:    val,
+				Domain:   c.Domain(),
+				Path:     c.Path(),
+				Expires:  c.ExpiresDate(),
+				Secure:   c.IsSecure(),
+				HttpOnly: c.IsHttpOnly(),
+			})
+		}
 	}
 
 	return cookies

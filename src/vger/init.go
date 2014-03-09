@@ -1,13 +1,13 @@
 package main
 
 import (
-	"cocoa/cookiejar"
+	// "cocoa/cookiejar"
 	"dbHelper"
 	"download"
 	"filelock"
 	"log"
 	"net/http"
-	// "net/http/cookiejar"
+	"net/http/cookiejar"
 	"os"
 	"path"
 	"runtime"
@@ -30,9 +30,9 @@ func init() {
 		}
 	}
 
-	http.DefaultClient.Jar = &cookiejar.SafariCookieJar{}
-	// jar, _ := cookiejar.New(nil)
-	// http.DefaultClient.Jar = jar
+	// http.DefaultClient.Jar = &cookiejar.SafariCookieJar{}
+	jar, _ := cookiejar.New(nil)
+	http.DefaultClient.Jar = jar
 
 	util.SaveConfig("shutdown-after-finish", "false")
 
