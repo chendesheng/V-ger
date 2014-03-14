@@ -24,6 +24,7 @@ import (
 	"unicode/utf8"
 	"util"
 	// "website"
+	// "cld"
 )
 
 func init() {
@@ -32,6 +33,14 @@ func init() {
 	log.Print("log initialized.")
 
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
+}
+
+func formatSubtitleName(filename string, lang1, lang2 string) string {
+	if len(lang2) > 0 {
+		return fmt.Sprintf("[%s] %s", lang1, filename)
+	} else {
+		return fmt.Sprintf("[%s%s] %s", lang1, lang2, filename)
+	}
 }
 
 func downloadSubs(movieName, url string, search string, quit chan bool) []string {
@@ -72,11 +81,16 @@ readSubs:
 				if util.CheckExt(subname, "rar", "zip") {
 					ioutil.WriteFile(subFile, data, 0666)
 
-					unar := path.Join(path.Dir(os.Args[0]), "unar")
-					if os.Args[0] == "." {
+					dir := path.Dir(os.Args[0])
+					var unar string
+					if dir == "." {
 						unar = "./unar"
+					} else {
+						unar = path.Join(dir, "unar")
 					}
+					log.Print(path.Dir(os.Args[0]))
 					log.Print(unar)
+					log.Print(subFile)
 					util.Extract(unar, subFile)
 				} else {
 					data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
@@ -96,15 +110,16 @@ readSubs:
 		}
 	}
 
+	log.Print(subFileDir)
 	subs := make([]string, 0)
 	util.EmulateFiles(subFileDir, func(filename string) {
-		log.Print("try convert to utf8:", filename)
-
 		utf8Text, _, err := toutf8.ConverToUTF8(filename)
 		if err == nil {
-			log.Print("convert to utf8 success")
 			ioutil.WriteFile(filename, []byte(utf8Text), 0666)
 			name := path.Base(filename)
+
+			// lang1, lang2 := cld.DetectLanguage2(utf8Text)
+			// log.Printf("subtitle %s language:%s, %s", name, lang1, lang2)
 			InsertSubtitle(&Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
 			subs = append(subs, name)
 		}

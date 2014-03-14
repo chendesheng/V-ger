@@ -4,7 +4,8 @@ package language
 func DetectLanguages(str string) (string, string) {
 	var chineseCnt, asciiCnt, anyCnt float64
 	for _, r := range str {
-		if (r >= '0' && r <= '9') || r == '\r' || r == '\n' || r == '\t' || r == ' ' {
+		if (r >= '0' && r <= '9') || r == '\r' || r == '\n' || r == '\t' || r == ' ' ||
+			r == '[' || r == ']' || r == ';' || r == '-' || r == '>' || r == ':' {
 			continue //ignore all numbers and space
 		}
 
@@ -25,11 +26,11 @@ func DetectLanguages(str string) (string, string) {
 	}
 
 	if chineseCnt/anyCnt > 0.7 {
-		return "cn", ""
+		return "zh", ""
 	}
 
 	if (asciiCnt+chineseCnt)/anyCnt > 0.8 {
-		return "en", "cn"
+		return "en", "zh"
 	}
 
 	return "", ""

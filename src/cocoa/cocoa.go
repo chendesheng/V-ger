@@ -52,6 +52,8 @@ func NewNoLimitMenuItem(target objc.Object) NSMenuItem {
 func Start() {
 	runtime.LockOSThread()
 
+	InstallNSBundleHook()
+
 	pool := NewNSAutoreleasePool()
 	defer pool.Drain()
 

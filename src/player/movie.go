@@ -216,7 +216,7 @@ func (m *movie) setupSubtitles(subFiles []string) {
 					if en == nil && s.Lang1 == "en" && len(s.Lang2) == 0 {
 						en = s
 					}
-					if cn == nil && s.Lang1 == "cn" && len(s.Lang2) == 0 {
+					if cn == nil && s.Lang1 == "zh" && len(s.Lang2) == 0 {
 						cn = s
 					}
 
@@ -443,6 +443,11 @@ func (m *movie) open(w *Window, file string, subFiles []string) {
 	// }
 	duration := time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
 	m.c = NewClock(duration)
+	m.c.Pause()
+	func() {
+		time.After(100 * time.Millisecond)
+		m.c.Resume()
+	}()
 
 	m.setupVideo()
 	m.w = w

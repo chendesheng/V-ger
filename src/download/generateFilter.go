@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"util"
 )
 
 type generateFilter struct {
@@ -32,7 +33,7 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 	//small blocksize after start,
 	//change to a larger blocksize after 15 seconds
 	changeBlockSize := time.NewTimer(time.Second * 15)
-	startCnt := 5
+	startCnt := util.ReadIntConfig("max-connection")
 	log.Printf("output %v", output)
 	maxSpeed := int64(0)
 	for {
