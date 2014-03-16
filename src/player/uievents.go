@@ -20,7 +20,7 @@ func (m *movie) uievents() {
 			SavePlayingAsync(m.p)
 
 			m.a.Close()
-			m.a.setCurrentStream(i)
+			m.a.Open(getStream(m.audioStreams, i))
 		}()
 	})
 

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	. "player/audio"
 	. "player/clock"
 	. "player/gui"
 	. "player/libav"
@@ -32,7 +33,7 @@ type ctrlArg struct {
 type movie struct {
 	ctx AVFormatContext
 	v   *Video
-	a   *audio
+	a   *Audio
 	s   *Subtitle
 	s2  *Subtitle
 	c   *Clock
@@ -46,12 +47,25 @@ type movie struct {
 	finishClose chan bool
 
 	subFiles []string
+
+	audioStreams []AVStream
+}
+
+func getStream(streams []AVStream, index int) AVStream {
+	for _, stream := range streams {
+		if stream.Index() == index {
+			return stream
+		}
+	}
+
+	return AVStream{}
 }
 
 func (m *movie) setupAudio() {
 	ctx := m.ctx
 
 	audioStreams := ctx.AudioStream()
+	m.audioStreams = audioStreams
 
 	audioStreamNames := make([]string, 0)
 	audioStreamIndexes := make([]int32, 0)
@@ -72,6 +86,7 @@ func (m *movie) setupAudio() {
 		}
 
 		selected := audioStreams[0].Index()
+		selectedStream := audioStreams[0]
 		for i := len(audioStreams) - 1; i >= 0; i-- {
 			stream := audioStreams[i]
 
@@ -80,24 +95,29 @@ func (m *movie) setupAudio() {
 			language := strings.ToLower(mp["language"])
 			if strings.Contains(language, "eng") {
 				selected = stream.Index()
+				selectedStream = stream
 			}
 
 			if m.p.SoundStream == stream.Index() {
 				selected = m.p.SoundStream
+				selectedStream = stream
 				break
 			}
 		}
+		m.p.SoundStream = selected
+		SavePlayingAsync(m.p)
 
-		m.a = &audio{
-			streams: audioStreams,
-			volume:  m.p.Volume,
+		var err error
+		m.a = NewAudio(m.c, m.p.Volume)
+
+		err = m.a.Open(selectedStream)
+		if err != nil {
+			log.Print(err)
+			return
 		}
 
-		m.a.setCurrentStream(selected)
-		m.a.c = m.c
-
 		if len(audioStreams) > 1 {
-			m.w.InitAudioMenu(audioStreamNames, audioStreamIndexes, m.a.stream.Index())
+			m.w.InitAudioMenu(audioStreamNames, audioStreamIndexes, selected)
 		} else {
 			HideAudioMenu()
 		}
@@ -632,7 +652,7 @@ func (m *movie) decode(name string) {
 			}
 
 			if m.a != nil {
-				if m.SendPacket(m.a.stream.Index(), m.a.ch, packet) {
+				if m.SendPacket(m.p.SoundStream, m.a.PacketChan, packet) {
 					continue
 				}
 			}
@@ -642,7 +662,7 @@ func (m *movie) decode(name string) {
 			bufferring = true
 			m.c.Pause()
 
-			m.a.flushBuffer()
+			m.a.FlushBuffer()
 			m.v.FlushBuffer()
 
 			t, _, err := m.v.Seek(m.c.GetTime())
@@ -714,7 +734,7 @@ func (m *movie) seekOffset(offset time.Duration) {
 func (m *movie) SeekBegin() {
 	m.chSeekPause <- -1
 	m.v.FlushBuffer()
-	m.a.flushBuffer()
+	m.a.FlushBuffer()
 }
 
 func (m *movie) Seek(t time.Duration) time.Duration {
@@ -771,6 +791,8 @@ func (m *movie) Close() {
 		m.s2.Stop()
 		m.s2 = nil
 	}
+
+	m.a.Close()
 
 	<-m.finishClose
 }
