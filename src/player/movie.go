@@ -652,7 +652,7 @@ func (m *movie) decode(name string) {
 			}
 
 			if m.a != nil {
-				if m.SendPacket(m.p.SoundStream, m.a.PacketChan, packet) {
+				if m.SendPacket(m.a.StreamIndex(), m.a.PacketChan, packet) {
 					continue
 				}
 			}
@@ -791,8 +791,6 @@ func (m *movie) Close() {
 		m.s2.Stop()
 		m.s2 = nil
 	}
-
-	m.a.Close()
 
 	<-m.finishClose
 }

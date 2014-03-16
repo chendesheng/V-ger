@@ -25,7 +25,6 @@ func resampleFrame(resampleCtx AVAudioResampleContext, frame AVFrame, channels i
 
 	tmpOut := AVObject{}
 	tmpOut.Malloc(outSize)
-	// tmpOut := make([]byte, outSize)
 	outSamples := resampleCtx.Convert(tmpOut, outLinesize, frame.NbSamples(),
 		frame.Data(), frame.Linesize(0), frame.NbSamples())
 	if outSamples < 0 {
@@ -33,7 +32,5 @@ func resampleFrame(resampleCtx AVAudioResampleContext, frame AVFrame, channels i
 		return AVObject{}
 	}
 	tmpOut.SetSize(outSamples * osize * 2)
-	// defer tmpOut.Free()
-	// return tmpOut.Bytes()
 	return tmpOut
 }

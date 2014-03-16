@@ -2,7 +2,7 @@ package audio
 
 import (
 	"fmt"
-	"io"
+	// "io"
 	"log"
 	"math"
 	. "player/clock"
@@ -41,9 +41,11 @@ func NewAudio(c *Clock, volume byte) *Audio {
 	a.PacketChan = make(chan *AVPacket, 200)
 	a.c = c
 	a.driver = &sdlAudio{volume: volume}
-	a.quit = make(chan bool)
 
 	return a
+}
+func (a *Audio) StreamIndex() int {
+	return a.stream.Index()
 }
 
 func (a *Audio) receivePacket() (*AVPacket, bool) {
@@ -53,6 +55,7 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 		select {
 		case packet, ok = <-a.PacketChan:
 			if !ok {
+				println("PacketChan is closed")
 				return nil, false
 			}
 
@@ -99,8 +102,11 @@ func (a *Audio) decode(packet *AVPacket, fn func([]byte)) {
 	}
 }
 func (a *Audio) Open(stream AVStream) error {
+	a.stream = stream
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
+
+	a.quit = make(chan bool)
 
 	decoder := codecCtx.FindDecoder()
 	if decoder.IsNil() {
@@ -111,48 +117,46 @@ func (a *Audio) Open(stream AVStream) error {
 		return fmt.Errorf("open decoder error code")
 	}
 	println("open audio driver")
-	a.stream = stream
-	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(), func(w io.Writer, length int) {
-		defer func() {
-			select {
-			case <-a.quit:
-				log.Printf("Audio close quit return")
-				close(a.quitFinish)
-			default:
-				break
-			}
-		}()
+	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(), func(length int) []byte {
+		// defer func() {
+		// 	select {
+		// 	case <-a.quit:
+		// 		log.Printf("Audio close quit return")
+		// 		close(a.quitFinish)
+		// 	default:
+		// 		break
+		// 	}
+		// }()
 
 		if a.c.WaitUtilRunning(a.quit) {
-			return
+			return nil
 		}
 
-		for length > 0 {
-			if len(a.audioBuffer) > 0 {
-				writelen, _ := w.Write(a.audioBuffer[:int(math.Min(float64(len(a.audioBuffer)), float64(length)))])
-				a.audioBuffer = a.audioBuffer[writelen:]
-				length -= writelen
+		for len(a.audioBuffer) < length {
+			if packet, ok := a.receivePacket(); ok {
+				a.decode(packet, func(bytes []byte) {
+					a.audioBuffer = append(a.audioBuffer, bytes...)
+				})
+				packet.Free()
 			} else {
-				if packet, ok := a.receivePacket(); ok {
-					a.decode(packet, func(bytes []byte) {
-						a.audioBuffer = append(a.audioBuffer, bytes...)
-					})
-					packet.Free()
-				} else {
-					//can't receive more packets
-					log.Print("No more audio packets.")
-					return
-				}
+				//can't receive more packets
+				log.Print("No more audio packets.")
+				return nil
 			}
 		}
+		retlen := int(math.Min(float64(len(a.audioBuffer)), float64(length)))
+		ret := a.audioBuffer[:retlen]
+		a.audioBuffer = a.audioBuffer[retlen:]
+		return ret
 	})
 }
-func (a *Audio) Close() {
-	a.FlushBuffer()
-	a.quitFinish = make(chan bool)
-	close(a.quit)
-	<-a.quitFinish
 
+func (a *Audio) Close() {
+	log.Print("close audio")
+
+	close(a.quit)
+
+	a.FlushBuffer()
 	a.codecCtx.Close()
 	a.driver.Close()
 }

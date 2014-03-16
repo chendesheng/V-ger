@@ -2,7 +2,7 @@ package audio
 
 import (
 	"fmt"
-	"io"
+	// "io"
 	"log"
 	. "player/libav"
 	"player/sdl"
@@ -13,16 +13,6 @@ type audioDriver interface{}
 type sdlAudio struct {
 	audioSpec sdl.AudioSpec
 	volume    byte
-
-	slience []byte
-
-	stream sdl.Object
-}
-
-func (a *sdlAudio) Write(p []byte) (int, error) {
-	sdl.MixAudioFormat(a.stream, p, a.audioSpec.Format(), int(float64(a.volume)/100*sdl.MIX_MAXVOLUME))
-	a.stream.Offset(len(p))
-	return len(p), nil
 }
 
 func init() {
@@ -31,7 +21,7 @@ func init() {
 	}
 }
 
-func (a *sdlAudio) Open(channels int, sampleRate int, callback func(io.Writer, int)) error {
+func (a *sdlAudio) Open(channels int, sampleRate int, callback func(int) []byte) error {
 	layout := GetChannelLayout("stereo")
 	if channels == 1 {
 		layout = GetChannelLayout("mono")
@@ -46,8 +36,12 @@ func (a *sdlAudio) Open(channels int, sampleRate int, callback func(io.Writer, i
 	desired.SetSamples(4096) //audio buffer size
 
 	desired.SetCallback(func(userdata sdl.Object, stream sdl.Object, length int) {
-		a.stream = stream
-		callback(a, length)
+		p := callback(length)
+		if len(p) > 0 {
+			sdl.MixAudioFormat(stream, p, a.audioSpec.Format(), int(float64(a.volume)/100*sdl.MIX_MAXVOLUME))
+		} else {
+			stream.SetZero(length)
+		}
 	})
 
 	res, obtained := sdl.OpenAudio(desired)
