@@ -40,7 +40,6 @@ func Quit() {
 }
 
 func MixAudioFormat(dst Object, src []byte, format int, volume int) {
-	dst.SetZero(len(src))
 	C.SDL_MixAudioFormat((*_Ctype_Uint8)(dst.ptr), (*_Ctype_Uint8)(&src[0]), C.SDL_AudioFormat(format), C.Uint32(len(src)), C.int(volume))
 }
 

@@ -19,7 +19,3 @@ func (obj *Object) IsNil() bool {
 func (obj *Object) SetZero(length int) {
 	C.SDL_memset(obj.ptr, 0, C.size_t(length))
 }
-
-func (obj *Object) Offset(length int) {
-	obj.ptr = unsafe.Pointer(uintptr(obj.ptr) + uintptr(length))
-}

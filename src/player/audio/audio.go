@@ -2,7 +2,6 @@ package audio
 
 import (
 	"fmt"
-	// "io"
 	"log"
 	"math"
 	. "player/clock"
@@ -62,18 +61,18 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 			pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * float64(time.Second))
 			now := a.c.GetSeekTime()
 
-			if now < pts+time.Second && now > pts-time.Second && (now > pts+100*time.Millisecond || now < pts-100*time.Millisecond) {
-				if pts > now {
-					println("packet pts:", pts.String())
-					if a.c.WaitUtilWithQuit(pts, a.quit) {
-						packet.Free()
-						return nil, false
-					} else {
-						return packet, true
-					}
+			if time.Duration(math.Abs(float64(pts-now))) < 100*time.Millisecond {
+				return packet, true
+			} else if pts > now {
+				if a.c.WaitUtilWithQuit(pts, a.quit) {
+					packet.Free()
+					return nil, false
+				} else {
+					return packet, true
 				}
 			} else {
-				return packet, true
+				log.Print("skip audio packet:", pts.String())
+				packet.Free()
 			}
 		case <-a.quit:
 			return nil, false
@@ -118,16 +117,6 @@ func (a *Audio) Open(stream AVStream) error {
 	}
 	println("open audio driver")
 	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(), func(length int) []byte {
-		// defer func() {
-		// 	select {
-		// 	case <-a.quit:
-		// 		log.Printf("Audio close quit return")
-		// 		close(a.quitFinish)
-		// 	default:
-		// 		break
-		// 	}
-		// }()
-
 		if a.c.WaitUtilRunning(a.quit) {
 			return nil
 		}

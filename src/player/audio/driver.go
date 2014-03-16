@@ -36,11 +36,11 @@ func (a *sdlAudio) Open(channels int, sampleRate int, callback func(int) []byte)
 	desired.SetSamples(4096) //audio buffer size
 
 	desired.SetCallback(func(userdata sdl.Object, stream sdl.Object, length int) {
+		stream.SetZero(length)
+
 		p := callback(length)
 		if len(p) > 0 {
 			sdl.MixAudioFormat(stream, p, a.audioSpec.Format(), int(float64(a.volume)/100*sdl.MIX_MAXVOLUME))
-		} else {
-			stream.SetZero(length)
 		}
 	})
 
