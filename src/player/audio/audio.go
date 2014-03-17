@@ -48,35 +48,26 @@ func (a *Audio) StreamIndex() int {
 }
 
 func (a *Audio) receivePacket() (*AVPacket, bool) {
-	var packet *AVPacket
-	var ok bool
-	for {
-		select {
-		case packet, ok = <-a.PacketChan:
-			if !ok {
-				println("PacketChan is closed")
-				return nil, false
-			}
+	select {
+	case packet, ok := <-a.PacketChan:
+		return packet, ok
+	case <-a.quit:
+		return nil, false
+	}
+}
 
-			pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * float64(time.Second))
-			now := a.c.GetSeekTime()
+//drop packet if return false
+func (a *Audio) sync(packet *AVPacket) bool {
+	pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * float64(time.Second))
+	now := a.c.GetSeekTime()
 
-			if time.Duration(math.Abs(float64(pts-now))) < 100*time.Millisecond {
-				return packet, true
-			} else if pts > now {
-				if a.c.WaitUtilWithQuit(pts, a.quit) {
-					packet.Free()
-					return nil, false
-				} else {
-					return packet, true
-				}
-			} else {
-				log.Print("skip audio packet:", pts.String())
-				packet.Free()
-			}
-		case <-a.quit:
-			return nil, false
-		}
+	if time.Duration(math.Abs(float64(pts-now))) < 100*time.Millisecond {
+		return true
+	} else if pts > now {
+		return !a.c.WaitUtilWithQuit(pts, a.quit)
+	} else {
+		log.Print("skip audio packet:", pts.String())
+		return false
 	}
 }
 
@@ -116,28 +107,31 @@ func (a *Audio) Open(stream AVStream) error {
 		return fmt.Errorf("open decoder error code")
 	}
 	println("open audio driver")
-	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(), func(length int) []byte {
-		if a.c.WaitUtilRunning(a.quit) {
-			return nil
-		}
-
-		for len(a.audioBuffer) < length {
-			if packet, ok := a.receivePacket(); ok {
-				a.decode(packet, func(bytes []byte) {
-					a.audioBuffer = append(a.audioBuffer, bytes...)
-				})
-				packet.Free()
-			} else {
-				//can't receive more packets
-				log.Print("No more audio packets.")
+	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(),
+		func(length int) []byte {
+			if a.c.WaitUtilRunning(a.quit) {
 				return nil
 			}
-		}
-		retlen := int(math.Min(float64(len(a.audioBuffer)), float64(length)))
-		ret := a.audioBuffer[:retlen]
-		a.audioBuffer = a.audioBuffer[retlen:]
-		return ret
-	})
+
+			for len(a.audioBuffer) < length {
+				if packet, ok := a.receivePacket(); ok {
+					if a.sync(packet) {
+						a.decode(packet, func(bytes []byte) {
+							a.audioBuffer = append(a.audioBuffer, bytes...)
+						})
+					}
+					packet.Free()
+				} else {
+					//can't receive more packets
+					log.Print("No more audio packets.")
+					return nil
+				}
+			}
+			retlen := int(math.Min(float64(len(a.audioBuffer)), float64(length)))
+			ret := a.audioBuffer[:retlen]
+			a.audioBuffer = a.audioBuffer[retlen:]
+			return ret
+		})
 }
 
 func (a *Audio) Close() {
