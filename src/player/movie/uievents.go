@@ -1,8 +1,9 @@
-package main
+package movie
 
 import (
 	"fmt"
 	. "player/shared"
+	. "player/subtitle"
 	// "log"
 	"player/gui"
 	// . "player/video"
@@ -11,7 +12,7 @@ import (
 	"time"
 )
 
-func (m *movie) uievents() {
+func (m *Movie) uievents() {
 	m.w.FuncAudioMenuClicked = append(m.w.FuncAudioMenuClicked, func(i int) {
 		go func() {
 			log.Printf("Audio menu click:%d", i)
@@ -203,5 +204,55 @@ func (m *movie) uievents() {
 		} else {
 			chVolume <- m.a.IncreaseVolume()
 		}
+	})
+
+	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
+		go func() {
+			subFiles := m.subFiles
+			clicked := subFiles[index]
+			if showOrHide {
+				// m.s.Stop()
+				width, height := m.w.GetWindowSize()
+				s := NewSubtitle(clicked, m.w, m.c, float64(width), float64(height))
+				if s != nil {
+					if m.s == nil {
+						m.s = s
+						s.IsMainOrSecondSub = true
+					} else {
+						m.s2 = s
+						s.IsMainOrSecondSub = false
+					}
+					go s.Play()
+				}
+			} else {
+				if (m.s != nil) && (m.s.Name == clicked) {
+					m.s.Stop()
+					if m.s2 != nil {
+						m.s = m.s2
+						m.s.IsMainOrSecondSub = true
+						m.s2 = nil
+					} else {
+						m.s = nil
+					}
+				} else if (m.s2 != nil) && (m.s2.Name == clicked) {
+					m.s2.Stop()
+					m.s2 = nil
+				}
+			}
+
+			if m.s != nil {
+				m.p.Sub1 = m.s.Name
+			} else {
+				m.p.Sub1 = ""
+			}
+
+			if m.s2 != nil {
+				m.p.Sub2 = m.s2.Name
+			} else {
+				m.p.Sub2 = ""
+			}
+
+			SavePlayingAsync(m.p)
+		}()
 	})
 }

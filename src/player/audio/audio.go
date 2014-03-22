@@ -104,7 +104,7 @@ func (a *Audio) Open(stream AVStream) error {
 	}
 	errCode := codecCtx.Open(decoder)
 	if errCode < 0 {
-		return fmt.Errorf("open decoder error code")
+		return fmt.Errorf("Open decoder error:%d", errCode)
 	}
 	println("open audio driver")
 	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(),
