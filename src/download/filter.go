@@ -12,6 +12,20 @@ type filter interface {
 	active()
 }
 
+type WriterAtQuit interface {
+	//this method should return (nil) asap after close(quit)
+	WriteAtQuit(p []byte, off int64, quit chan bool) error
+}
+
+type writeAtWrap struct {
+	iow io.WriterAt
+}
+
+func (w writeAtWrap) WriteAtQuit(p []byte, off int64, quit chan bool) error {
+	_, err := w.iow.WriteAt(p, off)
+	return err
+}
+
 type basicFilter struct {
 	input  chan *block
 	output chan *block
@@ -32,7 +46,7 @@ func activeFilters(filters []filter) {
 	filters[lastIndex].active()
 }
 
-func doDownload(t *task.Task, w io.WriterAt, from, to int64,
+func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
 	maxSpeed int64, chMaxSpeed chan int64, quit chan bool) {
 	url := t.URL
 

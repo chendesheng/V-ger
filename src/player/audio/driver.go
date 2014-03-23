@@ -70,9 +70,9 @@ func (a *sdlAudio) IncreaseVolume() byte {
 	return a.volume
 }
 func (a *sdlAudio) DecreaseVolume() byte {
-	a.volume--
+	a.volume-- //may overflow
 
-	if a.volume < 0 {
+	if a.volume < 0 || a.volume > 100 {
 		a.volume = 0
 	}
 	return a.volume

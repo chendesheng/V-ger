@@ -2,34 +2,63 @@ package movie
 
 import (
 	"download"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	// "path/filepath"
 	. "player/libav"
 	"task"
 	"time"
+	// "task"
+	// "time"
 	"util"
 )
 
+func downloadBytes(url string, from int64, size int, filesize int64) []byte {
+	to := from + int64(size)
+	if to > filesize {
+		to = 0
+	}
+
+	println("request:", from, to)
+	req := download.CreateDownloadRequest(url, from, to-1)
+	resp, _ := http.DefaultClient.Do(req)
+
+	data, _ := ioutil.ReadAll(resp.Body)
+	println("get:", len(data), from, size)
+	return data
+}
+
+var mbuf *buffer
+
 func (m *Movie) openHttp(file string) (AVFormatContext, string) {
+	download.NetworkTimeout = 30 * time.Second
+	download.BaseDir = util.ReadConfig("dir")
+
 	_, name, size, err := download.GetDownloadInfo(file)
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	t, err := task.GetTask(name)
+	println("download info:", size, t.Size)
 	if err != nil {
-		// log.Fatal(err)
 		t = &task.Task{}
 		t.Name = name
 		t.Size = size
 		t.StartTime = time.Now().Unix()
-		t.Status = "Stopped"
+		t.Status = "Playing"
 		t.URL = file
+		task.SaveTask(t)
+	} else {
+		t.Status = "Playing"
 		task.SaveTask(t)
 	}
 
-	mbuf := &util.Buffer{}
+	mbuf = NewBuffer(size)
 
-	// currentPos := int64(0)
 	buf := AVObject{}
 	buf.Malloc(1024 * 32)
 	ioctx := NewAVIOContext(buf, func(buf AVObject) int {
@@ -37,87 +66,40 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 			return 0
 		}
 
-		size := buf.Size()
-		// currentPos := mbuf.CurrentPos
+		return mbuf.Read(&buf, int64(buf.Size()))
+	}, func(offset int64, whence int) int64 {
+		println("seek:", offset, whence)
 
-		// println("read: currentPos11:", mbuf.CurrentPos)
-		// for size > 0 && currentPos+int64(size) < t.Size {
-		for {
+		pos, start := mbuf.Seek(offset, whence)
+		if start >= 0 && start < size {
+			go func() {
+				t, err := task.GetTask(name)
+				if err != nil {
+					log.Fatal(err)
+				}
 
-			if bytes, err := mbuf.Read(size); err == nil {
-				buf.Write(bytes)
-				// size -= len(bytes)
-				currentPos := mbuf.GetCurrentPos()
-				currentPos += int64(len(bytes))
-				mbuf.SetCurrentPos(currentPos)
-				println("readfunc:", currentPos, len(bytes))
-				return len(bytes)
-			}
-
-			time.Sleep(50 * time.Millisecond)
+				download.QuitAndDownload(t, mbuf, start)
+			}()
 		}
-
-		// println("read: currentPos:", mbuf.CurrentPos)
-		// return buf.Size() - size
-	}, func(pos int64, whence int) int64 {
-		println("seekfunc:", pos, whence)
-
-		// download.Play(t, w, from, to)
-		// t, _ = task.GetTask(t.Name)
-		currentPos := mbuf.GetCurrentPos()
-		switch whence {
-		case os.SEEK_SET:
-			currentPos = pos
-			break
-		case os.SEEK_CUR:
-			currentPos += pos
-			break
-		case os.SEEK_END:
-			currentPos = t.Size + pos
-			break
-		// case AVSEEK_SIZE:
-		default:
-			return t.Size
-		}
-
-		if currentPos > t.Size {
-			currentPos = t.Size
-			return currentPos
-		}
-
-		if currentPos < 0 {
-			return -1
-		}
-		mbuf.SetCurrentPos(currentPos)
-		mbuf.ClearData()
-		go download.Play(t, mbuf, currentPos, t.Size)
-		return currentPos
+		return pos
 	})
 
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	download.Play(t, mbuf, 0, 1024*32)
+	pd := NewAVProbeData()
 
-	if bytes, err := mbuf.Read(1024 * 32); err == nil {
-		println("bytes:", len(bytes))
-		pd := NewAVProbeData()
+	go download.QuitAndDownload(t, mbuf, 0)
+	mbuf.Read(&buf, 1024*32)
+	mbuf.Seek(0, os.SEEK_SET)
 
-		obj := AVObject{}
-		obj.Malloc(len(bytes))
-		obj.Write(bytes)
+	pd.SetBuffer(buf)
+	pd.SetFileName("")
 
-		pd.SetBuffer(obj)
-		pd.SetFileName("")
+	ctx.SetInputFormat(pd.InputFormat())
 
-		ctx.SetInputFormat(pd.InputFormat())
+	ctx.OpenInput("")
 
-		mbuf.ClearData()
-
-		go download.Play(t, mbuf, 0, t.Size)
-
-		ctx.OpenInput("")
-	}
-
+	println("open http return")
 	return ctx, name
 }

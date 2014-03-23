@@ -64,6 +64,7 @@ func (m *Movie) Open(w *Window, file string, subFiles []string) {
 		ctx.DumpFormat()
 
 	}
+
 	m.p = CreateOrGetPlaying(filename)
 	m.chSeekPause = make(chan time.Duration)
 
@@ -85,19 +86,21 @@ func (m *Movie) Open(w *Window, file string, subFiles []string) {
 	if len(subFiles) == 0 {
 		go m.SearchDownloadSubtitle()
 	}
-	// m.w = NewWindow(filename, m.v.Width, m.v.Height)
 	w.InitEvents()
 	w.SetTitle(filename)
 	w.SetSize(m.v.Width, m.v.Height)
 	m.v.SetRender(m.w)
 
+	println("audio")
 	m.setupAudio()
+	println("setupSubtitles")
 	m.setupSubtitles(subFiles)
 
 	m.uievents()
 
 	start, _, _ := m.v.Seek(m.p.LastPos)
 	// start := m.p.LastPos
+	// start := time.Duration(0)
 	m.p.LastPos = start
 	m.p.Duration = duration
 
@@ -118,6 +121,7 @@ func (m *Movie) Open(w *Window, file string, subFiles []string) {
 	}
 
 	go m.showProgress(filename)
+	println("open return")
 }
 func (m *Movie) Close() {
 	m.w.FlushImageBuffer()
@@ -198,10 +202,14 @@ func (m *Movie) showProgress(name string) {
 
 	t, err := task.GetTask(name)
 	if err == nil {
-		p.Percent2 = float64(t.DownloadedSize) / float64(t.Size)
-	} //else {
-	// log.Print(err)
-	//}
+		if t.Status == "Finished" {
+			p.Percent2 = 1
+		} else {
+			p.Percent2 = float64(t.BufferedPosition) / float64(t.Size)
+		}
+	} else {
+		log.Print(err)
+	}
 
 	m.w.SendShowProgress(p)
 }

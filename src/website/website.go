@@ -141,6 +141,9 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				log.Print("task already exists")
 				task.ResumeTask(name)
+				t, _ := task.GetTask(name)
+				t.URL = url
+				task.SaveTask(t)
 			}
 		} else if err := task.StartNewTask(name, url, size); err != nil {
 			writeError(w, err)
@@ -322,16 +325,27 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 
 func playHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
-	fmt.Printf("open \"%s\".\n", name)
+	fmt.Printf("play \"%s\".\n", name)
 
-	config := util.ReadAllConfigs()
+	playerPath := util.ReadConfig("video-player")
+	t, err := task.GetTask(name)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
 
-	playerPath := config["video-player"]
+	// config := util.ReadAllConfigs()
+
+	// playerPath := config["video-player"]
 
 	util.KillProcess(playerPath)
 
-	cmd := exec.Command("open", playerPath, "--args", "http://"+config["server"]+"/video/"+name)
-	cmd.Start()
+	// cmd := exec.Command("open", playerPath, "--args", "http://"+config["server"]+"/video/"+name)
+	cmd := exec.Command("open", playerPath, "--args", t.URL)
+	err = cmd.Start()
+	if err != nil {
+		writeError(w, err)
+	}
 }
 
 func writeError(w http.ResponseWriter, err error) {

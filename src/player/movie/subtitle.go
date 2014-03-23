@@ -51,7 +51,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 		select {
 		case s, ok := <-chSubs:
 			if !ok {
-				return false
+				return true
 			}
 
 			log.Printf("%v", s)
@@ -59,7 +59,8 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 			// io.WriteString(ws, string(text))
 			url, subname, _, err := download.GetDownloadInfo(s.URL)
 			if err != nil {
-				return false
+				log.Print(err)
+				break
 			}
 
 			if subname == "content" {

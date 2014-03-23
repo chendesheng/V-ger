@@ -71,9 +71,9 @@
     
     if (NSPointInRect(pt, bound)) {
         self->percent = (pt.x-bound.origin.x)/bound.size.width;            
-        if ((self->percent2>0) && (self->percent > self->percent2)) {
-            self->percent = self->percent2;
-        }
+        // if ((self->percent2>0) && (self->percent > self->percent2)) {
+        //     self->percent = self->percent2;
+        // }
         [self setNeedsDisplay:YES];
         
         onProgressChanged((void*)[self window], 0, self->percent);

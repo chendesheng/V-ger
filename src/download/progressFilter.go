@@ -78,6 +78,9 @@ func (sr *segRing) total() (time.Duration, int64) {
 
 func handleProgress(progress chan *block, output chan *block, t *task.Task, quit chan bool) {
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
+	if t.Status == "Playing" {
+		total = t.BufferedPosition
+	}
 
 	timer := time.NewTicker(time.Millisecond * 1000)
 
@@ -153,7 +156,11 @@ func saveProgress(name string, speed float64, total int64, elapsedTime time.Dura
 	if t, err := task.GetTask(name); err == nil {
 		if t.Status != "Playing" {
 			t.DownloadedSize = total
+			t.BufferedPosition = total
+		} else {
+			t.BufferedPosition = total
 		}
+
 		t.ElapsedTime = elapsedTime
 		t.Speed = speed
 		t.Est = est

@@ -30,8 +30,9 @@ type Task struct {
 	// seconds from 1970-1-1
 	StartTime int64
 
-	DownloadedSize int64
-	ElapsedTime    time.Duration
+	DownloadedSize   int64
+	BufferedPosition int64 //only for playing task
+	ElapsedTime      time.Duration
 
 	LimitSpeed int64
 	Speed      float64
@@ -53,6 +54,7 @@ var taskColumnes string = `Name,
 				Size,
 				StartTime,
 				DownloadedSize,
+				BufferedPosition,
 				ElapsedTime,
 				LimitSpeed,
 				Speed,
@@ -80,6 +82,7 @@ func newTask(name string, url string, size int64) *Task {
 	t.Status = "New"
 	t.Original = ""
 	t.Subscribe = ""
+	t.BufferedPosition = 0
 
 	t.NameHash = hashName(t.Name)
 	return t
@@ -114,6 +117,7 @@ func scanTask(scanner dbHelper.RowScanner) (*Task, error) {
 		&t.Size,
 		&t.StartTime,
 		&t.DownloadedSize,
+		&t.BufferedPosition,
 		&elapsedTime,
 		&t.LimitSpeed,
 		&t.Speed,
@@ -193,6 +197,7 @@ func updateTask(t *Task) error {
 		Size=?,
 		StartTime=?,
 		DownloadedSize=?,
+		BufferedPosition=?,
 		ElapsedTime=?,
 		LimitSpeed=?,
 		Speed=?,
@@ -206,6 +211,7 @@ func updateTask(t *Task) error {
 		t.Size,
 		t.StartTime,
 		t.DownloadedSize,
+		t.BufferedPosition,
 		int64(t.ElapsedTime),
 		t.LimitSpeed,
 		t.Speed,
@@ -225,12 +231,13 @@ func insertTask(t *Task) error {
 	defer dbHelper.Close(db)
 
 	_, err := db.Exec(fmt.Sprintf(`
-			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
+			insert into task(%s) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
 			`, taskColumnes), t.Name,
 		t.URL,
 		t.Size,
 		t.StartTime,
 		t.DownloadedSize,
+		t.BufferedPosition,
 		t.ElapsedTime,
 		t.LimitSpeed,
 		t.Speed,

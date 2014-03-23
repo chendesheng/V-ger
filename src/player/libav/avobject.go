@@ -12,6 +12,7 @@ import (
 
 type AVObject struct {
 	ptr  unsafe.Pointer
+	ptr2 uintptr
 	size int
 }
 
@@ -70,6 +71,18 @@ func (obj *AVObject) Bytes() []byte {
 }
 
 //can only write once
-func (obj *AVObject) Write(bytes []byte) {
-	C.memcpy(unsafe.Pointer(obj.ptr), unsafe.Pointer(&bytes[0]), C.size_t(len(bytes)))
+func (obj *AVObject) Write(p []byte) (int, error) {
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	if obj.ptr2 == 0 {
+		obj.ptr2 = uintptr(obj.ptr)
+	}
+
+	C.memcpy(unsafe.Pointer(obj.ptr2), unsafe.Pointer(&p[0]), C.size_t(len(p)))
+
+	obj.ptr2 = obj.ptr2 + uintptr(len(p))
+
+	return len(p), nil
 }

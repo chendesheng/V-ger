@@ -1,14 +1,10 @@
 package download
 
 import (
-	// "errors"
-	// "fmt"
 	"io"
-	"task"
-	// "time"
-	// "bytes"
 	"log"
-	// "bytes"
+	"sync"
+	"task"
 )
 
 var play_quit chan bool
@@ -25,13 +21,35 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 
 	play_quit = make(chan bool)
 
-	doDownload(t, writerAtWrap{w}, from, to, 0, nil, play_quit)
+	doDownload(t, writerWrap{w}, from, to, 0, nil, play_quit)
 }
 
-type writerAtWrap struct {
+var downloadQuit chan bool
+var lock sync.Mutex
+
+func QuitAndDownload(t *task.Task, w WriterAtQuit, from int64) {
+	println("start download:", from)
+	if downloadQuit != nil {
+		ensureQuit(downloadQuit)
+	}
+
+	lock.Lock()
+	defer lock.Unlock()
+
+	downloadQuit = make(chan bool)
+
+	t.BufferedPosition = from
+	task.SaveTask(t)
+	doDownload(t, w, from, t.Size, 0, nil, downloadQuit)
+
+	println("stop download:", from)
+}
+
+type writerWrap struct {
 	w io.Writer
 }
 
-func (w writerAtWrap) WriteAt(p []byte, off int64) (int, error) {
-	return w.w.Write(p)
+func (w writerWrap) WriteAtQuit(p []byte, off int64, quit chan bool) error {
+	_, err := w.w.Write(p)
+	return err
 }

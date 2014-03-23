@@ -153,13 +153,13 @@ func download(tc *taskControl) {
 		return
 	}
 	defer f.Close()
-
+	w := writeAtWrap{f}
 	for t.Status == "Downloading" {
 		tc.quit = make(chan bool)
 		tc.chMaxSpeed = make(chan int64)
 
 		if t.DownloadedSize < t.Size {
-			doDownload(t, f, t.DownloadedSize, t.Size, int64(util.ReadIntConfig("max-speed")), tc.chMaxSpeed, tc.quit)
+			doDownload(t, w, t.DownloadedSize, t.Size, int64(util.ReadIntConfig("max-speed")), tc.chMaxSpeed, tc.quit)
 			log.Print("download return")
 		}
 

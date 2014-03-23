@@ -14,7 +14,7 @@ func WriteJson(path string, object interface{}) error {
 	locker.Lock()
 	defer locker.Unlock()
 
-	data, err := json.Marshal(object)
+	data, err := json.MarshalIndent(object, "", "\t")
 	if err != nil {
 		log.Print(err)
 		return err

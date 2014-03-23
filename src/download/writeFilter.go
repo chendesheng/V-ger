@@ -2,7 +2,6 @@ package download
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"native"
 	"os"
@@ -12,14 +11,14 @@ import (
 
 type writeFilter struct {
 	basicFilter
-	w io.WriterAt
+	w WriterAtQuit
 }
 
 func (wf *writeFilter) active() {
 	writeOutput(wf.w, wf.input, wf.output, wf.quit)
 }
 
-func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, quit chan bool) {
+func writeOutput(w WriterAtQuit, input <-chan *block, output chan *block, quit chan bool) {
 	pathErrNotifyTimes := 0
 	for {
 		select {
@@ -35,7 +34,7 @@ func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, quit ch
 					log.Printf("wrong block:%d,%d,%d", b.from, b.to, len(b.data))
 				}
 
-				_, err := w.WriteAt(b.data, b.from)
+				err := w.WriteAtQuit(b.data, b.from, quit)
 
 				if err == nil {
 					pathErrNotifyTimes = 0

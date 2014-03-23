@@ -477,7 +477,6 @@
 }
 - (void)scrollWheel:(NSEvent *)event
 {
-    NSLog(@"scrollWheel:%lf", [event deltaY]);
     onMouseWheel(self->win, [event deltaY]);
 }
 @end
