@@ -61,7 +61,7 @@ func (a *Audio) sync(packet *AVPacket) bool {
 	pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * float64(time.Second))
 	now := a.c.GetSeekTime()
 
-	if time.Duration(math.Abs(float64(pts-now))) < 100*time.Millisecond {
+	if time.Duration(math.Abs(float64(pts-now))) < 50*time.Millisecond {
 		return true
 	} else if pts > now {
 		return !a.c.WaitUtilWithQuit(pts, a.quit)

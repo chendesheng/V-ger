@@ -76,17 +76,11 @@ func (picture *AVPicture) SaveToPPMFile(file string, width, height int) []byte {
 }
 
 func (picture *AVPicture) RGBBytes(width, height int) []byte {
-	bytes := picture.buf.Bytes()
-	linesize := picture.ptr.linesize[0]
+	return picture.buf.Bytes()
+}
 
-	outBytes := make([]byte, 0, len(bytes))
-
-	for y := 0; y < height; y++ {
-		start := int(C.int(y) * linesize)
-		outBytes = append(outBytes, bytes[start:start+width*3]...)
-	}
-
-	return outBytes
+func (picture *AVPicture) FreeBuffer() {
+	picture.buf.Free()
 }
 
 func (picture *AVPicture) Frame() AVFrame {

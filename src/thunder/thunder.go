@@ -324,14 +324,8 @@ func getTaskType(url string) (int, []byte) {
 	} else if strings.Index(url, "thunder://") != -1 {
 		return 0, nil
 	} else {
-		http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			temp := req.URL.String()
-			if temp != "" {
-				url = temp
-			}
-			return nil
-		}
 		resp, err := http.Get(url)
+		url = resp.Request.URL.String()
 		if err != nil {
 			return 0, nil
 		}
@@ -347,7 +341,6 @@ func getTaskType(url string) (int, []byte) {
 
 			return 1, data
 		}
-
 	}
 	return 0, nil
 }
@@ -390,31 +383,6 @@ func readBody(resp *http.Response) string {
 
 	text := string(bytes)
 	return text
-}
-
-//download small files like .torrent or .srt file
-func quickDownload(url string) ([]byte, error) {
-	http.DefaultClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		temp := req.URL.String()
-		if temp != "" {
-			url = temp
-		}
-		return nil
-	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }
 
 func postFile(filename string, filebytes []byte, target_url string) (*http.Response, error) {

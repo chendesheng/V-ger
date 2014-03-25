@@ -30,8 +30,9 @@ type Video struct {
 	swsCtx      SwsContext
 
 	//buffers
-	frame      AVFrame
-	pictureRGB AVPicture
+	frame               AVFrame
+	pictureRGBs         [8]AVPicture
+	currentPictureIndex int
 
 	Width, Height int
 	c             *Clock
@@ -61,13 +62,23 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 }
 
 func (v *Video) setupPictureRGB() {
-	numBytes := AVPictureGetSize(AV_PIX_FMT_RGB24, v.Width, v.Height)
-	picFrame := AllocFrame()
-	pictureRGB := picFrame.Picture()
-	pictureRGBBuffer := AVObject{}
-	pictureRGBBuffer.Malloc(numBytes)
-	pictureRGB.Fill(pictureRGBBuffer, AV_PIX_FMT_RGB24, v.Width, v.Height)
-	v.pictureRGB = pictureRGB
+	for i, _ := range v.pictureRGBs {
+		numBytes := AVPictureGetSize(AV_PIX_FMT_RGB24, v.Width, v.Height)
+		picFrame := AllocFrame()
+		pictureRGB := picFrame.Picture()
+		pictureRGBBuffer := AVObject{}
+		pictureRGBBuffer.Malloc(numBytes)
+		pictureRGB.Fill(pictureRGBBuffer, AV_PIX_FMT_RGB24, v.Width, v.Height)
+
+		v.pictureRGBs[i] = pictureRGB
+	}
+}
+
+func (v *Video) getPictureRGB() AVPicture {
+	pic := v.pictureRGBs[v.currentPictureIndex]
+	v.currentPictureIndex++
+	v.currentPictureIndex = v.currentPictureIndex % len(v.pictureRGBs)
+	return pic
 }
 
 func (v *Video) setupSwsContext() {
@@ -123,21 +134,16 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 		return false, 0
 	}
 
-	stream := v.stream
 	codec := v.codec
 	frame := v.frame
-	// pictureRGB := v.pictureRGB
-	// b := time.Now()
-
-	// v.videoPktPts = packet.Pts()
 
 	frameFinished := codec.DecodeVideo(frame, packet)
 
 	if frameFinished {
-		//TODO: get pts in more safe way
+		//TODO: get pts in more accurate way
 		var pts time.Duration
 		if packet.Dts() != AV_NOPTS_VALUE {
-			pts = time.Duration(float64(packet.Dts()) * stream.Timebase().Q2D() * (float64(time.Second)))
+			pts = time.Duration(float64(packet.Dts()) * v.stream.Timebase().Q2D() * (float64(time.Second)))
 		}
 
 		return true, pts
@@ -192,16 +198,17 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 		return false, 0, nil
 	}
 
-	frame := v.frame
-	pictureRGB := v.pictureRGB
-	swsCtx := v.swsCtx
-	width, height := v.Width, v.Height
-
 	if frameFinished, pts := v.Decode(packet); frameFinished {
+		frame := v.frame
+		pictureRGB := v.getPictureRGB()
+		swsCtx := v.swsCtx
+		width, height := v.Width, v.Height
+
 		frame.Flip(height)
 		swsCtx.Scale(frame, pictureRGB)
 
 		return true, pts, pictureRGB.RGBBytes(width, height)
+		// return false, 0, nil
 	}
 
 	return false, 0, nil
@@ -230,6 +237,7 @@ func (v *Video) Play() {
 			}
 
 			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
+
 			v.r.SendDrawImage(data.Img)
 
 			if v.c.WaitUtilRunning(v.quit) {
@@ -250,7 +258,7 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
-	pictureRGB := v.pictureRGB
+	pictureRGB := v.getPictureRGB()
 	swsCtx := v.swsCtx
 
 	for ctx.ReadFrame(&packet) >= 0 {
@@ -279,7 +287,12 @@ func (v *Video) Close() {
 
 	v.swsCtx.Free()
 	v.frame.Free()
-	pic := v.pictureRGB.Frame()
-	pic.Free()
+
+	for _, pic := range v.pictureRGBs {
+		pic.FreeBuffer()
+		f := pic.Frame()
+		f.Free()
+	}
+
 	v.codec.Close()
 }

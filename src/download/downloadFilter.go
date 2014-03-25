@@ -57,7 +57,7 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 	}
 	// log.Print("final download url:", url)
 
-	if strings.Contains(url, "192.168.1.1") {
+	if strings.Contains(url, "192.168.") {
 		//AUSU router may redirect to error_page.html, download from this url will crap target file.
 		return
 	}
