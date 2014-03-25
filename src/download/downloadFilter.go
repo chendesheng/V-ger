@@ -1,8 +1,9 @@
 package download
 
 import (
-	"bytes"
+	// "bytes"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -93,13 +94,11 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 		} else {
 			size := b.to - b.from
 
-			data, err := readWithTimeout(req, resp, size, quit)
+			b.data, err = readWithTimeout(req, resp, size, b.data, quit)
 			if err != nil {
 				log.Print(err)
 			}
-			if err == nil && int64(len(data)) == size {
-
-				b.data = data
+			if err == nil && int64(len(b.data)) == size {
 				select {
 				case output <- b:
 					return
@@ -122,8 +121,22 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 	}
 }
 
-func readWithTimeout(req *http.Request, resp *http.Response, size int64, quit chan bool) ([]byte, error) {
-	buffer := bytes.NewBuffer(make([]byte, 0, size+bytes.MinRead))
+func ReadBody(r io.Reader, buf []byte) ([]byte, error) {
+	for {
+		m, err := r.Read(buf[len(buf):cap(buf)])
+		buf = buf[0 : len(buf)+m]
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return buf, nil
+}
+func readWithTimeout(req *http.Request, resp *http.Response, size int64, data []byte, quit chan bool) ([]byte, error) {
+	// buffer := bytes.NewBuffer(data)
 	finish := make(chan error)
 	go func() {
 		select {
@@ -137,12 +150,10 @@ func readWithTimeout(req *http.Request, resp *http.Response, size int64, quit ch
 		}
 	}()
 
-	_, err := buffer.ReadFrom(resp.Body)
+	data, err := ReadBody(resp.Body, data)
+
+	// _, err := buffer.ReadFrom(resp.Body)
 	close(finish)
 
-	if err != nil {
-		return nil, err
-	} else {
-		return buffer.Bytes(), nil
-	}
+	return data, err
 }

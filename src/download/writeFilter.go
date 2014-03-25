@@ -39,7 +39,6 @@ func writeOutput(w WriterAtQuit, input <-chan *block, output chan *block, quit c
 				if err == nil {
 					pathErrNotifyTimes = 0
 
-					b.data = nil
 					select {
 					case output <- b:
 						break
