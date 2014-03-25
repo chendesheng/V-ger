@@ -95,10 +95,8 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 			size := b.to - b.from
 
 			b.data, err = readWithTimeout(req, resp, size, b.data, quit)
-			if err != nil {
-				log.Print(err)
-			}
-			if err == nil && int64(len(b.data)) == size {
+
+			if err == nil {
 				select {
 				case output <- b:
 					return
@@ -106,6 +104,7 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 					return
 				}
 			} else {
+				log.Print(err)
 				bytes, _ := httputil.DumpResponse(resp, false)
 				log.Print(string(bytes))
 				log.Printf("download wrong data:%d,%d,%d", b.from, b.to, len(b.data))
@@ -121,20 +120,6 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 	}
 }
 
-func ReadBody(r io.Reader, buf []byte) ([]byte, error) {
-	for {
-		m, err := r.Read(buf[len(buf):cap(buf)])
-		buf = buf[0 : len(buf)+m]
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return buf, nil
-}
 func readWithTimeout(req *http.Request, resp *http.Response, size int64, data []byte, quit chan bool) ([]byte, error) {
 	// buffer := bytes.NewBuffer(data)
 	finish := make(chan error)
@@ -150,9 +135,8 @@ func readWithTimeout(req *http.Request, resp *http.Response, size int64, data []
 		}
 	}()
 
-	data, err := ReadBody(resp.Body, data)
+	_, err := io.ReadFull(resp.Body, data)
 
-	// _, err := buffer.ReadFrom(resp.Body)
 	close(finish)
 
 	return data, err

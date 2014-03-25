@@ -27,14 +27,19 @@ type blockPool struct {
 func (p *blockPool) get(from, to int64) *block {
 	if len(p.data) == 0 {
 		println("new block:", from, to)
-		return &block{from, to, make([]byte, 0, to-from)}
+		return &block{from, to, make([]byte, to-from)}
 	} else {
 		lastIndex := len(p.data) - 1
 		b := p.data[lastIndex]
 		p.data = p.data[:lastIndex]
 		println("get from pool:", from, to, cap(b.data))
 
-		b.from, b.to, b.data = from, to, b.data[:0]
+		b.from, b.to = from, to
+		if int64(cap(b.data)) < to-from {
+			b.data = make([]byte, to-from)
+		} else {
+			b.data = b.data[:to-from]
+		}
 		return b
 	}
 	// return &block{from, to, make([]byte, 0, to-from+bytes.MinRead)}
