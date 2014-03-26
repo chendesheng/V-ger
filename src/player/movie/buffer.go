@@ -132,11 +132,12 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 		b.Unlock()
 		select {
 		case <-time.After(100 * time.Millisecond):
+			b.Lock()
 			break
 		case <-quit:
+			b.Lock()
 			return nil
 		}
-		b.Lock()
 	}
 
 	data := make([]byte, len(p))
