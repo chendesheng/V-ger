@@ -139,7 +139,9 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 		b.Lock()
 	}
 
-	b.data.PushBack(&block{off, p})
+	data := make([]byte, len(p))
+	copy(data, p)
+	b.data.PushBack(&block{off, data})
 
 	return nil
 }
