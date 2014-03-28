@@ -1,13 +1,11 @@
 package download
 
 import (
-	// "bytes"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -52,8 +50,8 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 		select {
 		case <-quit:
 			return
-		default:
-			time.Sleep(time.Second * 2)
+		case <-time.After(2 * time.Second):
+			break
 		}
 	}
 	// log.Print("final download url:", url)
@@ -114,8 +112,8 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 		select {
 		case <-quit:
 			return
-		default:
-			runtime.Gosched()
+		case <-time.After(time.Second):
+			break
 		}
 	}
 }
@@ -136,6 +134,7 @@ func readWithTimeout(req *http.Request, resp *http.Response, size int64, data []
 	}()
 
 	_, err := io.ReadFull(resp.Body, data)
+	defer resp.Body.Close()
 
 	close(finish)
 
