@@ -1,6 +1,11 @@
 package gui
 
 import (
+	"bytes"
+	"github.com/go-gl/gl"
+	"io/ioutil"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -105,6 +110,59 @@ func TestMenu(t *testing.T) {
 			w.InitAudioMenu(names, tags, selected1)
 		}
 	})
+
+	PollEvents()
+}
+func readPPMFile(file string) (int, int, []byte) {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		println(err.Error())
+	}
+	println(string(data[:16]))
+
+	l1 := bytes.IndexByte(data, '\n')
+	println("l1", l1)
+	l2 := bytes.IndexByte(data[l1+1:], '\n') + l1 + 1
+	println("l2", l2)
+	l3 := bytes.IndexByte(data[l2+1:], '\n') + l2 + 1
+	println("l3", l3)
+
+	str := string(data[l1+1 : l2])
+	strs := strings.Split(str, " ")
+	w, _ := strconv.Atoi(strs[0])
+	h, _ := strconv.Atoi(strs[1])
+	return w, h, data[l3+1:]
+}
+func TestOpenGLShader(t *testing.T) {
+	width, height, img := readPPMFile("window_test_image.ppm")
+
+	w := NewWindow("GLSL", width, height)
+	w.SetSize(width, height)
+	w.RefreshContent(img)
+
+	gl.Init()
+
+	program := gl.CreateProgram()
+	defer program.Delete()
+	shaderAttachFromFile(program, gl.FRAGMENT_SHADER, `
+void main() {
+	gl_FragColor=vec4(1.0,0.0,0.0,1.0);
+}
+		`)
+	program.Link()
+	program.Use()
+
+	PollEvents()
+}
+
+func TestYUV2RGBShader(t *testing.T) {
+	img, _ := ioutil.ReadFile("window_test_image.yuv")
+	width, height := 1920, 1040
+
+	w := NewWindow("GLSL", width, height)
+	w.SetSize(width, height)
+
+	w.RefreshContent(img)
 
 	PollEvents()
 }

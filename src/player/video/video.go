@@ -3,6 +3,7 @@ package video
 import (
 	"errors"
 	"fmt"
+	// "io/ioutil"
 	. "player/clock"
 	// "github.com/go-gl/gl"
 	"log"
@@ -30,8 +31,9 @@ type Video struct {
 	swsCtx      SwsContext
 
 	//buffers
-	frame               AVFrame
-	pictureRGBs         [8]AVPicture
+	frame AVFrame
+	// pictureRGBs         [8]AVPicture
+	pictureObjects      [8]*AVObject
 	currentPictureIndex int
 
 	Width, Height int
@@ -62,24 +64,37 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 }
 
 func (v *Video) setupPictureRGB() {
-	for i, _ := range v.pictureRGBs {
-		numBytes := AVPictureGetSize(AV_PIX_FMT_RGB24, v.Width, v.Height)
-		picFrame := AllocFrame()
-		pictureRGB := picFrame.Picture()
-		pictureRGBBuffer := AVObject{}
-		pictureRGBBuffer.Malloc(numBytes)
-		pictureRGB.Fill(pictureRGBBuffer, AV_PIX_FMT_RGB24, v.Width, v.Height)
-
-		v.pictureRGBs[i] = pictureRGB
+	for i, _ := range v.pictureObjects {
+		obj := AVObject{}
+		obj.Malloc(v.Width * v.Height * 2)
+		println("setup picture objects", obj.Size())
+		v.pictureObjects[i] = &obj
 	}
+	// for i, _ := range v.pictureRGBs {
+	// 	numBytes := AVPictureGetSize(AV_PIX_FMT_RGB24, v.Width, v.Height)
+	// 	picFrame := AllocFrame()
+	// 	pictureRGB := picFrame.Picture()
+	// 	pictureRGBBuffer := AVObject{}
+	// 	pictureRGBBuffer.Malloc(numBytes)
+	// 	pictureRGB.Fill(pictureRGBBuffer, AV_PIX_FMT_RGB24, v.Width, v.Height)
+
+	// 	v.pictureRGBs[i] = pictureRGB
+	// }
 }
 
-func (v *Video) getPictureRGB() AVPicture {
-	pic := v.pictureRGBs[v.currentPictureIndex]
+func (v *Video) getPictureObject() *AVObject {
+	obj := v.pictureObjects[v.currentPictureIndex]
 	v.currentPictureIndex++
-	v.currentPictureIndex = v.currentPictureIndex % len(v.pictureRGBs)
-	return pic
+	v.currentPictureIndex = v.currentPictureIndex % len(v.pictureObjects)
+	return obj
 }
+
+// func (v *Video) getPictureRGB() AVPicture {
+// 	pic := v.pictureRGBs[v.currentPictureIndex]
+// 	v.currentPictureIndex++
+// 	v.currentPictureIndex = v.currentPictureIndex % len(v.pictureRGBs)
+// 	return pic
+// }
 
 func (v *Video) setupSwsContext() {
 	width := v.Width
@@ -200,15 +215,19 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 
 	if frameFinished, pts := v.Decode(packet); frameFinished {
 		frame := v.frame
-		pictureRGB := v.getPictureRGB()
-		swsCtx := v.swsCtx
+		// pictureRGB := v.getPictureRGB()
+		// swsCtx := v.swsCtx
 		width, height := v.Width, v.Height
 
-		frame.Flip(height)
-		swsCtx.Scale(frame, pictureRGB)
+		// frame.Flip(height)
+		// swsCtx.Scale(frame, pictureRGB)
 
-		return true, pts, pictureRGB.RGBBytes(width, height)
-		// return false, 0, nil
+		// return true, pts, pictureRGB.RGBBytes(width, height)
+
+		pic := frame.Picture()
+		obj := v.getPictureObject()
+		pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
+		return true, pts, obj.Bytes()
 	}
 
 	return false, 0, nil
@@ -258,8 +277,8 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
-	pictureRGB := v.getPictureRGB()
-	swsCtx := v.swsCtx
+	// pictureRGB := v.getPictureRGB()
+	// swsCtx := v.swsCtx
 
 	for ctx.ReadFrame(&packet) >= 0 {
 		if frameFinished, pts := v.Decode(&packet); frameFinished {
@@ -268,10 +287,25 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 			packet.Free()
 
 			if t-pts < 0*time.Millisecond {
-				frame.Flip(height)
-				swsCtx.Scale(frame, pictureRGB)
+				// frame.Flip(height)
+				// swsCtx.Scale(frame, pictureRGB)
 
-				return pts, pictureRGB.RGBBytes(width, height), nil
+				pic := frame.Picture()
+				obj := v.getPictureObject()
+				pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
+				return pts, obj.Bytes(), nil
+
+				// pd := frame.DataObject()
+				// pd.SetSize(width*height + width*height/2)
+				// pd.Bytes()
+				// picYUV.SaveToPPMFile("test.yuv", width, height)
+				// ioutil.WriteFile("test.yuv", picYUV.RGBBytes(width, height), 0666)
+				// println(len(pd.Bytes()))
+				// println(width, height)
+				// ioutil.WriteFile("test.yuv", obj.Bytes(), 0666)
+				// log.Fatal("yes")
+
+				// return pts, pictureRGB.RGBBytes(width, height), nil
 			}
 		} else {
 			packet.Free()
@@ -288,10 +322,14 @@ func (v *Video) Close() {
 	v.swsCtx.Free()
 	v.frame.Free()
 
-	for _, pic := range v.pictureRGBs {
-		pic.FreeBuffer()
-		f := pic.Frame()
-		f.Free()
+	// for _, pic := range v.pictureRGBs {
+	// 	pic.FreeBuffer()
+	// 	f := pic.Frame()
+	// 	f.Free()
+	// }
+
+	for _, obj := range v.pictureObjects {
+		obj.Free()
 	}
 
 	v.codec.Close()

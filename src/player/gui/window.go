@@ -18,6 +18,11 @@ func init() {
 	windows = make(map[unsafe.Pointer]*Window)
 }
 
+type imageRender interface {
+	draw(img []byte, width, height int)
+	delete()
+}
+
 type Window struct {
 	ptr unsafe.Pointer
 
@@ -28,8 +33,6 @@ type Window struct {
 	FuncAudioMenuClicked    []func(int)
 	FuncSubtitleMenuClicked []func(int, bool)
 	FuncMouseWheelled       []func(float64)
-
-	texture gl.Texture
 
 	ChanDraw     chan []byte
 	ChanShowText chan SubItemArg
@@ -47,6 +50,8 @@ type Window struct {
 
 	currentMessagePtr uintptr
 	currentMessage    *SubItem
+
+	render imageRender
 }
 
 // func (w *Window) Show() {
@@ -74,7 +79,7 @@ func (w *Window) RefreshContent(img []byte) {
 }
 
 func (w *Window) Destory() {
-	w.texture.Delete()
+	w.render.delete()
 }
 
 func (w *Window) GetWindowSize() (int, int) {
@@ -96,6 +101,19 @@ func (w *Window) SetTitle(title string) {
 }
 
 func (w *Window) SetSize(width, height int) {
+	println("set size")
+
+	if width%4 != 0 {
+		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
+	}
+
+	if w.render != nil {
+		w.render.delete()
+	}
+
+	println("NewYUVRender")
+	w.render = NewYUVRender(w.img, width, height)
+
 	w.originalWidth, w.originalHeight = width, height
 
 	sw, sh := GetScreenSize()
@@ -109,31 +127,6 @@ func (w *Window) SetSize(width, height int) {
 	} else {
 		C.setWindowSize(w.ptr, C.int(width), C.int(height))
 	}
-
-	if width%4 != 0 {
-		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
-	}
-
-	if w.texture != 0 {
-		w.texture.Delete()
-	}
-
-	texture := gl.GenTexture()
-	texture.Bind(gl.TEXTURE_2D)
-
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0,
-		gl.RGB, gl.UNSIGNED_BYTE, make([]byte, width*height*3)) //alloc memory
-
-	gl.Enable(gl.TEXTURE_2D)
-	gl.Disable(gl.DEPTH_TEST) //disable 3d
-	gl.ShadeModel(gl.SMOOTH)
-	gl.ClearColor(0, 0, 0, 1)
-
-	w.texture = texture
 }
 
 func NewWindow(title string, width, height int) *Window {
@@ -162,7 +155,7 @@ func NewWindow(title string, width, height int) *Window {
 
 	C.showWindow(ptr)
 	C.makeWindowCurrentContext(ptr) //must make current context before do texture bind or we will get a all white window
-
+	gl.Init()
 	return w
 }
 
@@ -220,15 +213,12 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 		return
 	}
 
-	// println("width:", imgWidth, "height:", imgHeight)
+	if w.render == nil {
+		return
+	}
 
-	w.texture.Bind(gl.TEXTURE_2D)
+	w.render.draw(img, imgWidth, imgHeight)
 
-	gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, imgWidth, imgHeight, gl.RGB,
-		gl.UNSIGNED_BYTE, img)
-
-	// width, height := w.GetWindowSize()
-	// gl.Viewport(0, 0, 1280, 720)
 	x, y, width, height := w.fitToWindow(imgWidth, imgHeight)
 	gl.Viewport(x, y, width, height)
 

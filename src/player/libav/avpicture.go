@@ -39,12 +39,11 @@ func AVPictureGetSize(pixFmt int, width, height int) int {
 // 	return obj.Bytes()
 // }
 
-func (picture *AVPicture) Layout(pixFmt int, width, height int) AVObject {
+func (picture *AVPicture) Layout(pixFmt int, width int, height int, dest AVObject) {
 	size := AVPictureGetSize(pixFmt, width, height)
-	dest := C.malloc(C.size_t(size))
-	C.avpicture_layout(picture.ptr, int32(pixFmt), C.int(width), C.int(height), (*_Ctype_unsignedchar)(dest), C.int(size))
-
-	return AVObject{ptr: dest, size: size}
+	// dest := C.malloc(C.size_t(size))
+	println(dest.size, size)
+	C.avpicture_layout(picture.ptr, int32(pixFmt), C.int(width), C.int(height), (*_Ctype_unsignedchar)(dest.ptr), C.int(size))
 }
 
 func (picture *AVPicture) Data() AVObject {
@@ -76,6 +75,9 @@ func (picture *AVPicture) SaveToPPMFile(file string, width, height int) []byte {
 }
 
 func (picture *AVPicture) RGBBytes(width, height int) []byte {
+	// ret := make([]byte, picture.buf.Size())
+	// copy(ret, picture.buf.Bytes())
+	// return ret
 	return picture.buf.Bytes()
 }
 

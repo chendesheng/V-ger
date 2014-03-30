@@ -327,22 +327,22 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 	name, _ := url.QueryUnescape(r.URL.String()[6:])
 	fmt.Printf("play \"%s\".\n", name)
 
-	playerPath := util.ReadConfig("video-player")
-	t, err := task.GetTask(name)
-	if err != nil {
-		writeError(w, err)
-		return
-	}
+	// playerPath := util.ReadConfig("video-player")
+	// t, err := task.GetTask(name)
+	// if err != nil {
+	// 	writeError(w, err)
+	// 	return
+	// }
 
-	// config := util.ReadAllConfigs()
+	config := util.ReadAllConfigs()
 
-	// playerPath := config["video-player"]
+	playerPath := config["video-player"]
 
 	util.KillProcess(playerPath)
 
-	// cmd := exec.Command("open", playerPath, "--args", "http://"+config["server"]+"/video/"+name)
-	cmd := exec.Command("open", playerPath, "--args", t.URL)
-	err = cmd.Start()
+	cmd := exec.Command("open", playerPath, "--args", "http://"+config["server"]+"/video/"+name)
+	// cmd := exec.Command("open", playerPath, "--args", t.URL)
+	err := cmd.Start()
 	if err != nil {
 		writeError(w, err)
 	}

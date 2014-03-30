@@ -53,7 +53,7 @@ func (p *blockPool) put(b *block) {
 func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int64, from, size int64, blockSize int64, quit <-chan bool) {
 	log.Printf("generate block output: %v", output)
 	if blockSize == 0 {
-		blockSize = int64(400 * 1024)
+		blockSize = int64(512 * 1024)
 	}
 
 	to := from + blockSize
@@ -124,7 +124,7 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 			}
 		case <-changeBlockSize.C:
 			if maxSpeed == 0 {
-				blockSize = 400 * 1024
+				blockSize = 512 * 1024
 			}
 			changeBlockSize.Stop()
 		case <-quit:
