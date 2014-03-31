@@ -15,6 +15,7 @@ import (
 	"subtitles"
 	"task"
 	"thunder"
+	"time"
 	"toutf8"
 	"unicode/utf8"
 	"util"
@@ -47,6 +48,7 @@ func saveThunderSubtitle(subFile string, data []byte) {
 	ioutil.WriteFile(subFile, data, 0666)
 }
 func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit chan bool) bool {
+	deadline := time.Now().Add(time.Minute)
 	for {
 		select {
 		case s, ok := <-chSubs:
@@ -82,6 +84,10 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 			}
 		case <-quit:
 			return false
+		}
+
+		if time.Now().After(deadline) {
+			break
 		}
 	}
 

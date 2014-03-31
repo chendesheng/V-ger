@@ -129,7 +129,7 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 			if err != nil {
 				log.Print(err)
 			}
-
+			log.Print("kankan search finished")
 		}()
 	} else {
 		close(kankanFinish)
