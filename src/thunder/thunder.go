@@ -70,11 +70,14 @@ func NewTaskWithTorrent(torrent []byte) ([]ThunderTask, error) {
 }
 func WriteValidationCode(w io.Writer) {
 	resp, err := http.Get(fmt.Sprintf("http://verify2.xunlei.com/image?t=MVA&cachetime=%d", time.Now().Unix()))
-	defer resp.Body.Close()
 
 	if err == nil {
+		defer resp.Body.Close()
+
 		bytes, _ := ioutil.ReadAll(resp.Body)
 		w.Write(bytes)
+	} else {
+		log.Print(err)
 	}
 }
 func uploadTorrent(torrent []byte, userId string, verifycode string) error {
