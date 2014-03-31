@@ -156,6 +156,7 @@ func NewWindow(title string, width, height int) *Window {
 	C.showWindow(ptr)
 	C.makeWindowCurrentContext(ptr) //must make current context before do texture bind or we will get a all white window
 	gl.Init()
+	gl.ClearColor(0, 0, 0, 1)
 	return w
 }
 
