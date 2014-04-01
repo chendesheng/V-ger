@@ -42,7 +42,7 @@ func NewMovie() *Movie {
 	return m
 }
 
-func (m *Movie) Open(w *Window, file string, subFiles []string) {
+func (m *Movie) Open(w *Window, file string) {
 	println("open ", file)
 
 	var ctx AVFormatContext
@@ -83,9 +83,6 @@ func (m *Movie) Open(w *Window, file string, subFiles []string) {
 
 	m.setupVideo()
 	m.w = w
-	if len(subFiles) == 0 {
-		go m.SearchDownloadSubtitle()
-	}
 	w.InitEvents()
 	w.SetTitle(filename)
 	w.SetSize(m.v.Width, m.v.Height)
@@ -93,8 +90,6 @@ func (m *Movie) Open(w *Window, file string, subFiles []string) {
 
 	println("audio")
 	m.setupAudio()
-	println("setupSubtitles")
-	m.setupSubtitles(subFiles)
 
 	m.uievents()
 
@@ -116,9 +111,25 @@ func (m *Movie) Open(w *Window, file string, subFiles []string) {
 	m.c.Reset()
 	m.c.SetTime(start)
 
-	if m.s != nil {
-		m.s.Seek(start)
-	}
+	go func() {
+		subFiles := make([]string, 0)
+		local := GetSubtitles(filename)
+		if len(local) > 0 {
+			for _, s := range local {
+				subFiles = append(subFiles, s.Name)
+			}
+		}
+		log.Printf("%v", subFiles)
+		if len(subFiles) == 0 {
+			go m.SearchDownloadSubtitle()
+		} else {
+			println("setupSubtitles")
+			m.setupSubtitles(subFiles)
+			if m.s != nil {
+				m.s.Seek(start)
+			}
+		}
+	}()
 
 	go m.showProgress(filename)
 	println("open return")

@@ -3,14 +3,12 @@ package main
 import (
 	"dbHelper"
 	"filelock"
-	"fmt"
+	// "fmt"
 	"log"
 	. "logger"
 	"path"
 	. "player/gui"
-	// . "player/libav"
 	. "player/movie"
-	. "player/shared"
 	"runtime"
 	"util"
 )
@@ -23,14 +21,6 @@ func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
 }
 
-func formatSubtitleName(filename string, lang1, lang2 string) string {
-	if len(lang2) > 0 {
-		return fmt.Sprintf("[%s] %s", lang1, filename)
-	} else {
-		return fmt.Sprintf("[%s%s] %s", lang1, lang2, filename)
-	}
-}
-
 type appDelegate struct {
 	w *Window
 	m *Movie
@@ -38,16 +28,6 @@ type appDelegate struct {
 
 func (app *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
-	name := path.Base(filename)
-
-	subs := make([]string, 0)
-	local := GetSubtitles(name)
-	if len(local) > 0 {
-		for _, s := range local {
-			subs = append(subs, s.Name)
-		}
-	}
-	log.Printf("%v", subs)
 
 	if app.m != nil {
 		app.m.Close()
@@ -55,7 +35,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 	}
 
 	app.m = NewMovie()
-	app.m.Open(app.w, filename, subs)
+	app.m.Open(app.w, filename)
 	app.m.PlayAsync()
 
 	return len(filename) > 0
@@ -94,7 +74,6 @@ func main() {
 
 	util.SetCookie("gdriveid", util.ReadConfig("gdriveid"), "http://xunlei.com")
 
-	// NetworkInit()
 	app := &appDelegate{}
 	Initialize(app)
 	app.w = NewWindow("V'ger", 1024, 576)

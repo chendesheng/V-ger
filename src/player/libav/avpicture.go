@@ -42,7 +42,7 @@ func AVPictureGetSize(pixFmt int, width, height int) int {
 func (picture *AVPicture) Layout(pixFmt int, width int, height int, dest AVObject) {
 	size := AVPictureGetSize(pixFmt, width, height)
 	// dest := C.malloc(C.size_t(size))
-	println(dest.size, size)
+	// println(dest.size, size)
 	C.avpicture_layout(picture.ptr, int32(pixFmt), C.int(width), C.int(height), (*_Ctype_unsignedchar)(dest.ptr), C.int(size))
 }
 
