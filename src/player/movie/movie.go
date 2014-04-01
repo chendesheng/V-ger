@@ -65,53 +65,35 @@ func (m *Movie) Open(w *Window, file string) {
 
 	}
 
-	m.p = CreateOrGetPlaying(filename)
 	m.chSeekPause = make(chan time.Duration)
 
 	m.ctx = ctx
-	// dur := ctx.Duration()
-	// if dur < 0 {
-	// 	dur = -dur
-	// }
+
 	duration := time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
 	m.c = NewClock(duration)
-	m.c.Pause()
-	func() {
-		time.After(100 * time.Millisecond)
-		m.c.Resume()
-	}()
 
 	m.setupVideo()
-	m.w = w
-	w.InitEvents()
-	w.SetTitle(filename)
-	w.SetSize(m.v.Width, m.v.Height)
-	m.v.SetRender(m.w)
-
-	println("audio")
-	m.setupAudio()
-
-	m.uievents()
-
-	start, _, _ := m.v.Seek(m.p.LastPos)
-	// start := m.p.LastPos
-	// start := time.Duration(0)
-	m.p.LastPos = start
-	m.p.Duration = duration
-
-	if t, _ := task.GetTask(m.p.Movie); t != nil {
-		println("get subscribe:", t.Subscribe)
-		if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
-			subscribe.UpdateDuration(t.Subscribe, duration)
-		}
-	}
-
-	SavePlayingAsync(m.p)
-
-	m.c.Reset()
-	m.c.SetTime(start)
 
 	go func() {
+
+		m.p = CreateOrGetPlaying(filename)
+		start, _, _ := m.v.Seek(m.p.LastPos)
+
+		m.c.SetTime(start)
+		m.showProgress(filename)
+
+		m.p.LastPos = start
+		m.p.Duration = duration
+
+		if t, _ := task.GetTask(m.p.Movie); t != nil {
+			println("get subscribe:", t.Subscribe)
+			if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
+				subscribe.UpdateDuration(t.Subscribe, duration)
+			}
+		}
+
+		SavePlayingAsync(m.p)
+
 		subFiles := make([]string, 0)
 		local := GetSubtitles(filename)
 		if len(local) > 0 {
@@ -126,12 +108,22 @@ func (m *Movie) Open(w *Window, file string) {
 			println("setupSubtitles")
 			m.setupSubtitles(subFiles)
 			if m.s != nil {
-				m.s.Seek(start)
+				m.s.Seek(m.c.GetTime())
 			}
 		}
 	}()
 
-	go m.showProgress(filename)
+	m.w = w
+	w.InitEvents()
+	w.SetTitle(filename)
+	w.SetSize(m.v.Width, m.v.Height)
+	m.v.SetRender(m.w)
+
+	println("audio")
+	m.setupAudio()
+
+	m.uievents()
+
 	println("open return")
 }
 func (m *Movie) Close() {
