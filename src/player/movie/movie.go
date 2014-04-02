@@ -103,7 +103,7 @@ func (m *Movie) Open(w *Window, file string) {
 		}
 		log.Printf("%v", subFiles)
 		if len(subFiles) == 0 {
-			go m.SearchDownloadSubtitle()
+			m.SearchDownloadSubtitle()
 		} else {
 			println("setupSubtitles")
 			m.setupSubtitles(subFiles)
@@ -189,6 +189,7 @@ func (m *Movie) SendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 	if index == packet.StreamIndex() {
 		pkt := packet
 		pkt.Dup()
+
 		select {
 		case ch <- &pkt:
 			return true
