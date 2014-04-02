@@ -188,7 +188,7 @@ func (m *Movie) uievents() {
 						return
 					case volume := <-chVolume:
 						m.p.Volume = volume
-						SavePlaying(m.p)
+						SavePlayingAsync(m.p)
 						m.w.SendShowMessage(fmt.Sprintf("Volume: %d%%", volume), false)
 						break
 					}
