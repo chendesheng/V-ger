@@ -1,11 +1,16 @@
 package movie
 
 import (
+	. "player/libav"
 	"time"
 )
 
 func (m *Movie) seekOffset(offset time.Duration) {
 	t := m.c.GetTime() + offset
+	if t < 0 {
+		t = 0
+	}
+	seekToBegin := t == 0
 
 	m.SeekBegin()
 
@@ -16,8 +21,11 @@ func (m *Movie) seekOffset(offset time.Duration) {
 		return
 	}
 
-	// m.w.RefreshContent(img)
 	go m.w.SendDrawImage(img)
+	if seekToBegin {
+		t = 0
+		m.ctx.SeekFile(t, AVSEEK_FLAG_FRAME)
+	}
 
 	m.c.SetTime(t)
 	percent := m.c.GetPercent()

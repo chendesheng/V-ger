@@ -73,13 +73,17 @@ func (m *Movie) Open(w *Window, file string) {
 	m.c = NewClock(duration)
 
 	m.setupVideo()
+	m.w = w
+
+	m.p = CreateOrGetPlaying(filename)
+
+	var start time.Duration
+	if m.p.LastPos > 0 {
+		start, _, _ = m.v.Seek(m.p.LastPos)
+	}
 
 	go func() {
 
-		m.p = CreateOrGetPlaying(filename)
-		start, _, _ := m.v.Seek(m.p.LastPos)
-
-		m.c.SetTime(start)
 		m.showProgress(filename)
 
 		m.p.LastPos = start
@@ -113,7 +117,6 @@ func (m *Movie) Open(w *Window, file string) {
 		}
 	}()
 
-	m.w = w
 	w.InitEvents()
 	w.SetTitle(filename)
 	w.SetSize(m.v.Width, m.v.Height)
@@ -124,8 +127,9 @@ func (m *Movie) Open(w *Window, file string) {
 
 	m.uievents()
 
-	println("open return")
+	m.c.SetTime(start)
 }
+
 func (m *Movie) Close() {
 	m.w.FlushImageBuffer()
 	m.w.RefreshContent(nil)
