@@ -58,7 +58,13 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 
 //drop packet if return false
 func (a *Audio) sync(packet *AVPacket) bool {
-	pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * float64(time.Second))
+	var pts time.Duration
+	if packet.Dts() != AV_NOPTS_VALUE {
+		pts = time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
+	} else if packet.Pts() != AV_NOPTS_VALUE {
+		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
+	}
+
 	now := a.c.GetSeekTime()
 
 	if time.Duration(math.Abs(float64(pts-now))) < 100*time.Millisecond {

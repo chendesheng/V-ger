@@ -159,6 +159,8 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 		var pts time.Duration
 		if packet.Dts() != AV_NOPTS_VALUE {
 			pts = time.Duration(float64(packet.Dts()) * v.stream.Timebase().Q2D() * (float64(time.Second)))
+		} else if packet.Pts() != AV_NOPTS_VALUE {
+			pts = time.Duration(float64(packet.Pts()) * v.stream.Timebase().Q2D() * (float64(time.Second)))
 		}
 
 		return true, pts
