@@ -170,8 +170,8 @@ func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
 	return ret
 }
 
-func (ctx *AVFormatContext) Duration() int64 {
-	return int64(ctx.ptr.duration)
+func (ctx *AVFormatContext) Duration() uint64 {
+	return uint64(ctx.ptr.duration)
 }
 
 func (ctx *AVFormatContext) StartTime() time.Duration {

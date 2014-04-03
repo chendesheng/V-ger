@@ -39,3 +39,7 @@ func goReadFunc(ptr unsafe.Pointer, buf unsafe.Pointer, bufSize C.int) C.int {
 func goSeekFunc(ptr unsafe.Pointer, pos C.int64_t, whence C.int) C.int64_t {
 	return C.int64_t(cbSeekFunc(int64(pos), int(whence)))
 }
+
+func (ctx *AVIOContext) Size() int64 {
+	return int64(C.avio_size(ctx.ptr))
+}

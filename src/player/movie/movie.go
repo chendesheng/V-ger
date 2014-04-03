@@ -34,6 +34,8 @@ type Movie struct {
 	subFiles []string
 
 	audioStreams []AVStream
+
+	size int64
 }
 
 func NewMovie() *Movie {
@@ -50,6 +52,7 @@ func (m *Movie) Open(w *Window, file string) {
 
 	if strings.HasPrefix(file, "http://") {
 		ctx, filename = m.openHttp(file)
+		ctx.FindStreamInfo()
 	} else {
 		ctx = AVFormatContext{}
 		ctx.OpenInput(file)
@@ -69,7 +72,15 @@ func (m *Movie) Open(w *Window, file string) {
 
 	m.ctx = ctx
 
-	duration := time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
+	var duration time.Duration
+	if ctx.Duration() != AV_NOPTS_VALUE {
+		duration = time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
+	} else {
+		// duration = 2 * time.Hour
+		log.Fatal("Can't get video duration.")
+	}
+
+	log.Print("video duration:", duration.String())
 	m.c = NewClock(duration)
 
 	m.setupVideo()
@@ -78,7 +89,7 @@ func (m *Movie) Open(w *Window, file string) {
 	m.p = CreateOrGetPlaying(filename)
 
 	var start time.Duration
-	if m.p.LastPos > 0 {
+	if m.p.LastPos > time.Second {
 		start, _, _ = m.v.Seek(m.p.LastPos)
 	}
 
