@@ -136,11 +136,11 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 	}
 
 	yyetsOK, shoooterOK := true, true
-	var s Subtitle
+	// var s Subtitle
 	for yyetsOK || shoooterOK {
 		select {
-		case s, yyetsOK = <-yyetsRes:
-			if yyetsOK {
+		case s, ok := <-yyetsRes:
+			if ok && yyetsOK {
 				yyetsCnt++
 				if yyetsCnt < maxcnt {
 					println("yyets:", s.Description)
@@ -149,10 +149,12 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 					close(yyetsQuit)
 					yyetsOK = false
 				}
+			} else {
+				yyetsOK = false
 			}
 			break
-		case s, shoooterOK = <-shooterRes:
-			if shoooterOK {
+		case s, ok := <-shooterRes:
+			if ok && shoooterOK {
 				shooterCnt++
 				if shooterCnt < maxcnt {
 					println("shooter:", s.Description)
@@ -161,6 +163,8 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 					close(shooterQuit)
 					shoooterOK = false
 				}
+			} else {
+				shoooterOK = false
 			}
 			break
 		case <-quit:
