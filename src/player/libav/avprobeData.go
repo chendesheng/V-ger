@@ -27,5 +27,5 @@ func (p *AVProbeData) SetFileName(name string) {
 }
 
 func (p *AVProbeData) InputFormat() unsafe.Pointer {
-	return unsafe.Pointer(C.av_probe_input_format(p.ptr, 1))
+	return unsafe.Pointer(C.av_probe_input_format(p.ptr, 0))
 }

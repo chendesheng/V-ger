@@ -60,7 +60,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	mbuf = NewBuffer(size)
 
 	buf := AVObject{}
-	buf.Malloc(1024 * 32)
+	buf.Malloc(1024 * 64)
 	ioctx := NewAVIOContext(buf, func(buf AVObject) int {
 		if buf.Size() == 0 {
 			return 0
@@ -69,6 +69,9 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		return mbuf.Read(&buf, int64(buf.Size()))
 	}, func(offset int64, whence int) int64 {
 		println("seek:", offset, whence)
+		if whence == AVSEEK_SIZE {
+			return mbuf.size
+		}
 
 		pos, start := mbuf.Seek(offset, whence)
 		if start >= 0 && start < size {
@@ -87,19 +90,30 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	pd := NewAVProbeData()
+	if ctx.IsNil() {
+		println("avformatcontext is nil1")
+	}
+
+	// pd := NewAVProbeData()
 
 	go download.QuitAndDownload(t, mbuf, 0)
-	mbuf.Read(&buf, 1024*32)
+	// mbuf.Read(&buf, 1024*64)
 	mbuf.Seek(0, os.SEEK_SET)
 
-	pd.SetBuffer(buf)
-	pd.SetFileName("")
+	// pd.SetBuffer(buf)
+	// pd.SetFileName(name)
 
-	ctx.SetInputFormat(pd.InputFormat())
+	// ctx.SetInputFormat(pd.InputFormat())
 
-	ctx.OpenInput("")
+	if ctx.IsNil() {
+		println("avformatcontext is nil12")
+	}
+
+	ctx.OpenInput(name)
 
 	println("open http return")
+	if ctx.IsNil() {
+		println("avformatcontext is nil")
+	}
 	return ctx, name
 }

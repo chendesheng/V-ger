@@ -52,9 +52,13 @@ func (m *Movie) Open(w *Window, file string) {
 
 	if strings.HasPrefix(file, "http://") {
 		ctx, filename = m.openHttp(file)
+		if ctx.IsNil() {
+			log.Fatal("open failed: ", file)
+			return
+		}
 		ctx.FindStreamInfo()
 	} else {
-		ctx = AVFormatContext{}
+		ctx = NewAVFormatContext()
 		ctx.OpenInput(file)
 		if ctx.IsNil() {
 			log.Fatal("open failed:", file)

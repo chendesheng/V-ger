@@ -36,6 +36,7 @@ func (ctx *AVFormatContext) OpenInput(filename string) {
 
 	if int(C.avformat_open_input(&ctx.ptr, cfilename, nil, nil)) != 0 {
 		// ctx.ptr = nil
+		println("open input error")
 	}
 }
 func NetworkInit() {
