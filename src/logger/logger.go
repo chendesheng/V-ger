@@ -3,6 +3,7 @@ package logger
 import (
 	"io"
 	"log"
+	"log/syslog"
 	"os"
 	// "util"
 )
@@ -38,20 +39,23 @@ func (l logWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-func InitLog(filename string) {
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+func InitLog(prefix string) {
+	log.SetFlags(log.Lshortfile)
 	w := logWriter{}
 	w.writers = append(w.writers, os.Stdout)
 
-	if filename != "" {
-		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-		if err == nil {
-			// os.Stderr = f
-			w.writers = append(w.writers, f)
-		} else {
-			log.Print(err)
-		}
-	}
+	l, _ := syslog.New(syslog.LOG_NOTICE, prefix)
+	w.writers = append(w.writers, l)
+
+	// if filename != "" {
+	// 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	// 	if err == nil {
+	// 		// os.Stderr = f
+	// 		w.writers = append(w.writers, f)
+	// 	} else {
+	// 		log.Print(err)
+	// 	}
+	// }
 
 	log.SetOutput(w)
 }

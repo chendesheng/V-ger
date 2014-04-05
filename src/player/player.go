@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	InitLog(util.ReadConfig("playerlog"))
+	InitLog("VgerPlayer")
 
 	log.Print("log initialized.")
 
