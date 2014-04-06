@@ -4,7 +4,7 @@ import (
 	"io"
 	"log"
 	"task"
-	// "time"
+	"time"
 	"util"
 )
 
@@ -47,21 +47,24 @@ func activeFilters(filters []filter) {
 }
 
 func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
-	maxSpeed int64, chMaxSpeed chan int64, quit chan bool) {
+	maxSpeed int64, chMaxSpeed chan int64, restartTimeout time.Duration, quit chan bool) {
 	url := t.URL
 
+	maxConnections := util.ReadIntConfig("max-connection")
+
 	gf := &generateFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan *block, maxConnections), quit},
 		from,
 		to,
 		maxSpeed,
 		chMaxSpeed,
+		maxConnections * 2,
 	}
 
 	df := &downloadFilter{
 		basicFilter{nil, make(chan *block), quit},
 		url,
-		util.ReadIntConfig("max-connection"),
+		maxConnections,
 	}
 
 	sf := &sortFilter{
@@ -72,6 +75,7 @@ func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
 	wf := &writeFilter{
 		basicFilter{nil, make(chan *block), quit},
 		w,
+		restartTimeout,
 	}
 
 	pf := &progressFilter{

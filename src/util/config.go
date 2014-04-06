@@ -4,6 +4,7 @@ import (
 	// "log"
 	"os"
 	"path"
+	"time"
 	// "path/filepath"
 	"strconv"
 )
@@ -44,6 +45,14 @@ func ReadIntConfig(key string) (res int) {
 		panic(err)
 	}
 	return
+}
+
+func ReadSecondsConfig(key string) time.Duration {
+	res, err := strconv.Atoi(ReadConfig(key))
+	if err != nil {
+		panic(err)
+	}
+	return time.Duration(res) * time.Second
 }
 
 func ReadBoolConfig(key string) (res bool) {

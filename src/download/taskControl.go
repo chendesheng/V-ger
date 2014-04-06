@@ -159,7 +159,11 @@ func download(tc *taskControl) {
 		tc.chMaxSpeed = make(chan int64)
 
 		if t.DownloadedSize < t.Size {
-			doDownload(t, w, t.DownloadedSize, t.Size, int64(util.ReadIntConfig("max-speed")), tc.chMaxSpeed, tc.quit)
+			doDownload(t, w, t.DownloadedSize, t.Size,
+				int64(util.ReadIntConfig("max-speed")),
+				tc.chMaxSpeed,
+				util.ReadSecondsConfig("task-restart-timeout"),
+				tc.quit)
 			log.Print("download return")
 		}
 

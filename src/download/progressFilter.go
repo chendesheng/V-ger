@@ -6,7 +6,6 @@ import (
 	"math"
 	"task"
 	"time"
-	"util"
 )
 
 type progressFilter struct {
@@ -82,14 +81,11 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 		total = t.BufferedPosition
 	}
 
-	timer := time.NewTicker(time.Millisecond * 1000)
-
-	taskRestartTimeout := time.Duration(util.ReadIntConfig("task-restart-timeout")) * time.Second
+	timer := time.NewTicker(time.Second)
 
 	speed := float64(0)
 	sr := newSegRing(40)
 
-	lastTotal := total
 	for {
 		select {
 		case b, ok := <-progress:
@@ -114,8 +110,9 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 				}()
 			}
 			sr.add(length)
+			break
 		case <-timer.C:
-			elapsedTime += time.Millisecond * 1000
+			elapsedTime += time.Second
 
 			sr.add(0)
 
@@ -128,13 +125,6 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 			if total == size {
 				fmt.Println("progress return")
 				return
-			}
-		case <-time.After(taskRestartTimeout):
-			if lastTotal != total {
-				lastTotal = total
-			} else {
-				log.Print("close quit after timeout")
-				close(quit)
 			}
 		case <-quit:
 			fmt.Println("progress quit")
