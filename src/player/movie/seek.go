@@ -24,7 +24,7 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	go m.w.SendDrawImage(img)
 	if seekToBegin {
 		t = 0
-		m.ctx.SeekFile(t, AVSEEK_FLAG_FRAME)
+		m.ctx.SeekFrame(m.ctx.VideoStream(), t, AVSEEK_FLAG_FRAME)
 	}
 
 	m.c.SetTime(t)

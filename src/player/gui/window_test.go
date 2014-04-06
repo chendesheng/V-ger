@@ -2,7 +2,6 @@ package gui
 
 import (
 	"bytes"
-	"github.com/go-gl/gl"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -133,27 +132,28 @@ func readPPMFile(file string) (int, int, []byte) {
 	h, _ := strconv.Atoi(strs[1])
 	return w, h, data[l3+1:]
 }
-func TestOpenGLShader(t *testing.T) {
-	width, height, img := readPPMFile("window_test_image.ppm")
 
-	w := NewWindow("GLSL", width, height)
-	w.SetSize(width, height)
-	w.RefreshContent(img)
+// func TestOpenGLShader(t *testing.T) {
+// 	width, height, img := readPPMFile("window_test_image.ppm")
 
-	gl.Init()
+// 	w := NewWindow("GLSL", width, height)
+// 	w.SetSize(width, height)
+// 	w.RefreshContent(img)
 
-	program := gl.CreateProgram()
-	defer program.Delete()
-	shaderAttachFromFile(program, gl.FRAGMENT_SHADER, `
-void main() {
-	gl_FragColor=vec4(1.0,0.0,0.0,1.0);
-}
-		`)
-	program.Link()
-	program.Use()
+// 	gl.Init()
 
-	PollEvents()
-}
+// 	program := gl.CreateProgram()
+// 	defer program.Delete()
+// 	shaderAttachFromFile(program, gl.FRAGMENT_SHADER, `
+// void main() {
+// 	gl_FragColor=vec4(1.0,0.0,0.0,1.0);
+// }
+// 		`)
+// 	program.Link()
+// 	program.Use()
+
+// 	PollEvents()
+// }
 
 func TestYUV2RGBShader(t *testing.T) {
 	img, _ := ioutil.ReadFile("window_test_image.yuv")
