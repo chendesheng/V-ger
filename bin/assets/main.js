@@ -238,6 +238,9 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 					var j = item.Name.lastIndexOf('\/');
 					item.Name = item.Name.substring(j + 1);
+
+					j = item.Name.lastIndexOf('\\');
+					item.Name = item.Name.substring(j + 1);
 				}
 				if (data.length == 1 && data[0].Percent == 100) {
 					$scope.waiting = true;
