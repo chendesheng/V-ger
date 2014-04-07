@@ -129,7 +129,7 @@ func (m *Movie) getSubtitleSearch() (string, string) {
 	t, _ := task.GetTask(name)
 	var search = util.CleanMovieName(name)
 	if t != nil && len(t.Subscribe) != 0 && t.Season > 0 {
-		search = fmt.Sprintf("%s s%2de%2d", t.Subscribe, t.Season, t.Episode)
+		search = fmt.Sprintf("%s s%02de%02d", t.Subscribe, t.Season, t.Episode)
 	}
 	url := ""
 	if t != nil {
@@ -145,6 +145,19 @@ func (m *Movie) SearchDownloadSubtitle() {
 
 	search, url := m.getSubtitleSearch()
 	subFiles := downloadSubs(m.p.Movie, url, search, m.quit)
+	if len(subFiles) == 0 {
+		name, content := subtitles.Addic7edSubtitle(search)
+		if len(name) > 0 && len(content) > 0 {
+			sub := &Sub{
+				Movie:   m.p.Movie,
+				Name:    name,
+				Content: content,
+			}
+			InsertSubtitle(sub)
+
+			subFiles = append(subFiles, name)
+		}
+	}
 
 	select {
 	case <-m.quit:
