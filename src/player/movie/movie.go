@@ -31,7 +31,7 @@ type Movie struct {
 	quit        chan bool
 	finishClose chan bool
 
-	subFiles []string
+	subs []*Sub
 
 	audioStreams []AVStream
 
@@ -113,19 +113,13 @@ func (m *Movie) Open(w *Window, file string) {
 
 		SavePlayingAsync(m.p)
 
-		subFiles := make([]string, 0)
-		local := GetSubtitles(filename)
-		if len(local) > 0 {
-			for _, s := range local {
-				subFiles = append(subFiles, s.Name)
-			}
-		}
-		log.Printf("%v", subFiles)
-		if len(subFiles) == 0 {
+		subs := GetSubtitlesMap(filename)
+		log.Printf("%v", subs)
+		if len(subs) == 0 {
 			m.SearchDownloadSubtitle()
 		} else {
 			println("setupSubtitles")
-			m.setupSubtitles(subFiles)
+			m.setupSubtitles(subs)
 			if m.s != nil {
 				m.s.Seek(m.c.GetTime())
 			}

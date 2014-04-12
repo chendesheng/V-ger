@@ -208,8 +208,8 @@ func (m *Movie) uievents() {
 
 	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
 		go func() {
-			subFiles := m.subFiles
-			clicked := subFiles[index]
+			subs := m.subs
+			clicked := subs[index]
 			if showOrHide {
 				// m.s.Stop()
 				width, height := m.w.GetWindowSize()
@@ -225,7 +225,7 @@ func (m *Movie) uievents() {
 					go s.Play()
 				}
 			} else {
-				if (m.s != nil) && (m.s.Name == clicked) {
+				if (m.s != nil) && (m.s.Name == clicked.Name) {
 					m.s.Stop()
 					if m.s2 != nil {
 						m.s = m.s2
@@ -234,7 +234,7 @@ func (m *Movie) uievents() {
 					} else {
 						m.s = nil
 					}
-				} else if (m.s2 != nil) && (m.s2.Name == clicked) {
+				} else if (m.s2 != nil) && (m.s2.Name == clicked.Name) {
 					m.s2.Stop()
 					m.s2 = nil
 				}

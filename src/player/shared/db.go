@@ -3,9 +3,10 @@ package shared
 import (
 	// "database/sql"
 	"dbHelper"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func scanSub(scanner dbHelper.RowScanner) (*Sub, error) {
@@ -46,6 +47,32 @@ func GetSubtitles(movie string) []*Sub {
 
 	return subs
 }
+
+func GetSubtitlesMap(movie string) map[string]*Sub {
+	db := dbHelper.Open()
+	defer dbHelper.Close(db)
+
+	println("get local subtitles:", movie)
+
+	sql := `select Movie, Name, Offset, Content, Type, Lang1, Lang2 from subtitle where Movie=?`
+	rows, err := db.Query(sql, movie)
+	if err != nil {
+		log.Print(err)
+		return nil
+	}
+	defer rows.Close()
+
+	subs := make(map[string]*Sub)
+	for rows.Next() {
+		sub, err := scanSub(rows)
+		if err == nil {
+			subs[sub.Name] = sub
+		}
+	}
+
+	return subs
+}
+
 func GetSubtitle(name string) *Sub {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)

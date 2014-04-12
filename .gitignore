@@ -70,3 +70,5 @@ src/.DS_Store
 bin/pprof_mac_fix
 
 *.test
+
+bin/goimports

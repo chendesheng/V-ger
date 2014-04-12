@@ -240,11 +240,10 @@ func simplized(items []*SubItem) {
 	}
 }
 
-func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Subtitle {
+func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtitle {
 	var err error
-	sub := GetSubtitle(file)
+	// sub := GetSubtitle(file)
 	if sub == nil {
-		log.Print("can't find subtitle: ", file)
 		return nil
 	}
 	s := &Subtitle{}
@@ -255,12 +254,12 @@ func NewSubtitle(file string, r SubRender, c *Clock, width, height float64) *Sub
 	s.ChanOffset = make(chan durationArg)
 	s.chanStop = make(chan bool)
 	s.chanGetSubTime = make(chan subTimeArg)
-	s.Name = file
+	s.Name = sub.Name
 	s.IsMainOrSecondSub = true
 	s.Lang1 = sub.Lang1
 	s.Lang2 = sub.Lang2
 
-	log.Print("parse sub:", file)
+	log.Print("parse sub:", sub.Name)
 
 	if sub.Type == "ass" {
 		s.items, err = ass.Parse(strings.NewReader(sub.Content), width, height)

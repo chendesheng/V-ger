@@ -145,7 +145,7 @@ func (m *Movie) SearchDownloadSubtitle() {
 
 	search, url := m.getSubtitleSearch()
 	subFiles := downloadSubs(m.p.Movie, url, search, m.quit)
-	if len(subFiles) == 0 {
+	if len(subFiles) < 5 {
 		name, content := subtitles.Addic7edSubtitle(search)
 		if len(name) > 0 && len(content) > 0 {
 			sub := &Sub{
@@ -164,18 +164,19 @@ func (m *Movie) SearchDownloadSubtitle() {
 		w.SendHideMessage()
 		return
 	default:
-		if len(subFiles) == 0 {
+		subs := GetSubtitlesMap(m.p.Movie)
+		if len(subs) == 0 {
 			w.SendShowMessage("No subtitle", true)
 			return
 		}
-		m.setupSubtitles(subFiles)
+		m.setupSubtitles(subs)
 		break
 	}
 }
-func (m *Movie) setupDefaultSubtitles(subFiles []string, width, height int) {
+func (m *Movie) setupDefaultSubtitles(subs map[string]*Sub, width, height int) {
 	var en, cn, double *Subtitle
-	for _, file := range subFiles {
-		s := NewSubtitle(file, m.w, m.c, float64(width), float64(height))
+	for _, sub := range subs {
+		s := NewSubtitle(sub, m.w, m.c, float64(width), float64(height))
 		if s != nil {
 			if en == nil && s.Lang1 == "en" && len(s.Lang2) == 0 {
 				en = s
@@ -213,7 +214,7 @@ func (m *Movie) setupDefaultSubtitles(subFiles []string, width, height int) {
 		go m.s2.Play()
 	}
 }
-func (m *Movie) setupSubtitlesMenu(subFiles []string) {
+func (m *Movie) setupSubtitlesMenu(subs map[string]*Sub) {
 	HideSubtitleMenu()
 
 	tags := make([]int32, 0)
@@ -221,17 +222,20 @@ func (m *Movie) setupSubtitlesMenu(subFiles []string) {
 
 	selected1 := -1
 	selected2 := -1
-	for i, n := range subFiles {
+	i := 0
+	for _, sub := range subs {
 		tags = append(tags, int32(i))
-		names = append(names, filepath.Base(n))
+		names = append(names, filepath.Base(sub.Name))
 
-		if m.s != nil && n == m.s.Name {
+		if m.s != nil && sub.Name == m.s.Name {
 			selected1 = i
 		}
 
-		if m.s2 != nil && n == m.s2.Name {
+		if m.s2 != nil && sub.Name == m.s2.Name {
 			selected2 = i
 		}
+
+		i++
 	}
 
 	if selected1 == -1 && selected2 == -1 {
@@ -242,11 +246,20 @@ func (m *Movie) setupSubtitlesMenu(subFiles []string) {
 		m.w.InitSubtitleMenu(names, tags, selected1, selected2)
 	}
 }
-func (m *Movie) setupSubtitles(subFiles []string) {
-	if len(subFiles) > 0 {
-		m.subFiles = subFiles
+func getSubValues(subs map[string]*Sub) []*Sub {
+	var values []*Sub
+	for _, s := range subs {
+		values = append(values, s)
+	}
 
-		println("play subtitle:", subFiles)
+	return values
+}
+
+func (m *Movie) setupSubtitles(subs map[string]*Sub) {
+	if len(subs) > 0 {
+		m.subs = getSubValues(subs)
+
+		println("play subtitle:", subs)
 		width, height := m.w.GetWindowSize()
 
 		if len(m.p.Sub1) == 0 && len(m.p.Sub2) > 0 {
@@ -256,7 +269,7 @@ func (m *Movie) setupSubtitles(subFiles []string) {
 
 		var s1, s2 *Subtitle
 		if len(m.p.Sub1) > 0 {
-			s1 = NewSubtitle(m.p.Sub1, m.w, m.c, float64(width), float64(height))
+			s1 = NewSubtitle(subs[m.p.Sub1], m.w, m.c, float64(width), float64(height))
 			if s1 != nil {
 				s1.IsMainOrSecondSub = true
 
@@ -270,7 +283,7 @@ func (m *Movie) setupSubtitles(subFiles []string) {
 		}
 
 		if len(m.p.Sub2) > 0 {
-			s2 = NewSubtitle(m.p.Sub2, m.w, m.c, float64(width), float64(height))
+			s2 = NewSubtitle(subs[m.p.Sub2], m.w, m.c, float64(width), float64(height))
 			if s2 != nil {
 				s2.IsMainOrSecondSub = false
 
@@ -285,11 +298,11 @@ func (m *Movie) setupSubtitles(subFiles []string) {
 
 		if m.s == nil && m.s2 == nil {
 			println("auto select default subtitle")
-			m.setupDefaultSubtitles(subFiles, width, height)
+			m.setupDefaultSubtitles(subs, width, height)
 		}
 
 		SavePlayingAsync(m.p)
 	}
 
-	m.setupSubtitlesMenu(subFiles)
+	m.setupSubtitlesMenu(subs)
 }
