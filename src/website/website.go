@@ -1,7 +1,6 @@
 package website
 
 import (
-	"code.google.com/p/go.net/websocket"
 	"download"
 	"encoding/json"
 	"errors"
@@ -23,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"subscribe"
+	"code.google.com/p/go.net/websocket"
 	// "subtitles"
 	"task"
 	"thunder"
@@ -139,11 +139,16 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 			} else if t.Status == "Finished" {
 				w.Write([]byte("File has been downloaded."))
 			} else {
-				log.Print("task already exists")
-				task.ResumeTask(name)
-				t, _ := task.GetTask(name)
+				if t.Status == "Deleted" {
+					log.Print("deleted task")
+
+					t.DownloadedSize = 0
+				}
 				t.URL = url
 				task.SaveTask(t)
+
+				log.Print("task already exists")
+				task.ResumeTask(name)
 			}
 		} else if err := task.StartNewTask(name, url, size); err != nil {
 			writeError(w, err)
