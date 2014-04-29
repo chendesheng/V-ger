@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strings"
 	"subscribe"
 	"task"
@@ -107,11 +108,10 @@ func subscribeHandler(w http.ResponseWriter, r *http.Request) {
 
 func checkCache(s *subscribe.Subscribe, cachedlen int) (string, error) {
 	resp, err := http.Get(s.URL)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	bytes, err := ioutil.ReadAll(resp.Body)
 	html := string(bytes)
@@ -126,59 +126,67 @@ func checkCache(s *subscribe.Subscribe, cachedlen int) (string, error) {
 		return html, nil
 	}
 }
-
-func UpdateAll(cache map[string]int) {
-	subscribes := subscribe.GetSubscribes()
-	for _, s := range subscribes {
-		println("check " + s.Name)
-
-		html, err := checkCache(s, cache[s.Name])
-		if err != nil {
-			log.Print(err)
-			continue
+func updateOne(s *subscribe.Subscribe, cache map[string]int) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Print("check " + s.Name)
+			log.Print(r)
+			log.Print(string(debug.Stack()))
 		}
-		if len(html) == 0 {
-			continue
-		}
+	}()
 
-		cache[s.Name] = len(html)
+	html, err := checkCache(s, cache[s.Name])
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	if len(html) == 0 {
+		return
+	}
 
-		subscribe.ParseReader(strings.NewReader(html))
+	cache[s.Name] = len(html)
 
-		_, tasks, err := subscribe.Parse(s.URL)
-		if err != nil {
-			log.Print(err)
-		} else {
-			for _, t := range tasks {
-				if exists, err := task.Exists(t.Name); err == nil && !exists {
-					if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
-						log.Printf("subscribe new task: %v", t)
+	subscribe.ParseReader(strings.NewReader(html))
 
-						if t.Season < 0 {
-							task.SaveTask(t)
-							continue
-						}
+	_, tasks, err := subscribe.Parse(s.URL)
+	if err != nil {
+		log.Print(err)
+	} else {
+		for _, t := range tasks {
+			if exists, err := task.Exists(t.Name); err == nil && !exists {
+				if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
+					log.Printf("subscribe new task: %v", t)
 
-						files, err := thunder.NewTask(t.Original, "")
+					if t.Season < 0 {
+						task.SaveTask(t)
+						continue
+					}
+
+					files, err := thunder.NewTask(t.Original, "")
+					if err != nil {
+						log.Print(err)
+					}
+					fmt.Printf("%v\n", files)
+					if err == nil && len(files) == 1 && files[0].Percent == 100 {
+						t.URL = files[0].DownloadURL
+						_, _, size, err := download.GetDownloadInfo(t.URL)
 						if err != nil {
 							log.Print(err)
-						}
-						fmt.Printf("%v\n", files)
-						if err == nil && len(files) == 1 && files[0].Percent == 100 {
-							t.URL = files[0].DownloadURL
-							_, _, size, err := download.GetDownloadInfo(t.URL)
-							if err != nil {
-								log.Print(err)
-							} else {
-								t.Size = size
-								task.SaveTask(t)
-								task.StartNewTask2(t)
-							}
+						} else {
+							t.Size = size
+							task.SaveTask(t)
+							task.StartNewTask2(t)
 						}
 					}
 				}
 			}
 		}
+	}
+}
+func UpdateAll(cache map[string]int) {
+	subscribes := subscribe.GetSubscribes()
+	for _, s := range subscribes {
+		updateOne(s, cache)
 	}
 }
 
