@@ -2,13 +2,15 @@ package subtitles
 
 import (
 	"fmt"
-	"github.com/peterbourgon/html"
 	"log"
 	"net/http"
 	"net/url"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/peterbourgon/html"
 )
 
 func getSubDesc(n *html.Node) string {
@@ -53,7 +55,17 @@ func getSub(n *html.Node) (Subtitle, error) {
 
 	return sub, nil
 }
-func shooterSearch(name string, result chan Subtitle, quit chan bool) error {
+func shooterSearch(name string, result chan Subtitle, quit chan bool) (err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			log.Print(r)
+			log.Print(string(debug.Stack()))
+		}
+
+		return
+	}()
+
 	loadmain = ""
 
 	resp, err := http.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
