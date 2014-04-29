@@ -73,6 +73,7 @@ func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				writeError(w, err)
 			} else {
+				defer resp.Body.Close()
 				bytes, err = ioutil.ReadAll(resp.Body)
 				if err != nil {
 					writeError(w, err)

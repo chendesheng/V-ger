@@ -334,10 +334,10 @@ func getTaskType(url string) (int, []byte) {
 		if err != nil {
 			return 0, nil
 		}
+		defer resp.Body.Close()
 
 		if checkIfTorrentFile(url, resp.Header) {
 			data, err := ioutil.ReadAll(resp.Body)
-			defer resp.Body.Close()
 
 			if err != nil {
 				log.Print(err)
@@ -375,8 +375,8 @@ func sendGet(url string, params *url.Values) (string, error) {
 	return text, nil
 }
 func readBody(resp *http.Response) string {
+	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
 	if err != nil {
 		log.Fatal(err)
 	}

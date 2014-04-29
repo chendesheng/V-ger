@@ -4,13 +4,13 @@ import (
 	"encoding/base64"
 	"io"
 	// "fmt"
-	"github.com/peterbourgon/html"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"task"
 	"time"
+	"github.com/peterbourgon/html"
 )
 
 func parseEpisodes(n *html.Node, season int, subscribeName string, format string, result *map[int]*task.Task) {
@@ -112,11 +112,10 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 }
 func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	resp, err := http.Get(url)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return nil, nil, err
 	}
+	defer resp.Body.Close()
 
 	s, t, err := parse(resp.Body)
 	if err != nil {
@@ -138,10 +137,10 @@ func downloadBannerImage(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	// print(len(data))
-	defer resp.Body.Close()
 
 	if err != nil {
 		return "", err

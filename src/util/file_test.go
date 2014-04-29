@@ -11,11 +11,12 @@ func TestExtract(t *testing.T) {
 	os.RemoveAll("95edab554826f0e0ebdd0205a3f94dbf")
 
 	resp, err := http.Get("http://res.yyets.com/ftp/2014/0220/95edab554826f0e0ebdd0205a3f94dbf.rar")
-	defer resp.Body.Close()
 	if err != nil {
 		t.Error(err)
 		return
 	}
+	defer resp.Body.Close()
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Error(err)

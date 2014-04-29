@@ -34,8 +34,8 @@ func sendGet(url string, params *url.Values) (string, error) {
 	return text, nil
 }
 func readBody(resp *http.Response) string {
+	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -178,12 +178,12 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 }
 func QuickDownload(url string) ([]byte, error) {
 	resp, err := http.Get(url)
-	defer resp.Body.Close()
 	// bytes, err := httputil.DumpResponse(resp, false)
 	// fmt.Println(string(bytes))
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	// print(len(data))
