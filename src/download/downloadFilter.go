@@ -119,6 +119,8 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 }
 
 func readWithTimeout(req *http.Request, resp *http.Response, size int64, data []byte, quit chan bool) ([]byte, error) {
+	defer resp.Body.Close()
+
 	// buffer := bytes.NewBuffer(data)
 	finish := make(chan error)
 	go func() {
@@ -134,7 +136,6 @@ func readWithTimeout(req *http.Request, resp *http.Response, size int64, data []
 	}()
 
 	_, err := io.ReadFull(resp.Body, data)
-	defer resp.Body.Close()
 
 	close(finish)
 
