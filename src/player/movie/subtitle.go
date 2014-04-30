@@ -214,7 +214,7 @@ func (m *Movie) setupDefaultSubtitles(subs map[string]*Sub, width, height int) {
 		go m.s2.Play()
 	}
 }
-func (m *Movie) setupSubtitlesMenu(subs map[string]*Sub) {
+func (m *Movie) setupSubtitlesMenu(subs []*Sub) {
 	HideSubtitleMenu()
 
 	tags := make([]int32, 0)
@@ -304,5 +304,5 @@ func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 		SavePlayingAsync(m.p)
 	}
 
-	m.setupSubtitlesMenu(subs)
+	m.setupSubtitlesMenu(m.subs)
 }

@@ -210,6 +210,7 @@ func (m *Movie) uievents() {
 		go func() {
 			subs := m.subs
 			clicked := subs[index]
+			log.Print("toggle subtitle:", clicked.Name, index)
 			if showOrHide {
 				// m.s.Stop()
 				width, height := m.w.GetWindowSize()
