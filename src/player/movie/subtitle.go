@@ -145,19 +145,19 @@ func (m *Movie) SearchDownloadSubtitle() {
 
 	search, url := m.getSubtitleSearch()
 	subFiles := downloadSubs(m.p.Movie, url, search, m.quit)
-	if len(subFiles) < 5 {
-		name, content := subtitles.Addic7edSubtitle(search)
-		if len(name) > 0 && len(content) > 0 {
-			sub := &Sub{
-				Movie:   m.p.Movie,
-				Name:    name,
-				Content: content,
-			}
-			InsertSubtitle(sub)
-
-			subFiles = append(subFiles, name)
+	// if len(subFiles) < 5 {
+	name, content := subtitles.Addic7edSubtitle(search)
+	if len(name) > 0 && len(content) > 0 {
+		sub := &Sub{
+			Movie:   m.p.Movie,
+			Name:    name,
+			Content: content,
 		}
+		InsertSubtitle(sub)
+
+		subFiles = append(subFiles, name)
 	}
+	// }
 
 	select {
 	case <-m.quit:

@@ -1,11 +1,12 @@
 package subtitles
 
 import (
-	"github.com/peterbourgon/html"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
+	"runtime/debug"
+	"github.com/peterbourgon/html"
 	// "net/http/cookiejar"
 	// "net/http/httputil"
 	"net/url"
@@ -16,6 +17,7 @@ func Addic7edSubtitle(keywords string) (name string, content string) {
 		r := recover()
 		if r != nil {
 			log.Print(r)
+			log.Print(string(debug.Stack()))
 
 			name = ""
 			content = ""
