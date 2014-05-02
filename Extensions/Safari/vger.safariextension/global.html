@@ -22,7 +22,11 @@ function performCommand(event) {
 			/.*dmg|.*zip|.*rar|.*exe$/.test(currentLinkURL)) {
 			post('/new/', currentLinkURL);
 		} else {
-			post('/thunder/new', currentLinkURL, function (data) {
+			var data = JSON.stringify({
+				"url": currentLinkURL,
+				"verifycode": ""
+			});
+			post('/thunder/new', data, function (data) {
 				for (var i = 0; i < data.length; i++) {
 					var f = data[i];
 					if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
@@ -35,7 +39,11 @@ function performCommand(event) {
 			});
 		}
 	} else if (event.command == "play") {
-		post('/thunder/new', currentLinkURL, function (data) {
+		var data = JSON.stringify({
+			"url": currentLinkURL,
+			"verifycode": ""
+		});
+		post('/thunder/new', data, function (data) {
 			for (var i = 0; i < data.length; i++) {
 				var f = data[i];
 				if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
