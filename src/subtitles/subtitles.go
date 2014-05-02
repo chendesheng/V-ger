@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strings"
 	// "os"
 )
@@ -121,7 +122,8 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 			defer func() {
 				r := recover()
 				if r != nil {
-					log.Print(r.(error))
+					log.Print(r)
+					log.Print(string(debug.Stack()))
 				}
 			}()
 

@@ -39,7 +39,8 @@ func (a *addic7ed) search(keywords string) {
 		"search": {keywords},
 		"Submit": {"Search"},
 	}
-	println(params.Encode())
+
+	log.Print(params.Encode())
 
 	resp, err := http.Get("http://www.addic7ed.com/search.php?" + params.Encode())
 	if err != nil {
@@ -96,7 +97,7 @@ func (a *addic7ed) downloadSubtitle() (string, string) {
 	uhref, _ := url.Parse(a.subtitleHref)
 	subtitleUrl := u.ResolveReference(uhref)
 
-	println("subtitle url:", subtitleUrl.String())
+	log.Print("subtitle url:", subtitleUrl.String())
 
 	req, _ := http.NewRequest("GET", subtitleUrl.String(), nil)
 	req.Header.Add("Referer", a.searchResultPage)

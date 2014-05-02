@@ -31,7 +31,7 @@ func init() {
 	// 	}
 	// }
 
-	logger.InitLog("V'ger")
+	logger.InitLog("V'ger", util.ReadConfig("log"))
 
 	// http.DefaultClient.Jar = &cookiejar.SafariCookieJar{}
 	jar, _ := cookiejar.New(nil)

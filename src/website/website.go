@@ -19,6 +19,7 @@ import (
 	"path"
 	"path/filepath"
 	"player/shared"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"subscribe"
@@ -163,6 +164,7 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 			err := re.(error)
 
 			log.Print(err)
+			log.Print(string(debug.Stack()))
 
 			w.Write([]byte(html.EscapeString(err.Error())))
 		}

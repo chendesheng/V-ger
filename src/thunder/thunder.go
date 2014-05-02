@@ -330,11 +330,12 @@ func getTaskType(url string) (int, []byte) {
 		return 0, nil
 	} else {
 		resp, err := http.Get(url)
-		url = resp.Request.URL.String()
+
 		if err != nil {
 			return 0, nil
 		}
 		defer resp.Body.Close()
+		url = resp.Request.URL.String()
 
 		if checkIfTorrentFile(url, resp.Header) {
 			data, err := ioutil.ReadAll(resp.Body)

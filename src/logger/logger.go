@@ -5,57 +5,31 @@ import (
 	"log"
 	"log/syslog"
 	"os"
+	"syscall"
 	// "util"
 )
 
-// func init() {
-// 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-// 	w := logWriter{}
-// 	w.writers = append(w.writers, os.Stdout)
-
-// 	if logPath := util.ReadConfig("log"); logPath != "" {
-// 		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-// 		if err == nil {
-// 			os.Stderr = f
-// 			w.writers = append(w.writers, f)
-// 		} else {
-// 			log.Print(err)
-// 		}
-// 	}
-
-// 	log.SetOutput(w)
-// 	log.Print("log initialized.")
-// }
-
-type logWriter struct {
-	writers []io.Writer
-}
-
-func (l logWriter) Write(p []byte) (int, error) {
-	for _, w := range l.writers {
-		w.Write(p)
-	}
-
-	return len(p), nil
-}
-
-func InitLog(prefix string) {
+func InitLog(prefix string, crashLogFile string) {
 	log.SetFlags(log.Lshortfile)
-	w := logWriter{}
-	w.writers = append(w.writers, os.Stdout)
 
 	l, _ := syslog.New(syslog.LOG_NOTICE, prefix)
-	w.writers = append(w.writers, l)
-
-	// if filename != "" {
-	// 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	// 	if err == nil {
-	// 		// os.Stderr = f
-	// 		w.writers = append(w.writers, f)
-	// 	} else {
-	// 		log.Print(err)
-	// 	}
-	// }
+	w := io.MultiWriter(os.Stdout, l)
 
 	log.SetOutput(w)
+
+	if len(crashLogFile) > 0 {
+		crashLog(crashLogFile)
+	}
+}
+
+func crashLog(file string) {
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Print(err.Error())
+	} else {
+		defer f.Close()
+
+		syscall.Dup2(int(f.Fd()), 1)
+		syscall.Dup2(int(f.Fd()), 2)
+	}
 }
