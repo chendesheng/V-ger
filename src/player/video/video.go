@@ -33,7 +33,7 @@ type Video struct {
 	//buffers
 	frame AVFrame
 	// pictureRGBs         [8]AVPicture
-	pictureObjects      [8]*AVObject
+	pictureObjects      [30]*AVObject
 	currentPictureIndex int
 
 	Width, Height int
@@ -45,6 +45,8 @@ type Video struct {
 	flushQuit   chan bool
 	quit        chan bool
 	r           VideoRender
+
+	global_pts uint64 //for avframe only
 }
 
 func (v *Video) setupCodec(codec AVCodecContext) error {
@@ -118,6 +120,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 	v.formatCtx = formatCtx
 	v.stream = stream
 	v.StreamIndex = stream.Index()
+	v.global_pts = AV_NOPTS_VALUE
 
 	err := v.setupCodec(stream.Codec())
 	if err != nil {
@@ -131,7 +134,23 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 
 	// v.videoPktPts = AV_NOPTS_VALUE
 
-	v.setupSwsContext()
+	// v.setupSwsContext()
+
+	v.codec.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
+		ret := ctx.DefaultGetBuffer(frame)
+		obj := AVObject{}
+		obj.Malloc(8)
+		obj.WriteUInt64(v.global_pts)
+		frame.SetOpaque(obj)
+
+		return ret
+	})
+	v.codec.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
+		pts := frame.Opaque()
+		pts.Free()
+
+		ctx.DefaultReleaseBuffer(frame)
+	})
 
 	v.c = c
 
@@ -144,6 +163,15 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 	return v, nil
 }
 
+func getFrameOpaque(frame AVFrame) uint64 {
+	o := frame.Opaque()
+	if o.IsNil() {
+		return AV_NOPTS_VALUE
+	} else {
+		return o.UInt64()
+	}
+}
+
 func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0
@@ -152,18 +180,22 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 	codec := v.codec
 	frame := v.frame
 
+	v.global_pts = packet.Pts()
 	frameFinished := codec.DecodeVideo(frame, packet)
 
 	if frameFinished {
 		//TODO: get pts in more accurate way
-		var pts time.Duration
+		var pts uint64
+		o := getFrameOpaque(frame)
+
 		if packet.Dts() != AV_NOPTS_VALUE {
-			pts = time.Duration(float64(packet.Dts()) * v.stream.Timebase().Q2D() * (float64(time.Second)))
-		} else if packet.Pts() != AV_NOPTS_VALUE {
-			pts = time.Duration(float64(packet.Pts()) * v.stream.Timebase().Q2D() * (float64(time.Second)))
+			// println(o)
+			pts = packet.Dts()
+		} else if o != AV_NOPTS_VALUE {
+			pts = o
 		}
 
-		return true, pts
+		return true, time.Duration(float64(pts) * v.stream.Timebase().Q2D() * (float64(time.Second)))
 	}
 
 	return false, 0

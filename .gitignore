@@ -72,3 +72,7 @@ bin/pprof_mac_fix
 *.test
 
 bin/goimports
+
+bin/testcrawler
+
+src/testcrawler/testcrawler

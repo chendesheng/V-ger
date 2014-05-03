@@ -8,7 +8,6 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -382,10 +381,10 @@ func readBody(resp *http.Response) string {
 		log.Fatal(err)
 	}
 
-	dumpBytes, _ := httputil.DumpResponse(resp, true)
-	if len(dumpBytes) > 0 {
-		log.Println(string(dumpBytes))
-	}
+	// dumpBytes, _ := httputil.DumpResponse(resp, true)
+	// if len(dumpBytes) > 0 {
+	// 	log.Println(string(dumpBytes))
+	// }
 
 	text := string(bytes)
 	return text

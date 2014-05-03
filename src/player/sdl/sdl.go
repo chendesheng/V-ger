@@ -4,6 +4,7 @@ package sdl
 #include "sdl2/sdl.h"
 */
 import "C"
+import "unsafe"
 
 func Init(flags uint) bool {
 	return C.SDL_Init(C.Uint32(flags)) != 0
@@ -39,8 +40,9 @@ func Quit() {
 	C.SDL_Quit()
 }
 
-func MixAudioFormat(dst Object, src []byte, format int, volume int) {
-	C.SDL_MixAudioFormat((*_Ctype_Uint8)(dst.ptr), (*_Ctype_Uint8)(&src[0]), C.SDL_AudioFormat(format), C.Uint32(len(src)), C.int(volume))
+func MixAudioFormat(dst *Object, src []byte, format int, volume int) {
+	C.SDL_MixAudioFormat((*_Ctype_Uint8)(unsafe.Pointer(dst.current)), (*_Ctype_Uint8)(&src[0]), C.SDL_AudioFormat(format), C.Uint32(len(src)), C.int(volume))
+	dst.current += uintptr(len(src))
 }
 
 const MIX_MAXVOLUME = C.SDL_MIX_MAXVOLUME

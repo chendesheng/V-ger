@@ -59,20 +59,18 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 //drop packet if return false
 func (a *Audio) sync(packet *AVPacket) bool {
 	var pts time.Duration
-	if packet.Dts() != AV_NOPTS_VALUE {
-		pts = time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
-	} else if packet.Pts() != AV_NOPTS_VALUE {
+	if packet.Pts() != AV_NOPTS_VALUE {
 		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
 	}
 
 	now := a.c.GetSeekTime()
 
-	if time.Duration(math.Abs(float64(pts-now))) < 100*time.Millisecond {
+	if time.Duration(math.Abs(float64(pts-now))) < 250*time.Millisecond {
 		return true
 	} else if pts > now {
 		return !a.c.WaitUtilWithQuit(pts, a.quit)
 	} else {
-		log.Print("skip audio packet:", pts.String())
+		log.Print("skip audio packet:", (now - pts).String())
 		return false
 	}
 }
@@ -86,17 +84,27 @@ func (a *Audio) decode(packet *AVPacket, fn func([]byte)) {
 		if size >= 0 {
 			packetSize -= size
 			if gotFrame {
-				data := resampleFrame(a.resampleCtx, a.frame, a.codecCtx.Channels())
+				data := resampleFrame(a.resampleCtx, a.frame, a.codecCtx)
 				if !data.IsNil() {
 					defer data.Free()
 					fn(data.Bytes())
 				}
 			}
 		} else {
+			println("audio decode error")
 			break
 		}
 	}
 }
+
+func min2(a, b int) int {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
+}
+
 func (a *Audio) Open(stream AVStream) error {
 	a.stream = stream
 	codecCtx := stream.Codec()
@@ -118,25 +126,38 @@ func (a *Audio) Open(stream AVStream) error {
 			if a.c.WaitUtilRunning(a.quit) {
 				return nil
 			}
+			if packet, ok := a.receivePacket(); ok {
+				defer packet.Free()
+				if a.sync(packet) {
 
-			for len(a.audioBuffer) < length {
-				if packet, ok := a.receivePacket(); ok {
-					if a.sync(packet) {
-						a.decode(packet, func(bytes []byte) {
-							a.audioBuffer = append(a.audioBuffer, bytes...)
-						})
-					}
-					packet.Free()
-				} else {
-					//can't receive more packets
-					log.Print("No more audio packets.")
-					return nil
+					a.decode(packet, func(bytes []byte) {
+						a.audioBuffer = append(a.audioBuffer, bytes...)
+					})
 				}
+
+				// if packet.Dts() != AV_NOPTS_VALUE {
+				// 	pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
+				// 	// println(pts.String())
+				// 	if pts > a.c.GetSeekTime()+400*time.Millisecond {
+				// 		a.c.WaitUtilWithQuit(pts, a.quit)
+				// 	}
+				// }
+			} else {
+				// runtime.Gosched()
+				//can't receive more packets
+				// log.Print("No more audio packets.")
+				//time.Sleep(10 * time.Millisecond)
 			}
-			retlen := int(math.Min(float64(len(a.audioBuffer)), float64(length)))
-			ret := a.audioBuffer[:retlen]
-			a.audioBuffer = a.audioBuffer[retlen:]
-			return ret
+
+			lenBuf := len(a.audioBuffer)
+			if lenBuf > 0 {
+				retLen := min2(lenBuf, length)
+				ret := a.audioBuffer[:retLen]
+				a.audioBuffer = a.audioBuffer[retLen:]
+				return ret
+			} else {
+				return nil
+			}
 		})
 }
 

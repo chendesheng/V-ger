@@ -56,7 +56,8 @@ func goGetBufferCallback(ctxptr unsafe.Pointer, frameptr unsafe.Pointer) int {
 	// println(((*C.AVCodecContext)(ctxptr)).opaque)
 	ctx := (*AVCodecContext)(unsafe.Pointer(reflect.NewAt(reflect.TypeOf(AVCodecContext{}), ((*C.AVCodecContext)(ctxptr)).opaque).Pointer()))
 	// println("ctx.ptr ", ctx.ptr)
-	println(frameptr)
+	// println(frameptr)
+
 	return ctx.getBufferFunc(ctx, &AVFrame{ptr: (*C.AVFrame)(frameptr)})
 }
 

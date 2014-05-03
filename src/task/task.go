@@ -18,9 +18,9 @@ import (
 	// "regexp"
 	"database/sql"
 	"dbHelper"
-	_ "github.com/mattn/go-sqlite3"
 	"strings"
 	"time"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Task struct {
@@ -136,7 +136,6 @@ func scanTask(scanner dbHelper.RowScanner) (*Task, error) {
 		}
 		return &t, nil
 	} else {
-		log.Print(err)
 		return nil, err
 	}
 }

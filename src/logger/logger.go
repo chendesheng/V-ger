@@ -29,7 +29,7 @@ func crashLog(file string) {
 	} else {
 		defer f.Close()
 
-		syscall.Dup2(int(f.Fd()), 1)
+		// syscall.Dup2(int(f.Fd()), 1)
 		syscall.Dup2(int(f.Fd()), 2)
 	}
 }

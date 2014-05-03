@@ -44,7 +44,7 @@ var callback func(userdata Object, stream Object, length int)
 
 //export goCallback
 func goCallback(userdata unsafe.Pointer, stream unsafe.Pointer, length int) {
-	callback(Object{ptr: userdata}, Object{ptr: stream}, length)
+	callback(Object{ptr: userdata}, Object{ptr: stream, current: uintptr(stream)}, length)
 }
 
 func (spec *AudioSpec) SetCallback(fn func(userdata Object, stream Object, length int)) {

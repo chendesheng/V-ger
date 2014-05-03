@@ -117,10 +117,14 @@ func (a *addic7ed) downloadSubtitle() (string, string) {
 
 	name := ""
 
-	contentDisposition := resp.Header["Content-Disposition"][0]
+	contentDisposition := resp.Header["Content-Disposition"] //[0]
+	if len(contentDisposition) == 0 {
+		return "", ""
+	}
+
 	regexFile := regexp.MustCompile(`filename="?([^"]+)"?`)
 
-	if match := regexFile.FindStringSubmatch(contentDisposition); len(match) > 1 {
+	if match := regexFile.FindStringSubmatch(contentDisposition[0]); len(match) > 1 {
 		name = match[1]
 	}
 
