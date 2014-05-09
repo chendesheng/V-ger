@@ -69,7 +69,7 @@ func (v *Video) setupPictureRGB() {
 	for i, _ := range v.pictureObjects {
 		obj := AVObject{}
 		obj.Malloc(v.Width * v.Height * 2)
-		println("setup picture objects", obj.Size())
+		// println("setup picture objects", obj.Size())
 		v.pictureObjects[i] = &obj
 	}
 	// for i, _ := range v.pictureRGBs {

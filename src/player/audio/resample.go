@@ -43,7 +43,7 @@ func resampleFrame(resampleCtx AVAudioResampleContext, frame AVFrame, codecCtx *
 		println("avresample_convert() failed")
 		return AVObject{}
 	}
-	println("channels:", codecCtx.Channels())
+	// println("channels:", codecCtx.Channels())
 	tmpOut.SetSize(outSamples * osize * outChannels)
 	return tmpOut
 }

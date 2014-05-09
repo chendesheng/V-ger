@@ -37,7 +37,7 @@ func (ctx *AVCodecContext) DefaultReleaseBuffer(frame *AVFrame) {
 }
 
 func (ctx *AVCodecContext) SetGetBufferCallback(fn GetBufferFunc) {
-	println("aaaaaaaaaaaaa")
+	// println("aaaaaaaaaaaaa")
 	// println("set opaque ", ctx.ptr)
 	ctx.ptr.opaque = unsafe.Pointer(ctx)
 	ctx.getBufferFunc = fn
