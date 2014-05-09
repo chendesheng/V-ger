@@ -44,6 +44,15 @@ func NewMovie() *Movie {
 	return m
 }
 
+func updateSubscribeDuration(movie string, duration time.Duration) {
+	if t, _ := task.GetTask(movie); t != nil {
+		println("get subscribe:", t.Subscribe)
+		if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
+			subscribe.UpdateDuration(t.Subscribe, duration)
+		}
+	}
+}
+
 func (m *Movie) Open(w *Window, file string) {
 	println("open ", file)
 
@@ -97,22 +106,12 @@ func (m *Movie) Open(w *Window, file string) {
 		start, _, _ = m.v.Seek(m.p.LastPos)
 	}
 
+	m.p.LastPos = start
+	m.p.Duration = duration
+
+	go updateSubscribeDuration(m.p.Movie, m.p.Duration)
+
 	go func() {
-
-		m.showProgress(filename)
-
-		m.p.LastPos = start
-		m.p.Duration = duration
-
-		if t, _ := task.GetTask(m.p.Movie); t != nil {
-			println("get subscribe:", t.Subscribe)
-			if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
-				subscribe.UpdateDuration(t.Subscribe, duration)
-			}
-		}
-
-		SavePlayingAsync(m.p)
-
 		subs := GetSubtitlesMap(filename)
 		log.Printf("%v", subs)
 		if len(subs) == 0 {
@@ -120,8 +119,12 @@ func (m *Movie) Open(w *Window, file string) {
 		} else {
 			println("setupSubtitles")
 			m.setupSubtitles(subs)
+
 			if m.s != nil {
 				m.s.Seek(m.c.GetTime())
+			}
+			if m.s2 != nil {
+				m.s2.Seek(m.c.GetTime())
 			}
 		}
 	}()
@@ -137,14 +140,18 @@ func (m *Movie) Open(w *Window, file string) {
 	m.uievents()
 
 	m.c.SetTime(start)
+
+	go m.showProgress(filename)
+}
+
+func (m *Movie) SavePlaying() {
+	SavePlaying(m.p)
 }
 
 func (m *Movie) Close() {
 	m.w.FlushImageBuffer()
 	m.w.RefreshContent(nil)
 	m.w.ShowStartupView()
-
-	SavePlaying(m.p)
 
 	m.finishClose = make(chan bool)
 	close(m.quit)
@@ -218,6 +225,7 @@ func (m *Movie) showProgress(name string) {
 	p := m.c.CalcPlayProgress(m.c.GetPercent())
 
 	t, err := task.GetTask(name)
+
 	if err == nil {
 		if t.Status == "Finished" {
 			p.Percent2 = 1

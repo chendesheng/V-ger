@@ -3,6 +3,9 @@ package main
 import (
 	"dbHelper"
 	"filelock"
+	. "player/shared"
+	"time"
+
 	// "fmt"
 	"log"
 	. "logger"
@@ -42,8 +45,22 @@ func (app *appDelegate) OpenFile(filename string) bool {
 }
 
 func (app *appDelegate) WillTerminate() {
-	if app.m != nil {
-		app.m.Close()
+	app.m.SavePlaying()
+
+	done := make(chan bool)
+	go func() {
+		if app.m != nil {
+
+			app.m.Close()
+		}
+		done <- true
+	}()
+	select {
+	case <-done:
+		return
+	case <-time.After(100 * time.Millisecond):
+		log.Print("WillTerminate timeout")
+		return
 	}
 }
 func (app *appDelegate) SearchSubtitleMenuItemClick() {
