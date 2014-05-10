@@ -127,8 +127,8 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 	b.Lock()
 	defer b.Unlock()
 
-	for off > b.currentPos && off-b.currentPos > 10*1024*1024 {
-		//pause downloading if it is 10M ahead,
+	for off > b.currentPos && off-b.currentPos > 20*1024*1024 {
+		//pause downloading if it is 20M ahead,
 		b.Unlock()
 		select {
 		case <-time.After(100 * time.Millisecond):
