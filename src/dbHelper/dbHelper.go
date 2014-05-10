@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"filelock"
 	"log"
+	"time"
 )
 
 type connContext struct {
@@ -19,7 +20,9 @@ func Init(driverName, dataSourceName string) {
 }
 
 func Open() *sql.DB {
+	b := time.Now()
 	filelock.Lock()
+	println("filelock", time.Since(b).String())
 
 	db, err := sql.Open(globalCtx.driverName, globalCtx.dataSourceName)
 	if err != nil {

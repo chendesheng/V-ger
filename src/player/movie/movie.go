@@ -134,7 +134,6 @@ func (m *Movie) Open(w *Window, file string) {
 	w.SetSize(m.v.Width, m.v.Height)
 	m.v.SetRender(m.w)
 
-	println("audio")
 	m.setupAudio()
 
 	m.uievents()
@@ -224,16 +223,27 @@ func (m *Movie) showProgress(name string) {
 
 	p := m.c.CalcPlayProgress(m.c.GetPercent())
 
-	t, err := task.GetTask(name)
+	done := make(chan struct{})
+	go func() {
+		t, err := task.GetTask(name)
 
-	if err == nil {
-		if t.Status == "Finished" {
-			p.Percent2 = 1
+		if err == nil {
+			if t.Status == "Finished" {
+				p.Percent2 = 1
+			} else {
+				p.Percent2 = float64(t.BufferedPosition) / float64(t.Size)
+			}
 		} else {
-			p.Percent2 = float64(t.BufferedPosition) / float64(t.Size)
+			log.Print(err)
 		}
-	} else {
-		log.Print(err)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		break
+	case <-time.After(100 * time.Millisecond):
+		break
 	}
 
 	m.w.SendShowProgress(p)

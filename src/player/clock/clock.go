@@ -41,10 +41,6 @@ func (c *Clock) CalcPlayProgress(percent float64) *PlayProgressInfo {
 	return &PlayProgressInfo{formatTime(t), formatTime(leftT), percent, 0}
 }
 
-func (c *Clock) GetSeekTime() time.Duration {
-	return c.getTime()
-}
-
 func formatTime(t time.Duration) string {
 	sign := ""
 	if t < 0 {
