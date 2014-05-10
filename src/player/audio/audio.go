@@ -27,6 +27,11 @@ type Audio struct {
 	driver *sdlAudio
 
 	silence []byte
+
+	diffCnt       int
+	diffCum       float64
+	diffCoef      float64
+	diffThreshold time.Duration
 }
 
 func NewAudio(c *Clock, volume byte) *Audio {
@@ -63,15 +68,26 @@ func (a *Audio) sync(packet *AVPacket) bool {
 		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
 	}
 
-	now := a.c.GetSeekTime()
+	now := a.c.GetTime()
 
-	if time.Duration(math.Abs(float64(pts-now))) < 250*time.Millisecond {
+	diff := pts - now
+	// is->audio_diff_cum = diff + is->audio_diff_avg_coef * is->audio_diff_cum
+	a.diffCum = float64(diff) + a.diffCoef*a.diffCum
+
+	if a.diffCnt < 20 {
+		a.diffCnt++
 		return true
-	} else if pts > now {
-		return !a.c.WaitUtilWithQuit(pts, a.quit)
 	} else {
-		log.Print("skip audio packet:", (now - pts).String())
-		return false
+		pts = now + time.Duration(a.diffCum*(1.0-a.diffCoef))
+
+		if time.Duration(math.Abs(float64(pts-now))) < a.diffThreshold {
+			return true
+		} else if pts > now {
+			return !a.c.WaitUtilWithQuit(pts, a.quit)
+		} else {
+			log.Print("skip audio packet:", (now - pts).String())
+			return false
+		}
 	}
 }
 
@@ -110,6 +126,9 @@ func (a *Audio) Open(stream AVStream) error {
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
 
+	a.diffCoef = 0.90483741803
+	a.diffThreshold = time.Duration(2.0 * 1024 / float64(a.codecCtx.SampleRate()) * float64(time.Second))
+
 	a.quit = make(chan bool)
 
 	decoder := codecCtx.FindDecoder()
@@ -146,7 +165,7 @@ func (a *Audio) Open(stream AVStream) error {
 				// runtime.Gosched()
 				//can't receive more packets
 				// log.Print("No more audio packets.")
-				//time.Sleep(10 * time.Millisecond)
+				time.Sleep(10 * time.Millisecond)
 			}
 
 			lenBuf := len(a.audioBuffer)
