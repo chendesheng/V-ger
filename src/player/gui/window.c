@@ -49,3 +49,7 @@ void onCloseOpenPanel(char* filename) {
 void onMouseWheel(void* wptr, double deltaY) {
 	goOnMouseWheel(wptr, deltaY);
 }
+
+void onMouseMove(void* wptr) {
+	goOnMouseMove(wptr);
+}

@@ -66,4 +66,6 @@ CSize getScreenSize();
 
 void onOpenOpenPanel();
 void onCloseOpenPanel(char* filename);
+void hideCursor(void*);
+void showCursor(void*);
 #endif

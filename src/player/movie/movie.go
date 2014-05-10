@@ -141,6 +141,8 @@ func (m *Movie) Open(w *Window, file string) {
 	m.c.SetTime(start)
 
 	go m.showProgress(filename)
+
+	w.HideCursor()
 }
 
 func (m *Movie) SavePlaying() {

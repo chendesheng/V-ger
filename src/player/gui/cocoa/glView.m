@@ -67,7 +67,7 @@
 - (void)mouseDown:(NSEvent *)event {
     if (event.clickCount == 2) {
         [self->win toggleFullScreen:nil];
-        return;
+        // return;
     }
 
     [self hideCursor];
@@ -115,8 +115,9 @@
     }
 }
 - (void)mouseMoved:(NSEvent *)event {
-    [self showCursor];
-    [self showProgress];
+    // [self showCursor];
+    // [self showProgress];
+    onMouseMove([self window]);
 }
 
 // - (void)viewDidChangeBackingProperties {

@@ -132,6 +132,8 @@ func (m *Movie) uievents() {
 		}
 	})
 
+	chCursor := make(chan struct{})
+
 	var lastSeekTime time.Duration
 	// var lastText uintptr
 	// var chPause chan seekArg
@@ -155,10 +157,10 @@ func (m *Movie) uievents() {
 			t := m.c.CalcTime(percent)
 			t = m.Seek(t)
 			lastSeekTime = t
-
 			break
 		}
 
+		chCursor <- struct{}{}
 	})
 
 	m.w.FuncOnFullscreenChanged = append(m.w.FuncOnFullscreenChanged, func(b bool) {
@@ -255,5 +257,28 @@ func (m *Movie) uievents() {
 
 			SavePlayingAsync(m.p)
 		}()
+	})
+
+	go func() {
+		for {
+			select {
+			case <-time.After(2 * time.Second):
+				m.w.SendSetCursor(false)
+				<-chCursor //prevent call SendSetCursor every 2 seconds
+				break
+			case <-chCursor:
+				break
+			}
+		}
+	}()
+	m.w.FuncMouseMoved = append(m.w.FuncMouseMoved, func() {
+		m.w.ShowCursor()
+		select {
+		case chCursor <- struct{}{}:
+			break
+		case <-time.After(50 * time.Millisecond):
+			log.Print("stop hide cursor timeout")
+			break
+		}
 	})
 }

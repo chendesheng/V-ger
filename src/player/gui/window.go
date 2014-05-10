@@ -6,10 +6,10 @@ package gui
 */
 import "C"
 import (
-	"github.com/go-gl/gl"
 	. "player/shared"
 	"time"
 	"unsafe"
+	"github.com/go-gl/gl"
 )
 
 var windows map[unsafe.Pointer]*Window
@@ -33,6 +33,7 @@ type Window struct {
 	FuncAudioMenuClicked    []func(int)
 	FuncSubtitleMenuClicked []func(int, bool)
 	FuncMouseWheelled       []func(float64)
+	FuncMouseMoved          []func()
 
 	ChanDraw     chan []byte
 	ChanShowText chan SubItemArg
@@ -42,6 +43,8 @@ type Window struct {
 	ChanHideMessage chan uintptr
 
 	ChanShowProgress chan *PlayProgressInfo
+
+	ChanSetCursor chan bool
 
 	img []byte
 
@@ -59,6 +62,9 @@ type Window struct {
 // }
 func (w *Window) SendDrawImage(img []byte) {
 	w.ChanDraw <- img
+}
+func (w *Window) SendSetCursor(b bool) {
+	w.ChanSetCursor <- b
 }
 func (w *Window) FlushImageBuffer() {
 	for {
@@ -144,6 +150,8 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanShowMessage: make(chan SubItemArg),
 		ChanHideMessage: make(chan uintptr),
+
+		ChanSetCursor: make(chan bool),
 
 		originalWidth:  width,
 		originalHeight: height,
@@ -324,6 +332,13 @@ func (w *Window) ShowSubList(sub Sub) {
 	// C.showSubList()
 }
 
+func (w *Window) HideCursor() {
+	C.hideCursor(w.ptr)
+}
+func (w *Window) ShowCursor() {
+	C.showCursor(w.ptr)
+}
+
 //export goOnDraw
 func goOnDraw(ptr unsafe.Pointer) {
 	w := windows[ptr]
@@ -349,6 +364,13 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	}
 
 	select {
+	case b := <-w.ChanSetCursor:
+		if b {
+			w.ShowCursor()
+		} else {
+			w.HideCursor()
+		}
+		break
 	case arg := <-w.ChanShowText:
 		var arg1 SubItemArg
 	begin:
@@ -462,5 +484,14 @@ func goOnMouseWheel(ptr unsafe.Pointer, deltaY float64) {
 
 	for _, fn := range w.FuncMouseWheelled {
 		fn(deltaY)
+	}
+}
+
+//export goOnMouseMove
+func goOnMouseMove(ptr unsafe.Pointer) {
+	w := windows[ptr]
+
+	for _, fn := range w.FuncMouseMoved {
+		fn()
 	}
 }

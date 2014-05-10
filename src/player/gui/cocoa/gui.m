@@ -364,6 +364,18 @@ void windowToggleFullScreen(void* ptr) {
     [w toggleFullScreen:nil];
 }
 
+void hideCursor(void* ptr) {
+    Window* w = (Window*)ptr;
+    [w->glView hideCursor];
+    [w->glView hideProgress];
+}
+
+void showCursor(void* ptr) {
+    Window* w = (Window*)ptr;
+    [w->glView showCursor];
+    [w->glView showProgress];
+}
+
 void *newDialog(char* title, int width, int height) {
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
