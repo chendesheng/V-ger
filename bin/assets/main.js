@@ -1,6 +1,5 @@
 angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 	function($scope, $http) {
-
 		function monitor(path, ondata, onclose, onerror) {
 			var websocket = new WebSocket('ws://' +
 				window.location.host + path);
@@ -10,10 +9,10 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			websocket.onmessage = onMessage;
 			websocket.onerror = onError;
 
-			function onOpen(evt) {}
+			function onOpen(evt) {
+			}
 
 			function onClose(evt) {
-				// $scope.push_alert('socket close');
 				if (onclose) {
 					onclose(evt);
 				}
@@ -26,7 +25,6 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			}
 
 			function onError(evt) {
-				// $scope.push_alert(evt.data);
 				if (onerror) {
 					onerror(evt.data);
 				}
@@ -101,8 +99,32 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				|| ((task.Status=='Finished')&&(task.LastPlaying<subscribeMap[task.Subscribe].Duration)));
 		}
 
+		var wsconn = null;
+		var failedCount = 0;
+		var checkTimer = 0;
+
 		function monitor_process() {
-			monitor('/progress', function(data) {
+			if (checkTimer != 0) {
+				clearInterval(checkTimer);
+				checkTimer = 0;
+			}
+
+			checkTimer = setInterval(function() {
+				if (wsconn != null && wsconn.readyState != 1) {
+					failedCount++;
+					if (failedCount > 3) {
+						failedCount = 0;
+						wsconn.close();
+
+						monitor_process();
+					}
+				} else {
+					failedCount = 0;
+				}
+			}, 50);
+			
+
+			wsconn = monitor('/progress', function(data) {
 				var tasksMap = GetTasksMap();
 				var subscribeMap = GetSubscribeMap();
 
@@ -145,7 +167,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 						}
 					}
 				};
-			}, monitor_process);
+			});
 		}
 
 		$http.get('/subscribe').success(function (subscribes) {
@@ -430,6 +452,10 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			$http.get('/trash/' + task.Name).success(
 				function(resp) {
 					resp && $scope.push_alert(resp)
+
+					// if (!resp) {
+					// 	restart_monitor();
+					// }
 				});
 		};
 
