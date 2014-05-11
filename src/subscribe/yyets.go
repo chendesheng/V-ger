@@ -64,6 +64,8 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 				res := make(map[int]*task.Task)
 				parseEpisodes(n, season, s.Name, "720p", &res)
 				parseEpisodes(n, season, s.Name, "web-dl", &res)
+				parseEpisodes(n, season, s.Name, "bd-720p", &res)
+				parseEpisodes(n, season, s.Name, "1080p", &res)
 
 				for _, t := range res {
 					result = append(result, t)
