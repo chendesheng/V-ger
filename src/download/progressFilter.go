@@ -101,13 +101,11 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 			total += length
 
 			if output != nil {
-				go func() {
-					select {
-					case output <- b:
-					case <-quit:
-						return
-					}
-				}()
+				select {
+				case output <- b:
+				case <-quit:
+					return
+				}
 			}
 			sr.add(length)
 			break
