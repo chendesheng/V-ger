@@ -97,7 +97,13 @@ func readSubtitlesFromDir(movieName, dir string) []string {
 	log.Print(dir)
 	subs := make([]string, 0)
 	util.EmulateFiles(dir, func(filename string) {
-		utf8Text, _, err := toutf8.ConverToUTF8(filename)
+		f, err := os.OpenFile(filename, os.O_RDONLY, 0666)
+		if err != nil {
+			log.Print(err)
+			return
+		}
+
+		utf8Text, _, err := toutf8.ConverToUTF8(f)
 		if err == nil {
 			ioutil.WriteFile(filename, []byte(utf8Text), 0666)
 			name := path.Base(filename)
@@ -106,6 +112,8 @@ func readSubtitlesFromDir(movieName, dir string) []string {
 			// log.Printf("subtitle %s language:%s, %s", name, lang1, lang2)
 			InsertSubtitle(&Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
 			subs = append(subs, name)
+		} else {
+			log.Print(err)
 		}
 	}, "srt", "ass")
 	return subs

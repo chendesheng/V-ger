@@ -1,6 +1,8 @@
 package download
 
 import (
+	"log"
+	"toutf8"
 	// "bytes"
 	"fmt"
 	// "io"
@@ -33,12 +35,28 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 		name = getFileName(finalUrl)
 	}
 
+	if name == "" || size == 0 {
+		err = fmt.Errorf("Broken resource")
+	}
+
+	encoding, err := toutf8.GuessEncoding([]byte(name))
+	if err != nil {
+		log.Print(err)
+	}
+
+	if encoding != "utf-8" && encoding != "ascii" {
+		log.Print("file name encoding:", encoding)
+		utf8name, err := toutf8.ConvertToUTF8From(name, "gb18030")
+		if err != nil {
+			log.Print(err)
+		} else {
+			name = utf8name
+		}
+	}
+
 	name = strings.Replace(name, "/", "|", -1)
 	name = strings.Replace(name, "\\", "|", -1)
 	name = strings.TrimLeft(name, ".")
 
-	if name == "" && size == 0 {
-		err = fmt.Errorf("Broken resource")
-	}
 	return
 }

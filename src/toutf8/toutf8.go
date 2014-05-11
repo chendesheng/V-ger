@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/qiniu/iconv"
 	// "io"
+	"io"
 	"io/ioutil"
 	"log"
 	// "os"
@@ -55,11 +56,24 @@ func GuessEncoding(data []byte) (string, error) {
 		}
 	}
 
-	return cd.Close(), nil
+	return strings.ToLower(cd.Close()), nil
 }
+func ConvertToUTF8From(s string, encoding string) (string, error) {
+	c, err := iconv.Open("UTF-8", encoding)
+	defer c.Close()
+	if err != nil {
+		return "", err
+	}
 
-func ConverToUTF8(filename string) (string, string, error) {
-	data, err := ioutil.ReadFile(filename)
+	res, _, err := c.Conv([]byte(s), make([]byte, 512))
+	if err != nil {
+		return "", err
+	}
+
+	return string(res), nil
+}
+func ConverToUTF8(r io.Reader) (string, string, error) {
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return "", "", err
 	}
@@ -68,7 +82,6 @@ func ConverToUTF8(filename string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	encoding = strings.ToLower(encoding)
 	log.Print("encodeing:", encoding)
 
 	if encoding == "utf-8" {
