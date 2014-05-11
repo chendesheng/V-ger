@@ -32,6 +32,9 @@ type Audio struct {
 	diffCum       float64
 	diffCoef      float64
 	diffThreshold time.Duration
+
+	decodePkt     *AVPacket
+	decodePktSize int
 }
 
 func NewAudio(c *Clock, volume byte) *Audio {
@@ -72,23 +75,94 @@ func (a *Audio) sync(packet *AVPacket) bool {
 
 	diff := pts - now
 	// is->audio_diff_cum = diff + is->audio_diff_avg_coef * is->audio_diff_cum
-	a.diffCum = float64(diff) + a.diffCoef*a.diffCum
+	// a.diffCum = float64(diff) + a.diffCoef*a.diffCum
 
-	if a.diffCnt < 20 {
-		a.diffCnt++
+	// if a.diffCnt < 20 {
+	// 	a.diffCnt++
+	// 	return true
+	// } else {
+	// pts = now + diff // time.Duration(a.diffCum*(1.0-a.diffCoef))
+
+	// avgDiff := time.Duration(math.Abs(a.diffCum * (1.0 - a.diffCoef)))
+	avgDiff := time.Duration(math.Abs(float64(diff)))
+
+	// if avgDiff > 100*time.Millisecond {
+	// 	a.c.SetTime(pts)
+	// 	println("audio far out of sync:", avgDiff.String())
+	// 	return true
+	// }
+
+	if avgDiff < a.diffThreshold {
 		return true
+	} else if pts > now {
+		return !a.c.WaitUtilWithQuit(pts, a.quit)
 	} else {
-		pts = now + time.Duration(a.diffCum*(1.0-a.diffCoef))
-
-		if time.Duration(math.Abs(float64(pts-now))) < a.diffThreshold {
-			return true
-		} else if pts > now {
-			return !a.c.WaitUtilWithQuit(pts, a.quit)
-		} else {
-			log.Print("skip audio packet:", (now - pts).String())
-			return false
-		}
+		log.Print("skip audio packet:", (now - pts).String())
+		return false
 	}
+	// }
+}
+
+func (a *Audio) getClock() time.Duration {
+	var pts time.Duration
+	if a.decodePkt.Pts() != AV_NOPTS_VALUE {
+		pts = time.Duration(float64(a.decodePkt.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
+	}
+	return pts
+}
+
+func (a *Audio) synchronize(sampleSize int) int {
+	n := 2 * a.codecCtx.Channels()
+	refClock := a.c.GetTime()
+	diff := a.getClock() - refClock
+
+	if diff < 10*time.Second {
+		a.diffCum = float64(diff) + a.diffCoef*a.diffCum
+		if a.diffCnt < 20 {
+			a.diffCnt++
+		} else {
+			avgDiff := time.Duration(math.Abs(a.diffCum * (1.0 - a.diffCoef)))
+			if avgDiff > 150*time.Millisecond {
+				a.c.SetTime(a.getClock())
+				return sampleSize
+			}
+
+			if avgDiff >= a.diffThreshold {
+
+				println("diff", diff.String())
+
+				wantedSize := sampleSize + int(float64(diff)/float64(time.Second)*float64(a.codecCtx.SampleRate()))*n
+
+				nbSamples := sampleSize / n
+				minSize := nbSamples * 50 / 100 * n
+				maxSize := nbSamples * 200 / 100 * n
+
+				if wantedSize < minSize {
+					wantedSize = minSize
+				} else if wantedSize > maxSize {
+					wantedSize = maxSize
+				}
+
+				if wantedSize < sampleSize {
+					sampleSize = wantedSize
+				} else if wantedSize > sampleSize {
+					nb := wantedSize - sampleSize
+					lastSample := a.audioBuffer[len(a.audioBuffer)-n:]
+					for nb > 0 {
+						a.audioBuffer = append(a.audioBuffer, lastSample...)
+						nb -= n
+					}
+					// a.audioBuffer = append(a.audioBuffer, make([]byte, nb)...)
+					sampleSize = wantedSize
+				}
+			}
+		}
+	} else {
+		a.diffCnt = 0
+		a.diffCum = 0
+	}
+
+	return sampleSize
 }
 
 //decode one packet
@@ -113,6 +187,44 @@ func (a *Audio) decode(packet *AVPacket, fn func([]byte)) {
 	}
 }
 
+//decode one frame
+func (a *Audio) decodeFrame() int {
+	dataSize := 0
+	for {
+		for a.decodePktSize > 0 {
+			gotFrame, size := a.codecCtx.DecodeAudio(a.frame, a.decodePkt)
+			if size < 0 {
+				a.decodePktSize = 0
+				break
+			}
+			if gotFrame {
+				data := resampleFrame(a.resampleCtx, a.frame, a.codecCtx)
+				dataSize = data.Size()
+				a.audioBuffer = append(a.audioBuffer, data.Bytes()...)
+				data.Free()
+			}
+
+			a.decodePktSize -= size
+			if dataSize <= 0 {
+				continue
+			}
+
+			return dataSize
+		}
+
+		if a.decodePkt != nil {
+			a.decodePkt.Free()
+		}
+
+		var ok bool
+		a.decodePkt, ok = a.receivePacket()
+		a.decodePktSize = a.decodePkt.Size()
+		if !ok {
+			return -1
+		}
+	}
+}
+
 func min2(a, b int) int {
 	if a < b {
 		return a
@@ -121,13 +233,22 @@ func min2(a, b int) int {
 	}
 }
 
+func (a *Audio) getSilence(size int) []byte {
+	if len(a.silence) < size {
+		a.silence = append(a.silence, make([]byte, size-len(a.silence))...)
+	}
+
+	return a.silence[:size]
+}
+
 func (a *Audio) Open(stream AVStream) error {
 	a.stream = stream
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
 
 	a.diffCoef = 0.90483741803
-	a.diffThreshold = time.Duration(2.0 * 1024 / float64(a.codecCtx.SampleRate()) * float64(time.Second))
+	a.diffThreshold = 50 * time.Millisecond //time.Duration(2.0 * 1024 / float64(a.codecCtx.SampleRate()) * float64(time.Second))
+	// log.Print("audio diff threshold:", a.diffThreshold.String())
 
 	a.quit = make(chan bool)
 
@@ -139,44 +260,45 @@ func (a *Audio) Open(stream AVStream) error {
 	if errCode < 0 {
 		return fmt.Errorf("Open decoder error:%d", errCode)
 	}
-	println("open audio driver")
+
 	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(),
 		func(length int) []byte {
 			if a.c.WaitUtilRunning(a.quit) {
-				return nil
+				return a.getSilence(length)
 			}
-			if packet, ok := a.receivePacket(); ok {
-				defer packet.Free()
-				if a.sync(packet) {
+
+			for len(a.audioBuffer) == 0 {
+				if packet, ok := a.receivePacket(); ok {
+					defer packet.Free()
 
 					a.decode(packet, func(bytes []byte) {
-						a.audioBuffer = append(a.audioBuffer, bytes...)
+						if a.sync(packet) {
+							a.audioBuffer = append(a.audioBuffer, bytes...)
+						}
 					})
+				} else {
+					//can't receive more packets
+					// log.Print("No more audio packets.")
+					return a.getSilence(length)
 				}
-
-				// if packet.Dts() != AV_NOPTS_VALUE {
-				// 	pts := time.Duration(float64(packet.Dts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
-				// 	// println(pts.String())
-				// 	if pts > a.c.GetSeekTime()+400*time.Millisecond {
-				// 		a.c.WaitUtilWithQuit(pts, a.quit)
-				// 	}
-				// }
-			} else {
-				// runtime.Gosched()
-				//can't receive more packets
-				// log.Print("No more audio packets.")
-				time.Sleep(10 * time.Millisecond)
 			}
+			// if len(a.audioBuffer) == 0 {
+			// 	audioSize := a.decodeFrame()
+			// 	// println("audio size:", audioSize)
 
-			lenBuf := len(a.audioBuffer)
-			if lenBuf > 0 {
-				retLen := min2(lenBuf, length)
-				ret := a.audioBuffer[:retLen]
-				a.audioBuffer = a.audioBuffer[retLen:]
-				return ret
-			} else {
-				return nil
-			}
+			// 	if audioSize < 0 {
+			// 		audioSize = 1024
+			// 		a.audioBuffer = make([]byte, 1024)
+			// 	} else {
+			// 		audioSize = a.synchronize(audioSize)
+			// 		a.audioBuffer = a.audioBuffer[:audioSize]
+			// 	}
+			// }
+
+			retLen := min2(len(a.audioBuffer), length)
+			ret := a.audioBuffer[:retLen]
+			a.audioBuffer = a.audioBuffer[retLen:]
+			return ret
 		})
 }
 
