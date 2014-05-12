@@ -59,7 +59,8 @@ func (m *Movie) Open(w *Window, file string) {
 	var ctx AVFormatContext
 	var filename string
 
-	if strings.HasPrefix(file, "http://") {
+	if strings.HasPrefix(file, "http://") ||
+		strings.HasPrefix(file, "https://") {
 		ctx, filename = m.openHttp(file)
 		if ctx.IsNil() {
 			log.Fatal("open failed: ", file)
