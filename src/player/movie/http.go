@@ -43,7 +43,6 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	}
 
 	t, err := task.GetTask(name)
-	println("download info:", size, t.Size)
 	if err != nil {
 		t = &task.Task{}
 		t.Name = name
