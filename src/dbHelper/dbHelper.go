@@ -22,7 +22,10 @@ func Init(driverName, dataSourceName string) {
 func Open() *sql.DB {
 	b := time.Now()
 	filelock.Lock()
-	println("filelock", time.Since(b).String())
+	dur := time.Since(b)
+	if dur > 10*time.Millisecond {
+		println("filelock", dur.String())
+	}
 
 	db, err := sql.Open(globalCtx.driverName, globalCtx.dataSourceName)
 	if err != nil {

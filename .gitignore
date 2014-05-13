@@ -76,3 +76,5 @@ bin/goimports
 bin/testcrawler
 
 src/testcrawler/testcrawler
+cld
+src/chatserver

@@ -89,10 +89,6 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	if ctx.IsNil() {
-		println("avformatcontext is nil1")
-	}
-
 	// pd := NewAVProbeData()
 
 	go download.QuitAndDownload(t, mbuf, 0)
@@ -104,15 +100,8 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 
 	// ctx.SetInputFormat(pd.InputFormat())
 
-	if ctx.IsNil() {
-		println("avformatcontext is nil12")
-	}
-
 	ctx.OpenInput(name)
 
 	println("open http return")
-	if ctx.IsNil() {
-		println("avformatcontext is nil")
-	}
 	return ctx, name
 }
