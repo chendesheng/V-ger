@@ -194,17 +194,17 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				return;
 			}
 
-			$http.get('/open/' + task.Name).success(function(resp) {
+			$http.get('/open/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		}
 		$scope.send_resume = function(task) {
-			$http.get('/resume/' + task.Name).success(function(resp) {
+			$http.get('/resume/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		}
 		$scope.send_stop = function(task) {
-			$http.get('/stop/' + task.Name).success(function(resp) {
+			$http.get('/stop/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		}
@@ -218,7 +218,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				.success(function () {});
 		}
 		$scope.send_play = function(task) {
-			$http.get('/play/' + task.Name).success(function(resp) {
+			$http.get('/play/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			})
 		};
@@ -449,7 +449,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.bt_files = [];
 
 		$scope.move_to_trash = function(task) {
-			$http.get('/trash/' + task.Name).success(
+			$http.get('/trash/' + encodeURIComponent(task.Name)).success(
 				function(resp) {
 					resp && $scope.push_alert(resp)
 

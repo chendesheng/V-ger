@@ -47,8 +47,8 @@ function performCommand(event) {
 			for (var i = 0; i < data.length; i++) {
 				var f = data[i];
 				if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
-					post('/new/' + f.Name, f.DownloadURL, function() {
-						post('/play/' + f.Name);
+					post('/new/' + encodeURIComponent(f.Name), f.DownloadURL, function() {
+						post('/play/' + encodeURIComponent(f.Name));
 					});
 					return;
 				}
@@ -66,7 +66,7 @@ function alert(page, m) {
 	}
 }
 function downloadFile(f) {
-	post('/new/' + f.Name, f.DownloadURL, function(resp) {});
+	post('/new/' + encodeURIComponent(f.Name), f.DownloadURL, function(resp) {});
 }
 
 var currentLinkURL = "";
