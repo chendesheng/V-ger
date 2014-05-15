@@ -2,6 +2,7 @@ package subscribe
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
 	// "fmt"
 	"io/ioutil"
@@ -108,8 +109,12 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 	// if err == nil {
 	// 	s.Banner = encoded
 	// }
+	if len(s.Name) == 0 {
+		err = fmt.Errorf("Can't find name of the subscribe.")
+	} else {
+		err = nil
+	}
 
-	err = nil
 	return
 }
 func Parse(url string) (s *Subscribe, result []*task.Task, err error) {

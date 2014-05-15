@@ -21,6 +21,8 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 			err := re.(error)
 
 			writeError(w, err)
+
+			log.Print(string(debug.Stack()))
 		}
 	}()
 	log.Print("subscribeHandler")
