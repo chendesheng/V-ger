@@ -69,10 +69,10 @@ func (m *Movie) uievents() {
 			m.seekOffsetAsync(offset)
 			break
 		case gui.KEY_UP:
-			m.seekOffsetAsync(-5 * time.Second)
+			m.seekOffsetAsync(5 * time.Second)
 			break
 		case gui.KEY_DOWN:
-			m.seekOffsetAsync(5 * time.Second)
+			m.seekOffsetAsync(-5 * time.Second)
 			break
 		case gui.KEY_MINUS:
 			println("key minus pressed")
