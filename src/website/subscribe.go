@@ -21,8 +21,6 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 			err := re.(error)
 
 			writeError(w, err)
-
-			log.Print(string(debug.Stack()))
 		}
 	}()
 	log.Print("subscribeHandler")
@@ -107,6 +105,27 @@ func subscribeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 	writeJson(w, subscribe.GetSubscribes())
+}
+
+func unsubscribeHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if re := recover(); re != nil {
+			err := re.(error)
+
+			writeError(w, err)
+		}
+	}()
+	name := ""
+	if len(r.URL.String()) > 13 {
+		name, _ = url.QueryUnescape(r.URL.String()[13:])
+	}
+
+	log.Print("unsubscribe:", name)
+
+	err := subscribe.RemoveSubscribe(name)
+	if err != nil {
+		writeError(w, err)
+	}
 }
 
 func checkCache(s *subscribe.Subscribe, cachedlen int) (string, error) {

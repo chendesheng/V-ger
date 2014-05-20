@@ -339,22 +339,29 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 		$scope.unsubscribe = function($event, subscribe) {
 			$event.stopPropagation();
-			for (var i = $scope.subscribes.length - 1; i >= 0; i--) {
-				var s = $scope.subscribes[i];
-				if (s.Name == subscribe.Name) {
-					$scope.subscribes.splice(i, 1);
-
-					if ($scope.currentSubscribe.Name == s.Name) {
-						var current = $scope.subscribes[0];
-						angular.forEach(current, function(v, k){
-							$scope.currentSubscribe[k] = current[k];
-						});
-
-						$scope.task_filter.Subscribe = $scope.currentSubscribe.Name;
-					}
-					break;
+			$http.get('/unsubscribe/'+encodeURIComponent(subscribe.Name)).success(function(data) {
+				if (typeof data == 'string' && data != '') {
+					$scope.push_alert(data);
+					return;
 				}
-			};
+
+				for (var i = $scope.subscribes.length - 1; i >= 0; i--) {
+					var s = $scope.subscribes[i];
+					if (s.Name == subscribe.Name) {
+						$scope.subscribes.splice(i, 1);
+
+						if ($scope.currentSubscribe.Name == s.Name) {
+							var current = $scope.subscribes[0];
+							angular.forEach(current, function(v, k){
+								$scope.currentSubscribe[k] = current[k];
+							});
+
+							$scope.task_filter.Subscribe = $scope.currentSubscribe.Name;
+						}
+						break;
+					}
+				};
+			});
 		};
 		$scope.new_subscribe = function (url) {
 			$scope.waiting = true;

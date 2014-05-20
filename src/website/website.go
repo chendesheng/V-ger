@@ -355,6 +355,8 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 
 func writeError(w http.ResponseWriter, err error) {
 	log.Print(err)
+	log.Print(string(debug.Stack()))
+
 	w.Write([]byte(err.Error()))
 }
 func writeJson(w io.Writer, obj interface{}) error {
@@ -516,6 +518,7 @@ func Run() {
 	http.HandleFunc("/subscribe/new", subscribeNewHandler)
 	http.HandleFunc("/subscribe", subscribeHandler)
 	http.HandleFunc("/subscribe/banner/", subscribeBannerHandler)
+	http.HandleFunc("/unsubscribe/", unsubscribeHandler)
 
 	http.HandleFunc("/thunder/new", thunderNewHandler)
 	http.HandleFunc("/thunder/torrent", thunderTorrentHandler)
