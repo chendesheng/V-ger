@@ -76,49 +76,83 @@ func (b *buffer) GC() {
 	}
 }
 
-func (b *buffer) Read(w io.Writer, require int64) int {
+// func (b *buffer) Read(w io.Writer, require int64) int {
+// 	b.Lock()
+// 	defer b.Unlock()
+
+// 	if b.currentPos+require > b.size {
+// 		require = b.size - b.currentPos
+// 	}
+// 	ret := require
+
+// 	nextPosition := b.currentPos + require
+// 	for {
+// 		b.read(w, require)
+// 		if b.currentPos < nextPosition {
+// 			require = nextPosition - b.currentPos
+// 			b.Unlock()
+// 			time.Sleep(100 * time.Millisecond)
+// 			b.Lock()
+// 		} else {
+// 			break
+// 		}
+// 	}
+
+// 	return int(ret)
+// }
+
+// func (b *buffer) read(w io.Writer, require int64) {
+// 	nextPosition := b.currentPos + require
+// 	for e := b.data.Front(); e != nil; e = e.Next() {
+// 		bk := (e.Value).(*block)
+// 		if bk.inside(b.currentPos) {
+// 			from := b.currentPos - bk.off
+// 			to := min(int64(len(bk.p)), nextPosition-bk.off)
+// 			if w != nil {
+// 				w.Write(bk.p[from:to])
+// 			}
+
+// 			b.currentPos = bk.off + to
+
+// 			if b.currentPos >= nextPosition {
+// 				break
+// 			}
+// 		}
+// 	}
+// }
+
+func (b *buffer) Read(w io.Writer, require int64) int64 {
+	if w == nil {
+		return 0
+	}
+
 	b.Lock()
 	defer b.Unlock()
 
-	if b.currentPos+require > b.size {
+	lastPos := b.currentPos
+
+	nextPosition := b.currentPos + require
+	if nextPosition > b.size {
 		require = b.size - b.currentPos
-	}
-	ret := require
-
-	nextPosition := b.currentPos + require
-	for {
-		b.read(w, require)
-		if b.currentPos < nextPosition {
-			require = nextPosition - b.currentPos
-			b.Unlock()
-			time.Sleep(100 * time.Millisecond)
-			b.Lock()
-		} else {
-			break
-		}
+		nextPosition = b.size
 	}
 
-	return int(ret)
-}
-
-func (b *buffer) read(w io.Writer, require int64) {
-	nextPosition := b.currentPos + require
 	for e := b.data.Front(); e != nil; e = e.Next() {
 		bk := (e.Value).(*block)
 		if bk.inside(b.currentPos) {
 			from := b.currentPos - bk.off
 			to := min(int64(len(bk.p)), nextPosition-bk.off)
-			if w != nil {
-				w.Write(bk.p[from:to])
-			}
 
-			b.currentPos = bk.off + to
+			w.Write(bk.p[from:to])
+			b.currentPos += to - from
 
 			if b.currentPos >= nextPosition {
 				break
 			}
 		}
 	}
+
+	return b.currentPos - lastPos
 }
 
 func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
@@ -145,6 +179,43 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 	b.data.PushBack(&block{off, data})
 
 	return nil
+}
+func (b *buffer) SizeAhead() int64 {
+	b.Lock()
+	defer b.Unlock()
+
+	pos := b.currentPos
+
+	for e := b.data.Front(); e != nil; e = e.Next() {
+		bk := (e.Value).(*block)
+		if bk.inside(pos) {
+			pos = bk.off + int64(len(bk.p))
+		}
+	}
+
+	return pos - b.currentPos
+}
+func (b *buffer) IsFinish() bool {
+	b.Lock()
+	defer b.Unlock()
+
+	e := b.data.Back()
+	if e == nil {
+		return false
+	}
+
+	bk := e.Value.(*block)
+	return b.size <= bk.off+int64(len(bk.p))
+}
+func (b *buffer) Wait(size int64) {
+	for {
+		if b.SizeAhead() >= size || b.IsFinish() {
+			return
+		}
+
+		println(b.SizeAhead(), b.IsFinish())
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 func (b *buffer) Seek(offset int64, whence int) (int64, int64) {

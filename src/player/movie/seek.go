@@ -5,6 +5,16 @@ import (
 	"time"
 )
 
+func (m *Movie) seekOffsetAsync(offset time.Duration) {
+	go func() {
+		if m.httpBuffer != nil {
+			m.w.SendShowMessage("Bufferring...", false)
+			defer m.w.SendHideMessage()
+		}
+
+		m.seekOffset(offset)
+	}()
+}
 func (m *Movie) seekOffset(offset time.Duration) {
 	t := m.c.GetTime() + offset
 	if t < 0 {
@@ -28,8 +38,8 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	}
 
 	m.c.SetTime(t)
-	percent := m.c.GetPercent()
-	m.w.ShowProgress(m.c.CalcPlayProgress(percent))
+	// percent := m.c.GetPercent()
+	// m.w.ShowProgress(m.c.CalcPlayProgress(percent))
 
 	if m.s != nil {
 		m.s.Seek(t)
@@ -42,8 +52,11 @@ func (m *Movie) seekOffset(offset time.Duration) {
 
 func (m *Movie) SeekBegin() {
 	m.chSeekPause <- -1
+
 	m.v.FlushBuffer()
 	m.a.FlushBuffer()
+
+	println("seek begin")
 }
 
 func (m *Movie) Seek(t time.Duration) time.Duration {
@@ -57,12 +70,13 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 	}
 	// println("seek refresh")
 	if len(img) > 0 {
-		m.w.RefreshContent(img)
+		// m.w.RefreshContent(img)
+		go m.w.SendDrawImage(img)
 	}
 
 	m.c.SetTime(t)
-	percent := m.c.GetPercent()
-	m.w.ShowProgress(m.c.CalcPlayProgress(percent))
+	// percent := m.c.GetPercent()
+	// go m.w.SendShowProgress(m.c.CalcPlayProgress(percent))
 
 	if m.s != nil {
 		m.s.Seek(t)
@@ -70,10 +84,14 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 	if m.s2 != nil {
 		m.s2.Seek(t)
 	}
+
+	println("end seek2:", t.String())
+
 	return t
 }
 
 func (m *Movie) SeekEnd(t time.Duration) {
-	m.chSeekPause <- t
 	println("seek end:", t.String())
+	m.chSeekPause <- t
+	println("seek end2:", t.String())
 }

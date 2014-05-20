@@ -50,7 +50,7 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 		select {
 		case <-quit:
 			return
-		case <-time.After(2 * time.Second):
+		case <-time.After(100 * time.Microsecond):
 			break
 		}
 	}
@@ -102,17 +102,17 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 					return
 				}
 			} else {
+				log.Printf("download wrong data:%d,%d,%d", b.from, b.to, len(b.data))
 				log.Print(err)
 				bytes, _ := httputil.DumpResponse(resp, false)
 				log.Print(string(bytes))
-				log.Printf("download wrong data:%d,%d,%d", b.from, b.to, len(b.data))
 			}
 		}
 
 		select {
 		case <-quit:
 			return
-		case <-time.After(time.Second):
+		case <-time.After(100 * time.Millisecond):
 			break
 		}
 	}

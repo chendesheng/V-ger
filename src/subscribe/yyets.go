@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log"
+	"net/http/httputil"
 	// "fmt"
 	"io/ioutil"
 	"net/http"
@@ -83,7 +85,9 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 				for _, c := range props {
 					k := getRigOfTags(getTag1(c, "span"))
 					if k == "英文：" {
+						log.Print("get name")
 						if len(c.Child) > 1 {
+							log.Print("get name:", c.Child[1].Data)
 							s.Name = s.Name + c.Child[1].Data
 						}
 					}
@@ -125,6 +129,11 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	defer resp.Body.Close()
 
 	s, t, err := parse(resp.Body)
+	if len(s.Name) == 0 {
+		respdata, _ := httputil.DumpResponse(resp, false)
+		log.Print(string(respdata))
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}

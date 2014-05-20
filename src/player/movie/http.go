@@ -30,10 +30,8 @@ func downloadBytes(url string, from int64, size int, filesize int64) []byte {
 	return data
 }
 
-var mbuf *buffer
-
 func (m *Movie) openHttp(file string) (AVFormatContext, string) {
-	download.NetworkTimeout = 30 * time.Second
+	download.NetworkTimeout = 15 * time.Second
 	download.BaseDir = util.ReadConfig("dir")
 
 	_, name, size, err := download.GetDownloadInfo(file)
@@ -56,7 +54,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		task.SaveTask(t)
 	}
 
-	mbuf = NewBuffer(size)
+	m.httpBuffer = NewBuffer(size)
 
 	buf := AVObject{}
 	buf.Malloc(1024 * 64)
@@ -64,15 +62,30 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		if buf.Size() == 0 {
 			return 0
 		}
+		require := int64(buf.Size())
 
-		return mbuf.Read(&buf, int64(buf.Size()))
+		got := m.httpBuffer.Read(&buf, require)
+
+		if got < require && !m.httpBuffer.IsFinish() {
+			if m.c != nil {
+				m.c.Pause()
+				defer m.c.Resume()
+			}
+
+			for got < require && !m.httpBuffer.IsFinish() {
+				time.Sleep(100 * time.Millisecond)
+				got += m.httpBuffer.Read(&buf, require-got)
+			}
+		}
+
+		return int(got)
 	}, func(offset int64, whence int) int64 {
 		println("seek:", offset, whence)
 		if whence == AVSEEK_SIZE {
-			return mbuf.size
+			return m.httpBuffer.size
 		}
 
-		pos, start := mbuf.Seek(offset, whence)
+		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
 			go func() {
 				t, err := task.GetTask(name)
@@ -80,7 +93,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 					log.Fatal(err)
 				}
 
-				download.QuitAndDownload(t, mbuf, start)
+				download.QuitAndDownload(t, m.httpBuffer, start)
 			}()
 		}
 		return pos
@@ -89,16 +102,8 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	// pd := NewAVProbeData()
-
-	go download.QuitAndDownload(t, mbuf, 0)
-	// mbuf.Read(&buf, 1024*64)
-	mbuf.Seek(0, os.SEEK_SET)
-
-	// pd.SetBuffer(buf)
-	// pd.SetFileName(name)
-
-	// ctx.SetInputFormat(pd.InputFormat())
+	go download.QuitAndDownload(t, m.httpBuffer, 0)
+	m.httpBuffer.Seek(0, os.SEEK_SET)
 
 	ctx.OpenInput(name)
 

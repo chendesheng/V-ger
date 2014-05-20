@@ -15,8 +15,8 @@ gui:
 	$(CC) $(P_SRC)/*.m -c -I$(P_INC)
 	libtool -static -o $(P_SRC)/libcocoa.a *.o
 	go install -a player/gui
-	rm *.o
 	go install player
+	rm *.o
 
 # exe:
 # 	go install vger

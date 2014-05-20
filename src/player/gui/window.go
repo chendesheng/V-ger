@@ -22,6 +22,9 @@ type imageRender interface {
 	draw(img []byte, width, height int)
 	delete()
 }
+type argSize struct {
+	width, height int
+}
 
 type Window struct {
 	ptr unsafe.Pointer
@@ -38,6 +41,8 @@ type Window struct {
 	ChanDraw     chan []byte
 	ChanShowText chan SubItemArg
 	ChanHideText chan uintptr
+	ChanSetSize  chan argSize
+	ChanSetTitle chan string
 
 	ChanShowMessage chan SubItemArg
 	ChanHideMessage chan uintptr
@@ -147,6 +152,8 @@ func NewWindow(title string, width, height int) *Window {
 		ChanShowProgress: make(chan *PlayProgressInfo),
 		ChanShowText:     make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
 		ChanHideText:     make(chan uintptr),
+		ChanSetSize:      make(chan argSize),
+		ChanSetTitle:     make(chan string),
 
 		ChanShowMessage: make(chan SubItemArg),
 		ChanHideMessage: make(chan uintptr),
@@ -301,6 +308,14 @@ func (w *Window) SendHideMessage() {
 	w.ChanHideMessage <- 0
 }
 
+func (w *Window) SendSetSize(width, height int) {
+	w.ChanSetSize <- argSize{width, height}
+}
+
+func (w *Window) SendSetTitle(title string) {
+	w.ChanSetTitle <- title
+}
+
 func (w *Window) ShowText(s *SubItem) uintptr {
 	strs := s.Content
 
@@ -370,6 +385,12 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 		} else {
 			w.HideCursor()
 		}
+		break
+	case arg := <-w.ChanSetSize:
+		w.SetSize(arg.width, arg.height)
+		break
+	case title := <-w.ChanSetTitle:
+		w.SetTitle(title)
 		break
 	case arg := <-w.ChanShowText:
 		var arg1 SubItemArg

@@ -32,9 +32,12 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 			if t != -1 {
 				break
 			}
+			m.toggleShowProgress()
 			for {
 				t := <-m.chSeekPause
 				if t >= 0 {
+					m.toggleShowProgress()
+
 					m.c.SetTime(t)
 					break
 				}
@@ -105,6 +108,9 @@ func (m *Movie) decode(name string) {
 			t, _, err := m.v.Seek(m.c.GetTime())
 			if err == nil {
 				println("seek success:", t.String())
+				if m.httpBuffer != nil {
+					m.httpBuffer.Wait(2 * 1024 * 1024)
+				}
 				m.c.SetTime(t)
 				continue
 			} else {

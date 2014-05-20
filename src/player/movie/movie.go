@@ -36,6 +36,8 @@ type Movie struct {
 	audioStreams []AVStream
 
 	size int64
+
+	httpBuffer *buffer
 }
 
 func NewMovie() *Movie {
@@ -55,6 +57,10 @@ func updateSubscribeDuration(movie string, duration time.Duration) {
 
 func (m *Movie) Open(w *Window, file string) {
 	println("open ", file)
+
+	m.w = w
+	w.InitEvents()
+	m.uievents()
 
 	var ctx AVFormatContext
 	var filename string
@@ -98,13 +104,18 @@ func (m *Movie) Open(w *Window, file string) {
 	m.c = NewClock(duration)
 
 	m.setupVideo()
-	m.w = w
 
 	m.p = CreateOrGetPlaying(filename)
 
 	var start time.Duration
 	if m.p.LastPos > time.Second {
-		start, _, _ = m.v.Seek(m.p.LastPos)
+		var img []byte
+		start, img, _ = m.v.Seek(m.p.LastPos)
+		w.SendDrawImage(img)
+
+		if m.httpBuffer != nil {
+			m.httpBuffer.Wait(2 * 1024 * 1024)
+		}
 	}
 
 	m.p.LastPos = start
@@ -130,20 +141,17 @@ func (m *Movie) Open(w *Window, file string) {
 		}
 	}()
 
-	w.InitEvents()
-	w.SetTitle(filename)
-	w.SetSize(m.v.Width, m.v.Height)
+	w.SendSetTitle(filename)
+	w.SendSetSize(m.v.Width, m.v.Height)
 	m.v.SetRender(m.w)
 
 	m.setupAudio()
 
-	m.uievents()
-
 	m.c.SetTime(start)
 
-	go m.showProgress(filename)
+	m.showProgress()
 
-	w.HideCursor()
+	w.SendSetCursor(false)
 }
 
 func (m *Movie) SavePlaying() {
@@ -175,7 +183,7 @@ func (m *Movie) Close() {
 }
 func (m *Movie) PlayAsync() {
 	go m.v.Play()
-	go m.showProgressPerSecond(m.p.Movie)
+	go m.showProgressPerSecond()
 	go m.decode(m.p.Movie)
 }
 func (m *Movie) Resume() {
@@ -195,7 +203,6 @@ func (m *Movie) setupVideo() {
 			log.Fatal(err)
 			return
 		}
-
 	} else {
 		log.Fatal("No video stream find.")
 	}

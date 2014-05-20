@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-func (m *Movie) showProgress(name string) {
+func (m *Movie) showProgress() {
+	name := m.p.Movie
 	m.p.LastPos = m.c.GetTime()
 
 	p := m.c.CalcPlayProgress(m.c.GetPercent())
@@ -19,7 +20,11 @@ func (m *Movie) showProgress(name string) {
 			if t.Status == "Finished" {
 				p.Percent2 = 1
 			} else {
-				p.Percent2 = float64(t.BufferedPosition) / float64(t.Size)
+				if m.httpBuffer != nil {
+					p.Percent2 = float64(m.httpBuffer.currentPos+m.httpBuffer.SizeAhead()) / float64(t.Size)
+				} else {
+					p.Percent2 = float64(t.BufferedPosition) / float64(t.Size)
+				}
 			}
 		} else {
 			log.Print(err)
@@ -37,7 +42,11 @@ func (m *Movie) showProgress(name string) {
 	m.w.SendShowProgress(p)
 }
 
-func (m *Movie) showProgressPerSecond(name string) {
+var chShowProgress chan struct{}
+
+func (m *Movie) showProgressPerSecond() {
+	chShowProgress = make(chan struct{})
+
 	ticker := time.NewTicker(time.Second)
 	for {
 		if m.c.WaitUtilRunning(m.quit) {
@@ -45,10 +54,18 @@ func (m *Movie) showProgressPerSecond(name string) {
 		}
 
 		select {
+		case <-chShowProgress:
+			<-chShowProgress
+			break
 		case <-ticker.C:
-			m.showProgress(name)
+			m.showProgress()
+			break
 		case <-m.quit:
 			return
 		}
 	}
+}
+
+func (m *Movie) toggleShowProgress() {
+	chShowProgress <- struct{}{}
 }

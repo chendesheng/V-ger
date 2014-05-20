@@ -1,9 +1,6 @@
 package movie
 
-import (
-	"testing"
-	"time"
-)
+import "testing"
 
 func TestBlock(t *testing.T) {
 	b := &block{100, make([]byte, 1000)}
@@ -23,12 +20,12 @@ func TestBlock(t *testing.T) {
 
 func TestBufferWrite(t *testing.T) {
 	b := NewBuffer(1000)
-	b.WriteAt(make([]byte, 100), 100)
+	b.WriteAtQuit(make([]byte, 100), 100, nil)
 	if b.data.Len() != 1 {
 		t.Errorf("list length should be 1 but %d", b.data.Len())
 	}
 
-	b.WriteAt(make([]byte, 100), 200)
+	b.WriteAtQuit(make([]byte, 100), 200, nil)
 	if b.data.Len() != 2 {
 		t.Errorf("list length should be 1 but %d", b.data.Len())
 	}
@@ -36,12 +33,12 @@ func TestBufferWrite(t *testing.T) {
 
 func TestBufferFromTo(t *testing.T) {
 	b := NewBuffer(1000)
-	b.WriteAt(make([]byte, 100), 100)
+	b.WriteAtQuit(make([]byte, 100), 100, nil)
 	if b.data.Len() != 1 {
 		t.Errorf("list length should be 1 but %d", b.data.Len())
 	}
 
-	b.WriteAt(make([]byte, 100), 200)
+	b.WriteAtQuit(make([]byte, 100), 200, nil)
 	if b.data.Len() != 2 {
 		t.Errorf("list length should be 1 but %d", b.data.Len())
 	}
@@ -60,20 +57,20 @@ type testWriter struct {
 }
 
 func (w *testWriter) Write(p []byte) (int, error) {
+	println("write length:", len(p))
 	w.result = append(w.result, len(p))
 	return len(p), nil
 }
 func TestBufferRead(t *testing.T) {
 	b := NewBuffer(1000)
-	go func() {
-		from := int64(0)
-		for from < b.size {
-			time.Sleep(1000 * time.Millisecond)
-			b.WriteAt(make([]byte, 100), from)
-			from += 100
-		}
-	}()
+	from := int64(0)
+	for from < b.size {
+		b.WriteAtQuit(make([]byte, 100), from, make(chan bool))
+		from += 100
+	}
+
 	b.Seek(50, 0)
+	println(b.currentPos, b.size)
 	w := &testWriter{}
 	b.Read(w, 200)
 	if len(w.result) != 3 {
@@ -101,5 +98,26 @@ func TestBufferRead(t *testing.T) {
 	}
 	if w.result[1] != 100 {
 		t.Errorf("result[1] should be 100 but %d", w.result[1])
+	}
+}
+
+func TestBufferReadBorder(t *testing.T) {
+	b := NewBuffer(1000)
+	from := int64(0)
+	for from < b.size {
+		b.WriteAtQuit(make([]byte, 100), from, make(chan bool))
+		from += 100
+	}
+
+	b.Seek(50, 0)
+
+	w := &testWriter{}
+	got := b.Read(w, 1000)
+	if got != 950 {
+		t.Errorf("expect got 950 but %d", got)
+	}
+
+	if b.currentPos != 1000 {
+		t.Error("expect currentPost 1000 but %d", b.currentPos)
 	}
 }

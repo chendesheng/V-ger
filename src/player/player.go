@@ -38,8 +38,11 @@ func (app *appDelegate) OpenFile(filename string) bool {
 	}
 
 	app.m = NewMovie()
-	app.m.Open(app.w, filename)
-	app.m.PlayAsync()
+
+	go func() {
+		app.m.Open(app.w, filename)
+		app.m.PlayAsync()
+	}()
 
 	return len(filename) > 0
 }

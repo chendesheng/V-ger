@@ -49,7 +49,7 @@ func (m *Movie) uievents() {
 			} else {
 				offset = -10 * time.Second
 			}
-			m.seekOffset(offset)
+			m.seekOffsetAsync(offset)
 			break
 		case gui.KEY_RIGHT:
 			var offset time.Duration
@@ -66,13 +66,13 @@ func (m *Movie) uievents() {
 			} else {
 				offset = 10 * time.Second
 			}
-			m.seekOffset(offset)
+			m.seekOffsetAsync(offset)
 			break
 		case gui.KEY_UP:
-			m.seekOffset(-5 * time.Second)
+			m.seekOffsetAsync(-5 * time.Second)
 			break
 		case gui.KEY_DOWN:
-			m.seekOffset(5 * time.Second)
+			m.seekOffsetAsync(5 * time.Second)
 			break
 		case gui.KEY_MINUS:
 			println("key minus pressed")
@@ -133,34 +133,78 @@ func (m *Movie) uievents() {
 	})
 
 	chCursor := make(chan struct{})
+	chCursorAutoHide := make(chan struct{})
 
 	var lastSeekTime time.Duration
 	// var lastText uintptr
 	// var chPause chan seekArg
-
+	chProgress := make(chan time.Duration)
+	chProgressRes := make(chan time.Duration)
+	go func() {
+		var t time.Duration
+		for {
+			select {
+			case <-time.After(100 * time.Millisecond):
+				if t > 0 {
+					chProgressRes <- m.Seek(t)
+					t = 0
+				}
+				break
+			case t = <-chProgress:
+				chProgressRes <- t
+				break
+			}
+		}
+	}()
 	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
+		// select {
+		// case chCursor <- struct{}{}:
+		// 	break
+		// case <-time.After(50 * time.Millisecond):
+		// 	log.Print("stop hide cursor timeout2")
+		// 	break
+		// }
+
 		switch typ {
 		case 0:
 			m.SeekBegin()
-			t := m.Seek(m.c.CalcTime(percent))
+			t := m.c.CalcTime(percent)
+			if m.httpBuffer == nil {
+				t = m.Seek(t)
+			}
 
 			lastSeekTime = t
+
+			chCursorAutoHide <- struct{}{}
 			break
 		case 2:
-			t := lastSeekTime
-			m.SeekEnd(t)
+			go func() {
+				if m.httpBuffer != nil {
+					m.w.SendShowMessage("Bufferring...", false)
+					defer m.w.SendHideMessage()
 
-			m.p.LastPos = m.c.GetTime()
-			SavePlayingAsync(m.p)
+					lastSeekTime = m.Seek(lastSeekTime)
+					m.httpBuffer.Wait(1024 * 1024)
+				}
+				m.SeekEnd(lastSeekTime)
+				m.p.LastPos = m.c.GetTime()
+				SavePlaying(m.p)
+			}()
+
+			chCursorAutoHide <- struct{}{}
+
 			break
 		case 1:
 			t := m.c.CalcTime(percent)
-			t = m.Seek(t)
+			if m.httpBuffer == nil {
+				t = m.Seek(t)
+			}
 			lastSeekTime = t
+
+			m.c.SetTime(t)
+			go m.showProgress()
 			break
 		}
-
-		chCursor <- struct{}{}
 	})
 
 	m.w.FuncOnFullscreenChanged = append(m.w.FuncOnFullscreenChanged, func(b bool) {
@@ -267,6 +311,9 @@ func (m *Movie) uievents() {
 				<-chCursor //prevent call SendSetCursor every 2 seconds
 				break
 			case <-chCursor:
+				break
+			case <-chCursorAutoHide:
+				<-chCursorAutoHide
 				break
 			}
 		}

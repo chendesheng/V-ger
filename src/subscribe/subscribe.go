@@ -6,8 +6,8 @@ import (
 	"time"
 	// "download"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
+	_ "github.com/mattn/go-sqlite3"
 	// "task"
 	// "thunder"
 	// "time"
@@ -88,6 +88,35 @@ func GetSubscribe(name string) *Subscribe {
 		} else {
 			log.Print(err.Error())
 		}
+	}
+
+	return nil
+}
+
+func RemoveSubscribe(name string) (err error) {
+	db := dbHelper.Open()
+	defer dbHelper.Close(db)
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = tx.Commit()
+		if err != nil {
+			log.Println(err.Error())
+		}
+
+		return
+	}()
+
+	_, err = tx.Exec(`delete from subscribe where Name=?`, name)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`update task set Status='Deleted', subscribe='' where subscribe=?`, name)
+	if err != nil {
+		return err
 	}
 
 	return nil
