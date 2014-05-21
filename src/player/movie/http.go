@@ -93,7 +93,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 					log.Fatal(err)
 				}
 
-				download.QuitAndDownload(t, m.httpBuffer, start)
+				download.QuitAndDownload(t, m.httpBuffer, start, m.p)
 			}()
 		}
 		return pos
@@ -102,7 +102,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	go download.QuitAndDownload(t, m.httpBuffer, 0)
+	go download.QuitAndDownload(t, m.httpBuffer, 0, nil)
 	m.httpBuffer.Seek(0, os.SEEK_SET)
 
 	ctx.OpenInput(name)

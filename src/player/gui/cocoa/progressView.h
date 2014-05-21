@@ -6,5 +6,7 @@
     NSString *rightString;
     CGFloat percent;
     CGFloat percent2;
+    NSString *speedString;
+    CGFloat paddingLeft;
 }
 @end

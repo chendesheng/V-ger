@@ -8,13 +8,18 @@ import (
 	"time"
 )
 
+type ProgressMonitor interface {
+	SetProgress(float64, int64)
+}
+
 type progressFilter struct {
 	basicFilter
 	t *task.Task
+	m ProgressMonitor
 }
 
 func (pf *progressFilter) active() {
-	handleProgress(pf.input, pf.output, pf.t, pf.quit)
+	handleProgress(pf.input, pf.output, pf.t, pf.quit, pf.m)
 }
 
 type segment struct {
@@ -75,7 +80,7 @@ func (sr *segRing) total() (time.Duration, int64) {
 	return totalDurtion, totalLength
 }
 
-func handleProgress(progress chan *block, output chan *block, t *task.Task, quit chan bool) {
+func handleProgress(progress chan *block, output chan *block, t *task.Task, quit chan bool, m ProgressMonitor) {
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 	if t.Status == "Playing" {
 		total = t.BufferedPosition
@@ -90,7 +95,7 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 		select {
 		case b, ok := <-progress:
 			if !ok {
-				saveProgress(t.Name, 0, total, elapsedTime, 0)
+				saveProgress(t.Name, 0, total, elapsedTime, 0, m)
 				if output != nil {
 					close(output)
 				}
@@ -118,7 +123,7 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 			// fmt.Printf("totalDurtion %s, totalLength %d\n", totalDurtion, totalLength)
 			speed = math.Floor(float64(totalLength)*float64(time.Second)/float64(totalDurtion)/1024.0 + 0.5)
 			_, est := calcProgress(total, size, speed)
-			saveProgress(t.Name, speed, total, elapsedTime, est)
+			saveProgress(t.Name, speed, total, elapsedTime, est, m)
 
 			if total == size {
 				fmt.Println("progress return")
@@ -140,7 +145,11 @@ func calcProgress(total, size int64, speed float64) (percentage float64, est tim
 	}
 	return
 }
-func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration) {
+func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration, m ProgressMonitor) {
+	if m != nil {
+		m.SetProgress(speed, total)
+	}
+
 	if t, err := task.GetTask(name); err == nil {
 		if t.Status != "Playing" {
 			t.DownloadedSize = total

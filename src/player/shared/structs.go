@@ -39,6 +39,12 @@ type Playing struct {
 	Sub2        string
 	Duration    time.Duration
 	Volume      byte
+	Speed       float64 //online video downlad speed
+}
+
+func (p *Playing) SetProgress(speed float64, size int64) {
+	println("SetProgress:", speed)
+	p.Speed = speed
 }
 
 func (item *SubItem) IsInDefaultPosition() bool {
@@ -62,6 +68,7 @@ type PlayProgressInfo struct {
 	Right    string
 	Percent  float64
 	Percent2 float64
+	Speed    string
 }
 
 type SubItems []*SubItem

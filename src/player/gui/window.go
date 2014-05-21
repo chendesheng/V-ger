@@ -275,7 +275,10 @@ func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cright := C.CString(p.Right)
 	defer C.free(unsafe.Pointer(cright))
 
-	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent), C.double(p.Percent2))
+	cspeed := C.CString(p.Speed)
+	defer C.free(unsafe.Pointer(cspeed))
+
+	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent), C.double(p.Percent2), cspeed)
 }
 func (w *Window) SendShowText(s SubItemArg) {
 	// res := make(chan SubItemExtra)

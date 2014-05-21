@@ -47,7 +47,7 @@ func activeFilters(filters []filter) {
 }
 
 func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
-	maxSpeed int64, chMaxSpeed chan int64, restartTimeout time.Duration, quit chan bool) {
+	maxSpeed int64, chMaxSpeed chan int64, restartTimeout time.Duration, m ProgressMonitor, quit chan bool) {
 	url := t.URL
 
 	maxConnections := util.ReadIntConfig("max-connection")
@@ -81,6 +81,7 @@ func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
 	pf := &progressFilter{
 		basicFilter{nil, make(chan *block), quit},
 		t,
+		m,
 	}
 
 	// gf.connect(&df.basicFilter)

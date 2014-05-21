@@ -9,6 +9,8 @@
         self->rightString = @"--:--:--";
         self->percent = 0;
         self->percent2 = 0;
+        self->speedString = @"";
+        self->paddingLeft = 0;
     }
     
     return self;
@@ -22,8 +24,6 @@
     [textViewSurround fill];
 }
 -(void)drawRect:(NSRect)dirtyRect {
-    CGFloat position = (dirtyRect.size.width-120)*(self->percent);
-    CGFloat position2 = (dirtyRect.size.width-120)*(self->percent2);
     // CGFloat position3 = position2;
     // if (position3 > 65) {
     //     position3 -= 5;
@@ -31,21 +31,36 @@
     CGFloat barHeight = 4;
     CGFloat knotHeight = 14;
     CGFloat knotWidth = 5;
-    
+
     [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:0.3] setFill];
     NSRectFill(dirtyRect);
     
     NSDictionary *attr = @{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]};
+
+    if ([self->speedString length] > 0) {
+        self->paddingLeft = 60;
+    } else {
+        self->paddingLeft = 0;
+    }
+
+    CGFloat position = (dirtyRect.size.width-120-self->paddingLeft)*(self->percent);
+    CGFloat position2 = (dirtyRect.size.width-120-self->paddingLeft)*(self->percent2);
+    
     NSSize textSize = [self->leftString sizeWithAttributes:attr];
     CGFloat textY = (dirtyRect.size.height-14)/2;
-    [self->leftString drawAtPoint:NSMakePoint(60-4-textSize.width,textY) withAttributes:attr];
-    [self->rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-60+4, textY) withAttributes:@{NSFontAttributeName : [NSFont fontWithName:@"Helvetica Neue" size:12]}];
+    [self->leftString drawAtPoint:NSMakePoint(60-4-textSize.width+self->paddingLeft,textY) withAttributes:attr];
+    [self->rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-60+4, textY) withAttributes:attr];
+
+    if (self->paddingLeft > 0) {
+        NSSize sz = [self->speedString sizeWithAttributes:attr];
+        [self->speedString drawAtPoint:NSMakePoint(self->paddingLeft+60-4-textSize.width-sz.width-10, textY) withAttributes:attr];
+    }
     
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
-    [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, dirtyRect.size.width-120, barHeight) radius:2];
+    [self drawRoundedRect:NSMakeRect(60+self->paddingLeft, (dirtyRect.size.height-barHeight)/2, dirtyRect.size.width-120-self->paddingLeft, barHeight) radius:2];
 
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
-    [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, position2, barHeight) radius:2];
+    [self drawRoundedRect:NSMakeRect(60+self->paddingLeft, (dirtyRect.size.height-barHeight)/2, position2, barHeight) radius:2];
     
     // NSShadow* theShadow = [[NSShadow alloc] init];
     // [theShadow setShadowOffset:NSMakeSize(0, 0)];
@@ -58,16 +73,16 @@
     
     [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:1] setFill];
     
-    [self drawRoundedRect:NSMakeRect(60, (dirtyRect.size.height-barHeight)/2, position, barHeight) radius:2];
+    [self drawRoundedRect:NSMakeRect(60+self->paddingLeft, (dirtyRect.size.height-barHeight)/2, position, barHeight) radius:2];
     
     [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:1] setFill];
-    [self drawRoundedRect:NSMakeRect(position-knotWidth/2+60, (dirtyRect.size.height-knotHeight)/2, knotWidth, knotHeight) radius:1.5];
+    [self drawRoundedRect:NSMakeRect(position-knotWidth/2+60+self->paddingLeft, (dirtyRect.size.height-knotHeight)/2, knotWidth, knotHeight) radius:1.5];
     
     [super drawRect:dirtyRect];
 }
 - (void)mouseDown:(NSEvent *)event {
     NSPoint pt = [self convertPoint:[event locationInWindow] fromView:nil];
-    NSRect bound = NSMakeRect(60, 10, self.frame.size.width-120, self.frame.size.height-20);
+    NSRect bound = NSMakeRect(60+self->paddingLeft, 10, self.frame.size.width-120-self->paddingLeft, self.frame.size.height-20);
     
     if (NSPointInRect(pt, bound)) {
         self->percent = (pt.x-bound.origin.x)/bound.size.width;            

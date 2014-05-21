@@ -18,7 +18,7 @@
 }
 
 -(id)initWithFrame2:(NSRect)frame;
--(void)showProgress:(char*)left right:(char*)right percent:(double)percent percent2:(double)percent2;
+-(void)showProgress:(char*)left right:(char*)right percent:(double)percent percent2:(double)percent2 speed:(char*)speed;
 -(void)setProgressView:(ProgressView*)pv;
 
 -(TextView*)showText:(SubItem*)items length:(int)length position:(int)position x:(double)x y:(double)y;

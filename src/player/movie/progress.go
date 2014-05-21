@@ -1,6 +1,7 @@
 package movie
 
 import (
+	"fmt"
 	"log"
 	"task"
 	"time"
@@ -11,6 +12,11 @@ func (m *Movie) showProgress() {
 	m.p.LastPos = m.c.GetTime()
 
 	p := m.c.CalcPlayProgress(m.c.GetPercent())
+	if m.httpBuffer != nil {
+		p.Speed = fmt.Sprintf("%.1f KB/s", m.p.Speed)
+	}
+
+	println("download speed:", p.Speed)
 
 	done := make(chan struct{})
 	go func() {

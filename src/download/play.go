@@ -21,13 +21,13 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 
 	play_quit = make(chan bool)
 
-	doDownload(t, writerWrap{w}, from, to, 0, nil, 0, play_quit)
+	doDownload(t, writerWrap{w}, from, to, 0, nil, 0, nil, play_quit)
 }
 
 var downloadQuit chan bool
 var lock sync.Mutex
 
-func QuitAndDownload(t *task.Task, w WriterAtQuit, from int64) {
+func QuitAndDownload(t *task.Task, w WriterAtQuit, from int64, m ProgressMonitor) {
 	println("start download:", from)
 	if downloadQuit != nil {
 		ensureQuit(downloadQuit)
@@ -40,7 +40,7 @@ func QuitAndDownload(t *task.Task, w WriterAtQuit, from int64) {
 
 	t.BufferedPosition = from
 	task.SaveTask(t)
-	doDownload(t, w, from, t.Size, 0, nil, 0, downloadQuit)
+	doDownload(t, w, from, t.Size, 0, nil, 0, m, downloadQuit)
 
 	println("stop download:", from)
 }

@@ -163,6 +163,7 @@ func download(tc *taskControl) {
 				int64(util.ReadIntConfig("max-speed")),
 				tc.chMaxSpeed,
 				util.ReadSecondsConfig("task-restart-timeout"),
+				nil,
 				tc.quit)
 			log.Print("download return")
 		}
