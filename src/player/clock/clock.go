@@ -38,7 +38,7 @@ func (c *Clock) CalcPlayProgress(percent float64) *PlayProgressInfo {
 	t := c.CalcTime(percent)
 	leftT := c.totalTime - t
 
-	return &PlayProgressInfo{formatTime(t), formatTime(leftT), percent, 0, ""}
+	return &PlayProgressInfo{formatTime(t), "-" + formatTime(leftT), percent, 0, ""}
 }
 
 func formatTime(t time.Duration) string {

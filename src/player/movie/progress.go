@@ -13,7 +13,7 @@ func (m *Movie) showProgress() {
 
 	p := m.c.CalcPlayProgress(m.c.GetPercent())
 	if m.httpBuffer != nil {
-		p.Speed = fmt.Sprintf("%.1f KB/s", m.p.Speed)
+		p.Speed = fmt.Sprintf("%d KB/s", int(m.p.Speed))
 	}
 
 	println("download speed:", p.Speed)
