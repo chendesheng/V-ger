@@ -13,7 +13,7 @@ func TestSegRing(t *testing.T) {
 		return
 	}
 
-	sr.add(10, 10)
+	sr.add(10)
 	// fmt.Printf("%v", sr)
 
 	if d, l := sr.total(); d != 10 || l != 10 {
@@ -25,7 +25,7 @@ func TestSegRing(t *testing.T) {
 		return
 	}
 
-	sr.add(10, 10)
+	sr.add(10)
 	if d, l := sr.total(); d != 20 || l != 20 {
 		t.Errorf("total length expected 20, but %d", l)
 		return
@@ -35,7 +35,7 @@ func TestSegRing(t *testing.T) {
 		return
 	}
 
-	sr.add(20, 20)
+	sr.add(20)
 	if d, l := sr.total(); d != 30 || l != 30 {
 		t.Errorf("total length expected 30, but %d", l)
 		return

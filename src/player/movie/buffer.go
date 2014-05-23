@@ -76,51 +76,6 @@ func (b *buffer) GC() {
 	}
 }
 
-// func (b *buffer) Read(w io.Writer, require int64) int {
-// 	b.Lock()
-// 	defer b.Unlock()
-
-// 	if b.currentPos+require > b.size {
-// 		require = b.size - b.currentPos
-// 	}
-// 	ret := require
-
-// 	nextPosition := b.currentPos + require
-// 	for {
-// 		b.read(w, require)
-// 		if b.currentPos < nextPosition {
-// 			require = nextPosition - b.currentPos
-// 			b.Unlock()
-// 			time.Sleep(100 * time.Millisecond)
-// 			b.Lock()
-// 		} else {
-// 			break
-// 		}
-// 	}
-
-// 	return int(ret)
-// }
-
-// func (b *buffer) read(w io.Writer, require int64) {
-// 	nextPosition := b.currentPos + require
-// 	for e := b.data.Front(); e != nil; e = e.Next() {
-// 		bk := (e.Value).(*block)
-// 		if bk.inside(b.currentPos) {
-// 			from := b.currentPos - bk.off
-// 			to := min(int64(len(bk.p)), nextPosition-bk.off)
-// 			if w != nil {
-// 				w.Write(bk.p[from:to])
-// 			}
-
-// 			b.currentPos = bk.off + to
-
-// 			if b.currentPos >= nextPosition {
-// 				break
-// 			}
-// 		}
-// 	}
-// }
-
 func (b *buffer) Read(w io.Writer, require int64) int64 {
 	if w == nil {
 		return 0
@@ -156,7 +111,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 }
 
 func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
-	// println("WriteAt:", off, len(p))
+	println("WriteAt:", off, len(p))
 
 	b.Lock()
 	defer b.Unlock()
@@ -213,7 +168,7 @@ func (b *buffer) Wait(size int64) {
 			return
 		}
 
-		println(b.SizeAhead(), b.IsFinish())
+		// println(b.SizeAhead(), b.IsFinish())
 		time.Sleep(100 * time.Millisecond)
 	}
 }

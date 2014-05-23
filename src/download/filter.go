@@ -17,15 +17,6 @@ type WriterAtQuit interface {
 	WriteAtQuit(p []byte, off int64, quit chan bool) error
 }
 
-type writeAtWrap struct {
-	iow io.WriterAt
-}
-
-func (w writeAtWrap) WriteAtQuit(p []byte, off int64, quit chan bool) error {
-	_, err := w.iow.WriteAt(p, off)
-	return err
-}
-
 type basicFilter struct {
 	input  chan *block
 	output chan *block
@@ -34,6 +25,16 @@ type basicFilter struct {
 
 func (f *basicFilter) connect(next *basicFilter) {
 	next.input = f.output
+}
+
+func (f *basicFilter) writeOutput(b *block) {
+	if f.output != nil {
+		select {
+		case f.output <- b:
+		case <-f.quit:
+			return
+		}
+	}
 }
 
 func activeFilters(filters []filter) {
@@ -46,8 +47,8 @@ func activeFilters(filters []filter) {
 	filters[lastIndex].active()
 }
 
-func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
-	maxSpeed int64, chMaxSpeed chan int64, restartTimeout time.Duration, m ProgressMonitor, quit chan bool) {
+func doDownload(t *task.Task, w io.WriterAt, from, to int64,
+	maxSpeed int64, chMaxSpeed chan int64, restartTimeout time.Duration, quit chan bool) {
 	url := t.URL
 
 	maxConnections := util.ReadIntConfig("max-connection")
@@ -81,7 +82,6 @@ func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
 	pf := &progressFilter{
 		basicFilter{nil, make(chan *block), quit},
 		t,
-		m,
 	}
 
 	// gf.connect(&df.basicFilter)
@@ -92,6 +92,52 @@ func doDownload(t *task.Task, w WriterAtQuit, from, to int64,
 	pf.connect(&gf.basicFilter) //circle
 
 	activeFilters([]filter{gf, lf, df, sf, wf, pf})
+
+	return
+}
+
+func streaming(t *task.Task, w WriterAtQuit, from, to int64,
+	sm SpeedMonitor, quit chan bool) {
+
+	maxConnections := util.ReadIntConfig("max-connection")
+
+	gf := &generateFilter{
+		basicFilter{nil, make(chan *block, maxConnections), quit},
+		from,
+		to,
+		0,
+		nil,
+		maxConnections * 2,
+	}
+
+	df := &downloadFilter{
+		basicFilter{nil, make(chan *block), quit},
+		t.URL,
+		maxConnections,
+	}
+
+	sf := &sortFilter{
+		basicFilter{nil, make(chan *block), quit},
+		from,
+	}
+
+	swf := &sampleWriteFilter{
+		basicFilter{nil, make(chan *block), quit},
+		w,
+	}
+
+	spf := &speedFilter{
+		basicFilter{nil, make(chan *block), quit},
+		sm,
+	}
+
+	gf.connect(&df.basicFilter)
+	df.connect(&sf.basicFilter)
+	sf.connect(&swf.basicFilter)
+	swf.connect(&spf.basicFilter)
+	spf.connect(&gf.basicFilter) //circle
+
+	activeFilters([]filter{gf, df, sf, swf, spf})
 
 	return
 }

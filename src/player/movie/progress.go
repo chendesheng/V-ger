@@ -16,7 +16,7 @@ func (m *Movie) showProgress() {
 		p.Speed = fmt.Sprintf("%d KB/s", int(m.p.Speed))
 	}
 
-	println("download speed:", p.Speed)
+	// println("download speed:", p.Speed)
 
 	done := make(chan struct{})
 	go func() {
@@ -55,9 +55,9 @@ func (m *Movie) showProgressPerSecond() {
 
 	ticker := time.NewTicker(time.Second)
 	for {
-		if m.c.WaitUtilRunning(m.quit) {
-			return
-		}
+		// if m.c.WaitUtilRunning(m.quit) {
+		// 	return
+		// }
 
 		select {
 		case <-chShowProgress:

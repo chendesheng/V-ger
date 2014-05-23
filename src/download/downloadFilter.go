@@ -102,10 +102,12 @@ func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
 					return
 				}
 			} else {
-				log.Printf("download wrong data:%d,%d,%d", b.from, b.to, len(b.data))
-				log.Print(err)
-				bytes, _ := httputil.DumpResponse(resp, false)
-				log.Print(string(bytes))
+				if !strings.HasSuffix(err.Error(), "use of closed network connection") {
+					log.Printf("download wrong data:%d,%d,%d", b.from, b.to, len(b.data))
+					log.Print(err)
+					bytes, _ := httputil.DumpResponse(resp, false)
+					log.Print(string(bytes))
+				}
 			}
 		}
 

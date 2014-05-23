@@ -266,6 +266,10 @@ func SavePlayingAsync(p *Playing) {
 	chPlaying <- p
 }
 func SavePlaying(p *Playing) {
+	if p == nil {
+		return
+	}
+
 	log.Printf("Save playing: %v", p)
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)

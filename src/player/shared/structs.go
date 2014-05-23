@@ -42,8 +42,8 @@ type Playing struct {
 	Speed       float64 //online video downlad speed
 }
 
-func (p *Playing) SetProgress(speed float64, size int64) {
-	println("SetProgress:", speed)
+func (p *Playing) SetSpeed(speed float64) {
+	// println("SetSpeed:", speed)
 	p.Speed = speed
 }
 

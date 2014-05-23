@@ -21,13 +21,13 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 
 	play_quit = make(chan bool)
 
-	doDownload(t, writerWrap{w}, from, to, 0, nil, 0, nil, play_quit)
+	doDownload(t, writerWrap{w}, from, to, 0, nil, 0, play_quit)
 }
 
 var downloadQuit chan bool
 var lock sync.Mutex
 
-func QuitAndDownload(t *task.Task, w WriterAtQuit, from int64, m ProgressMonitor) {
+func Streaming(t *task.Task, w WriterAtQuit, from int64, sm SpeedMonitor) {
 	println("start download:", from)
 	if downloadQuit != nil {
 		ensureQuit(downloadQuit)
@@ -40,7 +40,10 @@ func QuitAndDownload(t *task.Task, w WriterAtQuit, from int64, m ProgressMonitor
 
 	t.BufferedPosition = from
 	task.SaveTask(t)
-	doDownload(t, w, from, t.Size, 0, nil, 0, m, downloadQuit)
+
+	println("speed monitor:", sm)
+
+	streaming(t, w, from, t.Size, sm, downloadQuit)
 
 	println("stop download:", from)
 }
@@ -49,7 +52,6 @@ type writerWrap struct {
 	w io.Writer
 }
 
-func (w writerWrap) WriteAtQuit(p []byte, off int64, quit chan bool) error {
-	_, err := w.w.Write(p)
-	return err
+func (w writerWrap) WriteAt(p []byte, off int64) (int, error) {
+	return w.w.Write(p)
 }

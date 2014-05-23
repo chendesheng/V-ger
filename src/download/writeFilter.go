@@ -2,6 +2,7 @@ package download
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"native"
 	"os"
@@ -11,7 +12,7 @@ import (
 
 type writeFilter struct {
 	basicFilter
-	w              WriterAtQuit
+	w              io.WriterAt
 	restartTimeout time.Duration
 }
 
@@ -19,7 +20,7 @@ func (wf *writeFilter) active() {
 	writeOutput(wf.w, wf.input, wf.output, wf.restartTimeout, wf.quit)
 }
 
-func writeOutput(w WriterAtQuit, input <-chan *block, output chan *block, restartTimeout time.Duration, quit chan bool) {
+func writeOutput(w io.WriterAt, input <-chan *block, output chan *block, restartTimeout time.Duration, quit chan bool) {
 	pathErrNotifyTimes := 0
 
 	if restartTimeout == 0 {
@@ -42,7 +43,7 @@ func writeOutput(w WriterAtQuit, input <-chan *block, output chan *block, restar
 					log.Printf("wrong block:%d,%d,%d", b.from, b.to, len(b.data))
 				}
 
-				err := w.WriteAtQuit(b.data, b.from, quit)
+				_, err := w.WriteAt(b.data, b.from)
 
 				if err == nil {
 					pathErrNotifyTimes = 0

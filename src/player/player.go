@@ -3,6 +3,7 @@ package main
 import (
 	"dbHelper"
 	"filelock"
+	// _ "net/http/pprof"
 	. "player/shared"
 	"time"
 
@@ -86,6 +87,8 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	}
 }
 func main() {
+	// go http.ListenAndServe(":8080", nil)
+
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
@@ -97,6 +100,7 @@ func main() {
 	app := &appDelegate{}
 	Initialize(app)
 	app.w = NewWindow("V'ger", 1024, 576)
+
 	PollEvents()
 	return
 }

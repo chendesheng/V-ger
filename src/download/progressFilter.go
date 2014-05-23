@@ -8,79 +8,16 @@ import (
 	"time"
 )
 
-type ProgressMonitor interface {
-	SetProgress(float64, int64)
-}
-
 type progressFilter struct {
 	basicFilter
 	t *task.Task
-	m ProgressMonitor
 }
 
 func (pf *progressFilter) active() {
-	handleProgress(pf.input, pf.output, pf.t, pf.quit, pf.m)
+	handleProgress(pf.input, pf.output, pf.t, pf.quit)
 }
 
-type segment struct {
-	d time.Duration //takes 'd' time, download 'l' byte
-	l int64
-}
-
-type segRing struct {
-	segs     []*segment
-	i        int
-	lastTime time.Time
-}
-
-func newSegRing(n int) segRing {
-	if n <= 0 {
-		panic(fmt.Errorf("Init length must greater than zero."))
-	}
-
-	r := make([]*segment, 0)
-	for i := 0; i < n; i++ {
-		r = append(r, &segment{0, 0})
-	}
-	return segRing{r, 0, time.Now()}
-}
-func (sr *segRing) increase() {
-	sr.i++
-	if sr.i == len(sr.segs) {
-		sr.i = 0
-	}
-}
-func (sr *segRing) add(l int64) {
-	d := time.Now().Sub(sr.lastTime)
-	sr.lastTime = time.Now()
-
-	s := sr.segs[sr.i]
-	prel := s.l
-
-	sr.increase()
-
-	s = sr.segs[sr.i]
-	s.d = d
-	s.l = l
-
-	if prel == 0 && l == 0 { //accelerate speed down to zero
-		sr.increase()
-		s = sr.segs[sr.i]
-		s.d = 0
-		s.l = 0
-	}
-}
-func (sr *segRing) total() (time.Duration, int64) {
-	var totalLength int64
-	var totalDurtion time.Duration
-	for _, s := range sr.segs {
-		totalDurtion += s.d
-		totalLength += s.l
-	}
-	return totalDurtion, totalLength
-}
-
-func handleProgress(progress chan *block, output chan *block, t *task.Task, quit chan bool, m ProgressMonitor) {
+func handleProgress(progress chan *block, output chan *block, t *task.Task, quit chan bool) {
 	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
 	if t.Status == "Playing" {
 		total = t.BufferedPosition
@@ -95,7 +32,7 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 		select {
 		case b, ok := <-progress:
 			if !ok {
-				saveProgress(t.Name, 0, total, elapsedTime, 0, m)
+				saveProgress(t.Name, 0, total, elapsedTime, 0)
 				if output != nil {
 					close(output)
 				}
@@ -123,7 +60,7 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 			// fmt.Printf("totalDurtion %s, totalLength %d\n", totalDurtion, totalLength)
 			speed = math.Floor(float64(totalLength)*float64(time.Second)/float64(totalDurtion)/1024.0 + 0.5)
 			_, est := calcProgress(total, size, speed)
-			saveProgress(t.Name, speed, total, elapsedTime, est, m)
+			saveProgress(t.Name, speed, total, elapsedTime, est)
 
 			if total == size {
 				fmt.Println("progress return")
@@ -145,11 +82,7 @@ func calcProgress(total, size int64, speed float64) (percentage float64, est tim
 	}
 	return
 }
-func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration, m ProgressMonitor) {
-	if m != nil {
-		m.SetProgress(speed, total)
-	}
-
+func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration) {
 	if t, err := task.GetTask(name); err == nil {
 		if t.Status != "Playing" {
 			t.DownloadedSize = total
