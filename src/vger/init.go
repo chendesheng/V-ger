@@ -8,6 +8,7 @@ import (
 	"logger"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 	// "os"
 	"log"
 	"path"
@@ -19,6 +20,10 @@ import (
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
+	err := os.Chdir(path.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	// if logPath := util.ReadConfig("log"); logPath != "" {

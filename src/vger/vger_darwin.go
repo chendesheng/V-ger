@@ -11,9 +11,12 @@ import (
 )
 
 var debug *bool = flag.Bool("debug", false, "debug")
+var config *string = flag.String("config", "", "config file")
 
 func main() {
 	flag.Parse()
+
+	util.ConfigPath = *config
 
 	go download.Start()
 	go website.Run()

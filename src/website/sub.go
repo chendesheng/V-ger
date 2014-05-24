@@ -3,7 +3,6 @@ package website
 import (
 	// "bufio"
 	"bytes"
-	"code.google.com/p/go.net/websocket"
 	"download"
 	"encoding/json"
 	"fmt"
@@ -14,16 +13,13 @@ import (
 	"net/url"
 	"path"
 	"task"
+	"code.google.com/p/go.net/websocket"
 	// "regexp"
 	"strings"
 	"subtitles"
 	"unicode/utf8"
 	"util"
 )
-
-func init() {
-	util.MakeSurePathExists(path.Join(util.ReadConfig("dir"), "subs"))
-}
 
 func subtitlesSearchHandler(ws *websocket.Conn) {
 	r := ws.Request()

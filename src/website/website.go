@@ -492,6 +492,8 @@ func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
 func Run() {
 	go Monitor()
 
+	util.MakeSurePathExists(path.Join(util.ReadConfig("dir"), "subs"))
+
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "assets/favicon.png")
 	})

@@ -1,9 +1,12 @@
 package util
 
 import (
-	// "log"
-	"os"
+	"os/user"
 	"path"
+
+	// "log"
+
+	"log"
 	"time"
 	// "path/filepath"
 	"strconv"
@@ -14,12 +17,15 @@ var ConfigPath string
 
 func getConfigPath() string {
 	if ConfigPath == "" {
-		ConfigPath = path.Join(path.Dir(os.Args[0]), "config.json")
+		usr, err := user.Current()
+		if err != nil {
+			log.Fatal(err)
+		}
+		ConfigPath = path.Join(usr.HomeDir, ".vger/config.json")
 	}
 
 	return ConfigPath
 }
-
 func ReadAllConfigs() map[string]string {
 	if configCache == nil {
 		configCache = make(map[string]string)
@@ -30,7 +36,8 @@ func ReadAllConfigs() map[string]string {
 	}
 
 	if err := ReadJson(getConfigPath(), &configCache); err != nil {
-		panic(err)
+		println(getConfigPath())
+		log.Fatal(err)
 	}
 	return configCache
 }
