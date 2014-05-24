@@ -36,6 +36,8 @@ func (sf *speedFilter) active() {
 			sr.add(0)
 			if sf.sm != nil {
 				sf.sm.SetSpeed(calcSpeed(&sr))
+			} else {
+				println("speed monitor is nil")
 			}
 		case <-sf.quit:
 			log.Print("speed quit")

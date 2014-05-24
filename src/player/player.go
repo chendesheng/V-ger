@@ -49,6 +49,10 @@ func (app *appDelegate) OpenFile(filename string) bool {
 }
 
 func (app *appDelegate) WillTerminate() {
+	if app.m == nil {
+		return
+	}
+
 	app.m.SavePlaying()
 
 	done := make(chan bool)

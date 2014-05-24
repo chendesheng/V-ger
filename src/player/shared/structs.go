@@ -1,6 +1,8 @@
 package shared
 
 import (
+	"log"
+	"runtime/debug"
 	"time"
 )
 
@@ -44,7 +46,12 @@ type Playing struct {
 
 func (p *Playing) SetSpeed(speed float64) {
 	// println("SetSpeed:", speed)
-	p.Speed = speed
+	if p != nil {
+		p.Speed = speed
+	} else {
+		log.Print("playing is nil")
+		log.Print(string(debug.Stack()))
+	}
 }
 
 func (item *SubItem) IsInDefaultPosition() bool {

@@ -40,7 +40,7 @@ func TestBufferFromTo(t *testing.T) {
 
 	b.WriteAtQuit(make([]byte, 100), 200, nil)
 	if b.data.Len() != 2 {
-		t.Errorf("list length should be 1 but %d", b.data.Len())
+		t.Errorf("list length should be 2 but %d", b.data.Len())
 	}
 
 	from, to := b.fromTo()

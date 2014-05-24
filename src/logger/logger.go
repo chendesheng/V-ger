@@ -6,7 +6,6 @@ import (
 	"log/syslog"
 	"os"
 	"syscall"
-	// "util"
 )
 
 func InitLog(prefix string, crashLogFile string) {
