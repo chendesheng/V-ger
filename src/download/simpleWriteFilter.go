@@ -2,12 +2,12 @@ package download
 
 import "fmt"
 
-type sampleWriteFilter struct {
+type simpleWriteFilter struct {
 	basicFilter
 	w WriterAtQuit
 }
 
-func (swf *sampleWriteFilter) active() {
+func (swf *simpleWriteFilter) active() {
 	for {
 		select {
 		case b, ok := <-swf.input:

@@ -121,7 +121,7 @@ func streaming(t *task.Task, w WriterAtQuit, from, to int64,
 		from,
 	}
 
-	swf := &sampleWriteFilter{
+	swf := &simpleWriteFilter{
 		basicFilter{nil, make(chan *block), quit},
 		w,
 	}
