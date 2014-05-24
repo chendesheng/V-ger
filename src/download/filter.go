@@ -96,7 +96,7 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	return
 }
 
-func streaming(t *task.Task, w WriterAtQuit, from, to int64,
+func streaming(url string, w WriterAtQuit, from, to int64,
 	sm SpeedMonitor, quit chan bool) {
 
 	maxConnections := util.ReadIntConfig("max-connection")
@@ -112,7 +112,7 @@ func streaming(t *task.Task, w WriterAtQuit, from, to int64,
 
 	df := &downloadFilter{
 		basicFilter{nil, make(chan *block), quit},
-		t.URL,
+		url,
 		maxConnections,
 	}
 

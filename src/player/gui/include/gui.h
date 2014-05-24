@@ -68,4 +68,5 @@ void onOpenOpenPanel();
 void onCloseOpenPanel(char* filename);
 void hideCursor(void*);
 void showCursor(void*);
+void onMouseMove(void*);
 #endif

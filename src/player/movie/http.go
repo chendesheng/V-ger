@@ -8,7 +8,6 @@ import (
 	"os"
 	// "path/filepath"
 	. "player/libav"
-	"task"
 	"time"
 	// "task"
 	// "time"
@@ -45,20 +44,6 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	t, err := task.GetTask(name)
-	if err != nil {
-		t = &task.Task{}
-		t.Name = name
-		t.Size = size
-		t.StartTime = time.Now().Unix()
-		t.Status = "Playing"
-		t.URL = file
-		task.SaveTask(t)
-	} else {
-		t.Status = "Playing"
-		task.SaveTask(t)
 	}
 
 	m.httpBuffer = NewBuffer(size)
@@ -98,14 +83,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
-			go func() {
-				t, err := task.GetTask(name)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				download.Streaming(t, m.httpBuffer, start, m.p)
-			}()
+			go download.Streaming(file, size, m.httpBuffer, start, m.p)
 		}
 		return pos
 	})
@@ -113,7 +91,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	go download.Streaming(t, m.httpBuffer, 0, nil)
+	go download.Streaming(file, size, m.httpBuffer, 0, nil)
 	m.httpBuffer.Seek(0, os.SEEK_SET)
 
 	ctx.OpenInput(name)

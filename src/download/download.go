@@ -19,10 +19,22 @@ import (
 
 var NetworkTimeout time.Duration
 
+func fetchN(req *http.Request, n int) (resp *http.Response, err error) {
+	for i := 0; i < n; i++ {
+		resp, err = http.DefaultClient.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			return
+		}
+	}
+
+	return
+}
+
 func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := fetchN(req, 3)
 	if err != nil {
 		return "", "", 0, err
 	}

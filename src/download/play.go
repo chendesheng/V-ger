@@ -27,7 +27,7 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 var downloadQuit chan bool
 var lock sync.Mutex
 
-func Streaming(t *task.Task, w WriterAtQuit, from int64, sm SpeedMonitor) {
+func Streaming(url string, size int64, w WriterAtQuit, from int64, sm SpeedMonitor) {
 	println("start download:", from)
 	if downloadQuit != nil {
 		ensureQuit(downloadQuit)
@@ -38,12 +38,9 @@ func Streaming(t *task.Task, w WriterAtQuit, from int64, sm SpeedMonitor) {
 
 	downloadQuit = make(chan bool)
 
-	t.BufferedPosition = from
-	task.SaveTask(t)
-
 	println("speed monitor:", sm)
 
-	streaming(t, w, from, t.Size, sm, downloadQuit)
+	streaming(url, w, from, size, sm, downloadQuit)
 
 	println("stop download:", from)
 }

@@ -1,6 +1,5 @@
 pkg
 config.json
-*.sublime-project
 *.sublime-workspace
 bin/vger
 .DS_Store

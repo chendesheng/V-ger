@@ -34,7 +34,6 @@ func (df *downloadFilter) active() {
 
 	close(df.output)
 }
-
 func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
 	// log.Print("download routine begin: ", url[:strings.Index(url, "?")])
 
