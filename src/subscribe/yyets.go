@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http/httputil"
+	"net/url"
+	"util"
 	// "fmt"
 	"io/ioutil"
 	"net/http"
@@ -122,6 +124,8 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 	return
 }
 func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
+	YYetsLogin(util.ReadConfig("yyets-user"), util.ReadConfig("yyets-password"))
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, nil, err
@@ -189,4 +193,42 @@ func parseSingle(n *html.Node) *task.Task {
 	}
 
 	return t
+}
+
+func YYetsLogin(name string, password string) {
+	if YYetsIfLogined() {
+		log.Println("logined")
+		return
+	} else {
+		log.Println("not logined")
+	}
+	//http://www.yyets.com/user/login/ajaxLogin
+	data := url.Values{
+		"type":     []string{"nickname"},
+		"account":  []string{name},
+		"password": []string{password},
+		"remember": []string{"1"},
+	}
+
+	resp, err := http.PostForm("http://www.yyets.com/user/login/ajaxLogin", data)
+	if err != nil {
+		log.Print(err)
+	}
+	defer resp.Body.Close()
+
+	respData, err := httputil.DumpResponse(resp, true)
+	println(string(respData))
+}
+
+func YYetsIfLogined() bool {
+	u, _ := url.Parse("http://www.yyets.com")
+	cookies := http.DefaultClient.Jar.Cookies(u)
+	for _, c := range cookies {
+		fmt.Printf("%#v\n", c)
+		if c.Name == "GINFO" && strings.HasPrefix(c.Value, "uid") {
+			return true
+		}
+	}
+
+	return false
 }
