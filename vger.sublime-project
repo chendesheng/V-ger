@@ -41,7 +41,12 @@
                     "name": "Install Player with GUI",
                     "shell_cmd": "make all",
                     "working_dir": "$project_path"
-                },        
+                },    
+                {
+                    "name": "Build GUI",
+                    "shell_cmd": "make gui",
+                    "working_dir": "$project_path"
+                }, 
                 {
                     "name": "Build Player",
                     "shell_cmd": "go install player",
