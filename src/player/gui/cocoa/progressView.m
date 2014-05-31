@@ -5,8 +5,8 @@
     NSLog(@"progressView initWithFrame");
     self = [super initWithFrame:frame];
     if (self) {
-        self->leftString = @"--:--:--";
-        self->rightString = @"--:--:--";
+        self->leftString = @"00:00:00";
+        self->rightString = @"00:00:00";
         self->percent = 0;
         self->percent2 = 0;
         self->speedString = @"";
