@@ -18,10 +18,6 @@ func TestShowWindow(t *testing.T) {
 
 	PollEvents()
 }
-func fequal(a, b float64) bool {
-	d := a - b
-	return d < 1e5 && d > -1e5
-}
 func TestFitToWindowLarger(t *testing.T) {
 	w := NewWindow("title", 1280, 720)
 	x, y, width, height := w.fitToWindow(1280, 700)

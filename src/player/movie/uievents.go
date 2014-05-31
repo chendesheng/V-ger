@@ -35,6 +35,9 @@ func (m *Movie) uievents() {
 		case gui.KEY_SPACE:
 			m.c.Toggle()
 			break
+		case gui.KEY_R:
+			m.w.ToggleForceScreenRatio()
+			break
 		case gui.KEY_LEFT:
 			var offset time.Duration
 			if m.s != nil {

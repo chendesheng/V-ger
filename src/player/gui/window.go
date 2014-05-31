@@ -6,6 +6,7 @@ package gui
 */
 import "C"
 import (
+	"math"
 	. "player/shared"
 	"time"
 	"unsafe"
@@ -60,6 +61,8 @@ type Window struct {
 	currentMessage    *SubItem
 
 	render imageRender
+
+	forceRatio float64
 }
 
 // func (w *Window) Show() {
@@ -111,7 +114,24 @@ func (w *Window) SetTitle(title string) {
 	C.setWindowTitle(w.ptr, ctitle)
 }
 
+func fequal(a, b float64) bool {
+	return math.Abs(a-b) < 1e-5
+}
+func (w *Window) ToggleForceScreenRatio() {
+	sw, sh := GetScreenSize()
+	if fequal(float64(w.originalWidth)/float64(w.originalHeight), float64(sw)/float64(sh)) {
+		return
+	}
+
+	if w.forceRatio != 0 {
+		w.SetForceRatio(0)
+	} else {
+		w.SetForceRatio(float64(sw) / float64(sh))
+	}
+}
 func (w *Window) SetSize(width, height int) {
+	w.ShowStartupView()
+
 	println("set size")
 
 	if width%4 != 0 {
@@ -127,16 +147,31 @@ func (w *Window) SetSize(width, height int) {
 
 	w.originalWidth, w.originalHeight = width, height
 
-	sw, sh := GetScreenSize()
-
 	if w.IsFullScreen() {
 		w.ToggleFullScreen()
 	}
 
+	sw, sh := GetScreenSize()
 	if width > int(0.8*float64(sw)) || height > int(0.8*float64(sh)) {
 		C.setWindowSize(w.ptr, C.int(0.8*float64(width)), C.int(0.8*float64(height)))
 	} else {
 		C.setWindowSize(w.ptr, C.int(width), C.int(height))
+	}
+}
+
+func (w *Window) SetForceRatio(forceRatio float64) {
+	width, height := w.originalWidth, w.originalHeight
+	w.forceRatio = forceRatio
+
+	if forceRatio > 0 {
+		C.setWindowSize(w.ptr, C.int(float64(height)*forceRatio+0.5), C.int(height))
+	} else {
+		sw, sh := GetScreenSize()
+		if width > int(0.8*float64(sw)) || height > int(0.8*float64(sh)) {
+			C.setWindowSize(w.ptr, C.int(0.8*float64(width)), C.int(0.8*float64(height)))
+		} else {
+			C.setWindowSize(w.ptr, C.int(width), C.int(height))
+		}
 	}
 }
 
@@ -199,6 +234,11 @@ func (w *Window) ToggleFullScreen() {
 
 func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
 	width, height := w.GetWindowSize()
+
+	if w.forceRatio > 0 {
+		return 0, 0, width, height
+	}
+
 	fwidth, fheight := float64(width), float64(height)
 
 	ratio := float64(imgWidth) / float64(imgHeight)
