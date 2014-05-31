@@ -24,7 +24,7 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 	log.Printf("generate block output: %v", output)
 	if blockSize == 0 {
 		//small blocksize for fast boot
-		blockSize = int64(32 * 1024)
+		blockSize = int64(512 * 1024)
 	}
 
 	to := from + blockSize
@@ -36,6 +36,8 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 	for i := 0; i < maxConnections; i++ {
 		select {
 		case output <- &block{from, to, make([]byte, to-from)}:
+			trace(fmt.Sprint("generate filter write boot output:", from, to))
+
 			from = to
 			to = from + blockSize
 			if to > size {
@@ -45,12 +47,16 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 		case <-quit:
 			return
 		}
+
+		if from == size {
+			close(output)
+			break
+		}
 	}
 
 	//change to a larger blocksize after boot
 	blockSize = 512 * 1024
 
-	log.Printf("output %v", output)
 	maxSpeed := int64(0)
 	for {
 		select {
@@ -58,9 +64,16 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 			if !ok {
 				return
 			} else {
+				if from == size {
+					break
+				}
+				trace(fmt.Sprint("generate filter input:", b.from, b.to))
+
 				b.reset(from, to)
 				select {
 				case output <- b:
+					trace(fmt.Sprint("generate filter write output:", b.from, b.to))
+
 					if to == size {
 						fmt.Println("return generate block ", size)
 						close(output)

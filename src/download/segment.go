@@ -1,6 +1,9 @@
 package download
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 type segment struct {
 	d time.Duration //takes 'd' time, download 'l' byte
@@ -56,4 +59,9 @@ func (sr *segRing) total() (time.Duration, int64) {
 		totalLength += s.l
 	}
 	return totalDurtion, totalLength
+}
+
+func (sr *segRing) calcSpeed() float64 {
+	dur, length := sr.total()
+	return math.Floor(float64(length)*float64(time.Second)/float64(dur)/1024.0 + 0.5)
 }

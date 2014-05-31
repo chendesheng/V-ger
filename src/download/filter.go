@@ -3,6 +3,8 @@ package download
 import (
 	"io"
 	"log"
+	"runtime/debug"
+	"sync"
 	"task"
 	"time"
 	"util"
@@ -37,6 +39,36 @@ func (f *basicFilter) writeOutput(b *block) {
 	}
 }
 
+func (f *basicFilter) closeOutput() {
+	if f.output != nil {
+		close(f.output)
+	}
+}
+
+func (f *basicFilter) closeQuit() {
+	log.Print(string(debug.Stack()))
+	ensureQuit(f.quit)
+}
+
+func (f *basicFilter) wait(d time.Duration) {
+	select {
+	case <-f.quit:
+		return
+	case <-time.After(d):
+		break
+	}
+}
+
+var traceLock sync.Mutex
+
+func trace(output string) {
+	// traceLock.Lock()
+	// defer traceLock.Unlock()
+
+	// print("[trace]")
+	// println(output)
+}
+
 func activeFilters(filters []filter) {
 	log.Printf("filters: %v", filters)
 	lastIndex := len(filters) - 1
@@ -54,7 +86,7 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	maxConnections := util.ReadIntConfig("max-connection")
 
 	gf := &generateFilter{
-		basicFilter{nil, make(chan *block, maxConnections), quit},
+		basicFilter{nil, make(chan *block), quit},
 		from,
 		to,
 		maxSpeed,
@@ -75,6 +107,7 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 
 	wf := &writeFilter{
 		basicFilter{nil, make(chan *block), quit},
+		t.Name,
 		w,
 		restartTimeout,
 	}
@@ -102,7 +135,7 @@ func streaming(url string, w WriterAtQuit, from, to int64,
 	maxConnections := util.ReadIntConfig("max-connection")
 
 	gf := &generateFilter{
-		basicFilter{nil, make(chan *block, maxConnections), quit},
+		basicFilter{nil, make(chan *block, 2*maxConnections), quit},
 		from,
 		to,
 		0,

@@ -1,7 +1,6 @@
 package download
 
 import (
-	// "fmt"
 	"log"
 	"native"
 	"net/http"
@@ -23,17 +22,18 @@ func (tc *taskControl) stopDownload() {
 }
 
 func ensureQuit(quit chan bool) {
-	defer func() {
-		recover()
-	}()
-
-	select {
-	case <-quit:
-		// Since no one write to quit channel,
-		// the channel must be closed when pass through receive operation.
-		break
-	default:
-		close(quit)
+	if quit != nil {
+		defer func() {
+			recover()
+		}()
+		select {
+		case <-quit:
+			// Since no one write to quit channel,
+			// the channel must be closed when pass through receive operation.
+			break
+		default:
+			close(quit)
+		}
 	}
 }
 
@@ -131,6 +131,10 @@ func Start() {
 func download(tc *taskControl) {
 	t := tc.t
 	if t.DownloadedSize >= t.Size {
+		if t.Status == "Downloading" {
+			t.Status = "Finished"
+			task.SaveTask(t)
+		}
 		return
 	}
 

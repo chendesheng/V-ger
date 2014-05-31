@@ -1,8 +1,8 @@
 package download
 
 import (
+	"fmt"
 	"log"
-	"math"
 	"time"
 )
 
@@ -16,26 +16,27 @@ type speedFilter struct {
 }
 
 func (sf *speedFilter) active() {
+	defer sf.closeOutput()
+
 	timer := time.NewTicker(time.Second)
 	sr := newSegRing(40)
 	for {
 		select {
 		case b, ok := <-sf.input:
 			if !ok {
-				if sf.output != nil {
-					close(sf.output)
-				}
 				return
 			}
+			trace(fmt.Sprint("speed filter input:", b.from, b.to))
 
 			sf.writeOutput(b)
+			trace(fmt.Sprint("speed filter output:", b.from, b.to))
 
 			sr.add(b.to - b.from)
 			break
 		case <-timer.C:
 			sr.add(0)
 			if sf.sm != nil {
-				sf.sm.SetSpeed(calcSpeed(&sr))
+				sf.sm.SetSpeed(sr.calcSpeed())
 			} else {
 				println("speed monitor is nil")
 			}
@@ -44,9 +45,4 @@ func (sf *speedFilter) active() {
 			return
 		}
 	}
-}
-
-func calcSpeed(sr *segRing) float64 {
-	dur, length := sr.total()
-	return math.Floor(float64(length)*float64(time.Second)/float64(dur)/1024.0 + 0.5)
 }

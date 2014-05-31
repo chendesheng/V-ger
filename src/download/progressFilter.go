@@ -3,7 +3,6 @@ package download
 import (
 	"fmt"
 	"log"
-	"math"
 	"task"
 	"time"
 )
@@ -14,14 +13,11 @@ type progressFilter struct {
 }
 
 func (pf *progressFilter) active() {
-	handleProgress(pf.input, pf.output, pf.t, pf.quit)
-}
+	defer pf.closeOutput()
 
-func handleProgress(progress chan *block, output chan *block, t *task.Task, quit chan bool) {
-	size, total, elapsedTime := t.Size, t.DownloadedSize, t.ElapsedTime
-	if t.Status == "Playing" {
-		total = t.BufferedPosition
-	}
+	t := pf.t
+
+	size, downloaded := t.Size, t.DownloadedSize
 
 	timer := time.NewTicker(time.Second)
 
@@ -30,70 +26,48 @@ func handleProgress(progress chan *block, output chan *block, t *task.Task, quit
 
 	for {
 		select {
-		case b, ok := <-progress:
+		case b, ok := <-pf.input:
 			if !ok {
-				saveProgress(t.Name, 0, total, elapsedTime, 0)
-				if output != nil {
-					close(output)
-				}
+				fmt.Println("progress filter finish")
+				saveProgress(t.Name, 0, 0, downloaded)
 				return
 			}
 
 			length := b.to - b.from
-			total += length
+			downloaded = b.to
 
-			if output != nil {
-				select {
-				case output <- b:
-				case <-quit:
-					return
-				}
-			}
+			pf.writeOutput(b)
+
 			sr.add(length)
 			break
 		case <-timer.C:
-			elapsedTime += time.Second
-
 			sr.add(0)
+			speed = sr.calcSpeed()
 
-			totalDurtion, totalLength := sr.total()
-			// fmt.Printf("totalDurtion %s, totalLength %d\n", totalDurtion, totalLength)
-			speed = math.Floor(float64(totalLength)*float64(time.Second)/float64(totalDurtion)/1024.0 + 0.5)
-			_, est := calcProgress(total, size, speed)
-			saveProgress(t.Name, speed, total, elapsedTime, est)
-
-			if total == size {
-				fmt.Println("progress return")
-				return
-			}
-		case <-quit:
+			est := calcEst(downloaded, size, speed)
+			saveProgress(t.Name, speed, est, downloaded)
+			break
+		case <-pf.quit:
 			fmt.Println("progress quit")
 			return
 		}
 	}
-
 }
-func calcProgress(total, size int64, speed float64) (percentage float64, est time.Duration) {
-	percentage = float64(total) / float64(size) * 100
+
+func calcEst(downloaded, size int64, speed float64) (est time.Duration) {
 	if speed == 0 {
 		est = 0
 	} else {
-		est = time.Duration(float64((size-total))/speed) * time.Millisecond
+		est = time.Duration(float64((size-downloaded))/speed) * time.Millisecond
 	}
 	return
 }
-func saveProgress(name string, speed float64, total int64, elapsedTime time.Duration, est time.Duration) {
-	if t, err := task.GetTask(name); err == nil {
-		if t.Status != "Playing" {
-			t.DownloadedSize = total
-			t.BufferedPosition = total
-		} else {
-			t.BufferedPosition = total
-		}
 
-		t.ElapsedTime = elapsedTime
+func saveProgress(name string, speed float64, est time.Duration, downloaded int64) {
+	if t, err := task.GetTask(name); err == nil {
 		t.Speed = speed
 		t.Est = est
+		t.DownloadedSize = downloaded
 
 		if err := task.SaveTask(t); err != nil {
 			log.Print(err)

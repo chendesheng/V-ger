@@ -1,8 +1,6 @@
 package download
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type sortFilter struct {
 	basicFilter
@@ -10,29 +8,29 @@ type sortFilter struct {
 }
 
 func (sf *sortFilter) active() {
-	sortOutput(sf.input, sf.output, sf.quit, sf.from)
-}
+	defer sf.closeOutput()
 
-func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, from int64) {
 	dbmap := make(map[int64]*block)
-	nextOutputFrom := from
+	nextOutputFrom := sf.from
 	for {
 		select {
-		case db, ok := <-input:
-			if db != nil {
-				dbmap[db.from] = db
+		case b, ok := <-sf.input:
+			if !ok {
+				return
 			}
+			trace(fmt.Sprint("sort filter input:", b.from, b.to))
 
-			// log.Println(len(dbmap))
+			dbmap[b.from] = b
 			for {
-				if d, exist := dbmap[nextOutputFrom]; exist {
-					// fmt.Printf("sort output %d-%d\n", d.from, d.to)
+				if b, exist := dbmap[nextOutputFrom]; exist {
 					select {
-					case output <- d:
-						nextOutputFrom = d.to
-						delete(dbmap, d.from)
+					case sf.output <- b:
+						trace(fmt.Sprint("sort filter write output:", b.from, b.to))
+
+						nextOutputFrom = b.to
+						delete(dbmap, b.from)
 						break
-					case <-quit:
+					case <-sf.quit:
 						return
 					}
 				} else {
@@ -40,13 +38,10 @@ func sortOutput(input <-chan *block, output chan<- *block, quit <-chan bool, fro
 				}
 			}
 
-			if !ok {
-				close(output)
-				return
-			}
-		case <-quit:
+		case <-sf.quit:
 			fmt.Println("sort output quit")
 			return
 		}
 	}
+
 }

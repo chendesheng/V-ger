@@ -3,28 +3,21 @@ package main
 import (
 	"dbHelper"
 	"filelock"
+	"net/http"
 
-	// _ "net/http/pprof"
+	_ "net/http/pprof"
 	. "player/shared"
 	"time"
 
 	// "fmt"
 	"log"
-	. "logger"
+	// . "logger"
 	"path"
 	. "player/gui"
 	. "player/movie"
 	"runtime"
 	"util"
 )
-
-func init() {
-	InitLog("VgerPlayer", util.ReadConfig("log"))
-
-	log.Print("log initialized.")
-
-	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
-}
 
 type appDelegate struct {
 	w *Window
@@ -91,8 +84,12 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 		app.OpenFile(filename)
 	}
 }
+
 func main() {
-	// go http.ListenAndServe(":8080", nil)
+	log.SetFlags(log.Lshortfile)
+	go http.ListenAndServe("localhost:8080", nil)
+
+	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
 
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 

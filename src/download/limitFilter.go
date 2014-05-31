@@ -36,14 +36,10 @@ func (lf *limitFilter) active() {
 			b := bf.b
 			f := bf.f
 			if b == nil {
-				close(f.output)
+				f.closeOutput()
 				continue
 			}
-			select {
-			case f.output <- b:
-			case <-f.quit:
-				continue
-			}
+			f.writeOutput(b)
 
 			if maxSpeed > 0 {
 				size := b.to - b.from

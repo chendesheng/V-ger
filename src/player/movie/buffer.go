@@ -111,7 +111,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 }
 
 func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
-	println("WriteAt:", off, len(p))
+	// println("WriteAt:", off, len(p))
 
 	b.Lock()
 	defer b.Unlock()
@@ -168,7 +168,7 @@ func (b *buffer) Wait(size int64) {
 			return
 		}
 
-		// println(b.SizeAhead(), b.IsFinish())
+		println("Wait:", b.SizeAhead(), b.IsFinish())
 		time.Sleep(100 * time.Millisecond)
 	}
 }

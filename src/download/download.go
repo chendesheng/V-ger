@@ -19,22 +19,40 @@ import (
 
 var NetworkTimeout time.Duration
 
-func fetchN(req *http.Request, n int) (resp *http.Response, err error) {
-	for i := 0; i < n; i++ {
-		resp, err = http.DefaultClient.Do(req)
-		if err == nil {
-			defer resp.Body.Close()
-			return
+func fetchN(req *http.Request, n int, quit chan bool) (resp *http.Response, err error) {
+	finish := make(chan bool)
+	go func() {
+		defer close(finish)
+
+		for i := 0; i < n; i++ {
+			resp, err = http.DefaultClient.Do(req)
+			if err == nil {
+				return
+			}
+			time.Sleep(100 * time.Millisecond)
 		}
+	}()
+
+	select {
+	case <-quit:
+		cancelRequest(req)
+		err = errStopFetch
+		break
+	case <-finish:
+		break
 	}
 
 	return
 }
 
 func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
+	return GetDownloadInfoN(url, 3, nil)
+}
+
+func GetDownloadInfoN(url string, retryTimes int, quit chan bool) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
 
-	resp, err := fetchN(req, 3)
+	resp, err := fetchN(req, retryTimes, quit)
 	if err != nil {
 		return "", "", 0, err
 	}

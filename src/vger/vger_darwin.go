@@ -19,15 +19,16 @@ func main() {
 	util.ConfigPath = *config
 
 	go download.Start()
-	go website.Run()
-	// go subscribe.Monitor()
+
 	if *debug {
 		go func() {
 			server := util.ReadConfig("server")
 			cmd := exec.Command("open", "http://"+server)
 			cmd.Run()
 		}()
+		website.Run(*debug)
+	} else {
+		go website.Run(*debug)
+		cocoa.Start()
 	}
-
-	cocoa.Start()
 }

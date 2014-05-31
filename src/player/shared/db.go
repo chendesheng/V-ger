@@ -118,32 +118,22 @@ func UpdateSubtitleOffsetAsync(name string, offset time.Duration) {
 	if chUpdateSubtitleOffset == nil {
 		chUpdateSubtitleOffset = make(chan map[string]interface{}, 20)
 		go func() {
+			timer := time.NewTicker(2 * time.Second)
+			var arg map[string]interface{}
+			var lastArg map[string]interface{}
 			for {
-				arg := <-chUpdateSubtitleOffset
-				name := arg["name"].(string)
-				offset := arg["offset"].(time.Duration)
-
-				var arg1 map[string]interface{}
-			saving:
-				for {
-					select {
-					case arg1 = <-chUpdateSubtitleOffset:
-
-						if name1 := arg1["name"].(string); name1 != name {
-							UpdateSubtitleOffset(name, offset)
-							name = name1
-							offset = arg1["offset"].(time.Duration)
-							goto saving
-						} else {
-							offset = arg1["offset"].(time.Duration)
-						}
-						break
-					default:
-						UpdateSubtitleOffset(name, offset)
-						break saving
+				select {
+				case arg = <-chUpdateSubtitleOffset:
+					break
+				case <-timer.C:
+					if len(arg) > 0 &&
+						(len(lastArg) == 0 || arg["name"].(string) != lastArg["name"].(string) ||
+							arg["offset"].(time.Duration) != lastArg["offset"].(time.Duration)) {
+						UpdateSubtitleOffset(arg["name"].(string), arg["offset"].(time.Duration))
+						lastArg = arg
 					}
+					break
 				}
-				time.Sleep(time.Second)
 			}
 		}()
 	}
@@ -240,25 +230,20 @@ func SavePlayingAsync(p *Playing) {
 	if chPlaying == nil {
 		chPlaying = make(chan *Playing, 20)
 		go func() {
+			timer := time.NewTicker(2 * time.Second)
+			var p *Playing
+			var lastP *Playing
 			for {
-				p := <-chPlaying
-				var p1 *Playing
-			saving:
-				for {
-					select {
-					case p1 = <-chPlaying:
-						if p != p1 {
-							SavePlaying(p)
-							p = p1
-							goto saving
-						}
-						break
-					default:
+				select {
+				case p = <-chPlaying:
+					break
+				case <-timer.C:
+					if p != nil && p != lastP {
 						SavePlaying(p)
-						break saving
+						lastP = p
 					}
+					break
 				}
-				time.Sleep(time.Second)
 			}
 		}()
 	}

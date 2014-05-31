@@ -1,14 +1,19 @@
 package download
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
+	"sync"
 	"time"
 )
+
+var errStopFetch = errors.New("stop fetch")
+var errReadTimeout = errors.New("read timeout")
 
 type downloadFilter struct {
 	basicFilter
@@ -17,43 +22,29 @@ type downloadFilter struct {
 }
 
 func (df *downloadFilter) active() {
+	defer df.closeOutput()
+
+	wg := sync.WaitGroup{}
+	wg.Add(df.routineNumber)
+
+	for i := 0; i < df.routineNumber; i++ {
+		go func() {
+			defer wg.Done()
+			df.downloadRoutine()
+		}()
+	}
+
+	wg.Wait()
+
+	log.Print("downloadFilter return")
+}
+func (df *downloadFilter) downloadRoutine() {
 	url := df.url
 
-	chFinishes := make([]chan bool, df.routineNumber)
-	for i := 0; i < df.routineNumber; i++ {
-		chFinishes[i] = make(chan bool)
-		go func(ch chan bool) {
-			downloadRoutine(url, df.input, df.output, df.quit)
-			ch <- true
-		}(chFinishes[i])
+	url, _, _, err := GetDownloadInfoN(url, 10000000, df.quit)
+	if err != nil {
+		return
 	}
-
-	for _, ch := range chFinishes {
-		<-ch
-	}
-
-	close(df.output)
-}
-func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit chan bool) {
-	// log.Print("download routine begin: ", url[:strings.Index(url, "?")])
-
-	for {
-		finalUrl, _, _, err := GetDownloadInfo(url)
-		if err == nil {
-			url = finalUrl
-			break
-		} else {
-			log.Print(err)
-		}
-
-		select {
-		case <-quit:
-			return
-		case <-time.After(100 * time.Microsecond):
-			break
-		}
-	}
-	// log.Print("final download url:", url)
 
 	if strings.Contains(url, "192.168.") {
 		//AUSU router may redirect to error_page.html, download from this url will crap target file.
@@ -62,83 +53,75 @@ func downloadRoutine(url string, input <-chan *block, output chan<- *block, quit
 
 	for {
 		select {
-		case b, ok := <-input:
+		case b, ok := <-df.input:
 			if !ok {
 				fmt.Println("downloadRoutine finish")
 				return
 			}
-			downloadBlock(url, b, output, quit)
-		case <-quit:
+
+			trace(fmt.Sprint("download filter input:", b.from, b.to))
+
+			df.downloadBlock(url, b)
+		case <-df.quit:
 			fmt.Println("downloadRoutine quit")
 			return
 		}
 	}
 }
-func downloadBlock(url string, b *block, output chan<- *block, quit chan bool) {
+func (df *downloadFilter) downloadBlock(url string, b *block) {
 	for {
 		req := createDownloadRequest(url, b.from, b.to-1)
+		err := requestWithTimeout(req, b.data, df.quit)
 
-		resp, err := http.DefaultClient.Do(req)
-
-		// data, _ := httputil.DumpRequest(req, true)
-		// println(string(data))
-
-		// data, _ = httputil.DumpResponse(resp, false)
-		// println(string(data))
-
-		if err != nil {
-			log.Println(err)
+		if err == nil {
+			df.writeOutput(b)
+			trace(fmt.Sprint("downloadFilter writeoutput:", b.from, b.to))
+			return
 		} else {
-			size := b.to - b.from
-
-			b.data, err = readWithTimeout(req, resp, size, b.data, quit)
-
-			if err == nil {
-				select {
-				case output <- b:
-					return
-				case <-quit:
-					return
-				}
-			} else {
-				if !strings.HasSuffix(err.Error(), "use of closed network connection") {
-					log.Printf("download wrong data:%d,%d,%d", b.from, b.to, len(b.data))
-					log.Print(err)
-					bytes, _ := httputil.DumpResponse(resp, false)
-					log.Print(string(bytes))
-				}
+			select {
+			case <-df.quit:
+				return
+			default:
 			}
 		}
-
-		select {
-		case <-quit:
-			return
-		case <-time.After(100 * time.Millisecond):
-			break
-		}
+		df.wait(100 * time.Millisecond)
 	}
 }
 
-func readWithTimeout(req *http.Request, resp *http.Response, size int64, data []byte, quit chan bool) ([]byte, error) {
-	defer resp.Body.Close()
-
-	// buffer := bytes.NewBuffer(data)
+func requestWithTimeout(req *http.Request, data []byte, quit chan bool) (err error) {
 	finish := make(chan error)
+	var resp *http.Response
 	go func() {
-		select {
-		case <-time.After(NetworkTimeout): //cancelRequest if time.After before close(finish)
-			cancelRequest(req)
-		case <-quit:
-			cancelRequest(req)
-			return
-		case <-finish: //close(finish) before time.After
+		defer close(finish)
+
+		resp, err = http.DefaultClient.Do(req)
+		if err != nil {
 			return
 		}
+		defer resp.Body.Close()
+
+		_, err = io.ReadFull(resp.Body, data)
 	}()
 
-	_, err := io.ReadFull(resp.Body, data)
+	select {
+	case <-time.After(NetworkTimeout): //cancelRequest if time.After before close(finish)
+		cancelRequest(req)
+		err = errReadTimeout //return not nil error is required
+		break
+	case <-quit:
+		cancelRequest(req)
+		err = errStopFetch
+		break
+	case <-finish:
+		if err != nil {
+			log.Print(err)
+			if resp != nil {
+				bytes, _ := httputil.DumpResponse(resp, false)
+				log.Print(string(bytes))
+			}
+		}
+		break
+	}
 
-	close(finish)
-
-	return data, err
+	return
 }

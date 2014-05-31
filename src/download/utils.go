@@ -61,7 +61,7 @@ func (w *secureWriter) Close() {
 	f.Close()
 }
 
-func openOrCreateFileRW(path string, position int64) (*secureWriter, error) {
+func openOrCreateFileRW(path string, position int64) (*os.File, error) {
 	// log.Print("open or create file " + path)
 
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, 0666)
@@ -76,7 +76,7 @@ func openOrCreateFileRW(path string, position int64) (*secureWriter, error) {
 	if offset != position {
 		return nil, fmt.Errorf("\nerror offset")
 	}
-	return (*secureWriter)(f), nil
+	return f, nil
 }
 func getFileInfo(header http.Header) (name string, size int64) {
 	// log.Printf("%v\n", header)

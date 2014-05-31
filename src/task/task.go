@@ -271,6 +271,13 @@ func SaveTask(t *Task) (err error) {
 	return
 }
 
+func writeChangeEventName(name string) {
+	t, err := GetTask(name)
+	if err == nil {
+		writeChangeEvent(t)
+	}
+}
+
 func NumOfDownloadingTasks() int {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
@@ -282,4 +289,17 @@ func NumOfDownloadingTasks() int {
 		return 0
 	}
 	return cnt
+}
+
+func UpdateDownloadedSize(name string, size int64) error {
+	db := dbHelper.Open()
+	defer dbHelper.Close(db)
+
+	_, err := db.Exec("update task set DownloadedSize=?", size)
+	if err == nil {
+		go writeChangeEventName(name)
+	} else {
+		log.Print(err)
+	}
+	return err
 }

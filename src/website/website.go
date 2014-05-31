@@ -489,8 +489,10 @@ func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 }
-func Run() {
-	go Monitor()
+func Run(isDebug bool) {
+	if !isDebug {
+		go Monitor()
+	}
 
 	util.MakeSurePathExists(path.Join(util.ReadConfig("dir"), "subs"))
 
