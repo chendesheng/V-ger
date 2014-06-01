@@ -322,7 +322,6 @@ func (m *Movie) uievents() {
 		}
 	}()
 	m.w.FuncMouseMoved = append(m.w.FuncMouseMoved, func() {
-		m.w.ShowCursor()
 		select {
 		case chCursor <- struct{}{}:
 			break

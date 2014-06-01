@@ -6,6 +6,7 @@ package gui
 */
 import "C"
 import (
+	"log"
 	"math"
 	. "player/shared"
 	"time"
@@ -198,6 +199,9 @@ func NewWindow(title string, width, height int) *Window {
 		originalWidth:  width,
 		originalHeight: height,
 	}
+	w.FuncMouseMoved = append(w.FuncMouseMoved, func() {
+		w.ShowCursor()
+	})
 
 	println("window:", ptr)
 
@@ -265,6 +269,8 @@ func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
 }
 
 func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
+	println("draw:", imgWidth, imgHeight, img, w.render)
+
 	if len(img) == 0 {
 		return
 	}
@@ -361,7 +367,6 @@ func (w *Window) SendSetTitle(title string) {
 
 func (w *Window) ShowText(s *SubItem) uintptr {
 	strs := s.Content
-
 	items := make([]C.SubItem, 0)
 	for _, str := range strs {
 		cstr := C.CString(str.Content)

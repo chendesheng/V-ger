@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestShowWindow(t *testing.T) {
@@ -80,6 +81,25 @@ func TestStartupView(t *testing.T) {
 		}
 	})
 
+	PollEvents()
+}
+
+func TestShowMessage(t *testing.T) {
+	w := NewWindow("title", 1280, 720)
+	w.SetSize(1280, 720)
+	go w.SendShowMessage("Downloading...", false)
+	// w.hideStartupView()
+	go func() {
+		time.Sleep(time.Second)
+		black := make([]byte, 1280*720*3/2)
+		// for i := 0; i < 1280*270; i++ {
+		// 	black[i] = 16
+		// }
+		// for i := 1280 * 720; i < 1280*270*3/2; i++ {
+		// 	black[i] = 128
+		// }
+		w.SendDrawImage(black)
+	}()
 	PollEvents()
 }
 
