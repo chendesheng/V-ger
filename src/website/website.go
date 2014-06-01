@@ -136,9 +136,10 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 			if t.Status == "New" {
 				t.URL = url
 				t.Size = size
+				t.DownloadedSize = 0
 				task.StartNewTask2(t)
 			} else if t.Status == "Finished" {
-				w.Write([]byte("File has been downloaded."))
+				w.Write([]byte("File has already been downloaded."))
 			} else {
 				if t.Status == "Deleted" {
 					log.Print("deleted task")
