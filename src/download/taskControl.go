@@ -143,10 +143,10 @@ func download(tc *taskControl) {
 		s := subscribe.GetSubscribe(t.Subscribe)
 		if s != nil {
 			resp, err := http.Get(s.Banner)
-			defer resp.Body.Close()
 			if err != nil {
 				log.Print(err)
 			} else {
+				defer resp.Body.Close()
 				native.DefaultNativeAPI.SetIcon(dir, resp.Body)
 			}
 		}
