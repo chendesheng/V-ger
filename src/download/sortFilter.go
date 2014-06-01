@@ -10,7 +10,7 @@ type sortFilter struct {
 func (sf *sortFilter) active() {
 	defer sf.closeOutput()
 
-	dbmap := make(map[int64]*block)
+	dbmap := make(map[int64]block)
 	nextOutputFrom := sf.from
 	for {
 		select {
@@ -18,17 +18,17 @@ func (sf *sortFilter) active() {
 			if !ok {
 				return
 			}
-			trace(fmt.Sprint("sort filter input:", b.from, b.to))
+			// trace(fmt.Sprint("sort filter input:", b.from, b.to))
 
 			dbmap[b.from] = b
 			for {
 				if b, exist := dbmap[nextOutputFrom]; exist {
 					select {
 					case sf.output <- b:
-						trace(fmt.Sprint("sort filter write output:", b.from, b.to))
+						// trace(fmt.Sprint("sort filter write output:", b.from, b.to))
 
-						nextOutputFrom = b.to
-						delete(dbmap, b.from)
+						delete(dbmap, nextOutputFrom)
+						nextOutputFrom += int64(len(b.data))
 						break
 					case <-sf.quit:
 						return

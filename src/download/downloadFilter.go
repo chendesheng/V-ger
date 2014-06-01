@@ -59,7 +59,7 @@ func (df *downloadFilter) downloadRoutine() {
 				return
 			}
 
-			trace(fmt.Sprint("download filter input:", b.from, b.to))
+			// trace(fmt.Sprint("download filter input:", b.from, b.to))
 
 			df.downloadBlock(url, b)
 		case <-df.quit:
@@ -68,14 +68,14 @@ func (df *downloadFilter) downloadRoutine() {
 		}
 	}
 }
-func (df *downloadFilter) downloadBlock(url string, b *block) {
+func (df *downloadFilter) downloadBlock(url string, b block) {
 	for {
-		req := createDownloadRequest(url, b.from, b.to-1)
+		req := createDownloadRequest(url, b.from, b.from+int64(len(b.data))-1)
 		err := requestWithTimeout(req, b.data, df.quit)
 
 		if err == nil {
 			df.writeOutput(b)
-			trace(fmt.Sprint("downloadFilter writeoutput:", b.from, b.to))
+			// trace(fmt.Sprint("downloadFilter writeoutput:", b.from, b.to))
 			return
 		} else {
 			select {

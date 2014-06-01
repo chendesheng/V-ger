@@ -18,12 +18,12 @@ func (swf *simpleWriteFilter) active() {
 				return
 			}
 
-			trace(fmt.Sprint("simple write filter input:", b.from, b.to))
+			// trace(fmt.Sprint("simple write filter input:", b.from, b.to))
 
 			swf.w.WriteAtQuit(b.data, b.from, swf.quit)
 
 			swf.writeOutput(b)
-			trace(fmt.Sprint("simple write filter output:", b.from, b.to))
+			// trace(fmt.Sprint("simple write filter output:", b.from, b.to))
 
 			break
 		case <-swf.quit:

@@ -20,8 +20,8 @@ type WriterAtQuit interface {
 }
 
 type basicFilter struct {
-	input  chan *block
-	output chan *block
+	input  chan block
+	output chan block
 	quit   chan bool
 }
 
@@ -29,7 +29,7 @@ func (f *basicFilter) connect(next *basicFilter) {
 	next.input = f.output
 }
 
-func (f *basicFilter) writeOutput(b *block) {
+func (f *basicFilter) writeOutput(b block) {
 	if f.output != nil {
 		select {
 		case f.output <- b:
@@ -62,11 +62,11 @@ func (f *basicFilter) wait(d time.Duration) {
 var traceLock sync.Mutex
 
 func trace(output string) {
-	// traceLock.Lock()
-	// defer traceLock.Unlock()
+	traceLock.Lock()
+	defer traceLock.Unlock()
 
-	// print("[trace]")
-	// println(output)
+	print("[trace]")
+	println(output)
 }
 
 func activeFilters(filters []filter) {
@@ -86,7 +86,7 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	maxConnections := util.ReadIntConfig("max-connection")
 
 	gf := &generateFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block, maxConnections*2), quit},
 		from,
 		to,
 		maxSpeed,
@@ -95,25 +95,25 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	}
 
 	df := &downloadFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		url,
 		maxConnections,
 	}
 
 	sf := &sortFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		from,
 	}
 
 	wf := &writeFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		t.Name,
 		w,
 		restartTimeout,
 	}
 
 	pf := &progressFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		t,
 	}
 
@@ -135,7 +135,7 @@ func streaming(url string, w WriterAtQuit, from, to int64,
 	maxConnections := util.ReadIntConfig("max-connection")
 
 	gf := &generateFilter{
-		basicFilter{nil, make(chan *block, 2*maxConnections), quit},
+		basicFilter{nil, make(chan block, 2*maxConnections), quit},
 		from,
 		to,
 		0,
@@ -144,23 +144,23 @@ func streaming(url string, w WriterAtQuit, from, to int64,
 	}
 
 	df := &downloadFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		url,
 		maxConnections,
 	}
 
 	sf := &sortFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		from,
 	}
 
 	swf := &simpleWriteFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		w,
 	}
 
 	spf := &speedFilter{
-		basicFilter{nil, make(chan *block), quit},
+		basicFilter{nil, make(chan block), quit},
 		sm,
 	}
 

@@ -1,7 +1,6 @@
 package download
 
 import (
-	"fmt"
 	"log"
 	"time"
 )
@@ -26,12 +25,12 @@ func (sf *speedFilter) active() {
 			if !ok {
 				return
 			}
-			trace(fmt.Sprint("speed filter input:", b.from, b.to))
+			// trace(fmt.Sprint("speed filter input:", b.from, b.to))
 
 			sf.writeOutput(b)
-			trace(fmt.Sprint("speed filter output:", b.from, b.to))
+			// trace(fmt.Sprint("speed filter output:", b.from, b.to))
 
-			sr.add(b.to - b.from)
+			sr.add(int64(len(b.data)))
 			break
 		case <-timer.C:
 			sr.add(0)

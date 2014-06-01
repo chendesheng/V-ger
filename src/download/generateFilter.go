@@ -1,11 +1,9 @@
 package download
 
-import (
-	"fmt"
-	"log"
-	// "time"
-	// "util"
-)
+import "log"
+
+// "time"
+// "util"
 
 type generateFilter struct {
 	basicFilter
@@ -20,28 +18,27 @@ func (gf *generateFilter) active() {
 	generateBlock(gf.input, gf.output, gf.chBlockSize, gf.from, gf.to, gf.blockSize, gf.maxConnections, gf.quit)
 }
 
-func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int64, from, size int64, blockSize int64, maxConnections int, quit <-chan bool) {
+func generateBlock(input chan block, output chan<- block, chBlockSize chan int64, from, size int64, blockSize int64, maxConnections int, quit <-chan bool) {
 	log.Printf("generate block output: %v", output)
 	if blockSize == 0 {
 		//small blocksize for fast boot
-		blockSize = int64(512 * 1024)
+		blockSize = int64(128 * 1024)
 	}
 
-	to := from + blockSize
-	if to > size {
-		to = size
+	if from+blockSize > size {
+		blockSize = size - from
 	}
 
 	//boot
 	for i := 0; i < maxConnections; i++ {
 		select {
-		case output <- &block{from, to, make([]byte, to-from)}:
-			trace(fmt.Sprint("generate filter write boot output:", from, to))
+		case output <- block{from, make([]byte, blockSize)}:
+			// trace(fmt.Sprint("generate filter write boot output:", from, to))
 
-			from = to
-			to = from + blockSize
-			if to > size {
-				to = size
+			from += blockSize
+			blockSize = blockSize
+			if from+blockSize > size {
+				blockSize = size - from
 			}
 			break
 		case <-quit:
@@ -67,15 +64,15 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 				if from == size {
 					break
 				}
-				trace(fmt.Sprint("generate filter input:", b.from, b.to))
+				// trace(fmt.Sprint("generate filter input:", b.from, b.to))
 
-				b.reset(from, to)
+				b.reset(from, int(blockSize))
 				select {
 				case output <- b:
-					trace(fmt.Sprint("generate filter write output:", b.from, b.to))
+					// trace(fmt.Sprint("generate filter write output:", b.from, b.to))
 
-					if to == size {
-						fmt.Println("return generate block ", size)
+					if b.from+int64(len(b.data)) == size {
+						log.Println("return generate block ", size)
 						close(output)
 						for {
 							select {
@@ -88,10 +85,9 @@ func generateBlock(input chan *block, output chan<- *block, chBlockSize chan int
 							}
 						}
 					} else {
-						from = to
-						to = from + blockSize
-						if to > size {
-							to = size
+						from += blockSize
+						if from+blockSize > size {
+							blockSize = size - from
 						}
 					}
 				case maxSpeed = <-chBlockSize:

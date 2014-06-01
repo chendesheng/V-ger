@@ -33,12 +33,12 @@ func (pf *progressFilter) active() {
 				return
 			}
 
-			length := b.to - b.from
-			downloaded = b.to
+			blockSize := int64(len(b.data))
+			downloaded = b.from + blockSize
 
 			pf.writeOutput(b)
 
-			sr.add(length)
+			sr.add(blockSize)
 			break
 		case <-timer.C:
 			sr.add(0)

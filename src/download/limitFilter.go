@@ -15,7 +15,7 @@ type limitFilter struct {
 }
 
 type blockFilter struct {
-	b *block
+	b block
 	f *basicFilter
 }
 
@@ -35,14 +35,15 @@ func (lf *limitFilter) active() {
 			// println("limitfilter")
 			b := bf.b
 			f := bf.f
-			if b == nil {
+			if len(b.data) == 0 {
 				f.closeOutput()
-				continue
+				return
 			}
+
 			f.writeOutput(b)
 
 			if maxSpeed > 0 {
-				size := b.to - b.from
+				size := len(b.data)
 				d1 := time.Duration(float64(time.Second) * float64(size) / float64(maxSpeed*1024))
 				d2 := time.Now().Sub(s)
 				if d1 > d2 {
@@ -74,7 +75,7 @@ func (lf *limitFilter) active() {
 }
 
 func (lf *limitFilter) connect(f1 *basicFilter, f2 *basicFilter) {
-	f2.input = make(chan *block)
+	f2.input = make(chan block)
 	f := &basicFilter{
 		f1.output, f2.input, f1.quit,
 	}
