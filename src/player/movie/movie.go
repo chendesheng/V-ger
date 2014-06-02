@@ -100,15 +100,14 @@ func (m *Movie) Open(w *Window, file string) {
 		log.Fatal("Can't get video duration.")
 	}
 
-	log.Print("video duration:", duration.String())
 	m.c = NewClock(duration)
 
 	m.setupVideo()
 
 	m.p = CreateOrGetPlaying(filename)
-
+	log.Print("video duration:", duration.String(), m.p.LastPos)
 	var start time.Duration
-	if m.p.LastPos > time.Second {
+	if m.p.LastPos > time.Second && m.p.LastPos < duration-50*time.Millisecond {
 		var img []byte
 		start, img, _ = m.v.Seek(m.p.LastPos)
 		w.SendDrawImage(img)

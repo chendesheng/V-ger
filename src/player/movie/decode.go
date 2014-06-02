@@ -66,7 +66,6 @@ func (m *Movie) decode(name string) {
 		if m.v != nil {
 			m.v.Close()
 		}
-		m.c.Reset()
 		m.ctx.CloseInput()
 
 		if m.finishClose != nil {
@@ -99,6 +98,12 @@ func (m *Movie) decode(name string) {
 
 			packet.Free()
 		} else {
+			if resCode == AVERROR_EOF {
+				m.c.SetTime(m.c.TotalTime())
+				m.c.Pause()
+				return
+			}
+
 			bufferring = true
 			m.c.Pause()
 
