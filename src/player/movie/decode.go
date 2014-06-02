@@ -100,31 +100,28 @@ func (m *Movie) decode(name string) {
 		} else {
 			if resCode == AVERROR_EOF {
 				m.c.SetTime(m.c.TotalTime())
-				m.c.Pause()
-				return
-			}
-
-			bufferring = true
-			m.c.Pause()
-
-			m.a.FlushBuffer()
-			m.v.FlushBuffer()
-
-			t, _, err := m.v.Seek(m.c.GetTime())
-			if err == nil {
-				println("seek success:", t.String())
-				if m.httpBuffer != nil {
-					m.httpBuffer.Wait(2 * 1024 * 1024)
-				}
-				m.c.SetTime(t)
-				continue
 			} else {
-				log.Print("seek error:", err)
+				bufferring = true
+				m.c.Pause()
+
+				m.a.FlushBuffer()
+				m.v.FlushBuffer()
+
+				t, _, err := m.v.Seek(m.c.GetTime())
+				if err == nil {
+					println("seek success:", t.String())
+					if m.httpBuffer != nil {
+						m.httpBuffer.Wait(2 * 1024 * 1024)
+					}
+					m.c.SetTime(t)
+					continue
+				} else {
+					log.Print("seek error:", err)
+				}
+
+				// println("seek to unfinished:", m.c.GetTime().String())
+				log.Print("get frame error:", resCode)
 			}
-
-			// println("seek to unfinished:", m.c.GetTime().String())
-			log.Print("get frame error:", resCode)
-
 			select {
 			case t := <-m.chSeekPause:
 				println("seek to unfinished2")
