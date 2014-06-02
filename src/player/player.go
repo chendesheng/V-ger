@@ -100,7 +100,7 @@ func main() {
 
 	app := &appDelegate{}
 	Initialize(app)
-	app.w = NewWindow("V'ger", 1280, 720)
+	app.w = NewWindow("V'ger", 640, 360)
 
 	PollEvents()
 	return

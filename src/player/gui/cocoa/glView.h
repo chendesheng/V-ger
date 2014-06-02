@@ -33,4 +33,5 @@
 -(void)showCursor;
 -(void)hideProgress;
 -(void)hideCursor;
+-(void)setOriginalSize:(NSSize)size;
 @end
