@@ -3,7 +3,6 @@ package main
 import (
 	"dbHelper"
 	"filelock"
-	"net/http"
 
 	_ "net/http/pprof"
 	. "player/shared"
@@ -11,7 +10,7 @@ import (
 
 	// "fmt"
 	"log"
-	// . "logger"
+	"logger"
 	"path"
 	. "player/gui"
 	. "player/movie"
@@ -86,22 +85,22 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 }
 
 func main() {
-	log.SetFlags(log.Lshortfile)
-	go http.ListenAndServe("localhost:8080", nil)
-
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
+	runtime.LockOSThread()
+
+	logger.InitLog("VgerPlayer", util.ReadConfig("log"))
+
+	// go http.ListenAndServe("localhost:8080", nil)
 
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
-	runtime.LockOSThread()
-
 	util.SetCookie("gdriveid", util.ReadConfig("gdriveid"), "http://xunlei.com")
 
 	app := &appDelegate{}
 	Initialize(app)
-	app.w = NewWindow("V'ger", 256, 144)
+	app.w = NewWindow("V'ger", 1280, 720)
 
 	PollEvents()
 	return
