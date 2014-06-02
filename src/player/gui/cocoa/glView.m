@@ -285,6 +285,7 @@
 
             double x = padding;
             double y = wsz.height - sz.height - padding;
+            NSLog(@"%lf, %lf", x, y);
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
             return tv;
         } else if (position == 8) {
@@ -482,5 +483,8 @@
 - (void)scrollWheel:(NSEvent *)event
 {
     onMouseWheel(self->win, [event deltaY]);
+}
+- (void)setOriginalSize:(NSSize)size {
+    self->originalSize = size;
 }
 @end
