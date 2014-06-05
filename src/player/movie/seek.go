@@ -59,7 +59,7 @@ func (m *Movie) SeekBegin() {
 	m.v.FlushBuffer()
 	m.a.FlushBuffer()
 
-	chanSeek = make(chan time.Duration, 50)
+	chanSeek = make(chan time.Duration, 500)
 	go func() {
 		var t time.Duration
 		var ok bool
@@ -110,7 +110,10 @@ var chanSeek chan time.Duration
 func (m *Movie) SeekAsync(t time.Duration) {
 	println("seek async:", t.String())
 	if chanSeek != nil {
-		chanSeek <- t
+		select {
+		case chanSeek <- t:
+		case <-time.After(100 * time.Millisecond):
+		}
 	}
 }
 
