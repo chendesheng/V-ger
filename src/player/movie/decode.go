@@ -37,8 +37,10 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 				t := <-m.chSeekPause
 				if t >= 0 {
 					m.toggleShowProgress()
-
 					m.c.SetTime(t)
+
+					m.a.FlushBuffer()
+					m.v.FlushBuffer()
 					break
 				}
 			}
@@ -98,7 +100,7 @@ func (m *Movie) decode(name string) {
 
 			packet.Free()
 		} else {
-			if resCode == AVERROR_EOF && (m.c.GetTime()-m.c.TotalTime()<time.Second) {
+			if resCode == AVERROR_EOF && (m.c.GetTime()-m.c.TotalTime() < time.Second) {
 				m.c.SetTime(m.c.TotalTime())
 			} else {
 				bufferring = true

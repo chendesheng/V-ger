@@ -53,6 +53,7 @@ func (m *Movie) seekOffset(offset time.Duration) {
 }
 
 func (m *Movie) SeekBegin() {
+	println("seek begin")
 	m.chSeekPause <- -1
 
 	m.v.FlushBuffer()
@@ -69,8 +70,9 @@ func (m *Movie) SeekBegin() {
 				if !ok {
 					chanSeek = nil
 
-					println("seek end:", lastTime)
+					println("seek end:", lastTime.String())
 					lastTime = m.Seek(lastTime)
+					println("seek end2:", lastTime.String())
 
 					if m.httpBuffer != nil {
 						m.w.SendShowMessage("Bufferring...", false)
@@ -82,7 +84,6 @@ func (m *Movie) SeekBegin() {
 					m.chSeekPause <- lastTime
 					// println("seek end2:", t.String())
 
-					m.p.LastPos = lastTime
 					SavePlayingAsync(m.p)
 					return
 				}
@@ -90,10 +91,11 @@ func (m *Movie) SeekBegin() {
 			default:
 				if t > 0 {
 					if m.httpBuffer == nil {
-						lastTime = m.Seek(t)
+						m.Seek(t)
 					} else {
-						lastTime = m.Seek2(t)
+						m.Seek2(t)
 					}
+					t = 0
 				}
 				runtime.Gosched()
 			}
@@ -104,12 +106,11 @@ func (m *Movie) SeekBegin() {
 
 var chanSeek chan time.Duration
 
-func (m *Movie) SeekAsync(t time.Duration) time.Duration {
+func (m *Movie) SeekAsync(t time.Duration) {
+	println("seek async:", t.String())
 	if chanSeek != nil {
 		chanSeek <- t
 	}
-
-	return t
 }
 
 func (m *Movie) Seek2(t time.Duration) time.Duration {
@@ -126,7 +127,7 @@ func (m *Movie) Seek2(t time.Duration) time.Duration {
 		m.w.SendDrawImage(img)
 	}
 
-	m.c.SetTime(t)
+	// m.c.SetTime(t)
 
 	if m.s != nil {
 		m.s.Seek(t)
@@ -141,9 +142,9 @@ func (m *Movie) Seek2(t time.Duration) time.Duration {
 func (m *Movie) Seek(t time.Duration) time.Duration {
 	var img []byte
 	var err error
-	println("seek:", t.String())
+	// println("seek:", t.String())
 	t, img, err = m.v.Seek(t)
-	println("end seek:", t.String())
+	// println("end seek:", t.String())
 	if err != nil {
 		return t
 	}
@@ -153,9 +154,7 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 		go m.w.SendDrawImage(img)
 	}
 
-	m.c.SetTime(t)
-	// percent := m.c.GetPercent()
-	// go m.w.SendShowProgress(m.c.CalcPlayProgress(percent))
+	// m.c.SetTime(t)
 
 	if m.s != nil {
 		m.s.Seek(t)
@@ -164,13 +163,13 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 		m.s2.Seek(t)
 	}
 
-	println("end seek2:", t.String())
+	// println("end seek2:", t.String())
 
 	return t
 }
 
 func (m *Movie) SeekEnd(t time.Duration) {
-	println("seek end1122:", t)
+	println("seek end:", t.String())
 	if chanSeek != nil {
 		chanSeek <- t
 		close(chanSeek)

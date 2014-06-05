@@ -138,7 +138,7 @@ func (m *Movie) uievents() {
 	chCursor := make(chan struct{})
 	chCursorAutoHide := make(chan struct{})
 
-	var lastSeekTime time.Duration
+	// var lastSeekTime time.Duration
 	// var lastText uintptr
 	// var chPause chan seekArg
 	chProgress := make(chan time.Duration)
@@ -171,27 +171,20 @@ func (m *Movie) uievents() {
 		switch typ {
 		case 0:
 			m.SeekBegin()
-			t := m.c.CalcTime(percent)
-			if m.httpBuffer == nil {
-				t = m.Seek(t)
-			}
-
-			lastSeekTime = t
-
 			chCursorAutoHide <- struct{}{}
-			break
-		case 2:
-			m.SeekEnd(lastSeekTime)
-			chCursorAutoHide <- struct{}{}
-			break
+			fallthrough
 		case 1:
 			t := m.c.CalcTime(percent)
-			m.SeekAsync(t)
 			m.c.SetTime(t)
-
-			lastSeekTime = t
 			go m.showProgress()
-			break
+
+			m.SeekAsync(t)
+		case 2:
+			t := m.c.CalcTime(percent)
+			m.c.SetTime(t)
+			go m.showProgress()
+			m.SeekEnd(t)
+			chCursorAutoHide <- struct{}{}
 		}
 	})
 
