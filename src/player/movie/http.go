@@ -37,10 +37,10 @@ func max(a, b int64) int64 {
 }
 
 func (m *Movie) openHttp(file string) (AVFormatContext, string) {
-	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout"))*time.Second
+	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	download.BaseDir = util.ReadConfig("dir")
 
-	_, name, size, err := download.GetDownloadInfo(file)
+	url, name, size, err := download.GetDownloadInfo(file)
 
 	if err != nil {
 		log.Fatal(err)
@@ -83,7 +83,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
-			go download.Streaming(file, size, m.httpBuffer, start, m.p)
+			go download.Streaming(url, size, m.httpBuffer, start, m.p)
 		}
 		return pos
 	})
@@ -91,7 +91,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	go download.Streaming(file, size, m.httpBuffer, 0, nil)
+	go download.Streaming(url, size, m.httpBuffer, 0, nil)
 	m.httpBuffer.Seek(0, os.SEEK_SET)
 
 	ctx.OpenInput(name)

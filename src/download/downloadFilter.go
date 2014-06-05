@@ -18,6 +18,7 @@ var errReadTimeout = errors.New("read timeout")
 type downloadFilter struct {
 	basicFilter
 	url           string
+	isFinalUrl    bool
 	routineNumber int
 }
 
@@ -41,9 +42,14 @@ func (df *downloadFilter) active() {
 func (df *downloadFilter) downloadRoutine() {
 	url := df.url
 
-	url, _, _, err := GetDownloadInfoN(url, 10000000, df.quit)
-	if err != nil {
-		return
+	if !df.isFinalUrl {
+		req, _ := http.NewRequest("GET", url, nil)
+		resp, err := fetchN(req, 1000000, df.quit)
+		if err != nil {
+			log.Print(err)
+			return
+		}
+		url = resp.Request.URL.String()
 	}
 
 	if strings.Contains(url, "192.168.") {
@@ -74,6 +80,7 @@ func (df *downloadFilter) downloadBlock(url string, b block) {
 		err := requestWithTimeout(req, b.data, df.quit)
 
 		if err == nil {
+			println("download routine write output:", b.from)
 			df.writeOutput(b)
 			// trace(fmt.Sprint("downloadFilter writeoutput:", b.from, b.to))
 			return
@@ -101,10 +108,15 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan bool) (err err
 		defer resp.Body.Close()
 
 		_, err = io.ReadFull(resp.Body, data)
+		if err != nil {
+			println("download routine ReadFull:", err.Error())
+		}
 	}()
 
+	println("download routine NetworkTimeout:", NetworkTimeout)
 	select {
 	case <-time.After(NetworkTimeout): //cancelRequest if time.After before close(finish)
+		println("download routine timeout")
 		cancelRequest(req)
 		err = errReadTimeout //return not nil error is required
 		break
@@ -113,6 +125,7 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan bool) (err err
 		err = errStopFetch
 		break
 	case <-finish:
+		println("download routine finish")
 		if err != nil {
 			log.Print(err)
 			if resp != nil {

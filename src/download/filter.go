@@ -97,6 +97,7 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	df := &downloadFilter{
 		basicFilter{nil, make(chan block), quit},
 		url,
+		false,
 		maxConnections,
 	}
 
@@ -146,6 +147,7 @@ func streaming(url string, w WriterAtQuit, from, to int64,
 	df := &downloadFilter{
 		basicFilter{nil, make(chan block), quit},
 		url,
+		true,
 		maxConnections,
 	}
 
