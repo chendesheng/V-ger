@@ -37,7 +37,7 @@ func max(a, b int64) int64 {
 }
 
 func (m *Movie) openHttp(file string) (AVFormatContext, string) {
-	download.NetworkTimeout = 15 * time.Second
+	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout"))*time.Second
 	download.BaseDir = util.ReadConfig("dir")
 
 	_, name, size, err := download.GetDownloadInfo(file)

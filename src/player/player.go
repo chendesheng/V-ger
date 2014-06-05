@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"dbHelper"
 	"filelock"
 
@@ -97,6 +98,12 @@ func main() {
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
 	util.SetCookie("gdriveid", util.ReadConfig("gdriveid"), "http://xunlei.com")
+
+
+	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
+	transport := http.DefaultTransport.(*http.Transport)
+	transport.ResponseHeaderTimeout = networkTimeout
+	transport.MaxIdleConnsPerHost = 20
 
 	app := &appDelegate{}
 	Initialize(app)

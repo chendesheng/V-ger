@@ -181,30 +181,15 @@ func (m *Movie) uievents() {
 			chCursorAutoHide <- struct{}{}
 			break
 		case 2:
-			go func() {
-				if m.httpBuffer != nil {
-					m.w.SendShowMessage("Bufferring...", false)
-					defer m.w.SendHideMessage()
-
-					lastSeekTime = m.Seek(lastSeekTime)
-					m.httpBuffer.Wait(1024 * 1024)
-				}
-				m.SeekEnd(lastSeekTime)
-				m.p.LastPos = m.c.GetTime()
-				SavePlaying(m.p)
-			}()
-
+			m.SeekEnd(lastSeekTime)
 			chCursorAutoHide <- struct{}{}
-
 			break
 		case 1:
 			t := m.c.CalcTime(percent)
-			if m.httpBuffer == nil {
-				t = m.Seek(t)
-			}
-			lastSeekTime = t
-
+			m.SeekAsync(t)
 			m.c.SetTime(t)
+
+			lastSeekTime = t
 			go m.showProgress()
 			break
 		}

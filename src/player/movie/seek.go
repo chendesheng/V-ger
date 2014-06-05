@@ -2,6 +2,8 @@ package movie
 
 import (
 	. "player/libav"
+	. "player/shared"
+	"runtime"
 	"time"
 )
 
@@ -56,7 +58,84 @@ func (m *Movie) SeekBegin() {
 	m.v.FlushBuffer()
 	m.a.FlushBuffer()
 
+	chanSeek = make(chan time.Duration, 50)
+	go func() {
+		var t time.Duration
+		var ok bool
+		var lastTime time.Duration
+		for {
+			select {
+			case t, ok = <-chanSeek:
+				if !ok {
+					chanSeek = nil
+
+					println("seek end:", lastTime)
+					lastTime = m.Seek(lastTime)
+
+					if m.httpBuffer != nil {
+						m.w.SendShowMessage("Bufferring...", false)
+						defer m.w.SendHideMessage()
+
+						m.httpBuffer.Wait(1024 * 1024)
+					}
+
+					m.chSeekPause <- lastTime
+					// println("seek end2:", t.String())
+
+					m.p.LastPos = lastTime
+					SavePlayingAsync(m.p)
+					return
+				}
+				lastTime = t
+			default:
+				if t > 0 {
+					if m.httpBuffer == nil {
+						lastTime = m.Seek(t)
+					} else {
+						lastTime = m.Seek2(t)
+					}
+				}
+				runtime.Gosched()
+			}
+		}
+	}()
 	println("seek begin")
+}
+
+var chanSeek chan time.Duration
+
+func (m *Movie) SeekAsync(t time.Duration) time.Duration {
+	if chanSeek != nil {
+		chanSeek <- t
+	}
+
+	return t
+}
+
+func (m *Movie) Seek2(t time.Duration) time.Duration {
+	var img []byte
+	var err error
+
+	t, img, err = m.v.Seek2(t)
+
+	if err != nil {
+		return t
+	}
+
+	if len(img) > 0 {
+		m.w.SendDrawImage(img)
+	}
+
+	m.c.SetTime(t)
+
+	if m.s != nil {
+		m.s.Seek(t)
+	}
+	if m.s2 != nil {
+		m.s2.Seek(t)
+	}
+
+	return t
 }
 
 func (m *Movie) Seek(t time.Duration) time.Duration {
@@ -91,7 +170,9 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 }
 
 func (m *Movie) SeekEnd(t time.Duration) {
-	println("seek end:", t.String())
-	m.chSeekPause <- t
-	println("seek end2:", t.String())
+	println("seek end1122:", t)
+	if chanSeek != nil {
+		chanSeek <- t
+		close(chanSeek)
+	}
 }
