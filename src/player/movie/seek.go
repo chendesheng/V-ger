@@ -86,16 +86,17 @@ func (m *Movie) SeekBegin() {
 
 					SavePlayingAsync(m.p)
 					return
+				} else {
+					lastTime = t
 				}
-				lastTime = t
 			default:
-				if t > 0 {
+				if t >= 0 {
 					if m.httpBuffer == nil {
 						m.Seek(t)
 					} else {
 						m.Seek2(t)
 					}
-					t = 0
+					t = -1
 				}
 				runtime.Gosched()
 			}
