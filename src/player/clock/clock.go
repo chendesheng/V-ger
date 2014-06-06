@@ -38,10 +38,10 @@ func (c *Clock) CalcPlayProgress(percent float64) *PlayProgressInfo {
 	t := c.CalcTime(percent)
 	leftT := c.totalTime - t
 
-	return &PlayProgressInfo{formatTime(t), "-" + formatTime(leftT), percent, 0, ""}
+	return &PlayProgressInfo{c.formatTime(t), "-" + c.formatTime(leftT), percent, 0, ""}
 }
 
-func formatTime(t time.Duration) string {
+func (c *Clock) formatTime(t time.Duration) string {
 	sign := ""
 	if t < 0 {
 		t = -t
@@ -52,11 +52,11 @@ func formatTime(t time.Duration) string {
 	m := int(t.Minutes()) % 60
 	s := int(t.Seconds()) % 60
 
-	if h == 0 {
+	if c.totalTime < time.Hour {
 		return fmt.Sprintf("%s%02d:%02d", sign, m, s)
+	} else {
+		return fmt.Sprintf("%s%02d:%02d:%02d", sign, h, m, s)
 	}
-
-	return fmt.Sprintf("%s%02d:%02d:%02d", sign, h, m, s)
 }
 
 func (c *Clock) GetPercent() float64 {
