@@ -1,7 +1,7 @@
 package movie
 
 import (
-	. "player/libav"
+	// . "player/libav"
 	. "player/shared"
 	"runtime"
 	"time"
@@ -22,33 +22,7 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	if t < 0 {
 		t = 0
 	}
-	seekToBegin := t == 0
-
 	m.SeekBegin()
-
-	var img []byte
-	var err error
-	t, img, err = m.v.SeekOffset(t)
-	if err != nil {
-		return
-	}
-
-	go m.w.SendDrawImage(img)
-	if seekToBegin {
-		t = 0
-		m.ctx.SeekFrame(m.ctx.VideoStream(), t, AVSEEK_FLAG_FRAME)
-	}
-
-	m.c.SetTime(t)
-	// percent := m.c.GetPercent()
-	// m.w.ShowProgress(m.c.CalcPlayProgress(percent))
-
-	if m.s != nil {
-		m.s.Seek(t)
-	}
-	if m.s2 != nil {
-		m.s2.Seek(t)
-	}
 	m.SeekEnd(t)
 }
 

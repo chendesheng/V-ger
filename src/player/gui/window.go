@@ -6,7 +6,6 @@ package gui
 */
 import "C"
 import (
-	"log"
 	"math"
 	. "player/shared"
 	"time"
@@ -269,8 +268,6 @@ func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
 }
 
 func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
-	println("draw:", imgWidth, imgHeight, img, w.render)
-
 	if len(img) == 0 {
 		return
 	}

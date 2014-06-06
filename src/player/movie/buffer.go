@@ -19,6 +19,7 @@ func (bk *block) inside(position int64) bool {
 
 type buffer struct {
 	sync.Mutex
+	sync.Pool
 
 	currentPos int64
 	data       *list.List
@@ -49,6 +50,10 @@ func NewBuffer(size int64) *buffer {
 	b.size = size
 	b.data = list.New()
 	b.currentPos = 0
+	b.New = func() interface{} {
+		return &block{0, make([]byte, 0)}
+	}
+
 	go func() {
 		for _ = range time.Tick(30 * time.Second) {
 			b.GC()
@@ -70,6 +75,8 @@ func (b *buffer) GC() {
 		bk := e.Value.(*block)
 		if b.currentPos >= bk.off+int64(len(bk.p)) {
 			b.data.Remove(e)
+
+			b.Put(bk)
 		} else {
 			break
 		}
@@ -116,7 +123,7 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 	b.Lock()
 	defer b.Unlock()
 
-	for off > b.currentPos && off-b.currentPos > 20*1024*1024 {
+	for b.sizeAhead() > 20*1024*1024 {
 		//pause downloading if it is 20M ahead,
 		b.Unlock()
 		select {
@@ -129,9 +136,16 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 		}
 	}
 
-	data := make([]byte, len(p))
-	copy(data, p)
-	b.data.PushBack(&block{off, data})
+	bk := b.Get().(*block)
+	if len(bk.p) < len(p) {
+		bk.p = make([]byte, len(p))
+	} else {
+		bk.p = bk.p[:len(p)]
+	}
+	copy(bk.p, p)
+	bk.off = off
+
+	b.data.PushBack(bk)
 
 	return nil
 }
@@ -139,6 +153,10 @@ func (b *buffer) SizeAhead() int64 {
 	b.Lock()
 	defer b.Unlock()
 
+	return b.sizeAhead()
+}
+
+func (b *buffer) sizeAhead() int64 {
 	pos := b.currentPos
 
 	for e := b.data.Front(); e != nil; e = e.Next() {
@@ -150,6 +168,7 @@ func (b *buffer) SizeAhead() int64 {
 
 	return pos - b.currentPos
 }
+
 func (b *buffer) IsFinish() bool {
 	b.Lock()
 	defer b.Unlock()

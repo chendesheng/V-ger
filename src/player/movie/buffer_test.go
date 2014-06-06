@@ -70,7 +70,7 @@ func TestBufferRead(t *testing.T) {
 	}
 
 	b.Seek(50, 0)
-	println(b.currentPos, b.size)
+	println(b.currentPos, b.size, b.data.Len())
 	w := &testWriter{}
 	b.Read(w, 200)
 	if len(w.result) != 3 {
