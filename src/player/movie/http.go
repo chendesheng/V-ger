@@ -40,7 +40,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	download.BaseDir = util.ReadConfig("dir")
 
-	url, name, size, err := download.GetDownloadInfo(file)
+	url, name, size, err := download.GetDownloadInfoN(file, 3, m.quit)
 
 	if err != nil {
 		log.Fatal(err)
