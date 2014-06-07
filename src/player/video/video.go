@@ -33,7 +33,7 @@ type Video struct {
 	//buffers
 	frame AVFrame
 	// pictureRGBs         [8]AVPicture
-	pictureObjects      [30]*AVObject
+	pictureObjects      [40]*AVObject
 	currentPictureIndex int
 
 	Width, Height int
@@ -66,9 +66,10 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 }
 
 func (v *Video) setupPictureRGB() {
+	sz := AVPictureGetSize(AV_PIX_FMT_YUV420P, v.Width, v.Height)
 	for i, _ := range v.pictureObjects {
 		obj := AVObject{}
-		obj.Malloc(v.Width * v.Height * 2)
+		obj.Malloc(sz)
 		// println("setup picture objects", obj.Size())
 		v.pictureObjects[i] = &obj
 	}
@@ -156,7 +157,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 
 	v.c = c
 
-	v.ChanDecoded = make(chan *VideoFrame, 30)
+	v.ChanDecoded = make(chan *VideoFrame, 20)
 	v.ChanFlush = make(chan bool)
 	v.flushQuit = make(chan bool)
 	v.quit = make(chan bool)
