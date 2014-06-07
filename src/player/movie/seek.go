@@ -2,6 +2,7 @@ package movie
 
 import (
 	// . "player/libav"
+	"log"
 	. "player/shared"
 	"runtime"
 	"time"
@@ -22,8 +23,24 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	if t < 0 {
 		t = 0
 	}
-	m.SeekBegin()
-	m.SeekEnd(t)
+
+	m.chSeekPause <- -1
+	defer func() {
+		println("send seek pause:", t.String())
+		m.chSeekPause <- t
+	}()
+
+	t, img, err := m.v.SeekOffset(t)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	m.w.SendDrawImage(img)
+	m.w.SendSetCursor(true)
+	m.w.FuncMouseMoved[1]() //TODO.....
+
+	m.p.LastPos = t
+	SavePlayingAsync(m.p)
 }
 
 func (m *Movie) SeekBegin() {
@@ -58,6 +75,7 @@ func (m *Movie) SeekBegin() {
 					m.chSeekPause <- lastTime
 					// println("seek end2:", t.String())
 
+					m.p.LastPos = lastTime
 					SavePlayingAsync(m.p)
 					return
 				} else {
