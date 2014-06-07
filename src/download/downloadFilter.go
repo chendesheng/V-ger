@@ -80,7 +80,7 @@ func (df *downloadFilter) downloadBlock(url string, b block) {
 		err := requestWithTimeout(req, b.data, df.quit)
 
 		if err == nil {
-			println("download routine write output:", b.from)
+			// println("download routine write output:", b.from)
 			df.writeOutput(b)
 			// trace(fmt.Sprint("downloadFilter writeoutput:", b.from, b.to))
 			return
@@ -113,10 +113,10 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan bool) (err err
 		}
 	}()
 
-	println("download routine NetworkTimeout:", NetworkTimeout)
+	// println("download routine NetworkTimeout:", NetworkTimeout)
 	select {
 	case <-time.After(NetworkTimeout): //cancelRequest if time.After before close(finish)
-		println("download routine timeout")
+		// println("download routine timeout")
 		cancelRequest(req)
 		err = errReadTimeout //return not nil error is required
 		break
@@ -125,7 +125,7 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan bool) (err err
 		err = errStopFetch
 		break
 	case <-finish:
-		println("download routine finish")
+		// println("download routine finish")
 		if err != nil {
 			log.Print(err)
 			if resp != nil {
