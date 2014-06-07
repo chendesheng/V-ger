@@ -1,7 +1,6 @@
 package movie
 
 import (
-	"container/list"
 	"io"
 	"os"
 	"sync"
@@ -22,20 +21,17 @@ type buffer struct {
 	sync.Pool
 
 	currentPos int64
-	data       *list.List
+	data       []*block
 	size       int64
 }
 
 func (b *buffer) fromTo() (int64, int64) {
-	front := b.data.Front()
-	back := b.data.Back()
-	if front == nil {
+	if len(b.data) == 0 {
 		return 0, 0
-	} else {
-		head := front.Value.(*block)
-		tail := back.Value.(*block)
-		return head.off, tail.off + int64(len(tail.p))
 	}
+
+	back := b.data[len(b.data)-1]
+	return b.data[0].off, back.off + int64(len(back.p))
 }
 
 func min(a, b int64) int64 {
@@ -48,7 +44,7 @@ func min(a, b int64) int64 {
 func NewBuffer(size int64) *buffer {
 	b := &buffer{}
 	b.size = size
-	b.data = list.New()
+	b.data = make([]*block, 0, 50)
 	b.currentPos = 0
 	b.New = func() interface{} {
 		return &block{0, make([]byte, 0)}
@@ -66,20 +62,23 @@ func (b *buffer) GC() {
 	b.Lock()
 	defer b.Unlock()
 
-	for {
-		e := b.data.Front()
-		if e == nil {
+	if len(b.data) == 0 {
+		return
+	}
+
+	var bk *block
+	var i int
+	for i, bk = range b.data {
+		if b.currentPos < bk.off+int64(len(bk.p)) {
 			break
-		}
-
-		bk := e.Value.(*block)
-		if b.currentPos >= bk.off+int64(len(bk.p)) {
-			b.data.Remove(e)
-
-			b.Put(bk)
 		} else {
-			break
+			b.Put(bk)
 		}
+	}
+
+	if i > 0 {
+		copy(b.data, b.data[i:])
+		b.data = b.data[:len(b.data)-i]
 	}
 }
 
@@ -99,8 +98,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 		nextPosition = b.size
 	}
 
-	for e := b.data.Front(); e != nil; e = e.Next() {
-		bk := (e.Value).(*block)
+	for _, bk := range b.data {
 		if bk.inside(b.currentPos) {
 			from := b.currentPos - bk.off
 			to := min(int64(len(bk.p)), nextPosition-bk.off)
@@ -145,7 +143,7 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 	copy(bk.p, p)
 	bk.off = off
 
-	b.data.PushBack(bk)
+	b.data = append(b.data, bk)
 
 	return nil
 }
@@ -159,13 +157,11 @@ func (b *buffer) SizeAhead() int64 {
 func (b *buffer) sizeAhead() int64 {
 	pos := b.currentPos
 
-	for e := b.data.Front(); e != nil; e = e.Next() {
-		bk := (e.Value).(*block)
+	for _, bk := range b.data {
 		if bk.inside(pos) {
 			pos = bk.off + int64(len(bk.p))
 		}
 	}
-
 	return pos - b.currentPos
 }
 
@@ -173,12 +169,11 @@ func (b *buffer) IsFinish() bool {
 	b.Lock()
 	defer b.Unlock()
 
-	e := b.data.Back()
-	if e == nil {
+	if len(b.data) == 0 {
 		return false
 	}
 
-	bk := e.Value.(*block)
+	bk := b.data[len(b.data)-1]
 	return b.size <= bk.off+int64(len(bk.p))
 }
 func (b *buffer) Wait(size int64) {
@@ -213,7 +208,10 @@ func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 	if b.currentPos >= from && b.currentPos < to {
 		return b.currentPos, -1
 	} else {
-		b.data = list.New()
+		for _, bk := range b.data {
+			b.Put(bk)
+		}
+		b.data = b.data[0:0]
 		return b.currentPos, b.currentPos
 	}
 }
