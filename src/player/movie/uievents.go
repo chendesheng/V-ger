@@ -36,7 +36,9 @@ func (m *Movie) uievents() {
 			m.c.Toggle()
 			break
 		case gui.KEY_R:
-			m.w.ToggleForceScreenRatio()
+			if !m.w.IsFullScreen() {
+				m.w.ToggleForceScreenRatio()
+			}
 			break
 		case gui.KEY_LEFT:
 			var offset time.Duration
@@ -138,36 +140,7 @@ func (m *Movie) uievents() {
 	chCursor := make(chan struct{})
 	chCursorAutoHide := make(chan struct{})
 
-	// var lastSeekTime time.Duration
-	// var lastText uintptr
-	// var chPause chan seekArg
-	chProgress := make(chan time.Duration)
-	chProgressRes := make(chan time.Duration)
-	go func() {
-		var t time.Duration
-		for {
-			select {
-			case <-time.After(100 * time.Millisecond):
-				if t > 0 {
-					chProgressRes <- m.Seek(t)
-					t = 0
-				}
-				break
-			case t = <-chProgress:
-				chProgressRes <- t
-				break
-			}
-		}
-	}()
 	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
-		// select {
-		// case chCursor <- struct{}{}:
-		// 	break
-		// case <-time.After(50 * time.Millisecond):
-		// 	log.Print("stop hide cursor timeout2")
-		// 	break
-		// }
-
 		switch typ {
 		case 0:
 			m.SeekBegin()
