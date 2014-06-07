@@ -78,12 +78,12 @@ func (m *Movie) decode(name string) {
 	packet := AVPacket{}
 	ctx := m.ctx
 
-	bufferring := false
+	buffering := false
 	for {
 		resCode := ctx.ReadFrame(&packet)
 		if resCode >= 0 {
-			if bufferring {
-				bufferring = false
+			if buffering {
+				buffering = false
 				m.c.Resume()
 			}
 			if m.v.StreamIndex == packet.StreamIndex() {
@@ -103,7 +103,7 @@ func (m *Movie) decode(name string) {
 			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < time.Second) {
 				m.c.SetTime(m.c.TotalTime())
 			} else {
-				bufferring = true
+				buffering = true
 				m.c.Pause()
 
 				m.a.FlushBuffer()
@@ -146,6 +146,6 @@ func (m *Movie) decode(name string) {
 			}
 
 		}
-		// println(bufferring)
+		// println(buffering)
 	}
 }

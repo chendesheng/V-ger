@@ -11,7 +11,7 @@ import (
 func (m *Movie) seekOffsetAsync(offset time.Duration) {
 	go func() {
 		if m.httpBuffer != nil {
-			m.w.SendShowMessage("Bufferring...", false)
+			m.w.SendShowMessage("Buffering...", false)
 			defer m.w.SendHideMessage()
 		}
 
@@ -66,7 +66,7 @@ func (m *Movie) SeekBegin() {
 					println("seek end2:", lastTime.String())
 
 					if m.httpBuffer != nil {
-						m.w.SendShowMessage("Bufferring...", false)
+						m.w.SendShowMessage("Buffering...", false)
 						defer m.w.SendHideMessage()
 
 						m.httpBuffer.Wait(1024 * 1024)
