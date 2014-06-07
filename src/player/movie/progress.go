@@ -17,6 +17,13 @@ func (m *Movie) showProgress() {
 	m.w.SendShowProgress(p)
 }
 
+//SpeedMonitor interface
+func (m *Movie) SetSpeed(speed float64) {
+	if m.p != nil {
+		m.p.Speed = speed
+	}
+}
+
 var chShowProgress chan struct{}
 
 func (m *Movie) showProgressPerSecond() {

@@ -1,10 +1,6 @@
 package shared
 
-import (
-	"log"
-	"runtime/debug"
-	"time"
-)
+import "time"
 
 type AttributedString struct {
 	Content string
@@ -42,16 +38,6 @@ type Playing struct {
 	Duration    time.Duration
 	Volume      byte
 	Speed       float64 //online video downlad speed
-}
-
-func (p *Playing) SetSpeed(speed float64) {
-	// println("SetSpeed:", speed)
-	if p != nil {
-		p.Speed = speed
-	} else {
-		log.Print("playing is nil")
-		log.Print(string(debug.Stack()))
-	}
 }
 
 func (item *SubItem) IsInDefaultPosition() bool {
