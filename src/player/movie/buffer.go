@@ -182,12 +182,8 @@ func (b *buffer) IsFinish() bool {
 	return b.size <= bk.off+int64(len(bk.p))
 }
 func (b *buffer) Wait(size int64) {
-	for {
-		if b.SizeAhead() >= size || b.IsFinish() {
-			return
-		}
-
-		println("Wait:", b.SizeAhead(), b.IsFinish())
+	println("Wait:", b.SizeAhead(), b.IsFinish())
+	for !(b.SizeAhead() >= size || b.IsFinish()) {
 		time.Sleep(100 * time.Millisecond)
 	}
 }

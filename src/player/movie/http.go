@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	// "path/filepath"
 	. "player/libav"
 	"time"
@@ -54,22 +55,17 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		if buf.Size() == 0 {
 			return 0
 		}
+		if m.c != nil {
+			t := m.c.GetTime()
+			defer m.c.SetTime(t)
+		}
 		require := int64(buf.Size())
 
 		got := m.httpBuffer.Read(&buf, require)
 
 		if got < require && !m.httpBuffer.IsFinish() {
-			if m.c != nil {
-				m.c.Pause()
-				defer m.c.Resume()
-				// defer m.w.SendHideMessage()
-
-				// go m.w.SendShowMessage("Bufferring...", false)
-				// m.httpBuffer.Wait(max(require-got, 2*1024*1024))
-			}
-
 			for got < require && !m.httpBuffer.IsFinish() {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(20 * time.Millisecond)
 				got += m.httpBuffer.Read(&buf, require-got)
 			}
 		}
