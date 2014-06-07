@@ -100,7 +100,7 @@ func (m *Movie) decode(name string) {
 
 			packet.Free()
 		} else {
-			if resCode == AVERROR_EOF && (m.c.GetTime()-m.c.TotalTime() < time.Second) {
+			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < time.Second) {
 				m.c.SetTime(m.c.TotalTime())
 			} else {
 				bufferring = true
