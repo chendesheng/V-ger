@@ -156,7 +156,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 
 	v.c = c
 
-	v.ChanDecoded = make(chan *VideoFrame, 10)
+	v.ChanDecoded = make(chan *VideoFrame, 30)
 	v.ChanFlush = make(chan bool)
 	v.flushQuit = make(chan bool)
 	v.quit = make(chan bool)
