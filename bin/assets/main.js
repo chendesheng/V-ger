@@ -91,7 +91,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		function IfCountBadge(task, subscribeMap) {
 			if (subscribeMap[task.Subscribe] == null) {
 				return false;
-			} 
+			}
 
 			return ((task.Status == 'Downloading') || (task.Status == 'Queued')
 				|| (task.Status == 'Stopped')
@@ -122,7 +122,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					failedCount = 0;
 				}
 			}, 50);
-			
+
 
 			wsconn = monitor('/progress', function(data) {
 				var tasksMap = GetTasksMap();
@@ -282,7 +282,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			if (url.indexOf('lixian.vip.xunlei.com') != -1 ||
 				url.indexOf('cdn.baidupcs.com') != -1 ||
 				url.indexOf('googlevideo.com') != -1 ||
-				/.*dmg|.*zip|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
+				/.*dmg|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
 				$http.post('/new/', url).success(function(resp) {
 					if (!resp) {
 						url = '';
@@ -302,9 +302,9 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.subscribes = [];
 		$scope.edit_menu = false;
 		$scope.downloadTasks = {
-			Name:"Downloads", 
-			Badge:0, 
-			Duration:0, 
+			Name:"Downloads",
+			Badge:0,
+			Duration:0,
 			filter: function (task) {
 				return task.Status != 'New';
 			},
@@ -501,7 +501,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 					$scope.subtitles.push(data);
 					$scope.waiting = true;
 				}
-			}, function() {				
+			}, function() {
 				// if ($scope.ws_search_subtitles != null) {
 				// 	if ($scope.subtitles.length == 0) {
 				// 		$scope.nosubtitles = true;
