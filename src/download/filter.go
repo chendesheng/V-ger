@@ -29,10 +29,26 @@ func (f *basicFilter) connect(next *basicFilter) {
 	next.input = f.output
 }
 
-func (f *basicFilter) writeOutput(b block) {
+func (f *basicFilter) writeOutput(b block) bool {
 	if f.output != nil {
 		select {
 		case f.output <- b:
+		case <-f.quit:
+			return true
+		}
+	}
+
+	return false
+}
+
+//wait until input is closed or quit
+func (f *basicFilter) drainInput() {
+	for {
+		select {
+		case _, ok := <-f.input:
+			if !ok {
+				return
+			}
 		case <-f.quit:
 			return
 		}

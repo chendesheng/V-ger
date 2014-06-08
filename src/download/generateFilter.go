@@ -14,97 +14,59 @@ type generateFilter struct {
 	maxConnections int
 }
 
-func (gf *generateFilter) active() {
-	generateBlock(gf.input, gf.output, gf.chBlockSize, gf.from, gf.to, gf.blockSize, gf.maxConnections, gf.quit)
-}
-
-func generateBlock(input chan block, output chan<- block, chBlockSize chan int64, from, size int64, blockSize int64, maxConnections int, quit <-chan bool) {
-	log.Printf("generate block output: %v", output)
-	if blockSize == 0 {
-		//small blocksize for fast boot
-		blockSize = int64(128 * 1024)
+func (gf *generateFilter) nextBlock() (int64, int64, bool) {
+	from := gf.from
+	blockSize := gf.blockSize
+	if from+blockSize > gf.to {
+		blockSize = gf.to - from
 	}
 
-	if from+blockSize > size {
-		blockSize = size - from
+	gf.from = from + blockSize
+
+	if blockSize == 0 {
+		gf.closeOutput()
+		gf.drainInput()
+		return 0, 0, false
+	}
+	return from, blockSize, true
+}
+
+func (gf *generateFilter) active() {
+	if gf.blockSize == 0 {
+		//small blocksize for fast boot
+		gf.blockSize = int64(128 * 1024)
 	}
 
 	//boot
-	for i := 0; i < maxConnections; i++ {
-		select {
-		case output <- block{from, make([]byte, blockSize)}:
-			// trace(fmt.Sprint("generate filter write boot output:", from, to))
-
-			from += blockSize
-			blockSize = blockSize
-			if from+blockSize > size {
-				blockSize = size - from
+	for i := 0; i < gf.maxConnections; i++ {
+		if from, blockSize, ok := gf.nextBlock(); ok {
+			if gf.writeOutput(block{from, make([]byte, blockSize, 512*1024)}) {
+				return
 			}
-			break
-		case <-quit:
-			return
-		}
-
-		if from == size {
-			close(output)
-			break
 		}
 	}
 
 	//change to a larger blocksize after boot
-	blockSize = 512 * 1024
-
-	maxSpeed := int64(0)
+	gf.blockSize = 512 * 1024
 	for {
 		select {
-		case b, ok := <-input:
+		case b, ok := <-gf.input:
 			if !ok {
 				return
 			} else {
-				if from == size {
-					break
-				}
-				// trace(fmt.Sprint("generate filter input:", b.from, b.to))
-
-				b.reset(from, int(blockSize))
-				select {
-				case output <- b:
-					// trace(fmt.Sprint("generate filter write output:", b.from, b.to))
-
-					if b.from+int64(len(b.data)) == size {
-						log.Println("return generate block ", size)
-						close(output)
-						for {
-							select {
-							case _, ok := <-input:
-								if !ok {
-									return
-								}
-							case <-quit:
-								return
-							}
-						}
-					} else {
-						from += blockSize
-						if from+blockSize > size {
-							blockSize = size - from
-						}
-					}
-				case maxSpeed = <-chBlockSize:
-					log.Print("set block size: ", maxSpeed)
-					blockSize = getBlockSize(maxSpeed)
-					break
-				case <-quit:
-					log.Print("quit generate block")
+				if from, blockSize, ok := gf.nextBlock(); ok {
+					b.reset(from, int(blockSize))
+					gf.writeOutput(b)
+				} else {
 					return
 				}
 			}
 			break
-		case maxSpeed = <-chBlockSize:
+		case maxSpeed := <-gf.chBlockSize:
 			log.Print("set block size: ", maxSpeed)
-			blockSize = getBlockSize(maxSpeed)
+			gf.blockSize = getBlockSize(maxSpeed)
 			break
-		case <-quit:
+		case <-gf.quit:
 			log.Print("quit generate block")
 			return
 		}
