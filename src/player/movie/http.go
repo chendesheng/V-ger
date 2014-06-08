@@ -59,11 +59,17 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 			t := m.c.GetTime()
 			defer m.c.SetTime(t)
 		}
+
 		require := int64(buf.Size())
 
 		got := m.httpBuffer.Read(&buf, require)
 
 		if got < require && !m.httpBuffer.IsFinish() {
+			if m.c != nil {
+				m.c.Pause()
+				defer m.c.Resume()
+			}
+
 			for got < require && !m.httpBuffer.IsFinish() {
 				time.Sleep(20 * time.Millisecond)
 				got += m.httpBuffer.Read(&buf, require-got)
