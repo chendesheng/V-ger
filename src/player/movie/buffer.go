@@ -23,6 +23,7 @@ type buffer struct {
 	currentPos int64
 	data       []*block
 	size       int64
+	capacity   int64
 }
 
 func (b *buffer) fromTo() (int64, int64) {
@@ -46,6 +47,11 @@ func NewBuffer(size int64) *buffer {
 	b.size = size
 	b.data = make([]*block, 0, 50)
 	b.currentPos = 0
+	if b.size < 4*1024*1024*1024 {
+		b.capacity = 20 * 1024 * 1024
+	} else {
+		b.capacity = 200 * 1024 * 1024
+	}
 	b.New = func() interface{} {
 		return &block{0, make([]byte, 0)}
 	}
@@ -121,7 +127,7 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 	b.Lock()
 	defer b.Unlock()
 
-	for b.sizeAhead() > 20*1024*1024 {
+	for b.sizeAhead() > b.capacity {
 		//pause downloading if it is 20M ahead,
 		b.Unlock()
 		select {
