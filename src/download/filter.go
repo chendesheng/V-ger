@@ -1,6 +1,7 @@
 package download
 
 import (
+	"block"
 	"io"
 	"log"
 	"runtime/debug"
@@ -16,12 +17,12 @@ type filter interface {
 
 type WriterAtQuit interface {
 	//this method should return (nil) asap after close(quit)
-	WriteAtQuit(p []byte, off int64, quit chan bool) error
+	WriteAtQuit(bk block.Block, quit chan bool) error
 }
 
 type basicFilter struct {
-	input  chan block
-	output chan block
+	input  chan block.Block
+	output chan block.Block
 	quit   chan bool
 }
 
@@ -29,7 +30,7 @@ func (f *basicFilter) connect(next *basicFilter) {
 	next.input = f.output
 }
 
-func (f *basicFilter) writeOutput(b block) bool {
+func (f *basicFilter) writeOutput(b block.Block) bool {
 	if f.output != nil {
 		select {
 		case f.output <- b:
@@ -96,53 +97,56 @@ func activeFilters(filters []filter) {
 }
 
 func doDownload(t *task.Task, w io.WriterAt, from, to int64,
-	maxSpeed int64, chMaxSpeed chan int64, restartTimeout time.Duration, quit chan bool) {
+	maxSpeed int, chMaxSpeed chan int, restartTimeout time.Duration, quit chan bool) {
 	url := t.URL
 
 	maxConnections := util.ReadIntConfig("max-connection")
 
 	gf := &generateFilter{
-		basicFilter{nil, make(chan block, maxConnections*2), quit},
+		basicFilter{nil, make(chan block.Block, maxConnections*2), quit},
 		from,
 		to,
 		maxSpeed,
 		chMaxSpeed,
+		// block.DefaultBlockPool.GetBlocks(maxConnections*2, 512*block.KB),
 		maxConnections * 2,
 	}
 
 	df := &downloadFilter{
-		basicFilter{nil, make(chan block), quit},
+		basicFilter{nil, make(chan block.Block), quit},
 		url,
 		false,
 		maxConnections,
 	}
 
 	sf := &sortFilter{
-		basicFilter{nil, make(chan block), quit},
+		basicFilter{nil, make(chan block.Block), quit},
 		from,
 	}
 
 	wf := &writeFilter{
-		basicFilter{nil, make(chan block), quit},
+		basicFilter{nil, make(chan block.Block), quit},
 		t.Name,
 		w,
 		restartTimeout,
 	}
 
 	pf := &progressFilter{
-		basicFilter{nil, make(chan block), quit},
+		basicFilter{nil, make(chan block.Block), quit},
 		t,
 	}
 
-	// gf.connect(&df.basicFilter)
-	go lf.connect(&gf.basicFilter, &df.basicFilter) //will block unless lf is actived
+	gf.connect(&df.basicFilter)
+	// go lf.connect(&gf.basicFilter, &df.basicFilter) //will block unless lf is actived
 	df.connect(&sf.basicFilter)
 	sf.connect(&wf.basicFilter)
 	wf.connect(&pf.basicFilter)
 	pf.connect(&gf.basicFilter) //circle
 
-	activeFilters([]filter{gf, lf, df, sf, wf, pf})
+	activeFilters([]filter{gf, df, sf, wf, pf})
 
+	// <-wf.output
+	// block.DefaultBlockPool.PutBlocks(gf.blocks)
 	return
 }
 
@@ -152,43 +156,51 @@ func streaming(url string, w WriterAtQuit, from, to int64,
 	maxConnections := util.ReadIntConfig("max-connection")
 
 	gf := &generateFilter{
-		basicFilter{nil, make(chan block, 2*maxConnections), quit},
+		basicFilter{nil, make(chan block.Block, 2*maxConnections), quit},
 		from,
 		to,
 		0,
 		nil,
+		// block.DefaultBlockPool.GetBlocks(maxConnections*2, 512*block.KB),
 		maxConnections * 2,
 	}
 
 	df := &downloadFilter{
-		basicFilter{nil, make(chan block), quit},
+		basicFilter{nil, make(chan block.Block), quit},
 		url,
 		true,
 		maxConnections,
 	}
 
 	sf := &sortFilter{
-		basicFilter{nil, make(chan block), quit},
+		basicFilter{nil, make(chan block.Block), quit},
 		from,
 	}
 
 	swf := &simpleWriteFilter{
-		basicFilter{nil, make(chan block), quit},
+		basicFilter{nil, make(chan block.Block), quit},
 		w,
-	}
-
-	spf := &speedFilter{
-		basicFilter{nil, make(chan block), quit},
 		sm,
 	}
+
+	// spf := &speedFilter{
+	// 	basicFilter{nil, make(chan block.Block), quit},
+	// 	sm,
+	// }
 
 	gf.connect(&df.basicFilter)
 	df.connect(&sf.basicFilter)
 	sf.connect(&swf.basicFilter)
-	swf.connect(&spf.basicFilter)
-	spf.connect(&gf.basicFilter) //circle
+	swf.connect(&gf.basicFilter)
+	// spf.connect(&gf.basicFilter) //circle
 
-	activeFilters([]filter{gf, df, sf, swf, spf})
+	activeFilters([]filter{gf, df, sf, swf})
+	// <-swf.output
+
+	// go func() {
+	// 	time.After(2 * time.Second)
+	// 	block.DefaultBlockPool.PutBlocks(gf.blocks)
+	// }()
 
 	return
 }

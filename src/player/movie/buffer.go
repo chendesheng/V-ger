@@ -1,27 +1,18 @@
 package movie
 
 import (
+	"block"
 	"io"
 	"os"
 	"sync"
 	"time"
 )
 
-type block struct {
-	off int64
-	p   []byte
-}
-
-func (bk *block) inside(position int64) bool {
-	return bk.off <= position && position < bk.off+int64(len(bk.p))
-}
-
 type buffer struct {
 	sync.Mutex
-	sync.Pool
 
 	currentPos int64
-	data       []*block
+	data       []*block.Block
 	size       int64
 	capacity   int64
 }
@@ -32,7 +23,7 @@ func (b *buffer) fromTo() (int64, int64) {
 	}
 
 	back := b.data[len(b.data)-1]
-	return b.data[0].off, back.off + int64(len(back.p))
+	return b.data[0].From, back.From + int64(len(back.Data))
 }
 
 func min(a, b int64) int64 {
@@ -45,15 +36,12 @@ func min(a, b int64) int64 {
 func NewBuffer(size int64) *buffer {
 	b := &buffer{}
 	b.size = size
-	b.data = make([]*block, 0, 50)
+	b.data = make([]*block.Block, 0, 50)
 	b.currentPos = 0
-	if b.size < 4*1024*1024*1024 {
-		b.capacity = 20 * 1024 * 1024
+	if b.size < 4*block.GB {
+		b.capacity = 20 * block.MB
 	} else {
-		b.capacity = 200 * 1024 * 1024
-	}
-	b.New = func() interface{} {
-		return &block{0, make([]byte, 0)}
+		b.capacity = 200 * block.MB
 	}
 
 	go func() {
@@ -72,13 +60,13 @@ func (b *buffer) GC() {
 		return
 	}
 
-	var bk *block
+	var bk *block.Block
 	var i int
 	for i, bk = range b.data {
-		if b.currentPos < bk.off+int64(len(bk.p)) {
+		if b.currentPos < bk.From+int64(len(bk.Data)) {
 			break
 		} else {
-			b.Put(bk)
+			block.DefaultBlockPool.Put(bk)
 		}
 	}
 
@@ -105,11 +93,11 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 	}
 
 	for _, bk := range b.data {
-		if bk.inside(b.currentPos) {
-			from := b.currentPos - bk.off
-			to := min(int64(len(bk.p)), nextPosition-bk.off)
+		if bk.Inside(b.currentPos) {
+			from := b.currentPos - bk.From
+			to := min(int64(len(bk.Data)), nextPosition-bk.From)
 
-			w.Write(bk.p[from:to])
+			w.Write(bk.Data[from:to])
 			b.currentPos += to - from
 
 			if b.currentPos >= nextPosition {
@@ -121,7 +109,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 	return b.currentPos - lastPos
 }
 
-func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
+func (b *buffer) WriteAtQuit(bk block.Block, quit chan bool) error {
 	// println("WriteAt:", off, len(p))
 
 	b.Lock()
@@ -140,16 +128,10 @@ func (b *buffer) WriteAtQuit(p []byte, off int64, quit chan bool) error {
 		}
 	}
 
-	bk := b.Get().(*block)
-	if len(bk.p) < len(p) {
-		bk.p = make([]byte, len(p))
-	} else {
-		bk.p = bk.p[:len(p)]
-	}
-	copy(bk.p, p)
-	bk.off = off
+	// bk1 := block.DefaultBlockPool.Get(bk.From, len(bk.Data))
+	// copy(bk1.Data, bk.Data)
 
-	b.data = append(b.data, bk)
+	b.data = append(b.data, &bk)
 
 	return nil
 }
@@ -164,8 +146,8 @@ func (b *buffer) sizeAhead() int64 {
 	pos := b.currentPos
 
 	for _, bk := range b.data {
-		if bk.inside(pos) {
-			pos = bk.off + int64(len(bk.p))
+		if bk.Inside(pos) {
+			pos = bk.From + int64(len(bk.Data))
 		}
 	}
 	return pos - b.currentPos
@@ -180,7 +162,7 @@ func (b *buffer) IsFinish() bool {
 	}
 
 	bk := b.data[len(b.data)-1]
-	return b.size <= bk.off+int64(len(bk.p))
+	return b.size <= bk.From+int64(len(bk.Data))
 }
 func (b *buffer) Wait(size int64) {
 	println("Wait:", b.SizeAhead(), b.IsFinish())
@@ -215,7 +197,7 @@ func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 		return b.currentPos, -1
 	} else {
 		for _, bk := range b.data {
-			b.Put(bk)
+			block.DefaultBlockPool.Put(bk)
 		}
 		b.data = b.data[0:0]
 		return b.currentPos, b.currentPos

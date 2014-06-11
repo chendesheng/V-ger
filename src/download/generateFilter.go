@@ -1,62 +1,67 @@
 package download
 
-import "log"
-
-// "time"
-// "util"
+import (
+	"block"
+	"log"
+)
 
 type generateFilter struct {
 	basicFilter
-	from           int64
-	to             int64
-	blockSize      int64
-	chBlockSize    chan int64
+	from        int64
+	to          int64
+	blockSize   int
+	chBlockSize chan int
+	// blocks      []*block.Block
 	maxConnections int
 }
 
-func (gf *generateFilter) nextBlock() (int64, int64, bool) {
+func (gf *generateFilter) nextBlock() (*block.Block, bool) {
 	from := gf.from
 	blockSize := gf.blockSize
-	if from+blockSize > gf.to {
-		blockSize = gf.to - from
+	if from+int64(blockSize) > gf.to {
+		blockSize = int(gf.to - from)
 	}
 
-	gf.from = from + blockSize
+	gf.from = from + int64(blockSize)
 
 	if blockSize == 0 {
 		gf.closeOutput()
 		gf.drainInput()
-		return 0, 0, false
+		return nil, false
 	}
-	return from, blockSize, true
+	return block.DefaultBlockPool.Get(from, blockSize), true
 }
 
 func (gf *generateFilter) active() {
 	if gf.blockSize == 0 {
 		//small blocksize for fast boot
-		gf.blockSize = int64(128 * 1024)
+		gf.blockSize = 128 * block.KB
 	}
+
+	println("generateFilter:", gf.from, gf.to, gf.blockSize, gf.maxConnections)
 
 	//boot
 	for i := 0; i < gf.maxConnections; i++ {
-		if from, blockSize, ok := gf.nextBlock(); ok {
-			if gf.writeOutput(block{from, make([]byte, blockSize, 512*1024)}) {
-				return
+		if bk, ok := gf.nextBlock(); ok {
+			println("generateFilter:", bk.From, len(bk.Data))
+			if gf.writeOutput(*bk) {
+				break
 			}
+		} else {
+			return
 		}
 	}
 
 	//change to a larger blocksize after boot
-	gf.blockSize = 512 * 1024
+	gf.blockSize = 512 * block.KB
 	for {
 		select {
-		case b, ok := <-gf.input:
+		case _, ok := <-gf.input:
 			if !ok {
 				return
 			} else {
-				if from, blockSize, ok := gf.nextBlock(); ok {
-					b.reset(from, int(blockSize))
-					gf.writeOutput(b)
+				if bk, ok := gf.nextBlock(); ok {
+					gf.writeOutput(*bk)
 				} else {
 					return
 				}
@@ -67,16 +72,17 @@ func (gf *generateFilter) active() {
 			gf.blockSize = getBlockSize(maxSpeed)
 			break
 		case <-gf.quit:
+			gf.closeOutput()
 			log.Print("quit generate block")
 			return
 		}
 	}
 }
 
-func getBlockSize(maxSpeed int64) int64 {
+func getBlockSize(maxSpeed int) int {
 	if maxSpeed > 0 {
-		return maxSpeed * 1024
+		return maxSpeed * block.KB
 	} else {
-		return 512 * 1024
+		return 512 * block.KB
 	}
 }

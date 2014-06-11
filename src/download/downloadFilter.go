@@ -1,6 +1,7 @@
 package download
 
 import (
+	"block"
 	"errors"
 	"fmt"
 	"io"
@@ -65,7 +66,7 @@ func (df *downloadFilter) downloadRoutine() {
 				return
 			}
 
-			// trace(fmt.Sprint("download filter input:", b.from, b.to))
+			// trace(fmt.Sprint("download filter input:", b.From, b.to))
 
 			df.downloadBlock(url, b)
 		case <-df.quit:
@@ -74,15 +75,15 @@ func (df *downloadFilter) downloadRoutine() {
 		}
 	}
 }
-func (df *downloadFilter) downloadBlock(url string, b block) {
+func (df *downloadFilter) downloadBlock(url string, b block.Block) {
 	for {
-		req := createDownloadRequest(url, b.from, b.from+int64(len(b.data))-1)
-		err := requestWithTimeout(req, b.data, df.quit)
+		req := createDownloadRequest(url, b.From, b.From+int64(len(b.Data))-1)
+		err := requestWithTimeout(req, b.Data, df.quit)
 
 		if err == nil {
-			// println("download routine write output:", b.from)
+			// println("download routine write output:", b.From)
 			df.writeOutput(b)
-			// trace(fmt.Sprint("downloadFilter writeoutput:", b.from, b.to))
+			// trace(fmt.Sprint("downloadFilter writeoutput:", b.From, b.to))
 			return
 		} else {
 			select {

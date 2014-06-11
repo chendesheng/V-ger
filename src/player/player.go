@@ -1,9 +1,9 @@
 package main
 
 import (
-	"net/http"
 	"dbHelper"
 	"filelock"
+	"net/http"
 
 	_ "net/http/pprof"
 	. "player/shared"
@@ -91,14 +91,13 @@ func main() {
 
 	logger.InitLog("VgerPlayer", util.ReadConfig("log"))
 
-	// go http.ListenAndServe("localhost:8080", nil)
+	go http.ListenAndServe("localhost:8080", nil)
 
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
 	util.SetCookie("gdriveid", util.ReadConfig("gdriveid"), "http://xunlei.com")
-
 
 	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	transport := http.DefaultTransport.(*http.Transport)

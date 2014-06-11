@@ -1,6 +1,7 @@
 package download
 
 import (
+	"block"
 	"fmt"
 	"log"
 	"task"
@@ -33,10 +34,11 @@ func (pf *progressFilter) active() {
 				return
 			}
 
-			blockSize := int64(len(b.data))
-			downloaded = b.from + blockSize
+			blockSize := int64(len(b.Data))
+			downloaded = b.From + int64(blockSize)
 
 			pf.writeOutput(b)
+			block.DefaultBlockPool.Put(&b)
 
 			sr.add(blockSize)
 			break
