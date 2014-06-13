@@ -49,6 +49,7 @@ type Window struct {
 	ChanHideMessage chan uintptr
 
 	ChanShowProgress chan *PlayProgressInfo
+	ChanShowSpeed    chan string
 
 	ChanSetCursor chan bool
 
@@ -152,8 +153,8 @@ func (w *Window) SetSize(width, height int) {
 	}
 
 	sw, sh := GetScreenSize()
-	if width > int(0.8*float64(sw)) || height > int(0.8*float64(sh)) {
-		C.setWindowSize(w.ptr, C.int(0.8*float64(width)), C.int(0.8*float64(height)))
+	if width > int(0.9*float64(sw)) || height > int(0.9*float64(sh)) {
+		C.setWindowSize(w.ptr, C.int(0.85*float64(width)), C.int(0.85*float64(height)))
 	} else {
 		C.setWindowSize(w.ptr, C.int(width), C.int(height))
 	}
@@ -185,6 +186,7 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanDraw:         make(chan []byte, 1),
 		ChanShowProgress: make(chan *PlayProgressInfo),
+		ChanShowSpeed:    make(chan string),
 		ChanShowText:     make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
 		ChanHideText:     make(chan uintptr),
 		ChanSetSize:      make(chan argSize),
@@ -311,6 +313,9 @@ func (w *Window) ShowStartupView() {
 func (w *Window) SendShowProgress(p *PlayProgressInfo) {
 	w.ChanShowProgress <- p
 }
+func (w *Window) SendShowSpeed(speed string) {
+	w.ChanShowSpeed <- speed
+}
 func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cleft := C.CString(p.Left)
 	defer C.free(unsafe.Pointer(cleft))
@@ -318,10 +323,13 @@ func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cright := C.CString(p.Right)
 	defer C.free(unsafe.Pointer(cright))
 
-	cspeed := C.CString(p.Speed)
+	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent), C.double(p.Percent2))
+}
+func (w *Window) ShowSpeed(speed string) {
+	cspeed := C.CString(speed)
 	defer C.free(unsafe.Pointer(cspeed))
 
-	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent), C.double(p.Percent2), cspeed)
+	C.showWindowProgressSpeed(w.ptr, cspeed)
 }
 func (w *Window) SendShowText(s SubItemArg) {
 	// res := make(chan SubItemExtra)
@@ -420,6 +428,8 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	select {
 	case p := <-w.ChanShowProgress:
 		w.ShowProgress(p)
+	case speed := <-w.ChanShowSpeed:
+		w.ShowSpeed(speed)
 	default:
 	}
 
