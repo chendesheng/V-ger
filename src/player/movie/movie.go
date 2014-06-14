@@ -150,7 +150,7 @@ func (m *Movie) Open(w *Window, file string) {
 
 	m.c.SetTime(start)
 
-	m.showProgress()
+	m.showProgressInner(start)
 
 	w.SendSetCursor(false)
 }

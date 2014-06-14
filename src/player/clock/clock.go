@@ -26,7 +26,7 @@ type Clock struct {
 func (c *Clock) GetTime() time.Duration {
 	// c.waitUntilRunning()
 	t := c.getTime()
-	println("clock get time:", t.String())
+	// println("clock get time:", t.String())
 
 	return t
 }
@@ -40,7 +40,7 @@ func (c *Clock) CalcPlayProgress(t time.Duration) *PlayProgressInfo {
 	percent := float64(t) / float64(c.totalTime)
 	leftT := c.totalTime - t
 
-	return &PlayProgressInfo{c.formatTime(t), "-" + c.formatTime(leftT), percent, 0}
+	return &PlayProgressInfo{c.formatTime(t), "-" + c.formatTime(leftT), percent}
 }
 
 func (c *Clock) formatTime(t time.Duration) string {
@@ -81,7 +81,7 @@ func (c *Clock) getTime() time.Duration {
 }
 
 func (c *Clock) SetTime(t time.Duration) {
-	log.Println("clock set time:", t.String())
+	// log.Println("clock set time:", t.String())
 
 	c.Lock()
 	defer c.Unlock()

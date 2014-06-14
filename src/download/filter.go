@@ -180,27 +180,18 @@ func streaming(url string, w WriterAtQuit, from, to int64,
 	swf := &simpleWriteFilter{
 		basicFilter{nil, make(chan block.Block), quit},
 		w,
+	}
+	spf := &speedFilter{
+		basicFilter{nil, make(chan block.Block), quit},
 		sm,
 	}
-
-	// spf := &speedFilter{
-	// 	basicFilter{nil, make(chan block.Block), quit},
-	// 	sm,
-	// }
 
 	gf.connect(&df.basicFilter)
 	df.connect(&sf.basicFilter)
 	sf.connect(&swf.basicFilter)
-	swf.connect(&gf.basicFilter)
-	// spf.connect(&gf.basicFilter) //circle
+	swf.connect(&spf.basicFilter)
+	spf.connect(&gf.basicFilter) //circle
 
-	activeFilters([]filter{gf, df, sf, swf})
-	// <-swf.output
-
-	// go func() {
-	// 	time.After(2 * time.Second)
-	// 	block.DefaultBlockPool.PutBlocks(gf.blocks)
-	// }()
-
+	activeFilters([]filter{gf, df, sf, swf, spf})
 	return
 }

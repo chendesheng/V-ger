@@ -2,18 +2,12 @@ package movie
 
 import (
 	"fmt"
+	. "player/shared"
 	"time"
 )
 
-func (m *Movie) showProgress() {
-	m.showProgressInner(m.p.LastPos)
-}
-
 func (m *Movie) showProgressInner(t time.Duration) {
 	p := m.c.CalcPlayProgress(t)
-	if m.httpBuffer != nil {
-		p.Percent2 = m.httpBuffer.BufferPercent()
-	}
 
 	println("showProgressInner", p.Left, p.Percent, p.Right)
 	m.w.SendShowProgress(p)
@@ -21,6 +15,8 @@ func (m *Movie) showProgressInner(t time.Duration) {
 
 //SpeedMonitor interface
 func (m *Movie) SetSpeed(speed float64) {
+	println("set speed:", speed)
+
 	if m.chSpeed != nil {
 		select {
 		case m.chSpeed <- speed:
@@ -35,7 +31,7 @@ func (m *Movie) showProgressPerSecond() {
 	m.chProgress = make(chan time.Duration)
 	if m.httpBuffer != nil {
 		m.chSpeed = make(chan float64)
-		m.w.SendShowSpeed("0 KB/s")
+		m.w.SendShowBufferInfo(&BufferInfo{"0 KB/s", 0})
 	}
 
 	var t time.Duration
@@ -56,9 +52,12 @@ func (m *Movie) showProgressPerSecond() {
 			}
 		case speed = <-m.chSpeed:
 			if speed != lastSpeed {
+				percent := m.httpBuffer.BufferPercent()
+				println("send show speed:", speed)
+
 				lastSpeed = speed
 				m.p.Speed = speed
-				m.w.SendShowSpeed(fmt.Sprintf("%.0f KB/s", speed))
+				m.w.SendShowBufferInfo(&BufferInfo{fmt.Sprintf("%.0f KB/s", speed), percent})
 			}
 		case <-m.quit:
 			return

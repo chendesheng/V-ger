@@ -49,7 +49,7 @@ type Window struct {
 	ChanHideMessage chan uintptr
 
 	ChanShowProgress chan *PlayProgressInfo
-	ChanShowSpeed    chan string
+	ChanShowSpeed    chan *BufferInfo
 
 	ChanSetCursor chan bool
 
@@ -186,7 +186,7 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanDraw:         make(chan []byte),
 		ChanShowProgress: make(chan *PlayProgressInfo),
-		ChanShowSpeed:    make(chan string),
+		ChanShowSpeed:    make(chan *BufferInfo),
 		ChanShowText:     make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
 		ChanHideText:     make(chan uintptr),
 		ChanSetSize:      make(chan argSize),
@@ -313,8 +313,8 @@ func (w *Window) ShowStartupView() {
 func (w *Window) SendShowProgress(p *PlayProgressInfo) {
 	w.ChanShowProgress <- p
 }
-func (w *Window) SendShowSpeed(speed string) {
-	w.ChanShowSpeed <- speed
+func (w *Window) SendShowBufferInfo(info *BufferInfo) {
+	w.ChanShowSpeed <- info
 }
 func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cleft := C.CString(p.Left)
@@ -323,13 +323,13 @@ func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cright := C.CString(p.Right)
 	defer C.free(unsafe.Pointer(cright))
 
-	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent), C.double(p.Percent2))
+	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent))
 }
-func (w *Window) ShowSpeed(speed string) {
+func (w *Window) ShowBufferInfo(speed string, percent float64) {
 	cspeed := C.CString(speed)
 	defer C.free(unsafe.Pointer(cspeed))
 
-	C.showWindowProgressSpeed(w.ptr, cspeed)
+	C.showWindowBufferInfo(w.ptr, cspeed, C.double(percent))
 }
 func (w *Window) SendShowText(s SubItemArg) {
 	// res := make(chan SubItemExtra)
@@ -428,8 +428,8 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	select {
 	case p := <-w.ChanShowProgress:
 		w.ShowProgress(p)
-	case speed := <-w.ChanShowSpeed:
-		w.ShowSpeed(speed)
+	case info := <-w.ChanShowSpeed:
+		w.ShowBufferInfo(info.Speed, info.BufferPercent)
 	default:
 	}
 

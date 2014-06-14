@@ -338,13 +338,13 @@ int getWindowHeight(void* ptr) {
     Window* w = (Window*)ptr;
     return (int)([w->glView frame].size.height);
 }
-void showWindowProgress(void* ptr, char* left, char* right, double percent, double percent2) {
+void showWindowProgress(void* ptr, char* left, char* right, double percent) {
     Window* w = (Window*)ptr;
-    [w->glView showProgress:left right:right percent:percent percent2:percent2];
+    [w->glView showProgress:left right:right percent:percent];
 }
-void showWindowProgressSpeed(void* ptr, char* speed) {
+void showWindowBufferInfo(void* ptr, char* speed, double percent) {
     Window* w = (Window*)ptr;
-    [w->glView showSpeed:speed];
+    [w->glView showBufferInfo:speed bufferPercent:percent];
 }
 void* showText(void* ptr, SubItem* items, int length, int position, double x, double y) {
     Window* w = (Window*)ptr;

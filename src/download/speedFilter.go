@@ -33,6 +33,9 @@ func (sf *speedFilter) active() {
 			sr.add(int64(len(b.Data)))
 			break
 		case <-timer.C:
+			println("speed filter tick")
+			sr.add(0)
+			sr.add(0)
 			sr.add(0)
 			if sf.sm != nil {
 				sf.sm.SetSpeed(sr.calcSpeed())
