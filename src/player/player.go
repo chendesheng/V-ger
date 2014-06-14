@@ -72,12 +72,12 @@ func (app *appDelegate) SearchSubtitleMenuItemClick() {
 }
 func (app *appDelegate) OnOpenOpenPanel() {
 	if app.m != nil {
-		app.m.Pause()
+		app.m.PauseClock()
 	}
 }
 func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	if app.m != nil {
-		app.m.Resume()
+		app.m.ResumeClock()
 	}
 
 	if len(filename) > 0 {

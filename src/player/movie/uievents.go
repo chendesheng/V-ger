@@ -145,17 +145,19 @@ func (m *Movie) uievents() {
 		case 0:
 			m.SeekBegin()
 			chCursorAutoHide <- struct{}{}
-			fallthrough
 		case 1:
 			t := m.c.CalcTime(percent)
-			m.c.SetTime(t)
-			go m.showProgress()
+			p := m.c.CalcPlayProgress(t)
+			m.w.ShowProgress(p)
 
 			m.SeekAsync(t)
 		case 2:
 			t := m.c.CalcTime(percent)
-			m.c.SetTime(t)
-			go m.showProgress()
+			p := m.c.CalcPlayProgress(t)
+			m.w.ShowProgress(p)
+
+			println("release dragging:", t.String())
+
 			m.SeekEnd(t)
 			chCursorAutoHide <- struct{}{}
 		}

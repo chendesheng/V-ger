@@ -102,16 +102,8 @@
                 
             switch ([event type]) {
                 case NSLeftMouseDragged:
-                    pt = [self convertPoint:[event locationInWindow] fromView:nil];
-                    if (pt.x < bound.origin.x) {
-                        pt.x = bound.origin.x;
-                    } else if (pt.x > bound.origin.x+bound.size.width) {
-                        pt.x = bound.origin.x+bound.size.width;
-                    }
-                    self->percent = (pt.x-bound.origin.x)/bound.size.width;
-                    // if ((self->percent2>0) && (self->percent > self->percent2)) {
-                    //     self->percent = self->percent2;
-                    // }
+                    self->percent = [self getPercent:event bound:bound];
+
                     if (lastPercent != self->percent) {
                         lastPercent = self->percent;
                         [self setNeedsDisplay:YES];
@@ -119,7 +111,11 @@
                     }
                     break;
                 case NSLeftMouseUp:
-                    [self setNeedsDisplay:YES];
+                    self->percent = [self getPercent:event bound:bound];
+
+                    if (lastPercent != self->percent) {
+                        [self setNeedsDisplay:YES];
+                    }
                     onProgressChanged((void*)[self window], 2, self->percent);
                     keepOn = NO;
                     break;
@@ -129,6 +125,15 @@
             }
         }
     }
+}
+- (double)getPercent:(NSEvent*)event bound:(NSRect)bound {
+    NSPoint pt = [self convertPoint:[event locationInWindow] fromView:nil];
+    if (pt.x < bound.origin.x) {
+        pt.x = bound.origin.x;
+    } else if (pt.x > bound.origin.x+bound.size.width) {
+        pt.x = bound.origin.x+bound.size.width;
+    }
+    return (pt.x-bound.origin.x)/bound.size.width;
 }
 - (void)setHidden:(BOOL)b {
     NSView *v = self.superview;

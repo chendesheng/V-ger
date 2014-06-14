@@ -25,8 +25,10 @@ type Clock struct {
 //will be blocked if clock is paused
 func (c *Clock) GetTime() time.Duration {
 	// c.waitUntilRunning()
+	t := c.getTime()
+	println("clock get time:", t.String())
 
-	return c.getTime()
+	return t
 }
 
 func (c *Clock) CalcTime(percent float64) time.Duration {
@@ -79,7 +81,8 @@ func (c *Clock) getTime() time.Duration {
 }
 
 func (c *Clock) SetTime(t time.Duration) {
-	// log.Println("clock set time:", t.String())
+	log.Println("clock set time:", t.String())
+
 	c.Lock()
 	defer c.Unlock()
 
@@ -93,7 +96,7 @@ func (c *Clock) SetTime(t time.Duration) {
 func (c *Clock) AddTime(d time.Duration) {
 	c.Lock()
 	defer c.Unlock()
-	println("clock base:", c.base.String())
+	// println("clock base:", c.base.String())
 	c.base = c.base.Add(-d)
 }
 

@@ -55,30 +55,19 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		if buf.Size() == 0 {
 			return 0
 		}
-		if m.c != nil {
-			t := m.c.GetTime()
-			defer m.c.SetTime(t)
-		}
 
 		require := int64(buf.Size())
-
 		got := m.httpBuffer.Read(&buf, require)
-
-		if got < require && !m.httpBuffer.IsFinish() {
+		for got < require && !m.httpBuffer.IsFinish() {
+			time.Sleep(20 * time.Millisecond)
 			if m.c != nil {
-				m.c.Pause()
-				defer m.c.Resume()
+				m.c.AddTime(-20 * time.Millisecond)
 			}
-
-			for got < require && !m.httpBuffer.IsFinish() {
-				time.Sleep(20 * time.Millisecond)
-				got += m.httpBuffer.Read(&buf, require-got)
-			}
+			got += m.httpBuffer.Read(&buf, require-got)
 		}
 
 		return int(got)
 	}, func(offset int64, whence int) int64 {
-		println("seek:", offset, whence)
 		if whence == AVSEEK_SIZE {
 			return m.httpBuffer.size
 		}

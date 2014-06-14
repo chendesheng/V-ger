@@ -70,7 +70,7 @@ func (df *downloadFilter) downloadRoutine() {
 
 			df.downloadBlock(url, b)
 		case <-df.quit:
-			fmt.Println("downloadRoutine quit")
+			// fmt.Println("downloadRoutine quit")
 			return
 		}
 	}
@@ -108,10 +108,10 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan bool) (err err
 		}
 		defer resp.Body.Close()
 
-		_, err = io.ReadFull(resp.Body, data)
-		if err != nil {
-			println("download routine ReadFull:", err.Error())
-		}
+		io.ReadFull(resp.Body, data)
+		// if err != nil {
+		// 	println("download routine ReadFull:", err.Error())
+		// }
 	}()
 
 	// println("download routine NetworkTimeout:", NetworkTimeout)

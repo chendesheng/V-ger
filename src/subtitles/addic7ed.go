@@ -93,7 +93,7 @@ func (a *addic7ed) parseItem(n *html.Node) (bool, string) {
 
 func (a *addic7ed) downloadSubtitle() (string, string) {
 	u, _ := url.Parse(a.searchResultPage)
-	println(u)
+	// println(u)
 	uhref, _ := url.Parse(a.subtitleHref)
 	subtitleUrl := u.ResolveReference(uhref)
 

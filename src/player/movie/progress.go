@@ -6,48 +6,62 @@ import (
 )
 
 func (m *Movie) showProgress() {
-	m.p.LastPos = m.c.GetTime()
+	m.showProgressInner(m.p.LastPos)
+}
 
-	p := m.c.CalcPlayProgress(m.c.GetPercent())
+func (m *Movie) showProgressInner(t time.Duration) {
+	p := m.c.CalcPlayProgress(t)
 	if m.httpBuffer != nil {
-		p.Speed = fmt.Sprintf("%d KB/s", int(m.p.Speed))
-		p.Percent2 = float64(m.httpBuffer.currentPos+m.httpBuffer.SizeAhead()) / float64(m.httpBuffer.size)
+		p.Percent2 = m.httpBuffer.BufferPercent()
 	}
 
+	println("showProgressInner", p.Left, p.Percent, p.Right)
 	m.w.SendShowProgress(p)
 }
 
 //SpeedMonitor interface
 func (m *Movie) SetSpeed(speed float64) {
-	if m.p != nil {
-		m.p.Speed = speed
-	}
-}
-
-var chShowProgress chan struct{}
-
-func (m *Movie) showProgressPerSecond() {
-	chShowProgress = make(chan struct{})
-
-	ticker := time.NewTicker(time.Second)
-	for {
-		// if m.c.WaitUtilRunning(m.quit) {
-		// 	return
-		// }
-
+	if m.chSpeed != nil {
 		select {
-		case <-chShowProgress:
-			<-chShowProgress
-			break
-		case <-ticker.C:
-			m.showProgress()
-			break
+		case m.chSpeed <- speed:
 		case <-m.quit:
-			return
+		case <-time.After(500 * time.Millisecond):
+			println("write m.chSpeed timeout")
 		}
 	}
 }
 
-func (m *Movie) toggleShowProgress() {
-	chShowProgress <- struct{}{}
+func (m *Movie) showProgressPerSecond() {
+	m.chProgress = make(chan time.Duration)
+	if m.httpBuffer != nil {
+		m.chSpeed = make(chan float64)
+		m.w.SendShowSpeed("0 KB/s")
+	}
+
+	var t time.Duration
+	var lastTime time.Duration
+	t = m.c.GetTime()
+	lastTime = t
+
+	var speed float64
+	var lastSpeed float64
+
+	for {
+		select {
+		case t = <-m.chProgress:
+			if t/time.Second != lastTime/time.Second {
+				lastTime = t
+				m.p.LastPos = t
+				m.showProgressInner(t)
+			}
+		case speed = <-m.chSpeed:
+			if speed != lastSpeed {
+				lastSpeed = speed
+				m.p.Speed = speed
+				m.w.SendShowSpeed(fmt.Sprintf("%.0f KB/s", speed))
+			}
+		case <-m.quit:
+			return
+		}
+	}
 }

@@ -190,7 +190,6 @@ func (a *Audio) Close() {
 }
 
 func (a *Audio) FlushBuffer() {
-	log.Print("audio flush buffer")
 	for {
 		select {
 		case p := <-a.PacketChan:

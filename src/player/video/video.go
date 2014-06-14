@@ -220,6 +220,18 @@ func (v *Video) SeekOffset(t time.Duration) (time.Duration, []byte, error) {
 	return v.ReadOneFrame()
 }
 
+func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
+	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
+
+	ctx := v.formatCtx
+	err := ctx.SeekFrame(v.stream, t, flags)
+	if err != nil {
+		return t, nil, err
+	}
+
+	return v.DropFramesUtil(t)
+}
+
 func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 	flags := AVSEEK_FLAG_FRAME
 
@@ -229,21 +241,22 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 		return t, nil, err
 	}
 
-	return v.DropFramesUtil(t)
-	// return v.ReadOneFrame()
-}
-func (v *Video) Seek2(t time.Duration) (time.Duration, []byte, error) {
-	flags := AVSEEK_FLAG_FRAME
-
-	ctx := v.formatCtx
-	err := ctx.SeekFile(t, flags)
-	if err != nil {
-		return t, nil, err
-	}
-
 	// return v.DropFramesUtil(t)
 	return v.ReadOneFrame()
 }
+
+// func (v *Video) Seek2(t time.Duration) (time.Duration, []byte, error) {
+// 	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
+
+// 	ctx := v.formatCtx
+// 	err := ctx.SeekFrame(v.stream, t, flags)
+// 	if err != nil {
+// 		return t, nil, err
+// 	}
+
+// 	return v.DropFramesUtil(t)
+// 	// return v.ReadOneFrame()
+// }
 func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0, nil
@@ -270,7 +283,6 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 }
 
 func (v *Video) FlushBuffer() {
-	log.Print("video flush buffer")
 	for {
 		select {
 		case <-v.ChanDecoded:

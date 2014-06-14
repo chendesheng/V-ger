@@ -43,7 +43,7 @@ func (gf *generateFilter) active() {
 	//boot
 	for i := 0; i < gf.maxConnections; i++ {
 		if bk, ok := gf.nextBlock(); ok {
-			println("generateFilter:", bk.From, len(bk.Data))
+			// println("generateFilter:", bk.From, len(bk.Data))
 			if gf.writeOutput(*bk) {
 				break
 			}

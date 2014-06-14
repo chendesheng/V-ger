@@ -170,6 +170,16 @@ func (b *buffer) Wait(size int64) {
 		time.Sleep(100 * time.Millisecond)
 	}
 }
+func (b *buffer) WaitQuit(size int64, quit chan struct{}) {
+	println("WaitQuit:", b.SizeAhead(), b.IsFinish())
+	for !(b.SizeAhead() >= size || b.IsFinish()) {
+		select {
+		case <-time.After(100 * time.Millisecond):
+		case <-quit:
+			return
+		}
+	}
+}
 
 func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 
@@ -202,4 +212,11 @@ func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 		b.data = b.data[0:0]
 		return b.currentPos, b.currentPos
 	}
+}
+
+func (b *buffer) BufferPercent() float64 {
+	b.Lock()
+	defer b.Unlock()
+
+	return float64(b.currentPos+b.sizeAhead()) / float64(b.size)
 }
