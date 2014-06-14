@@ -170,9 +170,12 @@ func (b *buffer) Wait(size int64) {
 		time.Sleep(100 * time.Millisecond)
 	}
 }
+func (b *buffer) BufferFinish(size int64) bool {
+	return b.SizeAhead() < size && !b.IsFinish()
+}
 func (b *buffer) WaitQuit(size int64, quit chan struct{}) {
-	println("WaitQuit:", b.SizeAhead(), b.IsFinish())
-	for !(b.SizeAhead() >= size || b.IsFinish()) {
+	// println("WaitQuit:", b.SizeAhead(), b.IsFinish())
+	for b.BufferFinish(size) {
 		select {
 		case <-time.After(100 * time.Millisecond):
 		case <-quit:

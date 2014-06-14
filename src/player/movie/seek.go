@@ -70,10 +70,13 @@ func (m *Movie) SeekBegin() {
 					lastTime = m.SeekAccurate(lastTime)
 
 					if m.httpBuffer != nil {
-						m.w.SendShowMessage("Buffering...", false)
-						defer m.w.SendHideMessage()
+						waitSize := int64(1024 * 1024)
+						if m.httpBuffer.BufferFinish(waitSize) {
+							m.w.SendShowMessage("Buffering...", false)
+							defer m.w.SendHideMessage()
 
-						m.httpBuffer.WaitQuit(1024*1024, m.chSeekQuit)
+							m.httpBuffer.WaitQuit(waitSize, m.chSeekQuit)
+						}
 					}
 
 					m.p.LastPos = lastTime
@@ -105,6 +108,7 @@ func (m *Movie) SeekAsync(t time.Duration) {
 	if m.chSeekProgress != nil {
 		select {
 		case m.chSeekProgress <- t:
+			SavePlayingAsync(m.p)
 		case <-time.After(20 * time.Millisecond):
 		}
 	}
