@@ -16,22 +16,22 @@
 	onSearchSubtitleMenuItemClick();
 }
 -(void)openFileMenuItemClick:(id)sender {
-     onOpenOpenPanel();
+     // onOpenOpenPanel();
 
-     NSOpenPanel *panel	= [NSOpenPanel openPanel];
-     [panel setCanChooseDirectories:NO];
-     [panel setAllowsMultipleSelection:NO];
+     // NSOpenPanel *panel	= [NSOpenPanel openPanel];
+     // [panel setCanChooseDirectories:NO];
+     // [panel setAllowsMultipleSelection:NO];
 
-     NSInteger type	= [panel runModalForTypes:nil];
-     if(type == NSOKButton){
-          NSString* filename = [panel filename];
-          char* cfilename = (char*)[filename UTF8String];
-          onOpenFile(cfilename);
+     // NSInteger type	= [panel runModalForTypes:nil];
+     // if(type == NSOKButton){
+     //      NSString* filename = [panel filename];
+     //      char* cfilename = (char*)[filename UTF8String];
+     //      onOpenFile(cfilename);
 
-          onCloseOpenPanel(cfilename);
-     } else {
-          onCloseOpenPanel("");
-     	return;
-     }
+     //      onCloseOpenPanel(cfilename);
+     // } else {
+     //      onCloseOpenPanel("");
+     // 	return;
+     // }
 }
 @end
