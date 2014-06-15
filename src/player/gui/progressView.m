@@ -92,6 +92,7 @@
         [self setNeedsDisplay:YES];
         
         onProgressChanged((void*)[self window], 0, self->percent);
+        onProgressChanged((void*)[self window], 1, self->percent);
         double lastPercent = self->percent;
             
         bool keepOn = YES;
