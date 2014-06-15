@@ -28,7 +28,7 @@ func (a *portAudio) Open(channels int, sampleRate int, callback func(int) []byte
 	args.Output.Channels = 1
 
 	a.stream, err = portaudio.OpenStream(args, func(out []int32) {
-		println(out)
+		// println(out)
 		length := len(out)
 		for length > 0 {
 			p := callback(length * 4)
