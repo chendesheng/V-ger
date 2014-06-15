@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	// "path/filepath"
 	. "player/libav"
 	"time"
@@ -37,10 +38,10 @@ func max(a, b int64) int64 {
 }
 
 func (m *Movie) openHttp(file string) (AVFormatContext, string) {
-	download.NetworkTimeout = 15 * time.Second
+	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	download.BaseDir = util.ReadConfig("dir")
 
-	_, name, size, err := download.GetDownloadInfo(file)
+	url, name, size, err := download.GetDownloadInfoN(file, 3, m.quit)
 
 	if err != nil {
 		log.Fatal(err)
@@ -54,36 +55,26 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		if buf.Size() == 0 {
 			return 0
 		}
+
 		require := int64(buf.Size())
-
 		got := m.httpBuffer.Read(&buf, require)
-
-		if got < require && !m.httpBuffer.IsFinish() {
+		for got < require && !m.httpBuffer.IsFinish() {
+			time.Sleep(20 * time.Millisecond)
 			if m.c != nil {
-				m.c.Pause()
-				defer m.c.Resume()
-				// defer m.w.SendHideMessage()
-
-				// go m.w.SendShowMessage("Bufferring...", false)
-				// m.httpBuffer.Wait(max(require-got, 2*1024*1024))
+				m.c.AddTime(-20 * time.Millisecond)
 			}
-
-			for got < require && !m.httpBuffer.IsFinish() {
-				time.Sleep(100 * time.Millisecond)
-				got += m.httpBuffer.Read(&buf, require-got)
-			}
+			got += m.httpBuffer.Read(&buf, require-got)
 		}
 
 		return int(got)
 	}, func(offset int64, whence int) int64 {
-		println("seek:", offset, whence)
 		if whence == AVSEEK_SIZE {
 			return m.httpBuffer.size
 		}
 
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
-			go download.Streaming(file, size, m.httpBuffer, start, m.p)
+			go download.Streaming(url, size, m.httpBuffer, start, m)
 		}
 		return pos
 	})
@@ -91,7 +82,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	go download.Streaming(file, size, m.httpBuffer, 0, nil)
+	go download.Streaming(url, size, m.httpBuffer, 0, m)
 	m.httpBuffer.Seek(0, os.SEEK_SET)
 
 	ctx.OpenInput(name)

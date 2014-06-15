@@ -25,8 +25,10 @@ type Clock struct {
 //will be blocked if clock is paused
 func (c *Clock) GetTime() time.Duration {
 	// c.waitUntilRunning()
+	t := c.getTime()
+	// println("clock get time:", t.String())
 
-	return c.getTime()
+	return t
 }
 
 func (c *Clock) CalcTime(percent float64) time.Duration {
@@ -34,14 +36,14 @@ func (c *Clock) CalcTime(percent float64) time.Duration {
 	return t
 }
 
-func (c *Clock) CalcPlayProgress(percent float64) *PlayProgressInfo {
-	t := c.CalcTime(percent)
+func (c *Clock) CalcPlayProgress(t time.Duration) *PlayProgressInfo {
+	percent := float64(t) / float64(c.totalTime)
 	leftT := c.totalTime - t
 
-	return &PlayProgressInfo{formatTime(t), "-" + formatTime(leftT), percent, 0, ""}
+	return &PlayProgressInfo{c.formatTime(t), "-" + c.formatTime(leftT), percent}
 }
 
-func formatTime(t time.Duration) string {
+func (c *Clock) formatTime(t time.Duration) string {
 	sign := ""
 	if t < 0 {
 		t = -t
@@ -52,11 +54,11 @@ func formatTime(t time.Duration) string {
 	m := int(t.Minutes()) % 60
 	s := int(t.Seconds()) % 60
 
-	if h == 0 {
+	if c.totalTime < time.Hour {
 		return fmt.Sprintf("%s%02d:%02d", sign, m, s)
+	} else {
+		return fmt.Sprintf("%s%02d:%02d:%02d", sign, h, m, s)
 	}
-
-	return fmt.Sprintf("%s%02d:%02d:%02d", sign, h, m, s)
 }
 
 func (c *Clock) GetPercent() float64 {
@@ -80,6 +82,7 @@ func (c *Clock) getTime() time.Duration {
 
 func (c *Clock) SetTime(t time.Duration) {
 	// log.Println("clock set time:", t.String())
+
 	c.Lock()
 	defer c.Unlock()
 
@@ -93,7 +96,7 @@ func (c *Clock) SetTime(t time.Duration) {
 func (c *Clock) AddTime(d time.Duration) {
 	c.Lock()
 	defer c.Unlock()
-	println("clock base:", c.base.String())
+	// println("clock base:", c.base.String())
 	c.base = c.base.Add(-d)
 }
 

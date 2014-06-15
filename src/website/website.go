@@ -238,7 +238,7 @@ func limitHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.SaveConfig("max-speed", input)
 
-	if err := download.LimitSpeed(int64(speed)); err != nil {
+	if err := download.LimitSpeed(speed); err != nil {
 		writeError(w, err)
 	}
 }

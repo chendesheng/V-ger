@@ -3,6 +3,7 @@ package main
 import (
 	"dbHelper"
 	"filelock"
+	"net/http"
 
 	_ "net/http/pprof"
 	. "player/shared"
@@ -71,12 +72,12 @@ func (app *appDelegate) SearchSubtitleMenuItemClick() {
 }
 func (app *appDelegate) OnOpenOpenPanel() {
 	if app.m != nil {
-		app.m.Pause()
+		app.m.PauseClock()
 	}
 }
 func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	if app.m != nil {
-		app.m.Resume()
+		app.m.ResumeClock()
 	}
 
 	if len(filename) > 0 {
@@ -90,13 +91,18 @@ func main() {
 
 	logger.InitLog("VgerPlayer", util.ReadConfig("log"))
 
-	// go http.ListenAndServe("localhost:8080", nil)
+	go http.ListenAndServe("localhost:8080", nil)
 
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
 	util.SetCookie("gdriveid", util.ReadConfig("gdriveid"), "http://xunlei.com")
+
+	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
+	transport := http.DefaultTransport.(*http.Transport)
+	transport.ResponseHeaderTimeout = networkTimeout
+	transport.MaxIdleConnsPerHost = 20
 
 	app := &appDelegate{}
 	Initialize(app)

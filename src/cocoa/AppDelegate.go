@@ -3,9 +3,6 @@ package cocoa
 import (
 	"download"
 	"fmt"
-	"github.com/mkrautz/objc"
-	. "github.com/mkrautz/objc/AppKit"
-	. "github.com/mkrautz/objc/Foundation"
 	"log"
 	"native"
 	"os/exec"
@@ -14,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"thunder"
+	"github.com/mkrautz/objc"
+	. "github.com/mkrautz/objc/AppKit"
+	. "github.com/mkrautz/objc/Foundation"
 	// "path"
 	// "runtime"
 	// "sync"
@@ -219,7 +219,7 @@ func (delegate *AppDelegate) SpeedClick(sender uintptr) {
 	}
 
 	util.SaveConfig("max-speed", fmt.Sprint(speed))
-	download.LimitSpeed(int64(speed))
+	download.LimitSpeed(speed)
 
 	println(delegate.speedMenuItems)
 	println(delegate)

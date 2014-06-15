@@ -30,9 +30,12 @@ func (sf *speedFilter) active() {
 			sf.writeOutput(b)
 			// trace(fmt.Sprint("speed filter output:", b.from, b.to))
 
-			sr.add(int64(len(b.data)))
+			sr.add(int64(len(b.Data)))
 			break
 		case <-timer.C:
+			println("speed filter tick")
+			sr.add(0)
+			sr.add(0)
 			sr.add(0)
 			if sf.sm != nil {
 				sf.sm.SetSpeed(sr.calcSpeed())

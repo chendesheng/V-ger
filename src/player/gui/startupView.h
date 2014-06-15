@@ -1,5 +1,4 @@
 #import <Cocoa/Cocoa.h>
-#import "YRKSpinningProgressIndicator.h"
 #import "blurView.h"
 
 @interface StartupView : NSView {

@@ -153,7 +153,7 @@
 - (void)keyUp:(NSEvent *)event {
 }
 
--(void)showProgress:(char*)left right:(char*)right percent:(double)percent percent2:(double)percent2 speed:(char*)speed {
+-(void)showProgress:(char*)left right:(char*)right percent:(double)percent {
     ProgressView* pv = self->progressView;
     
     [pv->leftString autorelease];
@@ -162,14 +162,17 @@
     [pv->rightString autorelease];
     pv->rightString = [[NSString stringWithUTF8String:right] retain];
 
+    pv->percent = percent;
+    
+    [pv setNeedsDisplay:YES];
+}
+-(void)showBufferInfo:(char*)speed bufferPercent:(double)percent {
+    ProgressView* pv = self->progressView;
+
     [pv->speedString autorelease];
     pv->speedString = [[NSString stringWithUTF8String:speed] retain];
+    pv->percent2 = percent;
 
-    pv->percent = percent;
-    if (percent2 > 0) {
-        pv->percent2 = percent2;
-    }
-    
     [pv setNeedsDisplay:YES];
 }
 -(void)setProgressView:(ProgressView*)pv {

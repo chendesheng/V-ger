@@ -154,7 +154,7 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 	C.avcodec_flush_buffers(stream.Codec().ptr)
 	return nil
 }
-func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
+func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) error {
 	// frameLock.Lock()
 	// defer frameLock.Unlock()
 	// timeBase := stream.ptr.time_base
@@ -167,8 +167,11 @@ func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) int {
 	// seek_target := C.av_rescale(C.int64_t(t/time.Millisecond), C.int64_t(timeBase.den), C.int64_t(timeBase.num)) / 1000
 
 	ret := int(C.avformat_seek_file(ctx.ptr, -1, C.int64_t(math.MinInt64), C.int64_t(seek_target), C.int64_t(math.MaxInt64), C.int(flags)))
+	if ret < 0 {
+		return fmt.Errorf("Seek file error:", ret)
+	}
 
-	return ret
+	return nil
 }
 
 func (ctx *AVFormatContext) Duration() uint64 {

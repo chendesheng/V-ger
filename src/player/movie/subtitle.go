@@ -268,7 +268,7 @@ func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 		m.subs = getSubValues(subs)
 
 		println("play subtitle:", subs)
-		width, height := m.w.GetWindowSize()
+		width, height := m.v.Width, m.v.Height
 
 		if len(m.p.Sub1) == 0 && len(m.p.Sub2) > 0 {
 			m.p.Sub1 = m.p.Sub2

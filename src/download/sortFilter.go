@@ -1,6 +1,10 @@
 package download
 
-import "fmt"
+import (
+	"block"
+
+	"fmt"
+)
 
 type sortFilter struct {
 	basicFilter
@@ -10,7 +14,7 @@ type sortFilter struct {
 func (sf *sortFilter) active() {
 	defer sf.closeOutput()
 
-	dbmap := make(map[int64]block)
+	dbmap := make(map[int64]block.Block)
 	nextOutputFrom := sf.from
 	for {
 		select {
@@ -20,7 +24,7 @@ func (sf *sortFilter) active() {
 			}
 			// trace(fmt.Sprint("sort filter input:", b.from, b.to))
 
-			dbmap[b.from] = b
+			dbmap[b.From] = b
 			for {
 				if b, exist := dbmap[nextOutputFrom]; exist {
 					select {
@@ -28,7 +32,7 @@ func (sf *sortFilter) active() {
 						// trace(fmt.Sprint("sort filter write output:", b.from, b.to))
 
 						delete(dbmap, nextOutputFrom)
-						nextOutputFrom += int64(len(b.data))
+						nextOutputFrom += int64(len(b.Data))
 						break
 					case <-sf.quit:
 						return

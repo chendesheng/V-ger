@@ -26,8 +26,6 @@ type Movie struct {
 	w   *Window
 	p   *Playing
 
-	chSeekPause chan time.Duration
-
 	quit        chan bool
 	finishClose chan bool
 
@@ -38,6 +36,12 @@ type Movie struct {
 	size int64
 
 	httpBuffer *buffer
+
+	chSeekQuit     chan struct{}
+	chSeekProgress chan time.Duration
+	chPause        chan chan time.Duration
+	chProgress     chan time.Duration
+	chSpeed        chan float64
 }
 
 func NewMovie() *Movie {
@@ -87,8 +91,6 @@ func (m *Movie) Open(w *Window, file string) {
 		ctx.DumpFormat()
 
 	}
-
-	m.chSeekPause = make(chan time.Duration)
 
 	m.ctx = ctx
 
@@ -148,7 +150,7 @@ func (m *Movie) Open(w *Window, file string) {
 
 	m.c.SetTime(start)
 
-	m.showProgress()
+	m.showProgressInner(start)
 
 	w.SendSetCursor(false)
 }
@@ -185,12 +187,6 @@ func (m *Movie) PlayAsync() {
 	go m.showProgressPerSecond()
 	go m.decode(m.p.Movie)
 }
-func (m *Movie) Resume() {
-	m.c.Resume()
-}
-func (m *Movie) Pause() {
-	m.c.Pause()
-}
 
 func (m *Movie) setupVideo() {
 	ctx := m.ctx
@@ -205,4 +201,12 @@ func (m *Movie) setupVideo() {
 	} else {
 		log.Fatal("No video stream find.")
 	}
+}
+
+func (m *Movie) ResumeClock() {
+	m.c.Resume()
+}
+
+func (m *Movie) PauseClock() {
+	m.c.Pause()
 }

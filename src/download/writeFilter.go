@@ -1,6 +1,7 @@
 package download
 
 import (
+	"block"
 	"fmt"
 	"io"
 	"log"
@@ -54,10 +55,10 @@ func (wf *writeFilter) active() {
 	log.Print("writeOutput end")
 }
 
-func (wf *writeFilter) mustWrite(b block) error {
+func (wf *writeFilter) mustWrite(b block.Block) error {
 	pathErrNotifyTimes := 0
 	for {
-		_, err := wf.w.WriteAt(b.data, b.from)
+		_, err := wf.w.WriteAt(b.Data, b.From)
 
 		if err == nil {
 			pathErrNotifyTimes = 0

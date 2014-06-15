@@ -36,7 +36,9 @@ func (m *Movie) uievents() {
 			m.c.Toggle()
 			break
 		case gui.KEY_R:
-			m.w.ToggleForceScreenRatio()
+			if !m.w.IsFullScreen() {
+				m.w.ToggleForceScreenRatio()
+			}
 			break
 		case gui.KEY_LEFT:
 			var offset time.Duration
@@ -138,75 +140,26 @@ func (m *Movie) uievents() {
 	chCursor := make(chan struct{})
 	chCursorAutoHide := make(chan struct{})
 
-	var lastSeekTime time.Duration
-	// var lastText uintptr
-	// var chPause chan seekArg
-	chProgress := make(chan time.Duration)
-	chProgressRes := make(chan time.Duration)
-	go func() {
-		var t time.Duration
-		for {
-			select {
-			case <-time.After(100 * time.Millisecond):
-				if t > 0 {
-					chProgressRes <- m.Seek(t)
-					t = 0
-				}
-				break
-			case t = <-chProgress:
-				chProgressRes <- t
-				break
-			}
-		}
-	}()
 	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
-		// select {
-		// case chCursor <- struct{}{}:
-		// 	break
-		// case <-time.After(50 * time.Millisecond):
-		// 	log.Print("stop hide cursor timeout2")
-		// 	break
-		// }
-
 		switch typ {
 		case 0:
 			m.SeekBegin()
-			t := m.c.CalcTime(percent)
-			if m.httpBuffer == nil {
-				t = m.Seek(t)
-			}
-
-			lastSeekTime = t
-
 			chCursorAutoHide <- struct{}{}
-			break
-		case 2:
-			go func() {
-				if m.httpBuffer != nil {
-					m.w.SendShowMessage("Bufferring...", false)
-					defer m.w.SendHideMessage()
-
-					lastSeekTime = m.Seek(lastSeekTime)
-					m.httpBuffer.Wait(1024 * 1024)
-				}
-				m.SeekEnd(lastSeekTime)
-				m.p.LastPos = m.c.GetTime()
-				SavePlaying(m.p)
-			}()
-
-			chCursorAutoHide <- struct{}{}
-
-			break
 		case 1:
 			t := m.c.CalcTime(percent)
-			if m.httpBuffer == nil {
-				t = m.Seek(t)
-			}
-			lastSeekTime = t
+			p := m.c.CalcPlayProgress(t)
+			m.w.ShowProgress(p)
 
-			m.c.SetTime(t)
-			go m.showProgress()
-			break
+			m.SeekAsync(t)
+		case 2:
+			t := m.c.CalcTime(percent)
+			p := m.c.CalcPlayProgress(t)
+			m.w.ShowProgress(p)
+
+			println("release dragging:", t.String())
+
+			m.SeekEnd(t)
+			chCursorAutoHide <- struct{}{}
 		}
 	})
 

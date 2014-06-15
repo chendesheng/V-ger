@@ -21,26 +21,26 @@ func TestBlock(t *testing.T) {
 func TestBufferWrite(t *testing.T) {
 	b := NewBuffer(1000)
 	b.WriteAtQuit(make([]byte, 100), 100, nil)
-	if b.data.Len() != 1 {
-		t.Errorf("list length should be 1 but %d", b.data.Len())
+	if len(b.data) != 1 {
+		t.Errorf("list length should be 1 but %d", len(b.data))
 	}
 
 	b.WriteAtQuit(make([]byte, 100), 200, nil)
-	if b.data.Len() != 2 {
-		t.Errorf("list length should be 1 but %d", b.data.Len())
+	if len(b.data) != 2 {
+		t.Errorf("list length should be 1 but %d", len(b.data))
 	}
 }
 
 func TestBufferFromTo(t *testing.T) {
 	b := NewBuffer(1000)
 	b.WriteAtQuit(make([]byte, 100), 100, nil)
-	if b.data.Len() != 1 {
-		t.Errorf("list length should be 1 but %d", b.data.Len())
+	if len(b.data) != 1 {
+		t.Errorf("list length should be 1 but %d", len(b.data))
 	}
 
 	b.WriteAtQuit(make([]byte, 100), 200, nil)
-	if b.data.Len() != 2 {
-		t.Errorf("list length should be 2 but %d", b.data.Len())
+	if len(b.data) != 2 {
+		t.Errorf("list length should be 2 but %d", len(b.data))
 	}
 
 	from, to := b.fromTo()
@@ -70,7 +70,7 @@ func TestBufferRead(t *testing.T) {
 	}
 
 	b.Seek(50, 0)
-	println(b.currentPos, b.size)
+	println(b.currentPos, b.size, len(b.data))
 	w := &testWriter{}
 	b.Read(w, 200)
 	if len(w.result) != 3 {
@@ -119,5 +119,26 @@ func TestBufferReadBorder(t *testing.T) {
 
 	if b.currentPos != 1000 {
 		t.Error("expect currentPost 1000 but %d", b.currentPos)
+	}
+}
+
+func TestGC(t *testing.T) {
+	b := NewBuffer(1000)
+	from := int64(0)
+	i := int64(1)
+	for from < b.size {
+		b.WriteAtQuit(make([]byte, 50*i), from, make(chan bool))
+		from += 50 * i //50+100+150+200+250+300(250)
+		i++
+	}
+	b.currentPos = 456
+	b.GC()
+
+	if len(b.data) != 3 {
+		t.Errorf("expect len(b.data)=3 but %d", len(b.data))
+	}
+
+	if len(b.data[0].p) != 200 {
+		t.Errorf("expect len(b.data[0].p)=200 but %d", len(b.data[0].p))
 	}
 }

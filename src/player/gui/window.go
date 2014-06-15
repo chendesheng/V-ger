@@ -6,7 +6,6 @@ package gui
 */
 import "C"
 import (
-	"log"
 	"math"
 	. "player/shared"
 	"time"
@@ -50,6 +49,7 @@ type Window struct {
 	ChanHideMessage chan uintptr
 
 	ChanShowProgress chan *PlayProgressInfo
+	ChanShowSpeed    chan *BufferInfo
 
 	ChanSetCursor chan bool
 
@@ -153,8 +153,8 @@ func (w *Window) SetSize(width, height int) {
 	}
 
 	sw, sh := GetScreenSize()
-	if width > int(0.8*float64(sw)) || height > int(0.8*float64(sh)) {
-		C.setWindowSize(w.ptr, C.int(0.8*float64(width)), C.int(0.8*float64(height)))
+	if width > int(0.9*float64(sw)) || height > int(0.9*float64(sh)) {
+		C.setWindowSize(w.ptr, C.int(0.85*float64(width)), C.int(0.85*float64(height)))
 	} else {
 		C.setWindowSize(w.ptr, C.int(width), C.int(height))
 	}
@@ -184,8 +184,9 @@ func NewWindow(title string, width, height int) *Window {
 	w := &Window{
 		ptr: ptr,
 
-		ChanDraw:         make(chan []byte, 1),
+		ChanDraw:         make(chan []byte),
 		ChanShowProgress: make(chan *PlayProgressInfo),
+		ChanShowSpeed:    make(chan *BufferInfo),
 		ChanShowText:     make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
 		ChanHideText:     make(chan uintptr),
 		ChanSetSize:      make(chan argSize),
@@ -269,8 +270,6 @@ func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
 }
 
 func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
-	println("draw:", imgWidth, imgHeight, img, w.render)
-
 	if len(img) == 0 {
 		return
 	}
@@ -314,6 +313,9 @@ func (w *Window) ShowStartupView() {
 func (w *Window) SendShowProgress(p *PlayProgressInfo) {
 	w.ChanShowProgress <- p
 }
+func (w *Window) SendShowBufferInfo(info *BufferInfo) {
+	w.ChanShowSpeed <- info
+}
 func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cleft := C.CString(p.Left)
 	defer C.free(unsafe.Pointer(cleft))
@@ -321,10 +323,13 @@ func (w *Window) ShowProgress(p *PlayProgressInfo) {
 	cright := C.CString(p.Right)
 	defer C.free(unsafe.Pointer(cright))
 
-	cspeed := C.CString(p.Speed)
+	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent))
+}
+func (w *Window) ShowBufferInfo(speed string, percent float64) {
+	cspeed := C.CString(speed)
 	defer C.free(unsafe.Pointer(cspeed))
 
-	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent), C.double(p.Percent2), cspeed)
+	C.showWindowBufferInfo(w.ptr, cspeed, C.double(percent))
 }
 func (w *Window) SendShowText(s SubItemArg) {
 	// res := make(chan SubItemExtra)
@@ -423,6 +428,8 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	select {
 	case p := <-w.ChanShowProgress:
 		w.ShowProgress(p)
+	case info := <-w.ChanShowSpeed:
+		w.ShowBufferInfo(info.Speed, info.BufferPercent)
 	default:
 	}
 

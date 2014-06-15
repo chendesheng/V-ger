@@ -33,7 +33,7 @@ type Video struct {
 	//buffers
 	frame AVFrame
 	// pictureRGBs         [8]AVPicture
-	pictureObjects      [30]*AVObject
+	pictureObjects      [40]*AVObject
 	currentPictureIndex int
 
 	Width, Height int
@@ -66,9 +66,10 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 }
 
 func (v *Video) setupPictureRGB() {
+	sz := AVPictureGetSize(AV_PIX_FMT_YUV420P, v.Width, v.Height)
 	for i, _ := range v.pictureObjects {
 		obj := AVObject{}
-		obj.Malloc(v.Width * v.Height * 2)
+		obj.Malloc(sz)
 		// println("setup picture objects", obj.Size())
 		v.pictureObjects[i] = &obj
 	}
@@ -147,14 +148,16 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 	})
 	v.codec.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
 		pts := frame.Opaque()
-		pts.Free()
+		if !pts.IsNil() {
+			pts.Free()
+		}
 
 		ctx.DefaultReleaseBuffer(frame)
 	})
 
 	v.c = c
 
-	v.ChanDecoded = make(chan *VideoFrame, 10)
+	v.ChanDecoded = make(chan *VideoFrame, 20)
 	v.ChanFlush = make(chan bool)
 	v.flushQuit = make(chan bool)
 	v.quit = make(chan bool)
@@ -207,41 +210,53 @@ func (v *Video) SeekOffset(t time.Duration) (time.Duration, []byte, error) {
 	if t < v.c.GetTime() {
 		flags |= AVSEEK_FLAG_BACKWARD
 	}
+
 	ctx := v.formatCtx
 	err := ctx.SeekFrame(v.stream, t, flags)
 	if err != nil {
 		return t, nil, err
 	}
 
-	timeAfterSeek, img, err := v.DropFramesUtil(t)
-	if timeAfterSeek > t+time.Second {
-		err = ctx.SeekFrame(v.stream, t, flags|AVSEEK_FLAG_BACKWARD)
-		if err != nil {
-			return t, nil, err
-		}
-		timeAfterSeek, _, err = v.DropFramesUtil(t)
+	return v.ReadOneFrame()
+}
+
+func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
+	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
+
+	ctx := v.formatCtx
+	err := ctx.SeekFrame(v.stream, t, flags)
+	if err != nil {
+		return t, nil, err
 	}
-	return timeAfterSeek, img, err
+
+	return v.DropFramesUtil(t)
 }
 
 func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
-	// log.Print("video seek ", t.String())
-
 	flags := AVSEEK_FLAG_FRAME
-	// if t < v.c.GetTime() {
-	// 	flags |= AVSEEK_FLAG_BACKWARD
-	// }
+
 	ctx := v.formatCtx
 	err := ctx.SeekFrame(v.stream, t, flags)
 	if err != nil {
 		return t, nil, err
 	}
 
-	// return t, nil, nil
-	timeAfterSeek, img, err := v.DropFramesUtil(t)
-	return timeAfterSeek, img, err
+	// return v.DropFramesUtil(t)
+	return v.ReadOneFrame()
 }
 
+// func (v *Video) Seek2(t time.Duration) (time.Duration, []byte, error) {
+// 	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
+
+// 	ctx := v.formatCtx
+// 	err := ctx.SeekFrame(v.stream, t, flags)
+// 	if err != nil {
+// 		return t, nil, err
+// 	}
+
+// 	return v.DropFramesUtil(t)
+// 	// return v.ReadOneFrame()
+// }
 func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0, nil
@@ -268,7 +283,6 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 }
 
 func (v *Video) FlushBuffer() {
-	log.Print("video flush buffer")
 	for {
 		select {
 		case <-v.ChanDecoded:
@@ -305,7 +319,27 @@ func (v *Video) Play() {
 func (v *Video) SetRender(r VideoRender) {
 	v.r = r
 }
+func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
+	packet := AVPacket{}
+	ctx := v.formatCtx
+	width, height := v.Width, v.Height
+	frame := v.frame
 
+	for ctx.ReadFrame(&packet) >= 0 {
+		if frameFinished, pts := v.Decode(&packet); frameFinished {
+			packet.Free()
+
+			pic := frame.Picture()
+			obj := v.getPictureObject()
+			pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
+			return pts, obj.Bytes(), nil
+		} else {
+			packet.Free()
+		}
+	}
+
+	return 0, nil, errors.New("drop frame error")
+}
 func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 	packet := AVPacket{}
 	ctx := v.formatCtx

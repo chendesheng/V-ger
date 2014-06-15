@@ -16,9 +16,9 @@ func InitLog(prefix string, crashLogFile string) {
 
 	log.SetOutput(w)
 
-	if len(crashLogFile) > 0 {
-		crashLog(crashLogFile)
-	}
+	// if len(crashLogFile) > 0 {
+	// 	crashLog(crashLogFile)
+	// }
 }
 
 func crashLog(file string) {

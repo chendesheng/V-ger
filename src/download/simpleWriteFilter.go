@@ -20,7 +20,7 @@ func (swf *simpleWriteFilter) active() {
 
 			// trace(fmt.Sprint("simple write filter input:", b.from, b.to))
 
-			swf.w.WriteAtQuit(b.data, b.from, swf.quit)
+			swf.w.WriteAtQuit(b, swf.quit)
 
 			swf.writeOutput(b)
 			// trace(fmt.Sprint("simple write filter output:", b.from, b.to))
