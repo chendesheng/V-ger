@@ -202,9 +202,9 @@ func (m *Movie) uievents() {
 		}
 
 		if deltaY > 0 {
-			chVolume <- m.a.DecreaseVolume()
+			chVolume <- byte(m.a.DecreaseVolume() * 100)
 		} else {
-			chVolume <- m.a.IncreaseVolume()
+			chVolume <- byte(m.a.IncreaseVolume() * 100)
 		}
 	})
 

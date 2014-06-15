@@ -1,84 +1,74 @@
 package audio
 
 import (
-	"fmt"
-	// "io"
-	"log"
-	. "player/libav"
-	"player/sdl"
+	"unsafe"
+
+	"code.google.com/p/portaudio-go/portaudio"
 )
+
+func init() {
+	portaudio.Initialize()
+}
 
 type audioDriver interface{}
 
-type sdlAudio struct {
-	audioSpec sdl.AudioSpec
-	volume    byte
+type portAudio struct {
+	volume float64
+	stream *portaudio.Stream
 }
 
-func init() {
-	if sdl.Init(sdl.SDL_INIT_AUDIO) {
-		log.Print(sdl.GetError())
+func (a *portAudio) Open(channels int, sampleRate int, callback func(int) []byte) error {
+
+	h, err := portaudio.DefaultHostApi()
+	if err != nil {
+		return err
 	}
-}
+	args := portaudio.HighLatencyParameters(nil, h.DefaultOutputDevice)
+	args.SampleRate = float64(sampleRate)
+	args.Output.Channels = 1
 
-func (a *sdlAudio) Open(channels int, sampleRate int, callback func(int) []byte) error {
-	layout := GetChannelLayout("stereo")
-	if channels == 1 {
-		layout = GetChannelLayout("mono")
-	}
-
-	println("channels:", uint8(GetChannelLayoutNbChannels(layout)))
-
-	var desired sdl.AudioSpec
-	desired.Init()
-	desired.SetFreq(sampleRate)
-	desired.SetFormat(sdl.AUDIO_S16LSB)
-	desired.SetChannels(uint8(GetChannelLayoutNbChannels(layout)))
-	desired.SetSilence(0)
-	desired.SetSamples(4096) //audio buffer size
-
-	desired.SetCallback(func(userdata sdl.Object, stream sdl.Object, length int) {
-		stream.SetZero(length)
-
+	a.stream, err = portaudio.OpenStream(args, func(out []int32) {
+		println(out)
+		length := len(out)
 		for length > 0 {
-			p := callback(length)
-			if len(p) > 0 {
-				sdl.MixAudioFormat(&stream, p, a.audioSpec.Format(), int(float64(a.volume)/100*sdl.MIX_MAXVOLUME))
-				// stream.Write(p)
-				length -= len(p)
+			p := callback(length * 4)
+			data := (*(*[]int32)(unsafe.Pointer(&p)))[:len(p)/4]
+			if len(data) > 0 {
+				off := len(out) - length
+				for i, b := range data {
+					out[off+i] = int32(float64(b)*a.volume + 0.5)
+				}
+
+				length -= len(data)
 			}
 		}
 	})
-
-	res, obtained := sdl.OpenAudio(desired)
-	if res < 0 {
-		return fmt.Errorf("sdl open audio error: ", sdl.GetError())
+	if err != nil {
+		return err
 	}
-	if obtained.IsNil() {
-		return fmt.Errorf("sdl get nil obtained audio spec")
-	}
-	a.audioSpec = obtained
 
-	sdl.PauseAudio(0)
+	a.stream.Start()
+
 	return nil
 }
 
-func (a *sdlAudio) Close() {
-	sdl.CloseAudio()
+func (a *portAudio) Close() {
+	a.stream.Stop()
+	a.stream.Close()
 }
 
-func (a *sdlAudio) IncreaseVolume() byte {
-	a.volume++
+func (a *portAudio) IncreaseVolume() float64 {
+	a.volume += 0.01
 
-	if a.volume > 100 {
-		a.volume = 100
+	if a.volume > 1 {
+		a.volume = 1
 	}
 	return a.volume
 }
-func (a *sdlAudio) DecreaseVolume() byte {
-	a.volume-- //may overflow
+func (a *portAudio) DecreaseVolume() float64 {
+	a.volume -= 0.01
 
-	if a.volume < 0 || a.volume > 100 {
+	if a.volume < 0 {
 		a.volume = 0
 	}
 	return a.volume

@@ -24,7 +24,7 @@ type Audio struct {
 	quit       chan bool
 	quitFinish chan bool
 
-	driver *sdlAudio
+	driver *portAudio
 
 	silence []byte
 
@@ -37,7 +37,7 @@ type Audio struct {
 	decodePktSize int
 }
 
-func NewAudio(c *Clock, volume byte) *Audio {
+func NewAudio(c *Clock, volume float64) *Audio {
 	a := &Audio{}
 
 	resampleCtx := AVAudioResampleContext{}
@@ -47,7 +47,7 @@ func NewAudio(c *Clock, volume byte) *Audio {
 	a.resampleCtx = resampleCtx
 	a.PacketChan = make(chan *AVPacket, 200)
 	a.c = c
-	a.driver = &sdlAudio{volume: volume}
+	a.driver = &portAudio{volume: volume}
 
 	return a
 }
@@ -66,6 +66,7 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 
 //drop packet if return false
 func (a *Audio) sync(packet *AVPacket) bool {
+	// println("sync audio")
 	var pts time.Duration
 	if packet.Pts() != AV_NOPTS_VALUE {
 		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
@@ -78,7 +79,7 @@ func (a *Audio) sync(packet *AVPacket) bool {
 
 	if avgDiff < a.diffThreshold {
 		return true
-	} else if pts > now {
+	} else if pts > now && pts-now < 500*time.Millisecond {
 		return !a.c.WaitUtilWithQuit(pts, a.quit)
 	} else {
 		log.Print("skip audio packet:", (now - pts).String())
@@ -150,6 +151,7 @@ func (a *Audio) Open(stream AVStream) error {
 		return fmt.Errorf("Open decoder error:%d", errCode)
 	}
 
+	println("open audio")
 	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(),
 		func(length int) []byte {
 			if a.c.WaitUtilRunning(a.quit) {
@@ -202,9 +204,9 @@ func (a *Audio) FlushBuffer() {
 	}
 }
 
-func (a *Audio) IncreaseVolume() byte {
+func (a *Audio) IncreaseVolume() float64 {
 	return a.driver.IncreaseVolume()
 }
-func (a *Audio) DecreaseVolume() byte {
+func (a *Audio) DecreaseVolume() float64 {
 	return a.driver.DecreaseVolume()
 }
