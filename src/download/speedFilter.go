@@ -23,6 +23,9 @@ func (sf *speedFilter) active() {
 		select {
 		case b, ok := <-sf.input:
 			if !ok {
+				if sf.sm != nil {
+					sf.sm.SetSpeed(0)
+				}
 				return
 			}
 			// trace(fmt.Sprint("speed filter input:", b.from, b.to))
@@ -43,6 +46,10 @@ func (sf *speedFilter) active() {
 				println("speed monitor is nil")
 			}
 		case <-sf.quit:
+			if sf.sm != nil {
+				sf.sm.SetSpeed(0)
+			}
+
 			log.Print("speed quit")
 			return
 		}
