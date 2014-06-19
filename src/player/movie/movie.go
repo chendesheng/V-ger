@@ -116,6 +116,7 @@ func (m *Movie) Open(w *Window, file string) {
 
 		if m.httpBuffer != nil {
 			m.httpBuffer.Wait(2 * 1024 * 1024)
+			m.w.SendHideMessage()
 		}
 	}
 
