@@ -89,8 +89,8 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 					if k == "英文：" {
 						log.Print("get name")
 						if len(c.Child) > 1 {
-							log.Print("get name:", c.Child[1].Data)
-							s.Name = s.Name + c.Child[1].Data
+							s.Name = s.Name + getRigOfTags(c.Child[1])
+							log.Print("get name:", s.Name)
 						}
 					}
 					// if k == "播出：" {

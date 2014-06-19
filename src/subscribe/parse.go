@@ -1,9 +1,10 @@
 package subscribe
 
 import (
-	"github.com/peterbourgon/html"
 	"regexp"
 	"strings"
+
+	"github.com/peterbourgon/html"
 )
 
 func attr2Map(attrs []html.Attribute) (m map[string]string) {
@@ -112,10 +113,14 @@ func getChildAttr1(n *html.Node, key, val string) *html.Node {
 }
 
 func getRigOfTags(n *html.Node) (text string) {
+	if n.Type == html.TextNode {
+		return strings.TrimSpace(n.Data)
+	}
+
 	text = ""
 	for _, c := range n.Child {
 		if c.Type == html.TextNode {
-			text = text + strings.TrimSpace(c.Data)
+			text += strings.TrimSpace(c.Data)
 		}
 		if c.Type == html.ElementNode {
 			text += getText(c)

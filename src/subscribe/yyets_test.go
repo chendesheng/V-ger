@@ -60,7 +60,19 @@ func TestYYetsGameOfThrones(t *testing.T) {
 
 	println(len(tasks))
 }
+func TestYYetsFargo(t *testing.T) {
+	f, err := os.Open("fargo.html")
+	if err != nil {
+		t.Error(err)
+	}
 
+	_, tasks, err := parse(f)
+	if err != nil {
+		t.Error(err)
+	}
+
+	println(len(tasks))
+}
 func TestYYetsLogin(t *testing.T) {
 	// YYetsLogin("", "")
 }

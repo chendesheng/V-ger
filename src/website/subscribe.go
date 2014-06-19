@@ -36,11 +36,18 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 
 	if s1 := subscribe.GetSubscribe(s.Name); s1 != nil {
 		for _, t := range tasks {
-			if exists, err := task.Exists(t.Name); err == nil && !exists {
-				if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
-					task.SaveTask(t)
+			t1, err := task.GetTask(t.Name)
+			if err != nil {
+				if err == task.ErrNoTask {
+					task.SaveTaskPrintErr(t)
+				} else if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
+					task.SaveTaskPrintErr(t)
 				} else {
-					println("episode exists")
+					log.Println("episode exists")
+				}
+			} else {
+				if t1.Subscribe != t.Subscribe || t1.Season != t.Season || t1.Episode != t.Episode {
+					task.SaveTaskPrintErr(t)
 				}
 			}
 		}
@@ -50,7 +57,7 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 		subscribe.SaveSubscribe(s)
 
 		for _, t := range tasks {
-			task.SaveTask(t)
+			task.SaveTaskPrintErr(t)
 		}
 		writeJson(w, s)
 	}

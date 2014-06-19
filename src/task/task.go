@@ -23,6 +23,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var ErrNoTask = sql.ErrNoRows
+
 type Task struct {
 	URL  string
 	Size int64
@@ -249,7 +251,11 @@ func insertTask(t *Task) error {
 
 	return err
 }
-
+func SaveTaskPrintErr(t *Task) {
+	if err := SaveTask(t); err != nil {
+		log.Print(err)
+	}
+}
 func SaveTask(t *Task) (err error) {
 	b, err := Exists(t.Name)
 	if err != nil {
