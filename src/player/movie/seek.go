@@ -71,9 +71,9 @@ func (m *Movie) SeekBegin() {
 
 					if m.httpBuffer != nil {
 						waitSize := int64(1024 * 1024)
+						defer m.w.SendHideMessage()
 						if m.httpBuffer.BufferFinish(waitSize) {
 							m.w.SendShowMessage("Buffering...", false)
-							defer m.w.SendHideMessage()
 
 							m.httpBuffer.WaitQuit(waitSize, m.chSeekQuit)
 						}
