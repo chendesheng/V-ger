@@ -4,7 +4,6 @@ import (
 	// . "player/libav"
 	"log"
 	. "player/shared"
-	"runtime"
 	"time"
 )
 
@@ -40,77 +39,90 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	ch <- t
 }
 
-func (m *Movie) SeekBegin() {
-	println("seek begin")
-
-	if m.chSeekQuit != nil {
-		close(m.chSeekQuit)
+func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekProgress chan *seekArg) chan time.Duration {
+	if ch == nil {
+		ch = m.Pause(true)
 	}
-	m.chSeekQuit = make(chan struct{})
 
-	ch := m.Pause(true)
+	if m.httpBuffer != nil {
+		m.w.SendShowBufferInfo(&BufferInfo{"KB/s", 0})
+	}
 
-	m.chSeekProgress = make(chan time.Duration, 500)
-	go func(ch chan time.Duration) {
-		var ok bool
-		var t time.Duration
-		t = -1
-		var lastTime time.Duration
+	t := arg.t
 
-		for {
+	println("seekProgress:", arg.t.String())
+	t = m.Seek(t)
+
+	if arg.isEnd {
+		if m.httpBuffer != nil {
+			m.w.SendShowMessage("Buffering...", false)
+			defer m.w.SendHideMessage()
+			m.httpBuffer.Wait(1024 * 1024)
 			select {
+			case arg := <-chSeekProgress:
+				return m.handleSeekProgress(ch, arg, chSeekProgress)
 			case <-m.quit:
-				return
-			case <-m.chSeekQuit:
-				return
-			case t, ok = <-m.chSeekProgress:
-				if !ok {
-					m.chSeekProgress = nil
-
-					lastTime = m.SeekAccurate(lastTime)
-
-					if m.httpBuffer != nil {
-						waitSize := int64(1024 * 1024)
-						defer m.w.SendHideMessage()
-						if m.httpBuffer.BufferFinish(waitSize) {
-							m.w.SendShowMessage("Buffering...", false)
-
-							m.httpBuffer.WaitQuit(waitSize, m.chSeekQuit)
-						}
-					}
-
-					m.p.LastPos = lastTime
-					SavePlayingAsync(m.p)
-
-					println("seek end send time:", lastTime.String())
-					select {
-					case ch <- lastTime:
-					case <-m.chSeekQuit:
-					case <-m.quit:
-					}
-					return
-				} else {
-					lastTime = t
-				}
+				return nil
 			default:
-				if t >= 0 {
-					m.Seek(t)
-					t = -1
-				}
-				runtime.Gosched()
 			}
 		}
-	}(ch)
+
+		m.p.LastPos = t
+		SavePlayingAsync(m.p)
+
+		println("seek end end time:", t.String())
+		select {
+		case ch <- t:
+			ch = nil
+		case <-m.quit:
+			return nil
+		}
+	}
+
+	return ch
+}
+func (m *Movie) seekRoutine() {
+	m.chSeekProgress = make(chan *seekArg)
+	chSeekProgress := make(chan *seekArg)
+	go recentPipe(m.chSeekProgress, chSeekProgress, m.quit)
+
+	var ch chan time.Duration
+	for {
+		select {
+		case <-m.quit:
+			return
+		case arg := <-chSeekProgress:
+			ch = m.handleSeekProgress(ch, arg, chSeekProgress)
+		}
+	}
+
+}
+
+func recentPipe(in chan *seekArg, out chan *seekArg, quit chan bool) {
+	var recentValue *seekArg
+	var sendout chan *seekArg
+	for {
+		select {
+		case t, ok := <-in:
+			if !ok {
+				return
+			}
+			sendout = out
+			recentValue = t
+		case sendout <- recentValue:
+			sendout = nil
+		case <-quit:
+			return
+		}
+	}
 }
 
 func (m *Movie) SeekAsync(t time.Duration) {
 	println("seek async:", t.String())
-	if m.chSeekProgress != nil {
-		select {
-		case m.chSeekProgress <- t:
-			SavePlayingAsync(m.p)
-		case <-time.After(20 * time.Millisecond):
-		}
+	select {
+	case m.chSeekProgress <- &seekArg{t, false}:
+		SavePlayingAsync(m.p)
+	case <-m.quit:
 	}
 }
 
@@ -166,12 +178,9 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 
 func (m *Movie) SeekEnd(t time.Duration) {
 	println("begin SeekEnd:", t.String())
-	if m.chSeekProgress != nil {
-		select {
-		case m.chSeekProgress <- t:
-			close(m.chSeekProgress)
-		case <-m.chSeekQuit:
-		}
+	select {
+	case <-m.quit:
+	case m.chSeekProgress <- &seekArg{t, true}:
 	}
 	println("end SeekEnd:", t.String())
 }

@@ -37,11 +37,16 @@ type Movie struct {
 
 	httpBuffer *buffer
 
-	chSeekQuit     chan struct{}
-	chSeekProgress chan time.Duration
+	// chSeekEnd      chan time.Duration
+	chSeekProgress chan *seekArg
 	chPause        chan chan time.Duration
 	chProgress     chan time.Duration
 	chSpeed        chan float64
+}
+
+type seekArg struct {
+	t     time.Duration
+	isEnd bool
 }
 
 func NewMovie() *Movie {
@@ -115,7 +120,7 @@ func (m *Movie) Open(w *Window, file string) {
 		w.SendDrawImage(img)
 
 		if m.httpBuffer != nil {
-			m.httpBuffer.Wait(2 * 1024 * 1024)
+			m.httpBuffer.Wait(3 * 1024 * 1024)
 			m.w.SendHideMessage()
 		}
 	}

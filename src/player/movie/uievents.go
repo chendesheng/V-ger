@@ -143,8 +143,8 @@ func (m *Movie) uievents() {
 	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
 		switch typ {
 		case 0:
-			m.SeekBegin()
 			chCursorAutoHide <- struct{}{}
+			fallthrough
 		case 1:
 			t := m.c.CalcTime(percent)
 			p := m.c.CalcPlayProgress(t)

@@ -9,13 +9,13 @@ import (
 func (m *Movie) showProgressInner(t time.Duration) {
 	p := m.c.CalcPlayProgress(t)
 
-	println("showProgressInner", p.Left, p.Percent, p.Right)
+	// println("showProgressInner", p.Left, p.Percent, p.Right)
 	m.w.SendShowProgress(p)
 }
 
 //SpeedMonitor interface
 func (m *Movie) SetSpeed(speed float64) {
-	println("set speed:", speed)
+	// println("set speed:", speed)
 
 	if m.chSpeed != nil {
 		select {
@@ -53,7 +53,7 @@ func (m *Movie) showProgressPerSecond() {
 		case speed = <-m.chSpeed:
 			if speed != lastSpeed {
 				percent := m.httpBuffer.BufferPercent()
-				println("send show speed:", speed)
+				// println("send show speed:", speed)
 
 				lastSpeed = speed
 				m.p.Speed = speed

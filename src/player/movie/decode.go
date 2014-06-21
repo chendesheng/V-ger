@@ -55,8 +55,9 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 			case t := <-ch:
 				println("resume movie", t.String())
 				m.c.SetTime(t)
-			case <-m.chSeekQuit:
 			case <-m.quit:
+				packet.Free()
+				return
 			}
 			break
 		case <-m.quit:
@@ -90,6 +91,8 @@ func (m *Movie) decode(name string) {
 			close(m.finishClose)
 		}
 	}()
+
+	go m.seekRoutine()
 
 	packet := AVPacket{}
 	ctx := m.ctx
@@ -150,12 +153,13 @@ func (m *Movie) decode(name string) {
 			}
 			select {
 			case ch := <-m.chPause:
-				println("seek to unfinished2")
-				t := <-ch
-				println("seek to unfinished4")
-				m.c.SetTime(t)
-				break
-			case <-m.chSeekQuit:
+				println("pause movie")
+				select {
+				case t := <-ch:
+					m.c.SetTime(t)
+				case <-m.quit:
+					return
+				}
 				break
 			case <-time.After(100 * time.Millisecond):
 				break
