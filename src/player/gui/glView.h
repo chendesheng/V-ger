@@ -3,16 +3,22 @@
 #import "progressView.h"
 #import "textView.h"
 #import "startupView.h"
+#import "blurView.h"
+#import "titleTextView.h"
+
 @interface GLView : NSOpenGLView {
     NSTrackingArea* trackingArea;
     NSCursor* noneCursor;
-    ProgressView* progressView;
     TextView* textView;
     TextView* textView2;
     NSCursor* currentCursor;
     StartupView* startupView;
     NSSize originalSize;
 @public
+    BlurView* blurView;
+    ProgressView* progressView;
+    BlurView* titleView;
+    TitleTextView* titleTextView;
     NSView* frameView;
     NSWindow* win;
 }

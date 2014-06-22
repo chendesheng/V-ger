@@ -2,6 +2,7 @@
 #import "gui.h"
 @interface ProgressView : NSView {
 @public
+	NSString *titleString;
     NSString *leftString;
     NSString *rightString;
     CGFloat percent;

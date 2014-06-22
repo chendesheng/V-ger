@@ -84,34 +84,28 @@
     self->currentCursor = [NSCursor arrowCursor];
 }
 -(void)hideProgress {
+    // [self->titleTextView setHidden:NO];
+    [self->titleView setHidden:YES];
     [self->progressView setHidden:YES];
 
     NSView* target = [self superview];
 
-    if ([[self->frameView subviews] lastObject] != target) { //avoid change first responder
-        NSArray* views = [[self->frameView subviews] copy];
-        for (NSView* v in views) {
-            if (v != target) {
-                [v removeFromSuperview];
-                [self->frameView addSubview:v positioned:NSWindowBelow relativeTo:nil];
-            }
+    for (NSView* v in [self->frameView subviews]) {
+        if (v != target) {
+            [v setHidden:YES];
         }
-        [views release];
     }
 }
 -(void)showProgress {
     [self->progressView setHidden:NO];
+    // [self->titleTextView setHidden:YES];
+    [self->titleView setHidden:NO];
 
     NSView* target = [self superview];
-    if ([[self->frameView subviews] objectAtIndex:0] != target) { //avoid change first responder
-        NSArray* views = [[self->frameView subviews] copy];
-        for (NSView* v in views) {
-            if (v != target) {
-                [v removeFromSuperview];
-                [self->frameView addSubview:v positioned:NSWindowAbove relativeTo:nil];
-            }
+    for (NSView* v in [self->frameView subviews]) {
+        if (v != target) {
+            [v setHidden:NO];
         }
-        [views release];
     }
 }
 - (void)mouseMoved:(NSEvent *)event {

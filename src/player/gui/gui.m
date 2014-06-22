@@ -10,6 +10,7 @@
 #import "popupView.h"
 #import "subtitleView.h"
 #import "startupView.h"
+// #import "titleTextView.h"
 #import "app.h"
 
 void initialize() {
@@ -143,6 +144,11 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
 void setWindowTitle(void* wptr, char* title) {
     Window* w = (Window*)wptr;
     [w setTitle:[NSString stringWithUTF8String:title]];
+    w->glView->titleTextView->titleString = w.title;
+
+    // NSRect rt = w->glView->titleView.bounds;
+    // rt.size.width = 200;//w->glView->titleTextView.bounds.size.width;
+    // [w->glView->titleView setFrame:rt];
 }
 
 void setWindowSize(void* wptr, int width, int height) {
@@ -179,43 +185,6 @@ void* newWindow(char* title, int width, int height) {
     NSView* rv = [[w contentView] superview];
 
     v->frameView = rv;
-    // [topbv setAutoresizingMask:NSViewWidthSizable];
-
-    // TitlebarView* tbarv = [[TitlebarView alloc] initWithFrame:NSMakeRect(0, 0, width, 30)];
-    // [topbv addSubview:tbarv];
-    // [tbarv setAutoresizingMask:NSViewWidthSizable];
-
-
-
-    // for (NSView* subv in rv.subviews) {
-    //     if (subv != [w contentView]) {
-    //         [subv removeFromSuperview];
-    //         [topbv addSubview:subv];
-    //     }
-    // }
-    // NSView *v0 = [rv.subviews objectAtIndex:0];
-    // NSView *v1 = [rv.subviews objectAtIndex:1];
-    // NSView *v2 = [rv.subviews objectAtIndex:2];
-    // NSView *v3 = [rv.subviews objectAtIndex:3];
-
-    // if (v0 != [w contentView]) {
-    //     [v0 removeFromSuperview];
-    //     [topbv addSubview:v0];
-    // }
-    // if (v1 != [w contentView]) {
-    //     [v1 removeFromSuperview];
-    //     [topbv addSubview:v1];
-    // }
-    // if (v2 != [w contentView]) {
-    //     [v2 removeFromSuperview];
-    //     [topbv addSubview:v2];
-    // }
-    // if (v3 != [w contentView]) {
-    //     [v3 removeFromSuperview];
-    //     [topbv addSubview:v3];
-    // }
-
-    // [tbarv setTitle:[NSString stringWithUTF8String:title]];
 
     NSView* roundView = [[NSView alloc] initWithFrame:NSMakeRect(0,0,width,height)];
     roundView.wantsLayer = YES;
@@ -250,20 +219,34 @@ void* newWindow(char* title, int width, int height) {
     [tv2 setAutoresizingMask:NSViewWidthSizable];
     [v setTextView2:tv2];
 
-    BlurView* bv = [[BlurView alloc] initWithFrame:NSMakeRect(0,0,width,30)];
-    [v addSubview:bv];
-    [bv setAutoresizingMask:NSViewWidthSizable];
-
-    ProgressView* pv = [[ProgressView alloc] initWithFrame:[bv frame]];
-    [bv addSubview:pv];
+    BlurView* bv = [[BlurView alloc] initWithFrame:NSMakeRect(0,0,width,22)];
+    // bv.tintColor = [NSColor whiteColor];
+    [bv setAutoresizingMask:NSViewWidthSizable|NSViewMaxYMargin];
+    ProgressView* pv = [[ProgressView alloc] initWithFrame:NSMakeRect(0,0,width,bv.frame.size.height)];
+    [bv addSubview:pv positioned:NSWindowBelow relativeTo:nil];
     [pv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-
+    [v addSubview:bv positioned:NSWindowAbove relativeTo:nil];
     [v setProgressView:pv];
+    v->blurView = bv;
+
+    BlurView* tiv = [[BlurView alloc] initWithFrame:NSMakeRect(0,height-22,width,22)];
+    [tiv setAutoresizingMask:NSViewWidthSizable|NSViewMinYMargin];
+    // tiv.tintColor = [NSColor whiteColor];
+    // [tiv setAutoresizingMask:NSViewMinXMargin | NSViewMaxXMargin | NSViewMinYMargin];
+    TitleTextView* ttv = [[TitleTextView alloc] initWithFrame:NSMakeRect(0,0,width,22)];
+    [tiv addSubview:ttv positioned:NSWindowBelow relativeTo:nil];
+    [ttv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+    // [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
+    // [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
+    [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
+    ttv->titleString = @"V'ger";
+    v->titleTextView = ttv;
+    v->titleView = tiv;
+
 
     [w makeFirstResponder:v];
     v->win = w;
 
-    // BlurView* bvPopup = [[BlurView alloc] initWithFrame:NSMakeRect(200,40,400,500)];
     // [v addSubview:bvPopup];
     // [bvPopup setAutoresizingMask:NSViewWidthSizable];
 
@@ -273,7 +256,7 @@ void* newWindow(char* title, int width, int height) {
 
 
     StartupView* sv = [[StartupView alloc] initWithFrame:[v frame]];
-    [v addSubview:sv];
+    [v addSubview:sv positioned:NSWindowBelow relativeTo:ttv];
     [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
     [v setStartupView:sv];

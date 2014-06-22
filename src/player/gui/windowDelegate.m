@@ -20,33 +20,41 @@
     w->customAspectRatio = frame.size;
 
     // NSLog(@"windowWillEnterFullScreen");
-
+    [w->glView hideCursor];
+    [w->glView hideProgress];
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
     Window* w = (Window*)[notification object];
-    [w->glView hideCursor];
-    [w->glView hideProgress];
+    // [w->glView hideProgress];
 
     onFullscreenChanged((void*)[notification object], 1);
+
+    // [w->glView->titleView setFrame:NSMakeRect(0, 0, 0, 0)];
 }
 // - (void)windowWillExitFullScreen:(NSNotification *)notification
 // { 
 //     // NSLog(@"windowWillExitFullScreen");
 // }
 
+- (void)windowWillExitFullScreen:(NSNotification *)notification
+{
+    Window* w = (Window*)[notification object];
+
+    // [w->glView hideCursor];
+    // [w->glView hideProgress];
+}
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
     Window* w = (Window*)[notification object];
 
     [w updateRoundCorner];
 
-    [w->glView hideCursor];
-    [w->glView hideProgress];
-
     w->customAspectRatio = self->savedAspectRatio;
 
     onFullscreenChanged((void*)[notification object], 0);
+
+    // [w->glView->titleView setFrame:NSMakeRect(0, w.frame.size.height-22, w.frame.size.width, 0)];
 }
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
     // NSLog(@"windowWillResize");
@@ -60,12 +68,17 @@
 	r.size.height = r.size.width * aspectRatio.height / aspectRatio.width;
 	// r = [w frameRectForContentRect:r];
 
+    // [w->glView->blurView setHidden:YES];
+
 	return r.size;
 }
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
     NSLog(@"windowDidEndLiveResize");
     Window* w = (Window*)[notification object];
     [w updateRoundCorner];
+
+    // CGFloat h = w->glView->blurView.frame.size.height;
+    // [w->glView->blurView setFrame:NSMakeRect(0, w.frame.size.height-h, w.frame.size.width, h)];
     
     onFullscreenChanged((void*)[notification object], 0);
 }
