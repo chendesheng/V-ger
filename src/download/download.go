@@ -19,8 +19,8 @@ import (
 
 var NetworkTimeout time.Duration
 
-func fetchN(req *http.Request, n int, quit chan bool) (resp *http.Response, err error) {
-	finish := make(chan bool)
+func fetchN(req *http.Request, n int, quit chan struct{}) (resp *http.Response, err error) {
+	finish := make(chan struct{})
 	go func() {
 		defer close(finish)
 
@@ -49,7 +49,7 @@ func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err 
 	return GetDownloadInfoN(url, 3, nil)
 }
 
-func GetDownloadInfoN(url string, retryTimes int, quit chan bool) (finalUrl string, name string, size int64, err error) {
+func GetDownloadInfoN(url string, retryTimes int, quit chan struct{}) (finalUrl string, name string, size int64, err error) {
 	req := createDownloadRequest(url, -1, -1)
 
 	resp, err := fetchN(req, retryTimes, quit)

@@ -55,7 +55,7 @@ func getSub(n *html.Node) (Subtitle, error) {
 
 	return sub, nil
 }
-func shooterSearch(name string, result chan Subtitle, quit chan bool) (err error) {
+func shooterSearch(name string, result chan Subtitle, quit chan struct{}) (err error) {
 	defer func() {
 		r := recover()
 		if r != nil {

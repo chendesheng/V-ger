@@ -45,7 +45,7 @@ func readBody(resp *http.Response) string {
 	return text
 }
 
-func SearchSubtitles(name string, url string, result chan Subtitle, quit chan bool) {
+func SearchSubtitles(name string, url string, result chan Subtitle, quit chan struct{}) {
 	yyetsFinish := make(chan bool)
 	go func() {
 		err := yyetsSearchSubtitles(name, result, quit)
@@ -92,9 +92,9 @@ func SearchSubtitles(name string, url string, result chan Subtitle, quit chan bo
 	close(result)
 }
 
-func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxcnt int, quit chan bool) {
+func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxcnt int, quit chan struct{}) {
 	yyetsRes := make(chan Subtitle)
-	yyetsQuit := make(chan bool)
+	yyetsQuit := make(chan struct{})
 	yyetsCnt := 0
 	go func() {
 		err := yyetsSearchSubtitles(name, yyetsRes, yyetsQuit)
@@ -105,7 +105,7 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 	}()
 
 	shooterRes := make(chan Subtitle)
-	shooterQuit := make(chan bool)
+	shooterQuit := make(chan struct{})
 	shooterCnt := 0
 	go func() {
 		err := shooterSearch(name, shooterRes, shooterQuit)

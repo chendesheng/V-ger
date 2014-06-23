@@ -17,13 +17,13 @@ type filter interface {
 
 type WriterAtQuit interface {
 	//this method should return (nil) asap after close(quit)
-	WriteAtQuit(bk block.Block, quit chan bool) error
+	WriteAtQuit(bk block.Block, quit chan struct{}) error
 }
 
 type basicFilter struct {
 	input  chan block.Block
 	output chan block.Block
-	quit   chan bool
+	quit   chan struct{}
 }
 
 func (f *basicFilter) connect(next *basicFilter) {
@@ -97,7 +97,7 @@ func activeFilters(filters []filter) {
 }
 
 func doDownload(t *task.Task, w io.WriterAt, from, to int64,
-	maxSpeed int, chMaxSpeed chan int, restartTimeout time.Duration, quit chan bool) {
+	maxSpeed int, chMaxSpeed chan int, restartTimeout time.Duration, quit chan struct{}) {
 	url := t.URL
 
 	maxConnections := util.ReadIntConfig("max-connection")
@@ -151,7 +151,7 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 }
 
 func streaming(url string, w WriterAtQuit, from, to int64,
-	sm SpeedMonitor, quit chan bool) {
+	sm SpeedMonitor, quit chan struct{}) {
 
 	maxConnections := util.ReadIntConfig("max-connection")
 

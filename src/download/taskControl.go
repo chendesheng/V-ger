@@ -12,7 +12,7 @@ import (
 )
 
 type taskControl struct {
-	quit       chan bool
+	quit       chan struct{}
 	t          *task.Task
 	chMaxSpeed chan int
 }
@@ -21,7 +21,7 @@ func (tc *taskControl) stopDownload() {
 	ensureQuit(tc.quit)
 }
 
-func ensureQuit(quit chan bool) {
+func ensureQuit(quit chan struct{}) {
 	if quit != nil {
 		defer func() {
 			recover()
@@ -158,7 +158,7 @@ func download(tc *taskControl) {
 	}
 	defer f.Close()
 	for t.Status == "Downloading" {
-		tc.quit = make(chan bool)
+		tc.quit = make(chan struct{})
 		tc.chMaxSpeed = make(chan int)
 
 		if t.DownloadedSize < t.Size {

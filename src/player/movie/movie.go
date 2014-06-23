@@ -26,7 +26,7 @@ type Movie struct {
 	w   *Window
 	p   *Playing
 
-	quit        chan bool
+	quit        chan struct{}
 	finishClose chan bool
 
 	subs []*Sub
@@ -51,7 +51,7 @@ type seekArg struct {
 
 func NewMovie() *Movie {
 	m := &Movie{}
-	m.quit = make(chan bool)
+	m.quit = make(chan struct{})
 	return m
 }
 

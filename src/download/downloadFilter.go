@@ -96,7 +96,7 @@ func (df *downloadFilter) downloadBlock(url string, b block.Block) {
 	}
 }
 
-func requestWithTimeout(req *http.Request, data []byte, quit chan bool) (err error) {
+func requestWithTimeout(req *http.Request, data []byte, quit chan struct{}) (err error) {
 	finish := make(chan error)
 	var resp *http.Response
 	go func() {

@@ -109,7 +109,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 	return b.currentPos - lastPos
 }
 
-func (b *buffer) WriteAtQuit(bk block.Block, quit chan bool) error {
+func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) error {
 	// println("WriteAt:", off, len(p))
 
 	b.Lock()
@@ -221,5 +221,9 @@ func (b *buffer) BufferPercent() float64 {
 	b.Lock()
 	defer b.Unlock()
 
-	return float64(b.currentPos+b.sizeAhead()) / float64(b.size)
+	res := float64(b.currentPos+b.sizeAhead()) / float64(b.size)
+	if res >= 1.0 {
+		println("bufferPercent:", b.currentPos, b.sizeAhead(), b.size)
+	}
+	return res
 }

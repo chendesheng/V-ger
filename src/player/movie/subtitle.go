@@ -47,7 +47,7 @@ func saveThunderSubtitle(subFile string, data []byte) {
 
 	ioutil.WriteFile(subFile, data, 0666)
 }
-func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit chan bool) bool {
+func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit chan struct{}) bool {
 	deadline := time.Now().Add(time.Minute)
 	for {
 		select {
@@ -118,7 +118,7 @@ func readSubtitlesFromDir(movieName, dir string) []string {
 	}, "srt", "ass")
 	return subs
 }
-func downloadSubs(movieName string, url string, search string, quit chan bool) []string {
+func downloadSubs(movieName string, url string, search string, quit chan struct{}) []string {
 	chSubs := make(chan subtitles.Subtitle)
 	thunder.Login()
 	go subtitles.SearchSubtitlesMaxCount(search, url, chSubs, 2, quit)

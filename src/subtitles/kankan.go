@@ -7,7 +7,7 @@ import (
 	"thunder"
 )
 
-func kankanSearch(fileurl string, result chan Subtitle, quit chan bool) error {
+func kankanSearch(fileurl string, result chan Subtitle, quit chan struct{}) error {
 	println("kankan search:", fileurl)
 	regFid := regexp.MustCompile("[?].*fid=([^&]+)")
 	if matches := regFid.FindStringSubmatch(fileurl); len(matches) > 0 {

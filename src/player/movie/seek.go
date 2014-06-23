@@ -29,6 +29,7 @@ func (m *Movie) seekOffset(offset time.Duration) {
 		log.Print(err)
 		return
 	}
+
 	m.showProgressInner(t)
 	m.w.SendDrawImage(img)
 	m.w.SendSetCursor(true)
@@ -36,7 +37,16 @@ func (m *Movie) seekOffset(offset time.Duration) {
 
 	m.p.LastPos = t
 	SavePlayingAsync(m.p)
-	ch <- t
+
+	if m.httpBuffer != nil {
+		defer m.w.SendHideMessage()
+		m.httpBuffer.WaitQuit(1024*1024, m.quit)
+	}
+
+	select {
+	case ch <- t:
+	case <-m.quit:
+	}
 }
 
 func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekProgress chan *seekArg) chan time.Duration {
@@ -98,7 +108,7 @@ func (m *Movie) seekRoutine() {
 
 }
 
-func recentPipe(in chan *seekArg, out chan *seekArg, quit chan bool) {
+func recentPipe(in chan *seekArg, out chan *seekArg, quit chan struct{}) {
 	var recentValue *seekArg
 	var sendout chan *seekArg
 	for {
