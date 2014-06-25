@@ -143,12 +143,9 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
 
 void setWindowTitle(void* wptr, char* title) {
     Window* w = (Window*)wptr;
-    [w setTitle:[NSString stringWithUTF8String:title]];
-    w->glView->titleTextView->titleString = w.title;
 
-    // NSRect rt = w->glView->titleView.bounds;
-    // rt.size.width = 200;//w->glView->titleTextView.bounds.size.width;
-    // [w->glView->titleView setFrame:rt];
+    NSString* str = [NSString stringWithUTF8String:title];
+    w->glView->titleTextView.title = str;
 }
 
 void setWindowSize(void* wptr, int width, int height) {
@@ -239,7 +236,7 @@ void* newWindow(char* title, int width, int height) {
     // [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
     // [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
     [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
-    ttv->titleString = @"V'ger";
+    ttv.title = @"V'ger";
     v->titleTextView = ttv;
     v->titleView = tiv;
 
@@ -262,6 +259,7 @@ void* newWindow(char* title, int width, int height) {
     [v setStartupView:sv];
     // [sv setNeedsDisplay:NO];
 
+    [w setTitle:@""];
 
     NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/100.0 
                             target:w
@@ -273,6 +271,7 @@ void* newWindow(char* title, int width, int height) {
                                 forMode:NSDefaultRunLoopMode];
     [[NSRunLoop currentRunLoop] addTimer:renderTimer
                                 forMode:NSEventTrackingRunLoopMode]; //Ensure timer fires during resize
+
 
 	[pool drain];
 
