@@ -97,9 +97,7 @@ func (m *Movie) decode(name string) {
 	packet := AVPacket{}
 	ctx := m.ctx
 
-	var lastTime time.Duration
 	for {
-		// println("send chProgress:", m.c.GetTime().String())
 		select {
 		case m.chProgress <- m.c.GetTime():
 		case <-m.quit:
@@ -110,10 +108,6 @@ func (m *Movie) decode(name string) {
 
 		resCode := ctx.ReadFrame(&packet)
 		if resCode >= 0 {
-			if lastTime > 0 {
-				m.c.SetTime(lastTime)
-				lastTime = 0
-			}
 			if m.v.StreamIndex == packet.StreamIndex() {
 				m.decodeVideo(&packet)
 				packet.Free()
@@ -131,25 +125,23 @@ func (m *Movie) decode(name string) {
 			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < time.Second) {
 				m.c.SetTime(m.c.TotalTime())
 			} else {
-				lastTime = m.c.GetTime()
-
-				m.a.FlushBuffer()
-				m.v.FlushBuffer()
-
-				t, _, err := m.v.Seek(lastTime)
-				if err == nil {
-					println("seek success:", t.String())
-					if m.httpBuffer != nil {
-						m.httpBuffer.Wait(2 * 1024 * 1024)
-					}
-					m.c.SetTime(t)
-					continue
+				if m.httpBuffer != nil {
+					m.w.SendShowMessage("Buffering", false)
+					defer m.w.SendHideMessage()
+					m.httpBuffer.Wait(2 * 1024 * 1024)
 				} else {
-					log.Print("seek error:", err)
-				}
+					t, _, err := m.v.Seek(m.c.GetTime())
+					if err == nil {
+						println("seek success:", t.String())
+						m.c.SetTime(t)
+						continue
+					} else {
+						log.Print("seek error:", err)
+					}
 
-				// println("seek to unfinished:", m.c.GetTime().String())
-				log.Print("get frame error:", resCode)
+					// println("seek to unfinished:", m.c.GetTime().String())
+					log.Print("get frame error:", resCode)
+				}
 			}
 			select {
 			case ch := <-m.chPause:
