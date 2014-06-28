@@ -51,7 +51,8 @@ type Window struct {
 	ChanShowProgress chan *PlayProgressInfo
 	ChanShowSpeed    chan *BufferInfo
 
-	ChanSetCursor chan bool
+	ChanSetCursor    chan bool
+	ChanShowSpinning chan bool
 
 	img []byte
 
@@ -195,7 +196,8 @@ func NewWindow(title string, width, height int) *Window {
 		ChanShowMessage: make(chan SubItemArg),
 		ChanHideMessage: make(chan uintptr),
 
-		ChanSetCursor: make(chan bool),
+		ChanSetCursor:    make(chan bool),
+		ChanShowSpinning: make(chan bool),
 
 		originalWidth:  width,
 		originalHeight: height,
@@ -407,6 +409,19 @@ func (w *Window) ShowCursor() {
 	C.showCursor(w.ptr)
 }
 
+func (w *Window) ShowSpinning() {
+	C.showSpinning(w.ptr)
+}
+func (w *Window) HideSpinning() {
+	C.hideSpinning(w.ptr)
+}
+func (w *Window) SendShowSpinning() {
+	w.ChanShowSpinning <- true
+}
+func (w *Window) SendHideSpinning() {
+	w.ChanShowSpinning <- false
+}
+
 //export goOnDraw
 func goOnDraw(ptr unsafe.Pointer) {
 	w := windows[ptr]
@@ -426,6 +441,12 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	}
 
 	select {
+	case b := <-w.ChanShowSpinning:
+		if b {
+			w.ShowSpinning()
+		} else {
+			w.HideSpinning()
+		}
 	case p := <-w.ChanShowProgress:
 		w.ShowProgress(p)
 	case info := <-w.ChanShowSpeed:

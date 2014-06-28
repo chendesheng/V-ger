@@ -126,8 +126,8 @@ func (m *Movie) decode(name string) {
 				m.c.SetTime(m.c.TotalTime())
 			} else {
 				if m.httpBuffer != nil {
-					m.w.SendShowMessage("Buffering", false)
-					defer m.w.SendHideMessage()
+					m.w.SendShowSpinning()
+					defer m.w.SendHideSpinning()
 					m.httpBuffer.Wait(2 * 1024 * 1024)
 				} else {
 					t, _, err := m.v.Seek(m.c.GetTime())

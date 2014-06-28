@@ -10,8 +10,8 @@ import (
 func (m *Movie) seekOffsetAsync(offset time.Duration) {
 	go func() {
 		if m.httpBuffer != nil {
-			m.w.SendShowMessage("Buffering...", false)
-			defer m.w.SendHideMessage()
+			m.w.SendShowSpinning()
+			defer m.w.SendHideSpinning()
 		}
 
 		m.seekOffset(offset)
@@ -65,8 +65,8 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 
 	if arg.isEnd {
 		if m.httpBuffer != nil {
-			m.w.SendShowMessage("Buffering...", false)
-			defer m.w.SendHideMessage()
+			m.w.SendShowSpinning()
+			defer m.w.SendHideSpinning()
 			m.httpBuffer.Wait(1024 * 1024)
 			select {
 			case arg := <-chSeekProgress:

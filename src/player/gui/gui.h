@@ -69,5 +69,7 @@ void onOpenOpenPanel();
 void onCloseOpenPanel(char* filename);
 void hideCursor(void*);
 void showCursor(void*);
+void showSpinning(void*);
+void hideSpinning(void*);
 void onMouseMove(void*);
 #endif

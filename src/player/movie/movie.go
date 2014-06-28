@@ -121,7 +121,7 @@ func (m *Movie) Open(w *Window, file string) {
 
 		if m.httpBuffer != nil {
 			m.httpBuffer.Wait(3 * 1024 * 1024)
-			m.w.SendHideMessage()
+			m.w.SendHideSpinning()
 		}
 	}
 
@@ -159,6 +159,7 @@ func (m *Movie) Open(w *Window, file string) {
 	m.showProgressInner(start)
 
 	w.SendSetCursor(false)
+	w.SendHideSpinning()
 }
 
 func (m *Movie) SavePlaying() {

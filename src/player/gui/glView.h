@@ -5,6 +5,7 @@
 #import "startupView.h"
 #import "blurView.h"
 #import "titleTextView.h"
+#import "spinningView.h"
 
 @interface GLView : NSOpenGLView {
     NSTrackingArea* trackingArea;
@@ -21,6 +22,7 @@
     TitleTextView* titleTextView;
     NSView* frameView;
     NSWindow* win;
+    SpinningView* spinningView;
 }
 
 -(id)initWithFrame2:(NSRect)frame;

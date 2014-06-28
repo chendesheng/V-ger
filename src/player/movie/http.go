@@ -74,7 +74,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
-			m.w.SendShowMessage("Buffering...", false)
+			m.w.SendShowSpinning()
 			go download.Streaming(url, size, m.httpBuffer, start, m)
 		}
 		return pos

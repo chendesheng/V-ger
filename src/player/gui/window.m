@@ -10,7 +10,7 @@
     self = [super initWithContentRect:NSMakeRect(0,0,w,h-22)
     	styleMask:styleMask
     	backing:NSBackingStoreBuffered
-      	defer:NO];
+      	defer:YES];
 
     [self setTitle:title];
     // [self setContentAspectRatio:NSMakeSize(w, h)];
@@ -88,10 +88,8 @@
 }
 - (void)updateRoundCorner {
     NSView* rv = [[self contentView] superview];
-    [rv setWantsLayer:YES];
-    rv.layer.cornerRadius=4.3;
+    rv.layer.cornerRadius=4.1;
     rv.layer.masksToBounds=YES;
-    [rv setNeedsDisplay:YES];
 }
 
 @end

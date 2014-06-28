@@ -240,6 +240,11 @@ void* newWindow(char* title, int width, int height) {
     v->titleTextView = ttv;
     v->titleView = tiv;
 
+    SpinningView* spv = [[SpinningView alloc] initWithFrame:NSMakeRect((width-50)/2, (height-50)/2, 50, 50)];
+    [spv setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];
+    [v addSubview:spv positioned:NSWindowAbove relativeTo:nil];
+    v->spinningView = spv;
+
 
     [w makeFirstResponder:v];
     v->win = w;
@@ -343,6 +348,14 @@ void windowHideStartupView(void* ptr) {
 void windowShowStartupView(void* ptr) {
     Window* w = (Window*)ptr;
     [w->glView showStartupView];
+}
+void showSpinning(void* ptr) {
+    Window* w = (Window*)ptr;
+    [w->glView->spinningView setHidden:NO];
+}
+void hideSpinning(void* ptr) {
+    Window* w = (Window*)ptr;
+    [w->glView->spinningView setHidden:YES];
 }
 void windowToggleFullScreen(void* ptr) {
     Window* w = (Window*)ptr;
