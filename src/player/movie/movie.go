@@ -131,6 +131,10 @@ func (m *Movie) Open(w *Window, file string) {
 	go updateSubscribeDuration(m.p.Movie, m.p.Duration)
 
 	go func() {
+		if strings.Contains(file, "googlevideo.com/videoplayback") {
+			return
+		}
+
 		subs := GetSubtitlesMap(filename)
 		log.Printf("%v", subs)
 		if len(subs) == 0 {
