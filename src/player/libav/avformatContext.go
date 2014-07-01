@@ -13,6 +13,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"reflect"
 	// "sync"
@@ -176,6 +177,17 @@ func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) error {
 
 func (ctx *AVFormatContext) Duration() uint64 {
 	return uint64(ctx.ptr.duration)
+}
+
+func (ctx *AVFormatContext) Duration2() time.Duration {
+	var duration time.Duration
+	if ctx.Duration() != AV_NOPTS_VALUE {
+		duration = time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
+	} else {
+		// duration = 2 * time.Hour
+		log.Fatal("Can't get video duration.")
+	}
+	return duration
 }
 
 func (ctx *AVFormatContext) StartTime() time.Duration {

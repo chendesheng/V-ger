@@ -1,6 +1,7 @@
 package movie
 
 import (
+	"block"
 	"log"
 	"path/filepath"
 	. "player/audio"
@@ -94,17 +95,28 @@ func (m *Movie) Open(w *Window, file string) {
 
 		ctx.FindStreamInfo()
 		ctx.DumpFormat()
-
 	}
 
 	m.ctx = ctx
 
-	var duration time.Duration
-	if ctx.Duration() != AV_NOPTS_VALUE {
-		duration = time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
-	} else {
-		// duration = 2 * time.Hour
-		log.Fatal("Can't get video duration.")
+	duration := ctx.Duration2()
+	if m.httpBuffer != nil {
+		var capacity int64
+		if duration < 10*time.Minute {
+			capacity = m.httpBuffer.size
+		} else {
+			//overflow, divide before cross
+			capacity = int64(float64(m.httpBuffer.size) / float64(duration) * 10 * float64(time.Minute))
+			println(capacity)
+		}
+
+		if capacity > 200*block.MB {
+			capacity = 200 * block.MB
+		}
+		if capacity < 10*block.MB {
+			capacity = 10 * block.MB
+		}
+		m.httpBuffer.SetCapacity(capacity)
 	}
 
 	m.c = NewClock(duration)

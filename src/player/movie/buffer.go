@@ -38,18 +38,22 @@ func NewBuffer(size int64) *buffer {
 	b.size = size
 	b.data = make([]*block.Block, 0, 50)
 	b.currentPos = 0
-	if b.size < 4*block.GB {
-		b.capacity = 20 * block.MB
-	} else {
-		b.capacity = 200 * block.MB
-	}
-
+	b.capacity = 20 * block.MB
 	go func() {
 		for _ = range time.Tick(30 * time.Second) {
 			b.GC()
 		}
 	}()
 	return b
+}
+
+func (b *buffer) SetCapacity(capacity int64) {
+	println("SetCapacity:", capacity)
+
+	b.Lock()
+	defer b.Unlock()
+
+	b.capacity = capacity
 }
 
 func (b *buffer) GC() {
