@@ -665,6 +665,9 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			var ele = document.getElementById('new-url');
 			ele.value = getCookie('input');
 			ele.select();
+			ele.addEventListener("input", function(e) {
+				setCookie('input', document.getElementById('new-url').value, 10000)
+			});
 
 			$scope.new_url = ele.value;
 		}
@@ -697,7 +700,4 @@ function setCookie(c_name, value, exdays) {
 	exdate.setDate(exdate.getDate() + exdays);
 	var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
 	document.cookie = c_name + "=" + c_value;
-}
-window.onbeforeunload = function() {
-	setCookie('input', document.getElementById('new-url').value, 10000)
 }
