@@ -386,6 +386,8 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		};
 		$scope.currentSubscribe = {Name:'Downloads'};
 		$scope.switch_subscribe = function(s) {
+			$('#tasks-list').addClass('disablescroll'); //hide ugly scrollbar change
+
 			if (s.Name == $scope.downloadTasks.Name) {
 				delete $scope.task_filter.Subscribe;
 				$scope.task_filter = $scope.downloadTasks.filter;
@@ -407,7 +409,9 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				$scope.$apply(function() {
 					$scope.tasks_max_size = 10000000;
 				});
+				$('#tasks-list').removeClass('disablescroll');
 				setTimeout(function() {
+
 					var top = parseInt($($('#tasks-list .highlight-task')[0]).data('order'))*80;
 					if (top==NaN) top = 0;
 					// console.log(top);

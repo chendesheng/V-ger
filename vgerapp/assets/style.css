@@ -103,18 +103,6 @@ body, html {
 	height: 100%;
 	min-width: 753px;
 }
-
-#preloader {
-    position: absolute;
-    top: 50%;
-    margin-top: -70px;
-    width: 100%;
-    text-align: center;
-    font-size: 72px;
-    color: #bbb;
-    text-shadow: 1px 1px 0 #fff;
-}
-
 a {
 	color: #383022;
 }
@@ -178,6 +166,9 @@ input[type=text], textarea {
 	border-radius: 2px;
 	border: solid 1px;
 }
+.noscrollbar::-webkit-scrollbar { display: none; }
+.disablescroll { overflow: hidden !important;}
+/*.enablescroll { overflow: auto !important;}*/
 /*select {
 	-webkit-appearance: none;
 	background-image: -webkit-image-set(url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC') 1x, url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACcAAAAQCAYAAACV3GYgAAAAWklE…WbhWIcsDEzYCoy2xcD4hW8QWuBqJXeoXLQIwK/iEc57iDBIg+ClNpjek/AAAAAElFTkSuQmCC') 2x), -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
@@ -833,11 +824,12 @@ h3 {
 	overflow: hidden;
 }
 .task-loading {
-	width:100%;
-	height:100%;
-	padding: 20px 0 0 20px;
-	font-size: 1.3em;
-	font-weight: 700;
+    font-size: 40px;
+    color: #bbb;
+    text-shadow: 1px 1px 0 #fff;
+    font-weight: 700;
+    position: absolute;
+    left: 10px;
 }
 /*.task.ng-enter .task-infoes, 
 .task.ng-leave .task-infoes,*/
@@ -1011,26 +1003,35 @@ li.subscribe:hover img {
 }
 */
 .resort {
-	border-top: solid 2px #333;
-	border-bottom: solid 2px #333;
-	opacity: .5;
-	position: absolute;
-	right:0;
-	height: 6px;
-	width: 18px;
+	height: 16px;
+	width: 16px;
 	display: block;
-	top: 13px;
 	z-index: 0;
+	background-color: rgb(240,239,233);
+	top: 11px;
+	position: absolute;
+	right: 0;
 }
 .resort:before {
 	content: '';
 	height: 2px;
-	/*opacity: 0.5;*/
 	position: absolute;
-	top: 2px;
+	top: 7px;
 	left:0px;
-	width:18px;
-	background-color:#333;
+	width:16px;
+	background-color:#A0A0A0;
+}
+.resort:after {
+	content: '';
+	width: 16px;
+	height: 8px;
+	display: block;
+	z-index: -1;
+	background-color: rgb(240,239,233);
+	border-top: solid 2px #A0A0A0;
+	border-bottom: solid 2px #A0A0A0;
+	top: 2px;
+	position: absolute;
 }
 .delete-confirm {
 	color:white;

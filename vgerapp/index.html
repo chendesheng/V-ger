@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html ng-app="vger">
 <head>  
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, minimal-ui" />
@@ -35,7 +35,7 @@
 
 					<li class="menu-head">TV Shows&nbsp;&nbsp;&nbsp;<a class="menu-edit" ng-click="toggle_menu_edit();">[edit]</a></li>
 				</ul>
-				<div id="tvshow-list">
+				<div id="tvshow-list" class="noscrollbar">
 				<ul>
 					<li ng-repeat="subscribe in subscribes" class="subscribe" ng-class="{highlight:subscribe.Name==task_filter.Subscribe, 'edit-mode': edit_menu}" ng-click="switch_subscribe(subscribe);">
 						<!-- <span class="subscribe-icon" ng-show="subscribe.Name!='Single Tasks'"> -->
@@ -66,7 +66,7 @@
 					<div class="clear"></div>
 				</div>
 				<div id="subscribe-list">
-				<ul id="tasks-list" >
+				<ul id="tasks-list">
 			       <li ng-repeat="task in tasks | filter:task_filter:1 | orderBy:task_order | limitTo:tasks_max_size" class="task" data-order="{{$index}}" ng-class="{'highlight-task':task.Status!='New'}">
 			       		<div class="task-infoes">
 			       			<div class="left-actions">
@@ -197,7 +197,7 @@
 			</div>
 		</div>
 	</div>
-	<div id="preloader" ng-show="tasks.length==0" class="task-loading">
+	<div ng-show="tasks.length==0" class="task-loading">
 		Loading...
 	</div>
 </body>
