@@ -23,13 +23,17 @@ import (
 	"strconv"
 	"strings"
 	"subscribe"
-	"code.google.com/p/go.net/websocket"
+	// "code.google.com/p/go.net/websocket"
+
+	"github.com/gorilla/websocket"
 	// "subtitles"
 	"task"
 	"thunder"
 	"time"
 	"util"
 )
+
+var upgrader = websocket.Upgrader{} //use default buffer size
 
 func checkIfSubtitle(input string) bool {
 	return !(strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:"))
@@ -46,7 +50,7 @@ func checkIfSpeed(input string) (int64, bool) {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "main.html")
+	http.ServeFile(w, r, "index.html")
 }
 
 func openHandler(w http.ResponseWriter, r *http.Request) {
@@ -275,14 +279,20 @@ func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
 	// task.SetAutoshutdown(name, autoshutdown == "on")
 }
 
-func progressHandler(ws *websocket.Conn) {
+func progressHandler(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
 	tasks := task.GetTasks()
 	cnt := 50
 	tks := make([]*task.Task, 0)
 	for _, t := range tasks {
 		tks = append(tks, t)
 		if len(tks) == cnt {
-			err := writeJson(ws, tks)
+			err := ws.WriteJSON(tks) //writeJson(ws, tks)
 			if err != nil {
 				return
 			}
@@ -291,7 +301,7 @@ func progressHandler(ws *websocket.Conn) {
 		}
 	}
 	if len(tks) > 0 {
-		err := writeJson(ws, tks)
+		err := ws.WriteJSON(tks) //writeJson(ws, tks)
 		if err != nil {
 			return
 		}
@@ -303,11 +313,10 @@ func progressHandler(ws *websocket.Conn) {
 	defer task.RemoveWatch(ch)
 
 	// ws.SetDeadline(time.Now().Add(21 * time.Second))
-
 	for {
 		select {
 		case t := <-ch:
-			err := writeJson(ws, []*task.Task{t})
+			err := ws.WriteJSON([]*task.Task{t}) //writeJson(ws, []*task.Task{t})
 			if err != nil {
 				return
 			}
@@ -316,6 +325,7 @@ func progressHandler(ws *websocket.Conn) {
 			//close connection every 20 seconds
 			//if client is alive, it should reconnect to server
 			//prevent socket connection & goroutine leak
+			ws.Close()
 			return
 		}
 	}
@@ -490,6 +500,13 @@ func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 }
+
+func wrapHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		fn(w, r)
+	}
+}
 func Run(isDebug bool) {
 	if !isDebug {
 		go Monitor()
@@ -501,41 +518,41 @@ func Run(isDebug bool) {
 		http.ServeFile(w, r, "assets/favicon.png")
 	})
 
-	http.HandleFunc("/assets/", assetsHandler)
+	http.HandleFunc("/assets/", wrapHandler(assetsHandler))
 
-	http.HandleFunc("/", viewHandler)
-	http.HandleFunc("/open/", openHandler)
-	http.HandleFunc("/play/", playHandler)
-	http.HandleFunc("/video/", videoHandler)
-	http.HandleFunc("/resume/", resumeHandler)
-	http.HandleFunc("/stop/", stopHandler)
+	http.HandleFunc("/", wrapHandler(viewHandler))
+	http.HandleFunc("/open/", wrapHandler(openHandler))
+	http.HandleFunc("/play/", wrapHandler(playHandler))
+	http.HandleFunc("/video/", wrapHandler(videoHandler))
+	http.HandleFunc("/resume/", wrapHandler(resumeHandler))
+	http.HandleFunc("/stop/", wrapHandler(stopHandler))
 
-	http.Handle("/progress", websocket.Handler(progressHandler))
+	http.Handle("/progress", wrapHandler(progressHandler))
 
-	http.HandleFunc("/new/", newTaskHandler)
-	http.HandleFunc("/limit/", limitHandler)
-	http.HandleFunc("/config", configHandler)
-	http.HandleFunc("/config/simultaneous", configSimultaneousHandler)
-	http.HandleFunc("/trash/", trashHandler)
-	http.HandleFunc("/autoshutdown", setAutoShutdownHandler)
-	// http.HandleFunc("/queue/", queueHandler)
+	http.HandleFunc("/new/", wrapHandler(newTaskHandler))
+	http.HandleFunc("/limit/", wrapHandler(limitHandler))
+	http.HandleFunc("/config", wrapHandler(configHandler))
+	http.HandleFunc("/config/simultaneous", wrapHandler(configSimultaneousHandler))
+	http.HandleFunc("/trash/", wrapHandler(trashHandler))
+	http.HandleFunc("/autoshutdown", wrapHandler(setAutoShutdownHandler))
+	// http.HandleFunc("/queue/", wrapHandler(queueHandler))
 
-	http.HandleFunc("/subscribe/new", subscribeNewHandler)
-	http.HandleFunc("/subscribe", subscribeHandler)
-	http.HandleFunc("/subscribe/banner/", subscribeBannerHandler)
-	http.HandleFunc("/unsubscribe/", unsubscribeHandler)
+	http.HandleFunc("/subscribe/new", wrapHandler(subscribeNewHandler))
+	http.HandleFunc("/subscribe", wrapHandler(subscribeHandler))
+	http.HandleFunc("/subscribe/banner/", wrapHandler(subscribeBannerHandler))
+	http.HandleFunc("/unsubscribe/", wrapHandler(unsubscribeHandler))
 
-	http.HandleFunc("/thunder/new", thunderNewHandler)
-	http.HandleFunc("/thunder/torrent", thunderTorrentHandler)
-	http.HandleFunc("/thunder/verifycode", thunderVerifyCodeHandler)
-	http.HandleFunc("/thunder/verifycode/", thunderVerifyCodeHandler)
+	http.HandleFunc("/thunder/new", wrapHandler(thunderNewHandler))
+	http.HandleFunc("/thunder/torrent", wrapHandler(thunderTorrentHandler))
+	http.HandleFunc("/thunder/verifycode", wrapHandler(thunderVerifyCodeHandler))
+	http.HandleFunc("/thunder/verifycode/", wrapHandler(thunderVerifyCodeHandler))
 
-	http.Handle("/subtitles/search/", websocket.Handler(subtitlesSearchHandler))
-	http.HandleFunc("/subtitles/download/", subtitlesDownloadHandler)
+	http.Handle("/subtitles/search/", wrapHandler(subtitlesSearchHandler))
+	http.HandleFunc("/subtitles/download/", wrapHandler(subtitlesDownloadHandler))
 
-	http.HandleFunc("/app/status", appStatusHandler)
-	http.HandleFunc("/app/shutdown", appShutdownHandler)
-	http.HandleFunc("/app/gc", appGCHandler)
+	http.HandleFunc("/app/status", wrapHandler(appStatusHandler))
+	http.HandleFunc("/app/shutdown", wrapHandler(appShutdownHandler))
+	http.HandleFunc("/app/gc", wrapHandler(appGCHandler))
 
 	server := util.ReadConfig("server")
 

@@ -1,13 +1,15 @@
 CC=clang
 BIN=bin
+APP=vgerapp
 exe:
 	go install vger
 	cp $(BIN)/vger ~/Library/Vger/vger
 	pkill vger
-website: $(BIN)/main.html $(BIN)/assets/main.js $(BIN)/assets/style.css
-	cp $(BIN)/main.html ~/Library/Vger/main.html
-	cp $(BIN)/assets/main.js ~/Library/Vger/assets/main.js
-	cp $(BIN)/assets/style.css ~/Library/Vger/assets/style.css
+website: $(APP)/index.html $(APP)/assets/main.js $(APP)/assets/style.css
+	cp $(APP)/index.html ~/Library/Vger/index.html
+	cp $(APP)/assets/main.js ~/Library/Vger/assets/main.js
+	cp $(APP)/assets/style.css ~/Library/Vger/assets/style.css
+	macgap build -n "V'ger" vgerapp
 vp:
 	go install player
 	cp $(BIN)/player $(BIN)/VgerPlayer.app/Contents/MacOS/VgerPlayer

@@ -1,19 +1,20 @@
 package website
 
 import (
+
 	// "bufio"
 	"bytes"
 	"download"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"path"
 	"task"
-	"code.google.com/p/go.net/websocket"
+	"github.com/gorilla/websocket"
+
 	// "regexp"
 	"strings"
 	"subtitles"
@@ -21,8 +22,13 @@ import (
 	"util"
 )
 
-func subtitlesSearchHandler(ws *websocket.Conn) {
-	r := ws.Request()
+func subtitlesSearchHandler(w http.ResponseWriter, r *http.Request) {
+	ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
 	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
 	log.Printf("search subtitle for '%s'", movieName)
 
@@ -42,8 +48,7 @@ func subtitlesSearchHandler(ws *websocket.Conn) {
 
 	for s := range result {
 		log.Printf("%v", s)
-		text, _ := json.Marshal(s)
-		io.WriteString(ws, string(text))
+		ws.WriteJSON(s)
 	}
 }
 

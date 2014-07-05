@@ -1,8 +1,7 @@
 angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 	function($scope, $http) {
 		function monitor(path, ondata, onclose, onerror) {
-			var websocket = new WebSocket('ws://' +
-				window.location.host + path);
+			var websocket = new WebSocket('ws://192.168.0.111:9527/' + path);
 
 			websocket.onopen = onOpen;
 			websocket.onclose = onClose;
@@ -43,7 +42,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.config = {
 			'max-speed': '0'
 		};
-		$http.get('/config').success(function(resp) {
+		$http.get('config').success(function(resp) {
 			$scope.config = resp;
 			var v = $scope.config['shutdown-after-finish'];
 			$scope.config['shutdown-after-finish'] = (v == 'true');
@@ -124,7 +123,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			}, 50);
 
 
-			wsconn = monitor('/progress', function(data) {
+			wsconn = monitor('progress', function(data) {
 				var tasksMap = GetTasksMap();
 				var subscribeMap = GetSubscribeMap();
 
@@ -170,7 +169,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			});
 		}
 
-		$http.get('/subscribe').success(function (subscribes) {
+		$http.get('subscribe').success(function (subscribes) {
 			angular.forEach(subscribes, function (s) {
 				$scope.subscribes.push(s);
 			});
@@ -194,31 +193,31 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				return;
 			}
 
-			$http.get('/open/' + encodeURIComponent(task.Name)).success(function(resp) {
+			$http.get('open/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		}
 		$scope.send_resume = function(task) {
-			$http.get('/resume/' + encodeURIComponent(task.Name)).success(function(resp) {
+			$http.get('resume/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		}
 		$scope.send_stop = function(task) {
-			$http.get('/stop/' + encodeURIComponent(task.Name)).success(function(resp) {
+			$http.get('stop/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		}
 		$scope.send_limit = function($event) {
-			$http.get('/limit/' + $event.target.value).success(function(resp) {
+			$http.get('limit/' + $event.target.value).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			});
 		};
 		$scope.send_simultaneous_downloads = function() {
-			$http.post('/config/simultaneous', $scope.config['simultaneous-downloads'])
+			$http.post('config/simultaneous', $scope.config['simultaneous-downloads'])
 				.success(function () {});
 		}
 		$scope.send_play = function(task) {
-			$http.get('/play/' + encodeURIComponent(task.Name)).success(function(resp) {
+			$http.get('play/' + encodeURIComponent(task.Name)).success(function(resp) {
 				resp && $scope.push_alert(resp);
 			})
 		};
@@ -237,12 +236,12 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 			var text = JSON.stringify($scope.thunder_commit);
 
-			$http.post('/thunder/new', text).success(function(data) {
+			$http.post('thunder/new', text).success(function(data) {
 				$scope.waiting = false;
 				if (typeof data == 'string') {
 					if (data == 'Need verify code') {
 						$scope.thunder_needverifycode = true;
-						document.getElementById('verifycode').src='/thunder/verifycode/'+(new Date);
+						document.getElementById('verifycode').src='thunder/verifycode/'+(new Date);
 						return;
 					} else {
 						$scope.thunder_needverifycode = false;
@@ -283,7 +282,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				url.indexOf('cdn.baidupcs.com') != -1 ||
 				url.indexOf('googlevideo.com') != -1 ||
 				/.*dmg|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
-				$http.post('/new/', url).success(function(resp) {
+				$http.post('new/', url).success(function(resp) {
 					if (!resp) {
 						url = '';
 					}
@@ -339,7 +338,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 		$scope.unsubscribe = function($event, subscribe) {
 			$event.stopPropagation();
-			$http.get('/unsubscribe/'+encodeURIComponent(subscribe.Name)).success(function(data) {
+			$http.get('unsubscribe/'+encodeURIComponent(subscribe.Name)).success(function(data) {
 				if (typeof data == 'string' && data != '') {
 					$scope.push_alert(data);
 					return;
@@ -365,7 +364,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		};
 		$scope.new_subscribe = function (url) {
 			$scope.waiting = true;
-			$http.post('/subscribe/new', url).success(function (data) {
+			$http.post('subscribe/new', url).success(function (data) {
 				if (typeof data == 'string') {
 					$scope.push_alert(data);
 					return;
@@ -439,7 +438,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.download_bt_files = function(file) {
 			file.loading = true;
 
-			$http.post('/new/' + file.Name, file.DownloadURL).success(
+			$http.post('new/' + file.Name, file.DownloadURL).success(
 				function(resp) {
 					file.loading = false;
 					$scope.waiting = false;
@@ -456,7 +455,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.bt_files = [];
 
 		$scope.move_to_trash = function(task) {
-			$http.get('/trash/' + encodeURIComponent(task.Name)).success(
+			$http.get('trash/' + encodeURIComponent(task.Name)).success(
 				function(resp) {
 					resp && $scope.push_alert(resp)
 
@@ -467,7 +466,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		};
 
 		$scope.set_autoshutdown = function() {
-			$http.post('/autoshutdown', $scope.config['shutdown-after-finish']?'true':'false')
+			$http.post('autoshutdown', $scope.config['shutdown-after-finish']?'true':'false')
 				.success(function() {});
 		};
 
@@ -487,7 +486,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			$scope.subtitles_movie_name = name;
 			$scope.waiting = true;
 
-			$scope.ws_search_subtitles = monitor('/subtitles/search/' + name, function(data) {
+			$scope.ws_search_subtitles = monitor('subtitles/search/' + name, function(data) {
 				if ($scope.ws_search_subtitles != null) {
 					$scope.nosubtitles = false;
 					data.loading = false;
@@ -537,7 +536,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.download_subtitles = function(sub) {
 			sub.loading = true;
 			var input = JSON.stringify({'name':sub.Description, 'url':sub.URL});
-			$http.post('/subtitles/download/' + $scope.subtitles_movie_name, input).success(function(resp) {
+			$http.post('subtitles/download/' + $scope.subtitles_movie_name, input).success(function(resp) {
 				sub.loading = false;
 				$scope.stop_search_subtitles();
 				if (resp) {
@@ -624,7 +623,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 
 			$scope.waiting = true;
 
-			xhr.open('POST', '/thunder/torrent');
+			xhr.open('POST', 'thunder/torrent');
 			xhr.send(fd);
 			xhr.onreadystatechange = function() {
 				if (this.readyState == this.DONE) {

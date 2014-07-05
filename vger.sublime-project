@@ -1,58 +1,58 @@
 {
+	"build_systems":
+	[
+		{
+			"file_regex": "^[ 	]*([./\\w].*?/[^\n]*?):([0-9]*):?([0-9]*)",
+			"name": "V'ger",
+			"path": "$project_path/bin",
+			"selector": "source.go",
+			"shell_cmd": "go install",
+			"variants":
+			[
+				{
+					"name": "Run",
+					"selector": "source.go",
+					"shell_cmd": "go run $file"
+				},
+				{
+					"name": "Run Vger",
+					"shell_cmd": "make runvger",
+					"working_dir": "$project_path"
+				},
+				{
+					"name": "Install Player",
+					"shell_cmd": "make vp",
+					"working_dir": "$project_path"
+				},
+				{
+					"name": "Install Vger",
+					"shell_cmd": "make exe",
+					"working_dir": "$project_path"
+				},
+				{
+					"name": "Build Player",
+					"shell_cmd": "go install player",
+					"working_dir": "$project_path"
+				},
+				{
+					"name": "Website",
+					"shell_cmd": "make website",
+					"working_dir": "$project_path"
+				},
+				{
+					"name": "Build Vger",
+					"shell_cmd": "go install vger",
+					"working_dir": "$project_path"
+				}
+			],
+			"working_dir": "$file_path"
+		}
+	],
 	"folders":
 	[
 		{
 			"follow_symlinks": true,
 			"path": "."
 		}
-	],
-	"build_systems":
-    [
-        {
-            "name": "V'ger",
-            "shell_cmd": "go install",
-            "path": "$project_path/bin",
-            "selector": "source.go",
-            "working_dir": "$file_path",
-            "file_regex": "^[ \t]*([./\\w].*?/[^\n]*?):([0-9]*):?([0-9]*)",
-            "variants":
-            [
-                {
-                    "name": "Run",
-                    "shell_cmd": "go run $file",
-                    "selector": "source.go"
-                },
-                {
-                    "name": "Run Vger",
-                    "shell_cmd": "make runvger",
-                    "working_dir": "$project_path"
-                },
-                {
-                    "name": "Install Player",
-                    "shell_cmd": "make vp",
-                    "working_dir": "$project_path"
-                },
-                {
-                    "name": "Install Vger",
-                    "shell_cmd": "make exe",
-                    "working_dir": "$project_path"
-                },
-                {
-                    "name": "Build Player",
-                    "shell_cmd": "go install player",
-                    "working_dir": "$project_path"
-                },
-                {
-                    "name": "Website",
-                    "shell_cmd": "make website",
-                    "working_dir": "$project_path"
-                },   
-                {
-                    "name": "Build Vger",
-                    "shell_cmd": "go install vger",
-                    "working_dir": "$project_path"
-                }
-            ]
-        }
-    ]
+	]
 }

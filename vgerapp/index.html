@@ -1,22 +1,25 @@
+<!doctype html>
 <html ng-app="vger">
 <head>  
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, minimal-ui" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 
 	<!-- <meta name="viewport" content="width=500, user-scalable=false;"> -->
 	<title>V'ger</title>
-	<link href="/assets/angular-ui.css" rel="stylesheet" type="text/css"></link>
-	<link href="/assets/style.css" rel="stylesheet" type="text/css">
-	<script src="/assets/angular.js"></script>
-	<script src="/assets/angular-animate.js"></script>
-	<script src="/assets/angular-ui.js"></script>
-	<script type="text/javascript" src="/assets/main.js"></script>
-	<script type="text/javascript" src="/assets/date.js"></script>
-	<script type="text/javascript" src="/assets/jquery-2.1.0.js"></script>
+	<link href="assets/angular-ui.css" rel="stylesheet" type="text/css"></link>
+	<link href="assets/style.css" rel="stylesheet" type="text/css">
+	<script src="assets/angular.js"></script>
+	<script src="assets/angular-animate.js"></script>
+	<script src="assets/angular-ui.js"></script>
+	<script type="text/javascript" src="assets/main.js"></script>
+	<script type="text/javascript" src="assets/date.js"></script>
+	<script type="text/javascript" src="assets/jquery-2.1.0.js"></script>
+
+ 	<base href="http://192.168.0.111:9527/" />
 </head>
 <body ng-controller="tasks_ctrl">
-
 	<div id="tasks" ng-show="tasks.length>0">
 		<div class="box-tasks-list" style="-webkit-overflow-scrolling:touch">
 			<div id="subscribes">
@@ -194,7 +197,7 @@
 			</div>
 		</div>
 	</div>
-	<div ng-show="tasks.length==0" class="task-loading">
+	<div id="preloader" ng-show="tasks.length==0" class="task-loading">
 		Loading...
 	</div>
 </body>
