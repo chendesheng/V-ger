@@ -42,10 +42,10 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		if got < require && !m.httpBuffer.IsFinish() {
 			startWaitTime := time.Now()
 
-			if m.c != nil {
-				t := m.c.GetTime()
-				defer m.c.SetTime(t)
-			}
+			// if m.c != nil {
+			// 	t := m.c.GetTime()
+			// 	defer m.c.SetTime(t)
+			// }
 
 			for {
 				time.Sleep(20 * time.Millisecond)

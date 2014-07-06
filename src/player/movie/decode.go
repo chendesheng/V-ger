@@ -98,8 +98,9 @@ func (m *Movie) decode(name string) {
 	ctx := m.ctx
 
 	for {
+		t := m.c.GetTime()
 		select {
-		case m.chProgress <- m.c.GetTime():
+		case m.chProgress <- t:
 		case <-m.quit:
 		case <-time.After(50 * time.Millisecond):
 			println("write m.chProgress timeout")
@@ -107,6 +108,9 @@ func (m *Movie) decode(name string) {
 		// println(buffering)
 
 		resCode := ctx.ReadFrame(&packet)
+
+		m.c.SetTime(t)
+
 		if resCode >= 0 {
 			if m.v.StreamIndex == packet.StreamIndex() {
 				m.decodeVideo(&packet)
