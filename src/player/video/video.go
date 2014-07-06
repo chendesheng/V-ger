@@ -3,6 +3,8 @@ package video
 import (
 	"errors"
 	"fmt"
+	"math"
+
 	// "io/ioutil"
 	. "player/clock"
 	// "github.com/go-gl/gl"
@@ -47,7 +49,19 @@ type Video struct {
 	r           VideoRender
 
 	global_pts uint64 //for avframe only
+
+	numFaultyDts int
+	numFaultyPts int
+
+	lastPts float64
+	lastDts float64
 }
+
+// void init_pts_correction(PtsCorrectionContext *ctx)
+// {
+//     ctx->num_faulty_pts = ctx->num_faulty_dts = 0;
+//     ctx->last_pts = ctx->last_dts = INT64_MIN;
+// }
 
 func (v *Video) setupCodec(codec AVCodecContext) error {
 	v.codec = codec
@@ -57,12 +71,43 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 		return errors.New("Unsupported codec!!")
 	}
 
+	println("end of setupCodec1")
 	errCode := codec.Open(decoder)
 	if errCode < 0 {
 		return fmt.Errorf("open decoder error code %s", errCode)
 	}
 
+	v.lastPts = math.MinInt64
+	v.lastDts = math.MinInt64
+
+	println("end of setupCodec")
+
 	return nil
+}
+
+//copy from avplay.c
+func (v *Video) guessCorrectPts(reorderedPts float64, dts float64) (pts float64) {
+	pts = AV_NOPTS_VALUE
+
+	if dts != AV_NOPTS_VALUE {
+		if dts <= v.lastDts {
+			v.numFaultyDts += 1
+		}
+		v.lastDts = dts
+	}
+	if reorderedPts != AV_NOPTS_VALUE {
+		if reorderedPts <= v.lastPts {
+			v.numFaultyPts += 1
+		}
+		v.lastPts = reorderedPts
+	}
+	if (v.numFaultyPts <= v.numFaultyDts || dts == AV_NOPTS_VALUE) && reorderedPts != AV_NOPTS_VALUE {
+		pts = reorderedPts
+	} else {
+		pts = dts
+	}
+
+	return pts
 }
 
 func (v *Video) setupPictureRGB() {
@@ -137,23 +182,23 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 
 	// v.setupSwsContext()
 
-	v.codec.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
-		ret := ctx.DefaultGetBuffer(frame)
-		obj := AVObject{}
-		obj.Malloc(8)
-		obj.WriteUInt64(v.global_pts)
-		frame.SetOpaque(obj)
+	// v.codec.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
+	// 	ret := ctx.DefaultGetBuffer(frame)
+	// 	obj := AVObject{}
+	// 	obj.Malloc(8)
+	// 	obj.WriteUInt64(v.global_pts)
+	// 	frame.SetOpaque(obj)
 
-		return ret
-	})
-	v.codec.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
-		pts := frame.Opaque()
-		if !pts.IsNil() {
-			pts.Free()
-		}
+	// 	return ret
+	// })
+	// v.codec.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
+	// 	pts := frame.Opaque()
+	// 	if !pts.IsNil() {
+	// 		pts.Free()
+	// 	}
 
-		ctx.DefaultReleaseBuffer(frame)
-	})
+	// 	ctx.DefaultReleaseBuffer(frame)
+	// })
 
 	v.c = c
 
@@ -187,18 +232,24 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 	frameFinished := codec.DecodeVideo(frame, packet)
 
 	if frameFinished {
-		//TODO: get pts in more accurate way
-		var pts uint64
-		o := getFrameOpaque(frame)
+		// var rebase bool
+		// if v.lastDts == float64(math.MinInt64) {
+		// rebase = true
+		// println("rebase is true")
+		// println("time:", v.c.GetTime().String())
+		// }
 
-		if packet.Dts() != AV_NOPTS_VALUE {
-			// println(o)
-			pts = packet.Dts()
-		} else if o != AV_NOPTS_VALUE {
-			pts = o
+		pts := v.guessCorrectPts(frame.Pts(), frame.Dts())
+		if pts == AV_NOPTS_VALUE {
+			pts = 0
 		}
 
-		return true, time.Duration(float64(pts) * v.stream.Timebase().Q2D() * (float64(time.Second)))
+		dur := time.Duration(float64(pts) * v.stream.Timebase().Q2D() * (float64(time.Second)))
+		// if rebase && dur-v.c.GetTime() > time.Minute {
+		// 	v.c.AddBase(v.c.GetTime() - dur)
+		// 	dur = 0
+		// }
+		return true, dur
 	}
 
 	return false, 0
@@ -261,8 +312,8 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0, nil
 	}
-
 	if frameFinished, pts := v.Decode(packet); frameFinished {
+		// println("decode pts:", pts.String())
 		frame := v.frame
 		// pictureRGB := v.getPictureRGB()
 		// swsCtx := v.swsCtx
@@ -297,13 +348,14 @@ func (v *Video) FlushBuffer() {
 
 func (v *Video) Play() {
 	for {
+		// println("playing...")
 		select {
 		case data := <-v.ChanDecoded:
+			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
+
 			if v.c.WaitUtilWithQuit(data.Pts, v.flushQuit) {
 				continue
 			}
-
-			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
 
 			v.r.SendDrawImage(data.Img)
 

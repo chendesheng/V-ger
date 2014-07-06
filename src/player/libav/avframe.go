@@ -8,9 +8,7 @@ package libav
 #include <stdlib.h>
 */
 import "C"
-import (
-	"unsafe"
-)
+import "unsafe"
 
 type AVFrame struct {
 	ptr *C.AVFrame
@@ -30,7 +28,6 @@ func (frame *AVFrame) IsNil() bool {
 
 func AllocFrame() AVFrame {
 	frame := AVFrame{ptr: C.avcodec_alloc_frame()}
-	println("alloc frame ", frame.ptr)
 	return frame
 }
 
@@ -117,4 +114,11 @@ func (frame *AVFrame) Flip(height int) {
 
 func (frame *AVFrame) Free() {
 	C.avcodec_free_frame(&frame.ptr)
+}
+
+func (frame *AVFrame) Dts() float64 {
+	return float64(frame.ptr.pkt_dts)
+}
+func (frame *AVFrame) Pts() float64 {
+	return float64(frame.ptr.pkt_pts)
 }
