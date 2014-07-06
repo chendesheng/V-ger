@@ -2,9 +2,7 @@ package movie
 
 import (
 	"download"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 
 	// "path/filepath"
@@ -15,31 +13,11 @@ import (
 	"util"
 )
 
-func downloadBytes(url string, from int64, size int, filesize int64) []byte {
-	to := from + int64(size)
-	if to > filesize {
-		to = 0
-	}
-
-	println("request:", from, to)
-	req := download.CreateDownloadRequest(url, from, to-1)
-	resp, _ := http.DefaultClient.Do(req)
-
-	data, _ := ioutil.ReadAll(resp.Body)
-	println("get:", len(data), from, size)
-	return data
-}
-func max(a, b int64) int64 {
-	if a > b {
-		return a
-	}
-
-	return b
-}
-
 func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	download.BaseDir = util.ReadConfig("dir")
+
+	m.chSpeed = make(chan float64)
 
 	url, name, size, err := download.GetDownloadInfoN(file, 3, m.quit)
 
@@ -51,6 +29,9 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 
 	buf := AVObject{}
 	buf.Malloc(1024 * 64)
+
+	streaming := download.StartStreaming(url, size, m.httpBuffer, m)
+
 	ioctx := NewAVIOContext(buf, func(buf AVObject) int {
 		if buf.Size() == 0 {
 			return 0
@@ -58,12 +39,25 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 
 		require := int64(buf.Size())
 		got := m.httpBuffer.Read(&buf, require)
-		for got < require && !m.httpBuffer.IsFinish() {
-			time.Sleep(20 * time.Millisecond)
+		if got < require && !m.httpBuffer.IsFinish() {
+			startWaitTime := time.Now()
+
 			if m.c != nil {
-				m.c.AddTime(-20 * time.Millisecond)
+				t := m.c.GetTime()
+				defer m.c.SetTime(t)
 			}
-			got += m.httpBuffer.Read(&buf, require-got)
+
+			for {
+				time.Sleep(20 * time.Millisecond)
+				got += m.httpBuffer.Read(&buf, require-got)
+				if got >= require || m.httpBuffer.IsFinish() {
+					break
+				} else {
+					if time.Since(startWaitTime) > download.NetworkTimeout {
+						streaming.Restart(m.httpBuffer.CurrentPos())
+					}
+				}
+			}
 		}
 
 		return int(got)
@@ -75,7 +69,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
 			m.w.SendShowSpinning()
-			go m.download(url, start, size)
+			streaming.Restart(start)
 		}
 		return pos
 	})
@@ -83,21 +77,11 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	go m.download(url, 0, size)
 	m.httpBuffer.Seek(0, os.SEEK_SET)
+	streaming.Restart(0)
 
 	ctx.OpenInput(name)
 
 	println("open http return")
 	return ctx, name
-}
-
-func (m *Movie) download(url string, start int64, size int64) {
-	for {
-		if download.Streaming(url, size, m.httpBuffer, start, m) {
-			return
-		} else {
-			start = m.httpBuffer.LastPos()
-		}
-	}
 }

@@ -53,6 +53,7 @@ type seekArg struct {
 func NewMovie() *Movie {
 	m := &Movie{}
 	m.quit = make(chan struct{})
+	m.chProgress = make(chan time.Duration)
 	return m
 }
 

@@ -3,9 +3,7 @@ package download
 import (
 	"io"
 	"log"
-	"sync"
 	"task"
-	"time"
 )
 
 var play_quit chan struct{}
@@ -25,32 +23,36 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 	doDownload(t, writerWrap{w}, from, to, 0, nil, 0, play_quit)
 }
 
-var downloadQuit chan struct{}
-var lock sync.Mutex
+//guarantee only one streaming, and could restart any moment
+type Streaming struct {
+	url   string
+	size  int64
+	w     WriterAtQuit
+	sm    SpeedMonitor
+	quit  chan struct{}
+	chArg chan int64
+}
 
-func Streaming(url string, size int64, w WriterAtQuit, from int64, sm SpeedMonitor) bool {
-	println("start download:", from)
-	if downloadQuit != nil {
-		ensureQuit(downloadQuit)
+func (s *Streaming) run() {
+	for {
+		from := <-s.chArg
+		s.quit = make(chan struct{})
+
+		streaming(s.url, s.w, from, s.size, s.sm, s.quit)
 	}
-
-	lock.Lock()
-	defer lock.Unlock()
-
-	downloadQuit = make(chan struct{})
-
-	println("speed monitor:", sm)
-
-	streaming(url, w, from, size, sm, downloadQuit)
-
-	println("stop download:", from)
-
-	select {
-	case <-downloadQuit:
-		return true
-	case <-time.After(20 * time.Millisecond):
-		return false //not stop need try again
+}
+func (s *Streaming) Restart(pos int64) {
+	if s.quit != nil {
+		close(s.quit)
 	}
+	s.chArg <- pos
+}
+
+func StartStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {
+	s := &Streaming{url, size, w, sm, nil, make(chan int64)}
+	go s.run()
+
+	return s
 }
 
 type writerWrap struct {

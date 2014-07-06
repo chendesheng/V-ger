@@ -43,6 +43,11 @@
 					"name": "Build Vger",
 					"shell_cmd": "go install vger",
 					"working_dir": "$project_path"
+				},
+				{
+					"name": "Install Player with Race Detection",
+					"shell_cmd": "make vprace",
+					"working_dir": "$project_path"
 				}
 			],
 			"working_dir": "$file_path"

@@ -14,6 +14,10 @@ vp:
 	go install player
 	cp $(BIN)/player $(BIN)/VgerPlayer.app/Contents/MacOS/VgerPlayer
 	cp $(BIN)/player.plist $(BIN)/VgerPlayer.app/Contents/Info.plist
+vprace:
+	go install -race player
+	cp $(BIN)/player $(BIN)/VgerPlayer.app/Contents/MacOS/VgerPlayer
+	cp $(BIN)/player.plist $(BIN)/VgerPlayer.app/Contents/Info.plist
 runvger:
 	go install vger
 	$(BIN)/vger -debug -config=config.json

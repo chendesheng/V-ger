@@ -136,17 +136,11 @@ func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) error {
 	return nil
 }
 
-func (b *buffer) LastPos() int64 {
+func (b *buffer) CurrentPos() int64 {
 	b.Lock()
 	defer b.Unlock()
 
-	l := len(b.data)
-	if l == 0 {
-		return 0
-	}
-
-	bk := b.data[l-1]
-	return bk.To()
+	return b.currentPos
 }
 func (b *buffer) SizeAhead() int64 {
 	b.Lock()

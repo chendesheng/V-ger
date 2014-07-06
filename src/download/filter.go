@@ -87,7 +87,6 @@ func trace(output string) {
 }
 
 func activeFilters(filters []filter) {
-	log.Printf("filters: %v", filters)
 	lastIndex := len(filters) - 1
 	for _, f := range filters[:lastIndex] {
 		go f.active()
