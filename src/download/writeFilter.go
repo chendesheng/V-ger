@@ -13,21 +13,12 @@ import (
 
 type writeFilter struct {
 	basicFilter
-	taskName       string
-	w              io.WriterAt
-	restartTimeout time.Duration
+	taskName string
+	w        io.WriterAt
 }
 
 func (wf *writeFilter) active() {
 	defer wf.closeOutput()
-
-	restartTimeout := wf.restartTimeout
-
-	if restartTimeout == 0 {
-		restartTimeout = time.Duration(1<<63 - 1) //max duration
-	}
-
-	timerRestart := time.NewTimer(restartTimeout)
 	for {
 		select {
 		case b, ok := <-wf.input:
@@ -35,20 +26,15 @@ func (wf *writeFilter) active() {
 				log.Print("close write output")
 				return
 			}
-			timerRestart.Reset(restartTimeout)
 
 			err := wf.mustWrite(b)
 			if err != nil {
 				return
 			}
 			break
-		case <-timerRestart.C:
-			wf.closeQuit()
-			return
 		case <-wf.quit:
 			fmt.Println("write output quit")
 			return
-
 		}
 	}
 

@@ -123,11 +123,18 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 		from,
 	}
 
+	var tf *timeoutFilter
+	if restartTimeout > 0 {
+		tf = &timeoutFilter{
+			basicFilter{nil, make(chan block.Block), quit},
+			restartTimeout,
+		}
+	}
+
 	wf := &writeFilter{
 		basicFilter{nil, make(chan block.Block), quit},
 		t.Name,
 		w,
-		restartTimeout,
 	}
 
 	pf := &progressFilter{
@@ -138,11 +145,12 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 	gf.connect(&df.basicFilter)
 	// go lf.connect(&gf.basicFilter, &df.basicFilter) //will block unless lf is actived
 	df.connect(&sf.basicFilter)
-	sf.connect(&wf.basicFilter)
+	sf.connect(&tf.basicFilter)
+	tf.connect(&wf.basicFilter)
 	wf.connect(&pf.basicFilter)
 	pf.connect(&gf.basicFilter) //circle
 
-	activeFilters([]filter{gf, df, sf, wf, pf})
+	activeFilters([]filter{gf, df, sf, tf, wf, pf})
 
 	// <-wf.output
 	// block.DefaultBlockPool.PutBlocks(gf.blocks)
