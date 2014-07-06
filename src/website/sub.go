@@ -84,7 +84,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if util.CheckExt(name, "rar", "zip") {
+	if util.CheckExt(name, ".rar", ".zip") {
 		ioutil.WriteFile(subFile, data, 0666)
 		util.Extract("./unar", subFile)
 	} else {

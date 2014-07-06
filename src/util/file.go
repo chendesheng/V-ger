@@ -26,7 +26,7 @@ func IsPathExists(path string) bool {
 }
 
 func CheckExt(filename string, exts ...string) bool {
-	ext := path.Ext(filename)[1:]
+	ext := path.Ext(filename)
 
 	for _, e := range exts {
 		if e == ext {

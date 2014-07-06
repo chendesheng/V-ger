@@ -45,3 +45,24 @@ func TestEmulateFiles(t *testing.T) {
 
 	println(files[0])
 }
+
+func TestCheckExt(t *testing.T) {
+	if CheckExt(".aa", "aa") {
+		t.Error(".aa is not aa")
+	}
+	if !CheckExt(".bb.aa", ".aa") {
+		t.Error(".bb.aa is .aa")
+	}
+
+	if CheckExt("aaa", ".aa") {
+		t.Error("should not match")
+	}
+
+	if !CheckExt("bbb", "") {
+		t.Error("should match")
+	}
+
+	if !CheckExt(".aa", ".bb", ".aa", ".cc") {
+		t.Error("should match")
+	}
+}

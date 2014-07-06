@@ -76,7 +76,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 				break
 			}
 
-			if util.CheckExt(subname, "rar", "zip") {
+			if util.CheckExt(subname, ".rar", ".zip") {
 				ioutil.WriteFile(subFile, data, 0666)
 				extract(subFile)
 			} else {
