@@ -42,8 +42,8 @@ func saveThunderSubtitle(subFile string, data []byte) {
 	spaceBytes = spaceBytes[:n]
 	data = bytes.Replace(data, spaceBytes, []byte{' '}, -1)
 
-	data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
-	data = bytes.Replace(data, []byte{'\\', 'n'}, []byte{'\n'}, -1)
+	// data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
+	// data = bytes.Replace(data, []byte{'\\', 'n'}, []byte{'\n'}, -1)
 
 	ioutil.WriteFile(subFile, data, 0666)
 }
@@ -97,6 +97,8 @@ func readSubtitlesFromDir(movieName, dir string) []string {
 	log.Print(dir)
 	subs := make([]string, 0)
 	util.EmulateFiles(dir, func(filename string) {
+		log.Print(filename)
+
 		f, err := os.OpenFile(filename, os.O_RDONLY, 0666)
 		if err != nil {
 			log.Print(err)
@@ -109,13 +111,13 @@ func readSubtitlesFromDir(movieName, dir string) []string {
 			name := path.Base(filename)
 
 			// lang1, lang2 := cld.DetectLanguage2(utf8Text)
-			// log.Printf("subtitle %s language:%s, %s", name, lang1, lang2)
+			log.Printf("insert subtitle %s", name)
 			InsertSubtitle(&Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
 			subs = append(subs, name)
 		} else {
 			log.Print(err)
 		}
-	}, "srt", "ass")
+	}, ".srt", ".ass")
 	return subs
 }
 func downloadSubs(movieName string, url string, search string, quit chan struct{}) []string {
@@ -161,6 +163,7 @@ func (m *Movie) SearchDownloadSubtitle() {
 			Name:    name,
 			Content: content,
 		}
+		log.Print("insert subtitle:", sub.Name)
 		InsertSubtitle(sub)
 
 		subFiles = append(subFiles, name)

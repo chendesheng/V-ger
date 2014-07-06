@@ -84,7 +84,7 @@ func extractOneFile(unarPath, filename string) {
 	}
 }
 func Extract(unarPath string, filename string) {
-	if CheckExt(filename, "rar", "zip") {
+	if CheckExt(filename, ".rar", ".zip") {
 		extractOneFile(unarPath, filename)
 
 		dir := filename[:len(filename)-len(path.Ext(filename))]

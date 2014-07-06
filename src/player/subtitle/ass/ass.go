@@ -1,6 +1,8 @@
 package ass
 
 import (
+	"log"
+	"runtime/debug"
 	// "bytes"
 	"bufio"
 	"fmt"
@@ -30,6 +32,8 @@ func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 		if r != nil {
 			err = r.(error)
 			items = nil
+
+			log.Printf("%s\n%s", err, string(debug.Stack()))
 		}
 	}()
 
@@ -37,6 +41,7 @@ func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 	p.parse()
 
 	items = p.items
+	println(items)
 	sort.Sort(SubItems(items))
 
 	err = nil
@@ -67,7 +72,10 @@ func (p *parser) parseSection(line string) {
 					return
 				}
 
-				p.items = append(p.items, p.parseDialogue(line))
+				d := p.parseDialogue(line)
+				if d != nil {
+					p.items = append(p.items, d)
+				}
 			}
 		}
 	}
@@ -288,10 +296,12 @@ func (p *parser) parseAttr(text string, style int, color uint, pos Position, an 
 func parseLine(line string) (string, string) {
 	i := strings.Index(line, ":")
 	if i < 0 {
-		panic(fmt.Errorf("Parse line error: expect ':'."))
+		panic(fmt.Errorf("Parse line error: expect ':'. \n%s", line))
 	}
 	title := line[:i]
 	content := line[i+1:]
+	reg := regexp.MustCompile("(?i)\\n")
+	content = reg.ReplaceAllString(content, "\n")
 	return title, content
 }
 
@@ -310,6 +320,13 @@ func parseFormats(line string) []string {
 }
 
 func (p *parser) parseDialogue(line string) *SubItem {
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.Printf("%s\n%s", err, string(debug.Stack()))
+		}
+	}()
+
 	title, content := parseLine(line)
 	if title != "Dialogue" {
 		panic(fmt.Errorf("Expect title 'Dialogue'."))

@@ -1,7 +1,9 @@
 package ass
 
 import (
+	"player/shared"
 	// "io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -43,5 +45,11 @@ func TestParseB(t *testing.T) {
 	// if len(subs) != 904 {
 	// t.Errorf("Expect 904 but %d", len(subs))
 	// }
-	println(len(subs))
+	printSubs(subs)
+}
+
+func printSubs(subs []*shared.SubItem) {
+	for _, s := range subs {
+		log.Printf("%v", s)
+	}
 }

@@ -1,6 +1,7 @@
 package srt
 
 import (
+	"player/shared"
 	// "fmt"
 	// "io/ioutil"
 	"os"
@@ -401,5 +402,23 @@ func TestParse_e(t *testing.T) {
 	items, _ := Parse(r, 300, 300)
 	if len(items) != 701 {
 		t.Errorf("Expect 709 items but %d items.", len(items))
+	}
+}
+
+func TestParse_f(t *testing.T) {
+	r, _ := os.Open("f.srt")
+	items, err := Parse(r, 300, 300)
+	if err != nil {
+		t.Error(err)
+	}
+
+	printSubs(items)
+}
+
+func printSubs(subs []*shared.SubItem) {
+	for _, s := range subs {
+		for _, c := range s.Content {
+			println(c.Content)
+		}
 	}
 }

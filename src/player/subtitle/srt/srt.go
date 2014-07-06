@@ -10,11 +10,11 @@ import (
 	// "io/ioutil"
 	"bufio"
 	"bytes"
-	"github.com/peterbourgon/html"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+	"github.com/peterbourgon/html"
 
 	. "player/shared"
 )
@@ -81,6 +81,9 @@ func (p *parser) parse(width, height float64) {
 			// item.SubItemExtra = SubItemExtra{0, 0}
 
 		} else {
+			reg := regexp.MustCompile("(?i)\\n")
+			line = reg.ReplaceAllString(line, "\n")
+
 			text = fmt.Sprintf("%s\n%s", text, line)
 		}
 	}
