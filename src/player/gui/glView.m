@@ -109,14 +109,11 @@
     }
 }
 - (void)mouseMoved:(NSEvent *)event {
-    // [self showCursor];
-    // [self showProgress];
-    onMouseMove([self window]);
+     NSPoint mouse = [NSEvent mouseLocation];
+    if ([NSWindow windowNumberAtPoint:mouse belowWindowWithWindowNumber:0] == [self window].windowNumber) {
+        onMouseMove([self window]);
+    }
 }
-
-// - (void)viewDidChangeBackingProperties {
-//     NSLog(@"viewDidChangeBackingProperties");
-// }
 
 - (void)updateTrackingAreas {
     if (trackingArea != nil) {
