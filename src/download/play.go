@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 	"task"
+	"time"
 )
 
 var play_quit chan struct{}
@@ -27,7 +28,7 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 var downloadQuit chan struct{}
 var lock sync.Mutex
 
-func Streaming(url string, size int64, w WriterAtQuit, from int64, sm SpeedMonitor) {
+func Streaming(url string, size int64, w WriterAtQuit, from int64, sm SpeedMonitor) bool {
 	println("start download:", from)
 	if downloadQuit != nil {
 		ensureQuit(downloadQuit)
@@ -43,6 +44,13 @@ func Streaming(url string, size int64, w WriterAtQuit, from int64, sm SpeedMonit
 	streaming(url, w, from, size, sm, downloadQuit)
 
 	println("stop download:", from)
+
+	select {
+	case <-downloadQuit:
+		return true
+	case <-time.After(20 * time.Millisecond):
+		return false //not stop need try again
+	}
 }
 
 type writerWrap struct {

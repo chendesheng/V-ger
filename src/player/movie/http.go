@@ -75,7 +75,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
 			m.w.SendShowSpinning()
-			go download.Streaming(url, size, m.httpBuffer, start, m)
+			go m.download(url, start, size)
 		}
 		return pos
 	})
@@ -83,11 +83,21 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx := NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
-	go download.Streaming(url, size, m.httpBuffer, 0, m)
+	go m.download(url, 0, size)
 	m.httpBuffer.Seek(0, os.SEEK_SET)
 
 	ctx.OpenInput(name)
 
 	println("open http return")
 	return ctx, name
+}
+
+func (m *Movie) download(url string, start int64, size int64) {
+	for {
+		if download.Streaming(url, size, m.httpBuffer, start, m) {
+			return
+		} else {
+			start = m.httpBuffer.LastPos()
+		}
+	}
 }

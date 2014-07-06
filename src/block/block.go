@@ -16,5 +16,9 @@ func (bk *Block) Reset(from int64, size int) {
 }
 
 func (bk *Block) Inside(position int64) bool {
-	return bk.From <= position && position < bk.From+int64(len(bk.Data))
+	return bk.From <= position && position < bk.To()
+}
+
+func (bk *Block) To() int64 {
+	return bk.From + int64(len(bk.Data))
 }

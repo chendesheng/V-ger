@@ -1,31 +1,18 @@
 package movie
 
-import "testing"
-
-func TestBlock(t *testing.T) {
-	b := &block{100, make([]byte, 1000)}
-	if !b.inside(100) {
-		t.Error("should inside")
-	}
-	if b.inside(1100) {
-		t.Error("should not inside")
-	}
-	if b.inside(1101) {
-		t.Error("should not inside")
-	}
-	if b.inside(99) {
-		t.Error("shoud not inside")
-	}
-}
+import (
+	"block"
+	"testing"
+)
 
 func TestBufferWrite(t *testing.T) {
 	b := NewBuffer(1000)
-	b.WriteAtQuit(make([]byte, 100), 100, nil)
+	b.WriteAtQuit(block.Block{100, make([]byte, 100)}, nil)
 	if len(b.data) != 1 {
 		t.Errorf("list length should be 1 but %d", len(b.data))
 	}
 
-	b.WriteAtQuit(make([]byte, 100), 200, nil)
+	b.WriteAtQuit(block.Block{200, make([]byte, 100)}, nil)
 	if len(b.data) != 2 {
 		t.Errorf("list length should be 1 but %d", len(b.data))
 	}
@@ -33,12 +20,12 @@ func TestBufferWrite(t *testing.T) {
 
 func TestBufferFromTo(t *testing.T) {
 	b := NewBuffer(1000)
-	b.WriteAtQuit(make([]byte, 100), 100, nil)
+	b.WriteAtQuit(block.Block{100, make([]byte, 100)}, nil)
 	if len(b.data) != 1 {
 		t.Errorf("list length should be 1 but %d", len(b.data))
 	}
 
-	b.WriteAtQuit(make([]byte, 100), 200, nil)
+	b.WriteAtQuit(block.Block{200, make([]byte, 100)}, nil)
 	if len(b.data) != 2 {
 		t.Errorf("list length should be 2 but %d", len(b.data))
 	}
@@ -65,7 +52,7 @@ func TestBufferRead(t *testing.T) {
 	b := NewBuffer(1000)
 	from := int64(0)
 	for from < b.size {
-		b.WriteAtQuit(make([]byte, 100), from, make(chan bool))
+		b.WriteAtQuit(block.Block{from, make([]byte, 100)}, make(chan struct{}))
 		from += 100
 	}
 
@@ -105,7 +92,7 @@ func TestBufferReadBorder(t *testing.T) {
 	b := NewBuffer(1000)
 	from := int64(0)
 	for from < b.size {
-		b.WriteAtQuit(make([]byte, 100), from, make(chan bool))
+		b.WriteAtQuit(block.Block{from, make([]byte, 100)}, make(chan struct{}))
 		from += 100
 	}
 
@@ -127,7 +114,7 @@ func TestGC(t *testing.T) {
 	from := int64(0)
 	i := int64(1)
 	for from < b.size {
-		b.WriteAtQuit(make([]byte, 50*i), from, make(chan bool))
+		b.WriteAtQuit(block.Block{from, make([]byte, 50*i)}, make(chan struct{}))
 		from += 50 * i //50+100+150+200+250+300(250)
 		i++
 	}
@@ -138,7 +125,19 @@ func TestGC(t *testing.T) {
 		t.Errorf("expect len(b.data)=3 but %d", len(b.data))
 	}
 
-	if len(b.data[0].p) != 200 {
-		t.Errorf("expect len(b.data[0].p)=200 but %d", len(b.data[0].p))
+	if len(b.data[0].Data) != 200 {
+		t.Errorf("expect len(b.data[0].p)=200 but %d", len(b.data[0].Data))
+	}
+}
+
+func TestLastPos(t *testing.T) {
+	b := NewBuffer(1000)
+	if b.LastPos() != 0 {
+		t.Errorf("%d != 0", b.LastPos())
+	}
+
+	b.WriteAtQuit(block.Block{10, make([]byte, 10)}, nil)
+	if b.LastPos() != 20 {
+		t.Errorf("%d != 20", b.LastPos())
 	}
 }

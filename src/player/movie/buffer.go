@@ -22,8 +22,8 @@ func (b *buffer) fromTo() (int64, int64) {
 		return 0, 0
 	}
 
-	back := b.data[len(b.data)-1]
-	return b.data[0].From, back.From + int64(len(back.Data))
+	bk := b.data[len(b.data)-1]
+	return b.data[0].From, bk.To()
 }
 
 func min(a, b int64) int64 {
@@ -67,7 +67,7 @@ func (b *buffer) GC() {
 	var bk *block.Block
 	var i int
 	for i, bk = range b.data {
-		if b.currentPos < bk.From+int64(len(bk.Data)) {
+		if b.currentPos < bk.To() {
 			break
 		} else {
 			block.DefaultBlockPool.Put(bk)
@@ -81,10 +81,6 @@ func (b *buffer) GC() {
 }
 
 func (b *buffer) Read(w io.Writer, require int64) int64 {
-	if w == nil {
-		return 0
-	}
-
 	b.Lock()
 	defer b.Unlock()
 
@@ -139,6 +135,19 @@ func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) error {
 
 	return nil
 }
+
+func (b *buffer) LastPos() int64 {
+	b.Lock()
+	defer b.Unlock()
+
+	l := len(b.data)
+	if l == 0 {
+		return 0
+	}
+
+	bk := b.data[l-1]
+	return bk.To()
+}
 func (b *buffer) SizeAhead() int64 {
 	b.Lock()
 	defer b.Unlock()
@@ -151,7 +160,7 @@ func (b *buffer) sizeAhead() int64 {
 
 	for _, bk := range b.data {
 		if bk.Inside(pos) {
-			pos = bk.From + int64(len(bk.Data))
+			pos = bk.To()
 		}
 	}
 	return pos - b.currentPos
@@ -166,11 +175,11 @@ func (b *buffer) IsFinish() bool {
 	}
 
 	bk := b.data[len(b.data)-1]
-	return b.size <= bk.From+int64(len(bk.Data))
+	return b.size <= bk.To()
 }
 func (b *buffer) Wait(size int64) {
 	println("Wait:", b.SizeAhead(), b.IsFinish())
-	for !(b.SizeAhead() >= size || b.IsFinish()) {
+	for b.BufferFinish(size) {
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -189,7 +198,6 @@ func (b *buffer) WaitQuit(size int64, quit chan struct{}) {
 }
 
 func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
-
 	b.Lock()
 	defer b.Unlock()
 
