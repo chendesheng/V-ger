@@ -149,7 +149,7 @@ func checkCache(s *subscribe.Subscribe, cachedlen int) (string, error) {
 	}
 
 	if cachedlen > 0 && len(html) == cachedlen {
-		println(s.Name + " no change")
+		// println(s.Name + " no change")
 		return "", nil
 	} else {
 		return html, nil
