@@ -60,16 +60,11 @@
     
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
     [self drawRoundedRect:NSMakeRect(stringWidth+self->paddingLeft, (progressHeight-barHeight)/2, dirtyRect.size.width-2*stringWidth-self->paddingLeft, barHeight) radius:2];
-
-    [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
     [self drawRoundedRect:NSMakeRect(stringWidth+self->paddingLeft, (progressHeight-barHeight)/2, position2, barHeight) radius:2];
 
     
-    [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:1] setFill];
-    
+    [[NSColor whiteColor] setFill];    
     [self drawRoundedRect:NSMakeRect(stringWidth+self->paddingLeft, (progressHeight-barHeight)/2, position, barHeight) radius:2];
-    
-    [[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:1] setFill];
     [self drawRoundedRect:NSMakeRect(position-knotWidth/2+stringWidth+self->paddingLeft, (progressHeight-knotHeight)/2, knotWidth, knotHeight) radius:1.5];
     
     [super drawRect:dirtyRect];
