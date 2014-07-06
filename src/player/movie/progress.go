@@ -28,7 +28,9 @@ func (m *Movie) SetSpeed(speed float64) {
 }
 
 func (m *Movie) showProgressPerSecond() {
-	m.w.SendShowBufferInfo(&BufferInfo{"0 KB/s", 0})
+	if m.httpBuffer != nil {
+		m.w.SendShowBufferInfo(&BufferInfo{"0 KB/s", 0})
+	}
 
 	var t time.Duration
 	var lastTime time.Duration
