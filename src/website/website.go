@@ -33,7 +33,11 @@ import (
 	"util"
 )
 
-var upgrader = websocket.Upgrader{} //use default buffer size
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+} //use default buffer size
 
 func checkIfSubtitle(input string) bool {
 	return !(strings.Contains(input, "://") || strings.HasSuffix(input, ".torrent") || strings.HasPrefix(input, "magnet:"))
@@ -527,7 +531,7 @@ func Run(isDebug bool) {
 	http.HandleFunc("/resume/", wrapHandler(resumeHandler))
 	http.HandleFunc("/stop/", wrapHandler(stopHandler))
 
-	http.Handle("/progress", wrapHandler(progressHandler))
+	http.HandleFunc("/progress", wrapHandler(progressHandler))
 
 	http.HandleFunc("/new/", wrapHandler(newTaskHandler))
 	http.HandleFunc("/limit/", wrapHandler(limitHandler))
