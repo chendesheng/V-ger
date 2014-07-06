@@ -79,7 +79,7 @@ func (a *Audio) sync(packet *AVPacket) bool {
 
 	if avgDiff < a.diffThreshold {
 		return true
-	} else if pts > now && pts-now < 500*time.Millisecond {
+	} else if pts > now && pts-now < 5*time.Second {
 		return !a.c.WaitUtilWithQuit(pts, a.quit)
 	} else {
 		log.Print("skip audio packet:", (now - pts).String())
