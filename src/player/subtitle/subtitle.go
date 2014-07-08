@@ -75,7 +75,7 @@ func (s *Subtitle) Play() {
 		s.items[i].Id = i
 	}
 
-	chRes := make(chan SubItemExtra)
+	chRes := make(chan SubItemExtra, 20)
 	for {
 		select {
 		case arg := <-chRes:
@@ -162,7 +162,6 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool
 			}
 		}
 	}
-
 }
 
 func (s *Subtitle) Stop() {
@@ -287,9 +286,7 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 }
 
 func (s *Subtitle) Seek(t time.Duration) {
-	// println("subtitle seek:", t.String())
 	s.ChanSeek <- t
-	// println("subtitle seeked:", t.String())
 }
 
 func (s *Subtitle) SeekRefresh(t time.Duration) {

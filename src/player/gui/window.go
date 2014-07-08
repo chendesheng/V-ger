@@ -41,7 +41,6 @@ type Window struct {
 
 	ChanDraw     chan []byte
 	ChanShowText chan SubItemArg
-	ChanHideText chan uintptr
 	ChanSetSize  chan argSize
 	ChanSetTitle chan string
 
@@ -189,7 +188,6 @@ func NewWindow(title string, width, height int) *Window {
 		ChanShowProgress: make(chan *PlayProgressInfo),
 		ChanShowSpeed:    make(chan *BufferInfo),
 		ChanShowText:     make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
-		ChanHideText:     make(chan uintptr),
 		ChanSetSize:      make(chan argSize),
 		ChanSetTitle:     make(chan string),
 
@@ -392,7 +390,6 @@ func (w *Window) ShowText(s *SubItem) uintptr {
 	return uintptr(C.showText(w.ptr, p, C.int(len(items)), C.int(s.PositionType), C.double(s.X), C.double(s.Y)))
 }
 func (w *Window) SendHideText(arg SubItemArg) {
-	// w.ChanHideText <- ptr
 	w.ChanShowText <- arg
 }
 func (w *Window) HideText(ptr uintptr) {
@@ -469,36 +466,20 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 		w.SetTitle(title)
 		break
 	case arg := <-w.ChanShowText:
-		var arg1 SubItemArg
-	begin:
-		item := arg.SubItem
-		if item.Handle == 0 || item.Handle == 1 {
-		skip:
-			for {
-				select {
-				case arg1 = <-w.ChanShowText:
-					if arg1.SubItem.Handle != item.Handle || arg1.From != item.From {
-						arg.Result <- SubItemExtra{item.Id, w.ShowText(&item)}
-						arg = arg1
-
-						goto begin
-					}
-					break
-				default:
-					break skip
-				}
+	skip:
+		for {
+			if arg.Handle == 0 || arg.Handle == 1 {
+				arg.Result <- SubItemExtra{arg.Id, w.ShowText(&arg.SubItem)}
+			} else {
+				w.HideText(arg.Handle)
 			}
-			// println("show text:", arg.Result)
-			arg.Result <- SubItemExtra{item.Id, w.ShowText(&item)}
-			// println("show text2")
-		} else {
-			// println("hide text:", item.Handle)
-			w.HideText(item.Handle)
-			// println("hide text2:", item.Handle)
+			select {
+			case arg = <-w.ChanShowText:
+			default:
+				break skip
+			}
 		}
 		break
-	// case ptr := <-w.ChanHideText:
-	// 	w.HideText(ptr)
 	case arg := <-w.ChanShowMessage:
 		if w.currentMessagePtr != 0 {
 			w.HideText(w.currentMessagePtr)

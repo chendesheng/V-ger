@@ -182,7 +182,7 @@
 
     if (x < 0 && y < 0) {
         if (position == 10) {
-            NSLog(@"position 10");
+            // NSLog(@"position 10");
 
             TextView* tv = self->textView;
             TextView* tv2 = self->textView2;
@@ -279,7 +279,7 @@
 
             double x = padding;
             double y = wsz.height - sz.height - padding;
-            NSLog(@"%lf, %lf", x, y);
+            // NSLog(@"%lf, %lf", x, y);
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
             return tv;
         } else if (position == 8) {
