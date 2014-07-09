@@ -27,8 +27,8 @@ func TestDetectTChinese(t *testing.T) {
 
 為此，我為那少數的睜開眼的人及追求真理的人而驕傲，更為那眾多的閉著眼的人及還未清醒的人而羞愧，而悲哀！
 `)
-	if lang1 != "zh" {
-		t.Errorf("Expect 'cn' but %s", lang1)
+	if lang1 != "cht" {
+		t.Errorf("Expect 'cht' but %s", lang1)
 	}
 
 	if lang2 != "" {
@@ -63,8 +63,8 @@ It is done by the people , by the people say the words .
 It is done by the people , by the people say the words .
 It is done by the people , by the people say the words .
 `)
-	if lang1 != "zh" {
-		t.Errorf("Expect 'cn' but %s", lang1)
+	if lang1 != "chs" {
+		t.Errorf("Expect 'chs' but %s", lang1)
 	}
 
 	if lang2 != "" {
@@ -158,7 +158,7 @@ To this end, I have a few of those who opened his eyes and pride in the pursuit 
 		t.Errorf("Expect 'en' but %s", lang1)
 	}
 
-	if lang2 != "zh" {
-		t.Errorf("Expect 'cn' but %s", lang2)
+	if lang2 != "chs" {
+		t.Errorf("Expect 'chs' but %s", lang2)
 	}
 }

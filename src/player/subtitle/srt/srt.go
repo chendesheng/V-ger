@@ -2,15 +2,14 @@ package srt
 
 import (
 	"encoding/hex"
-	"fmt"
 	"io"
+	"io/ioutil"
 	// "fmt"
 	// "log"
-	"sort"
-	// "io/ioutil"
-	"bufio"
 	"bytes"
 	"regexp"
+	"runtime/debug"
+	"sort" // "io/ioutil"
 	"strconv"
 	"strings"
 	"time"
@@ -19,36 +18,6 @@ import (
 	. "player/shared"
 )
 
-type parser struct {
-	*LineScanner
-
-	items []*SubItem
-}
-
-func newParser(r io.Reader) *parser {
-	p := parser{}
-	p.LineScanner = (*LineScanner)(bufio.NewScanner(r))
-	return &p
-}
-func (p *parser) appendItem(item SubItem, text string, width, height float64) {
-	if item.To != 0 { //item is not inited yet
-		text = strings.Trim(text, "\n")
-
-		// drop last line
-		i := strings.LastIndex(text, "\n")
-		if i >= 0 {
-			text = text[:i]
-		}
-		item.PositionType, item.Position, text = parsePosition(text, width, height)
-
-		item.Content = parseAttributedString(text)
-		if len(item.Content) >= 1 {
-			item.Content[0].Content = dropSvgContent(item.Content[0].Content)
-		}
-
-		p.items = append(p.items, &item)
-	}
-}
 func dropSvgContent(text string) string {
 	text = strings.TrimLeft(text, " \r\n\t")
 	regSvg := regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
@@ -58,37 +27,6 @@ func dropSvgContent(text string) string {
 	} else {
 		return text
 	}
-}
-
-func (p *parser) parse(width, height float64) {
-	var item SubItem
-	var text string
-
-	for {
-		line := p.NextLine()
-		if len(line) == 0 {
-			p.appendItem(item, fmt.Sprintf("%s\n0", text), width, height)
-			return
-		}
-
-		if ok, from, to := parseTime(line); ok {
-			p.appendItem(item, text, width, height)
-
-			//for next item
-			text = ""
-			item.From = from
-			item.To = to
-			// item.SubItemExtra = SubItemExtra{0, 0}
-
-		} else {
-			reg := regexp.MustCompile("(?i)\\n")
-			line = reg.ReplaceAllString(line, "\n")
-
-			text = fmt.Sprintf("%s\n%s", text, line)
-		}
-	}
-
-	return
 }
 
 func toColor(c string) uint {
@@ -210,18 +148,6 @@ func parseAttributedString(text string) []AttributedString {
 	return res
 }
 
-func parseTime(line string) (bool, time.Duration, time.Duration) {
-	r := regexp.MustCompile(`([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[,.]([0-9]{1,3}).*-->.*([0-9]{1,2}):([0-9]{1,2}):([0-9]{2})[,.]([0-9]{1,3})`)
-	if r.MatchString(line) {
-		matches := r.FindStringSubmatch(line)
-		// fmt.Printf("%v", matches)
-		return true, convertTime(matches[1:5]), convertTime(matches[5:9])
-	} else {
-		// fmt.Printf("error")
-		return false, 0, 0
-	}
-}
-
 func convertTime(parts []string) time.Duration {
 	for i, p := range parts {
 		parts[i] = strings.TrimLeft(p, "0")
@@ -240,13 +166,39 @@ func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 		if r != nil {
 			err = r.(error)
 			items = nil
+			println(err.Error())
+			println(string(debug.Stack()))
 		}
 	}()
 
-	p := newParser(r)
-	p.parse(width, height)
+	regBreakline := regexp.MustCompile("(?i)\\\\n")
+	bytes, _ := ioutil.ReadAll(r)
+	text := string(bytes) + "\n\n" //make sure the last item has enough \n to match the reg exp
+	reg := regexp.MustCompile(`[0-9]+(?:\r\n|\r|\n)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3}).*-->.*([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3})(?:\r\n|\r|\n)((?:.*(?:\r\n|\r|\n))*?)(?:\r\n|\r|\n)`)
 
-	items = p.items
+	matches := reg.FindAllStringSubmatch(text, -1)
+
+	items = make([]*SubItem, 0, len(matches))
+
+	for _, item := range matches {
+		s := &SubItem{}
+		s.From = convertTime(item[1:5])
+		s.To = convertTime(item[5:9])
+
+		text := strings.TrimSpace(item[9])
+		text = regBreakline.ReplaceAllString(text, "\n")
+
+		s.PositionType, s.Position, text = parsePosition(text, width, height)
+		s.Content = parseAttributedString(text)
+		if len(s.Content) >= 1 {
+			s.Content[0].Content = dropSvgContent(s.Content[0].Content)
+		}
+
+		if !s.IsEmpty() {
+			items = append(items, s)
+		}
+	}
+
 	sort.Sort(SubItems(items))
 
 	err = nil

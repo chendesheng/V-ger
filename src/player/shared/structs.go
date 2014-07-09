@@ -18,6 +18,18 @@ type SubItem struct {
 	SubItemExtra
 }
 
+func (s *SubItem) String() string {
+	var res string
+	for _, c := range s.Content {
+		res += c.Content
+	}
+	return res
+}
+
+func (s *SubItem) IsEmpty() bool {
+	return len(s.Content) == 0 //|| (s.To-s.From) < 100*time.Millisecond
+}
+
 type Sub struct {
 	Movie   string
 	Name    string

@@ -1,4 +1,4 @@
-package chinese
+package language
 
 import (
 	"testing"

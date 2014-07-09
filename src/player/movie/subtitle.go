@@ -12,6 +12,7 @@ import (
 	. "player/gui"
 	. "player/shared"
 	. "player/subtitle"
+	"sort"
 	"subtitles"
 	"task"
 	"thunder"
@@ -185,33 +186,16 @@ func (m *Movie) SearchDownloadSubtitle() {
 	}
 }
 func (m *Movie) setupDefaultSubtitles(subs map[string]*Sub, width, height int) {
-	var en, cn, double *Subtitle
+	subtitles := make([]*Subtitle, 0, len(subs))
+
+	// var en, chs, cht, en_chs, en_cht *Subtitle
 	for _, sub := range subs {
 		s := NewSubtitle(sub, m.w, m.c, float64(width), float64(height))
-		if s != nil {
-			if en == nil && s.Lang1 == "en" && len(s.Lang2) == 0 {
-				en = s
-			}
-			if cn == nil && s.Lang1 == "zh" && len(s.Lang2) == 0 {
-				cn = s
-			}
-
-			if double == nil && len(s.Lang1) > 0 && len(s.Lang2) > 0 {
-				double = s
-			}
-		}
+		subtitles = append(subtitles, s)
 	}
 
-	if double != nil {
-		m.s = double
-	} else {
-		if cn != nil {
-			m.s = cn
-			m.s2 = en
-		} else {
-			m.s = en
-		}
-	}
+	sort.Sort(Subtitles(subtitles))
+	m.s, m.s2 = Subtitles(subtitles).Select()
 
 	if m.s != nil {
 		m.s.IsMainOrSecondSub = true

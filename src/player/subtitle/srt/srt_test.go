@@ -39,8 +39,8 @@ func TestParse2(t *testing.T) {
 	items, _ := Parse(f, 384, 303)
 
 	// fmt.Printf("%v", items)
-	if len(items) != 723 {
-		t.Errorf("Expect 723 items but %d items.", len(items))
+	if len(items) != 713 {
+		t.Errorf("Expect 713 items but %d items.", len(items))
 	}
 }
 func TestParseItalic(t *testing.T) {
@@ -66,6 +66,7 @@ a<i>你好</i>c`
 		t.Error("second style should be '1' but ", items[0].Content[1].Style)
 		return
 	}
+
 	if items[0].Content[2].Content != "c" {
 		t.Error("third content should be 'c' but ", items[0].Content[2].Content)
 		return
@@ -369,7 +370,7 @@ func TestParseMulti(t *testing.T) {
 		t.Error("first content should be '9141' but", items[0].Content[0].Content)
 	}
 	if items[1].Content[0].Content != "11462份申请" {
-		t.Error("first content should be '11462份申请' but", items[0].Content[0].Content)
+		t.Error("first content should be '11462份申请' but", items[1].Content[0].Content)
 	}
 }
 
@@ -412,7 +413,30 @@ func TestParse_f(t *testing.T) {
 		t.Error(err)
 	}
 
-	printSubs(items)
+	if len(items) != 2 {
+		t.Errorf("Expect 2 items but %d", len(items))
+	}
+
+	if items[1].String() != "■" {
+		t.Errorf("Expect ■ string but %s", items[1].String())
+	}
+}
+
+func TestReplaceBreakline(t *testing.T) {
+	text := `2478
+01:56:59,333 --> 01:57:01,963
+9141\Nhehe
+
+2479
+01:57:03,464 --> 01:57:06,234
+11462\n份申请`
+	items, _ := Parse(strings.NewReader(text), 384, 303)
+	if items[0].Content[0].Content != "9141\nhehe" {
+		t.Error("first content should be '9141\nhehe' but", items[0].Content[0].Content)
+	}
+	if items[1].Content[0].Content != "11462\n份申请" {
+		t.Error("first content should be '11462\n份申请' but", items[1].Content[0].Content)
+	}
 }
 
 func printSubs(subs []*shared.SubItem) {

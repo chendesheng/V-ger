@@ -1,4 +1,4 @@
-package chinese
+package language
 
 import "unicode/utf8"
 

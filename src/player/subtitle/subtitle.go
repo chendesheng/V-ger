@@ -8,7 +8,6 @@ import (
 	"player/language"
 	. "player/shared"
 	"player/subtitle/ass"
-	"player/subtitle/chinese"
 	"player/subtitle/srt"
 	"strings"
 	// "runtime"
@@ -49,6 +48,8 @@ type Subtitle struct {
 
 	Lang1 string //one subtitle file may has double languages
 	Lang2 string
+
+	Format string
 }
 
 type displayingItem struct {
@@ -234,7 +235,7 @@ func detectLanguage(items []*SubItem) (string, string) {
 func simplized(items []*SubItem) {
 	for _, item := range items {
 		for i, attrStr := range item.Content {
-			item.Content[i].Content = chinese.Simplized(attrStr.Content)
+			item.Content[i].Content = language.Simplized(attrStr.Content)
 		}
 	}
 }
@@ -260,7 +261,8 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 
 	log.Print("parse sub:", sub.Name)
 
-	if sub.Type == "ass" {
+	s.Format = sub.Type
+	if s.Format == "ass" {
 		s.items, err = ass.Parse(strings.NewReader(sub.Content), width, height)
 	} else {
 		s.items, err = srt.Parse(strings.NewReader(sub.Content), width, height)
@@ -304,4 +306,114 @@ func (s *Subtitle) GetSubtime(t time.Duration, offset int) time.Duration {
 	arg := subTimeArg{t, offset, res}
 	s.chanGetSubTime <- arg
 	return <-arg.res
+}
+
+func (s *Subtitle) IsTwoLangs() bool {
+	return len(s.Lang1) > 0 && len(s.Lang2) > 0
+}
+
+func compareLang(a1, a2, b1, b2 string) int {
+	if a1 == b1 && a2 == b2 {
+		return 0
+	}
+	//multi lang > signle lang
+	if len(a2) > 0 && len(b2) == 0 {
+		return 1
+	}
+	if len(a2) == 0 && len(b2) > 0 {
+		return -1
+	}
+	//cn > en
+	if len(a2) == 0 && len(b2) == 0 {
+		if a1 == "chs" {
+			return 1
+		}
+		if b1 == "chs" {
+			return -1
+		}
+		if a1 == "cht" {
+			return 1
+		}
+		if b1 == "cht" {
+			return -1
+		}
+		return 1
+	}
+
+	if a2 == "chs" {
+		return 1
+	}
+	if b2 == "chs" {
+		return -1
+	}
+	if a2 == "cht" {
+		return 1
+	}
+	if b2 == "cht" {
+		return -1
+	}
+	return 1
+}
+func compareFormat(a, b string) int {
+	if a == b {
+		return 0
+	} else if a == "srt" {
+		return 1
+	} else {
+		return -1
+	}
+
+	return 1
+}
+
+type Subtitles []*Subtitle
+
+func (s Subtitles) Len() int {
+	return len([]*Subtitle(s))
+}
+
+func (s Subtitles) Less(i, j int) bool {
+	a := s[i]
+	b := s[j]
+
+	c := compareLang(a.Lang1, a.Lang2, b.Lang1, b.Lang2)
+	if c != 0 {
+		return c > 0
+	} else {
+		c = compareFormat(a.Format, b.Format)
+		if c != 0 {
+			return c > 0
+		}
+	}
+
+	return false
+}
+
+func (s Subtitles) Swap(i, j int) {
+	t := s[i]
+	s[i] = s[j]
+	s[j] = t
+}
+
+func (s Subtitles) Select() (a *Subtitle, b *Subtitle) {
+	subs := ([]*Subtitle)(s)
+	if len(subs) == 1 || subs[0].IsTwoLangs() {
+		a = subs[0]
+		b = nil
+	} else {
+		if subs[0].Lang1 == "en" {
+			a = subs[0]
+			b = nil
+		} else {
+			a = subs[0]
+			for _, c := range subs {
+				if c.Lang1 == "en" {
+					b = c
+					break
+				}
+			}
+		}
+	}
+
+	return
 }
