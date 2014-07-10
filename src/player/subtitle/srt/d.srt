@@ -1,0 +1,2836 @@
+
+1
+0:01:05.00 --> 0:01:10.00
+m 20 0 l 209 0 b 218 0 229 11 229 20 l 229 209 b 229 218 218 228 209 228 l 20 228 b 11 228 0 218 0 209 l 0 20 b 0 11 11 0 20 0
+
+2
+0:01:05.00 --> 0:01:10.00
+m 115 64 l 115 35 l 171 0 l 177 0 l 133 46 l 143 52 l 179 0 l 184 0 l 159 63 l 229 107 l 229 182 l 145 96 l 135 122 l 207 227 l 137 227 l 115 172 l 115 93 l 126 76 l 115 64 l 104 76 l 115 93 l 115 172 l 93 227 l 23 227 l 95 122 l 84 96 l 0 182 l 0 107 l 70 63 l 45 0 l 50 0 l 87 52 l 97 46 l 52 0 l 59 0 l 115 35
+
+3
+0:01:05.00 --> 0:01:10.00
+m 71 60 b 71 0 161 0 161 60 b 161 120 71 120 71 60
+
+4
+0:01:05.00 --> 0:01:10.00
+m 325 0 l 355 0 l 332 47 l 354 47 l 399 136 l 369 136 l 328 53 l 288 136 l 257 136 l 325 0 m 467 0 l 497 0 l 474 47 l 496 47 l 541 136 l 511 136 l 470 53 l 430 136 l 399 136 l 467 0 m 545 1 l 583 1 l 583 14 l 568 14 l 568 19 l 583 19 l 583 30 l 568 30 l 568 34 l 599 34 l 599 30 l 583 30 l 583 19 l 599 19 l 599 14 l 583 14 l 583 1 l 611 1 b 616 1 622 6 622 10 l 622 36 l 652 0 l 678 0 l 644 41 l 622 41 l 622 47 l 596 47 l 597 54 l 625 54 l 625 68 l 541 68 l 541 54 l 572 54 l 571 47 l 545 47 l 545 1 m 583 72 l 583 85 l 569 85 l 569 90 l 598 90 l 598 85 l 583 85 l 583 72 l 611 72 b 615 72 621 78 621 82 l 653 44 l 678 44 l 644 86 l 621 86 l 621 103 l 597 103 l 597 136 l 570 136 l 564 126 l 562 136 l 542 136 l 548 107 l 568 107 l 565 121 l 571 121 l 571 103 l 547 103 l 547 72 l 583 72 m 600 107 l 620 107 l 624 124 l 653 89 l 679 89 l 642 136 l 615 136 l 618 132 l 606 132 l 600 107 m 689 0 l 716 0 l 721 15 l 732 15 l 732 30 l 718 56 l 731 56 l 735 100 l 721 100 l 717 59 l 714 64 l 714 136 l 693 136 l 693 79 l 676 79 l 707 30 l 679 30 l 679 15 l 694 15 l 689 0 m 738 0 l 804 0 b 807 0 813 6 813 9 l 813 87 l 794 87 l 794 14 l 756 14 l 756 87 l 763 77 l 763 21 l 787 21 l 787 91 l 798 91 l 798 120 l 820 120 l 812 136 l 778 136 l 778 90 l 748 136 l 723 136 l 756 87 l 738 87 l 738 0 m 257 151 l 275 151 l 297 182 l 319 151 l 337 151 l 304 197 l 304 227 l 290 227 l 290 197 l 257 151 m 337 151 l 355 151 l 377 182 l 399 151 l 417 151 l 384 197 l 384 227 l 370 227 l 370 197 l 337 151 m 425 192 l 447 192 b 445 181 427 181 425 192 l 410 192 b 414 162 458 162 462 192 l 462 206 l 425 206 b 425 210 429 212 433 213 l 462 213 l 462 227 l 433 227 b 412 227 408 203 410 192 m 462 151 l 532 151 l 532 165 l 504 165 l 504 227 l 489 227 l 489 165 l 462 165 l 462 151 m 580 172 l 580 186 l 549 186 b 543 186 543 192 549 192 l 565 192 b 589 192 589 227 565 227 l 532 227 l 532 213 l 565 213 b 570 213 570 206 565 206 l 549 206 b 524 206 524 172 549 172 l 580 172 m 592 213 l 606 213 l 606 227 l 592 227 l 592 213 m 639 172 l 665 172 l 665 186 l 639 186 b 623 186 623 213 639 213 l 665 213 l 665 227 l 639 227 b 603 227 603 172 639 172 m 700 184 b 722 184 722 215 700 215 l 700 229 b 740 229 740 170 700 170 b 660 170 660 229 700 229 l 700 215 b 680 215 680 184 700 184 m 737 172 l 782 172 b 803 172 813 177 813 198 l 813 228 l 799 228 l 799 198 b 799 186 793 187 782 187 l 782 228 l 768 228 l 768 187 l 752 187 l 752 228 l 737 228 l 737 172
+
+5
+0:01:05.00 --> 0:01:10.00
+人人影视\NYYeTs.com
+
+6
+0:01:05.00 --> 0:01:10.00
+■
+
+7
+0:01:05.00 --> 0:01:10.00
+本字幕由人人影视字幕组翻译\N禁止用作任何商业盈利行为
+
+8
+0:01:10.50 --> 0:01:15.00
+   翻译：冰蓝    Hannah    叉烧包    小花豆    北湾    喃喃
+
+9
+0:01:10.50 --> 0:01:15.00
+■
+
+10
+0:01:15.50 --> 0:01:20.00
+   时间轴：小萌    贝壳    后期：冰河   校对&监制：非燕
+
+11
+0:01:15.50 --> 0:01:20.00
+■
+
+12
+0:00:25.00 --> 0:00:30.60
+星  恋\N第一季 第一集
+
+13
+0:00:05.31 --> 0:00:09.80
+2014年9月17日
+
+14
+0:00:13.44 --> 0:00:14.87
+是我们抵达地球的日子\NThe day we arrived.
+
+15
+0:00:22.93 --> 0:00:24.65
+我们从一个濒临灭亡的星球逃离\NWe fled a dying planet.
+
+16
+0:00:25.90 --> 0:00:27.65
+我们的飞船迫降在这里\NOur ship crash-landed here.
+
+17
+0:00:32.49 --> 0:00:35.27
+对于我们来说  这应是解放日\NFor my kind
+
+18
+0:00:38.14 --> 0:00:39.11
+避难日\NRefuge.
+
+19
+0:00:47.41 --> 0:00:48.99
+但是对于地球人来说\NBut for everyone on Earth...
+
+20
+0:00:50.59 --> 0:00:51.97
+这却是侵略\Nit was an invasion.
+
+21
+0:00:57.90 --> 0:01:01.05
+人类让我们别无选择  只能自我防卫\NThe humans left us no choice but to defend ourselves.
+
+22
+0:01:02.63 --> 0:01:03.98
+弹药来袭\NIncoming!
+
+23
+0:01:23.04 --> 0:01:24.88
+快跑  快跑
+
+24
+0:01:26.67 --> 0:01:27.53
+快跑
+
+25
+0:01:32.50 --> 0:01:33.59
+我听从了父亲的吩咐\NI did as my father said.
+
+26
+0:01:33.59 --> 0:01:35.91
+我奋力飞奔\NI ran as fast as my legs would carry me
+
+27
+0:01:36.29 --> 0:01:38.50
+不知道自己在逃避什么\Nnot understanding what I was running from.
+
+28
+0:01:39.60 --> 0:01:41.34
+更不确定我在奔向什么\NAnd less sure what I was running to.
+
+29
+0:01:47.35 --> 0:01:48.59
+国民警卫队继续\NNational Guardsmen continue
+
+30
+0:01:48.59 --> 0:01:51.85
+和外星人进行一场流血冲突\Nto engage in a bloody conflict with the alien species
+
+31
+0:01:51.85 --> 0:01:55.07
+他们的飞船坠落在巴吞鲁日外的几公里处\Nwhose ship crashed to Earth several miles from Baton Rouge.
+
+32
+0:01:55.07 --> 0:01:57.39
+总统宣称进入紧急状态\NThe president has issued a state of emergency.
+
+33
+0:01:57.39 --> 0:01:59.68
+而官方人士报告  一些侵略者\NWhile officials report that some of the invaders
+
+34
+0:01:59.68 --> 0:02:01.17
+已经被包围\Nhave been rounded up
+
+35
+0:01:59.91 --> 0:02:02.76
+侵略者袭击  伤亡人数增加
+
+36
+0:02:01.17 --> 0:02:03.83
+可能有些外星人逃脱了追捕\Nit's possible some may have eluded capture.
+
+37
+0:02:03.83 --> 0:02:05.78
+你觉得外星人的计划是什么\NWhat do you think would be the alien plan?
+
+38
+0:02:05.78 --> 0:02:07.03
+我们该去我母亲家\NWe should go to my mother's.
+
+39
+0:02:07.03 --> 0:02:08.26
+道路封锁了\NThe roads are closed.
+
+40
+0:02:08.26 --> 0:02:10.18
+而且  去了那边情况也不会好转\NAnd plus
+
+41
+0:02:10.56 --> 0:02:12.06
+尽量放松吧\NJust try and relax.
+
+42
+0:02:12.53 --> 0:02:13.65
+怎么了  爸爸\NWhat's wrong
+
+43
+0:02:14.93 --> 0:02:16.02
+没事  宝贝\NNothing
+
+44
+0:02:16.02 --> 0:02:17.31
+一切都很好\NEverything's fine.
+
+45
+0:02:17.31 --> 0:02:18.82
+别忘了吃药  埃默里\NDon't forget to take your medicine
+
+46
+0:02:20.26 --> 0:02:21.19
+好的  爸爸\NOkay
+
+47
+0:02:24.35 --> 0:02:27.26
+刚刚传来的消息  航空航天局的天文学家推断\NJust getting word; NASA astronomers have speculated
+
+48
+0:02:27.27 --> 0:02:29.82
+这艘宇宙飞船的轨道\Nthat the trajectory of the spacecraft
+
+49
+0:02:29.82 --> 0:02:33.31
+起源于一个名叫奥特里安的遥远的太阳系\Noriginated from a distant solar system called Atria.
+
+50
+0:02:33.64 --> 0:02:35.43
+不管他们从何而来\NRegardless of where they came from
+
+51
+0:02:35.44 --> 0:02:39.02
+当地居民和世界领导都很担心其意图\Nlocal residents and world leaders are wary of their intentions.
+
+52
+0:02:56.35 --> 0:02:57.31
+有人吗\NHello?
+
+53
+0:02:59.94 --> 0:03:01.33
+有人吗\NHello?
+
+54
+0:03:11.11 --> 0:03:12.87
+没事的  没事的\NIt's okay. It's okay.
+
+55
+0:03:16.09 --> 0:03:17.65
+你也是外星人  对吧\NYou're one of them
+
+56
+0:03:19.82 --> 0:03:21.14
+我马上回来\NI'll be right back.
+
+57
+0:03:27.66 --> 0:03:28.47
+另一方面  如果\NIf
+
+58
+0:03:28.47 --> 0:03:31.39
+他们的目标实为征服并占领地球\Ntheir goal was actual occupation and conquest
+
+59
+0:03:31.39 --> 0:03:34.08
+那他们可能会优先考虑那些...\Nthen they would probably have to prioritize anything...
+
+60
+0:03:36.13 --> 0:03:36.89
+没事的\NIt's okay.
+
+61
+0:03:43.34 --> 0:03:45.00
+你看起来不像个怪物\NYou don't look like a monster.
+
+62
+0:03:46.01 --> 0:03:47.33
+你今晚可以待在这里\NYou can stay here tonight.
+
+63
+0:03:48.00 --> 0:03:49.25
+我早晨再来看你\NI'll come see you in the morning.
+
+64
+0:03:49.25 --> 0:03:50.66
+别出声\NBe very quiet.
+
+65
+0:04:19.27 --> 0:04:20.39
+很好吃  对吧\NIt's good
+
+66
+0:04:21.92 --> 0:04:23.92
+给  用叉子\NHere. Use the fork.
+
+67
+0:04:37.23 --> 0:04:38.52
+这个叫星星\NThis one's called star.
+
+68
+0:04:38.93 --> 0:04:39.78
+从这里穿过\NThrough here.
+
+69
+0:04:40.82 --> 0:04:42.29
+从里面穿过\NThrough the loop.
+
+70
+0:04:44.07 --> 0:04:46.72
+松开  就是颗星星  你来试试\NLet go
+
+71
+0:04:56.07 --> 0:04:57.89
+B小队1-7\NBravo unit one-seven...
+
+72
+0:05:03.13 --> 0:05:04.28
+得把你藏起来\NWe've got to hide you.
+
+73
+0:05:06.99 --> 0:05:07.99
+他在这里\NHe's in here!
+
+74
+0:05:10.91 --> 0:05:12.77
+快上  快上\NGo
+
+75
+0:05:12.77 --> 0:05:14.54
+离她远点\NGet away from her!
+
+76
+0:05:14.54 --> 0:05:15.71
+别伤害他\NDon't hurt him!
+
+77
+0:05:17.18 --> 0:05:19.19
+-快  -不要\N- Now! - No!
+
+78
+0:06:04.95 --> 0:06:08.77
+十年后
+
+79
+0:06:26.75 --> 0:06:28.82
+十年前  名叫奥特里安人的\NIt's been ten years since the alien species
+
+80
+0:06:28.82 --> 0:06:30.82
+外星物种抵达地球\Nknown as the Atrians arrived on Earth
+
+81
+0:06:30.82 --> 0:06:32.88
+美国军方将其包围\Nand the U.S. Military rounded them up
+
+82
+0:06:32.88 --> 0:06:34.62
+将他们送入一处政府辖区\Nand put them in a government facility
+
+83
+0:06:34.62 --> 0:06:36.40
+一直关押到现在\Nwhere they remained in lockdown.
+
+84
+0:06:36.40 --> 0:06:39.87
+今天  在尝试将他们融入社会的争议中\NToday
+
+85
+0:06:39.87 --> 0:06:42.83
+七名奥特里安青少年会成为马歇尔高中的学生\Nseven Atrian teens will become students at Marshall High School.
+
+86
+0:06:40.00 --> 0:06:42.67
+备受争议的取消七名奥特里安\N青少年隔离的计划
+
+87
+0:06:42.83 --> 0:06:43.70
+小朱\NHey
+
+88
+0:06:44.22 --> 0:06:44.97
+埃默里\NHey
+
+89
+0:06:45.96 --> 0:06:48.22
+只有你才能在早上七点展现大汗淋漓的性感\NOnly you could pull off sweaty sexy at 7:00 A.M.
+
+90
+0:06:48.22 --> 0:06:51.15
+在马歇尔高中外面  愤怒的抗议者要求\NOutside Marshall High
+
+91
+0:06:51.15 --> 0:06:54.10
+奥特里安人继续被关押在他们的隔离区\Nthat the Atrians remain sequestered inside their sector.
+
+92
+0:06:50.95 --> 0:06:53.63
+马歇尔高中实况\N愤怒的抗议仍在继续
+
+93
+0:06:54.10 --> 0:06:55.83
+该做拉伸运动了  来吧\NTime to stretch. Come on.
+
+94
+0:06:55.83 --> 0:06:58.69
+我的前任病友现在成了我的私人教练\NMy former hospital buddy's now my personal trainer.
+
+95
+0:06:59.13 --> 0:07:00.68
+你说过一直想要一个的\NYou said you always wanted one.
+
+96
+0:07:00.68 --> 0:07:02.87
+是啊  名字叫费尔南多\NYeah. Named Fernando.
+
+97
+0:07:02.87 --> 0:07:04.08
+或者特里斯坦\NOr Tristan.
+
+98
+0:07:04.58 --> 0:07:06.40
+他有外国口音  还有腹肌\NWith an accent and abs.
+
+99
+0:07:06.40 --> 0:07:09.10
+这些反对消除隔离的拥护者相信奥特里安人\NThese anti-integration advocates believe the Atrians
+
+100
+0:07:08.08 --> 0:07:11.67
+抗议者要求了解\N奥特里安人隐瞒了什么
+
+101
+0:07:09.10 --> 0:07:11.85
+也许心怀鬼胎  想把地球变为殖民地\Nmay be hiding a greater plan to colonize Earth.
+
+102
+0:07:11.85 --> 0:07:14.54
+如果要问我  这整个隔离计划\NIf you ask me
+
+103
+0:07:14.54 --> 0:07:16.95
+只不过是为了分散大家的注意力\Nis just a distraction from the real issue.
+
+104
+0:07:16.95 --> 0:07:19.32
+-每个频道都在放这个吗  -对\N- Is this on every channel? - Yep.
+
+105
+0:07:17.08 --> 0:07:19.46
+市民对消除隔离的反应
+
+106
+0:07:20.91 --> 0:07:24.08
+那艘飞船在整座小镇上投下了阴影\NThat ship is casting a shadow over this whole town...
+
+107
+0:07:21.20 --> 0:07:25.55
+市民对消除隔离的反应
+
+108
+0:07:24.08 --> 0:07:25.49
+疯子们今天都出来了\NAll the loonies are out today.
+
+109
+0:07:25.49 --> 0:07:27.69
+真是不得不爱阴谋论者啊\NYou got to love conspiracy theorists.
+
+110
+0:07:27.69 --> 0:07:29.34
+有一个人声称奥特里安人\NOne of them was claiming that the Atrians
+
+111
+0:07:29.34 --> 0:07:32.61
+在隔离区里种植了一种草药  名叫柏草\Ngrow a medicinal herb inside their Sector called cyper.
+
+112
+0:07:33.91 --> 0:07:35.79
+能治疗阴谋论者吗\NCan it cure conspiracy theorists?
+
+113
+0:07:35.79 --> 0:07:36.71
+我只是说\NI'm just saying.
+
+114
+0:07:36.71 --> 0:07:39.14
+也许你可以和一个奥特里安人搞好关系\NMaybe you could get chummy with one of the Atrians.
+
+115
+0:07:39.44 --> 0:07:40.41
+拿到一批柏草\NGet a batch.
+
+116
+0:07:40.64 --> 0:07:41.88
+拯救这整所医院\NFix up this whole hospital.
+
+117
+0:07:41.90 --> 0:07:42.79
+我怎么说的\NWhat did I say?
+
+118
+0:07:43.04 --> 0:07:44.84
+怀特希尔指挥官
+
+119
+0:07:43.44 --> 0:07:44.74
+让他们后退\NKeep these guys back.
+
+120
+0:07:44.74 --> 0:07:45.76
+天啊  是你爸爸\NOh
+
+121
+0:07:45.76 --> 0:07:49.26
+如你所见  隔离区执法队的雷·怀特希尔指挥官\NAs you can see
+
+122
+0:07:46.25 --> 0:07:55.42
+怀特希尔指挥官
+
+123
+0:07:49.27 --> 0:07:51.89
+扫描了七名奥特里安人的腕带\Nscans the wristbands of the Atrian Seven
+
+124
+0:07:51.89 --> 0:07:55.53
+这样他们在学校里时  当局就能追踪其位置\Nallowing authorities to track their location while at school.
+
+125
+0:07:55.53 --> 0:07:56.75
+他真走运\NHe's so lucky.
+
+126
+0:07:56.75 --> 0:07:58.53
+他是为数不多真正可以说\NHe's
+
+127
+0:07:58.53 --> 0:08:00.26
+去过隔离区的人\Nthat they've been inside the Sector.
+
+128
+0:08:00.47 --> 0:08:02.96
+当然只有你才会认为那是走运\NOf course only you would consider that lucky.
+
+129
+0:08:00.50 --> 0:08:03.26
+七名奥特里安人离开隔离区
+
+130
+0:08:02.96 --> 0:08:05.60
+那你对今天觉得紧张吗\NSo
+
+131
+0:08:06.95 --> 0:08:08.89
+当然觉得\NYeah. Sure.
+
+132
+0:08:08.89 --> 0:08:10.70
+昨晚新闻里的那个人说着\NI mean
+
+133
+0:08:10.70 --> 0:08:13.17
+全世界都会关注马歇尔高中\Nhow the eyes of the world would be on Marshall High.
+
+134
+0:08:12.04 --> 0:08:14.21
+七名奥特里安人离开隔离区
+
+135
+0:08:14.04 --> 0:08:16.73
+让你四年后重返学校的第一天\NLeave it to you to start your first day back at school after four years
+
+136
+0:08:16.73 --> 0:08:18.11
+就被全世界关注\Nin front of the eyes of the world.
+
+137
+0:08:18.11 --> 0:08:20.72
+向政府施压\N...are putting pressure on our government.
+
+138
+0:08:20.72 --> 0:08:22.78
+媒体没有进行全面报道\NThe media hasn't covered it thoroughly enough...
+
+139
+0:08:22.78 --> 0:08:24.21
+真高兴你病情好转了  小埃\NI'm really glad you got better
+
+140
+0:08:26.88 --> 0:08:27.76
+谢谢你\NThanks.
+
+141
+0:08:28.57 --> 0:08:29.56
+轮到你了\NNow it's your turn.
+
+142
+0:08:31.03 --> 0:08:33.63
+奥特里安七名青少年正前往马歇尔高中\NThe Atrian Seven are now headed to Marshall High
+
+143
+0:08:33.63 --> 0:08:35.77
+那里的反对者越来越多\Nwhere protests continue to grow.
+
+144
+0:08:37.46 --> 0:08:39.11
+我代表所有特区政府的同事们\NI speak for all my colleagues in D.C.
+
+145
+0:08:39.11 --> 0:08:41.77
+通过将近三年的不断讨论\NWhen I say that after three years of ongoing discussion
+
+146
+0:08:41.77 --> 0:08:44.75
+我们很荣幸  终于实现了这个项目\Nwe're very proud to see this program finally come to fruition.
+
+147
+0:08:44.91 --> 0:08:46.73
+如果这一项目成功的话\NA program which
+
+148
+0:08:46.73 --> 0:08:50.13
+可以让所有奥特里安人融入社会\Ncould lead to the integration of all Atrians into society.
+
+149
+0:08:50.13 --> 0:08:53.25
+我们希望我们不仅能够和平共处\NThe hope is that we're not just able to peacefully coexist
+
+150
+0:08:53.25 --> 0:08:55.48
+还能互相学习\Nbut we also learn from one another.
+
+151
+0:08:56.03 --> 0:08:57.41
+他们的文化\NTheir culture alone...
+
+152
+0:08:57.41 --> 0:08:59.56
+那些歪星人不属于这里\NThose Tatties belong with their own kind!
+
+153
+0:08:59.56 --> 0:09:01.24
+这属于我们的孩子们\NOur kids were raised right.
+
+154
+0:09:01.24 --> 0:09:03.67
+放开我  放开我\NGet off of me. Get off of me!
+
+155
+0:09:03.67 --> 0:09:04.73
+歪星人  滚回家\NTatties
+
+156
+0:09:04.73 --> 0:09:06.41
+走吧  咱们四处转转\NCome on
+
+157
+0:09:10.25 --> 0:09:12.50
+科学实验室里有一些被编号的猴子\NIn the tech lab are code monkeys.
+
+158
+0:09:12.50 --> 0:09:14.16
+就好像是这个奇怪的世界\NIt's kind of like this weird world
+
+159
+0:09:14.16 --> 0:09:16.39
+被一些什么猴子啦猩猩啦统治了\Ndominated by chimps and orangutans or whatever--
+
+160
+0:09:16.39 --> 0:09:18.74
+他们还不知道怎么和人交流\Nhas no idea how to communicate with humans.
+
+161
+0:09:18.74 --> 0:09:20.24
+如果你看一眼\NAnd if you look discreetly
+
+162
+0:09:20.24 --> 0:09:22.63
+你两点钟方向  亚洲时尚达人\Nto your two o'clock: Asian fashionistas.
+
+163
+0:09:22.63 --> 0:09:24.26
+他们同样的衣服从来不穿两次\NThey never wear the same thing twice.
+
+164
+0:09:24.76 --> 0:09:26.42
+看楼上  二楼平台上\NAnd further up the stairs
+
+165
+0:09:26.42 --> 0:09:28.04
+是列宁崇拜者\Nare the Lenin worshipers.
+
+166
+0:09:28.66 --> 0:09:29.50
+是那个共产主义列宁\NThe Communist Lenin
+
+167
+0:09:29.50 --> 0:09:30.33
+不是披头士的那个\Nnot the Beatle.
+
+168
+0:09:30.76 --> 0:09:32.58
+你第一节什么课  英语文学吗\NWhat's your first class? English lit?
+
+169
+0:09:32.58 --> 0:09:33.79
+但愿你没选特克先生的课\NI hope you didn't get Mr. Turk.
+
+170
+0:09:33.80 --> 0:09:35.89
+他会让你读《耸肩的阿特拉斯》\NI mean
+
+171
+0:09:35.89 --> 0:09:37.03
+总之一句话\NAnd let's just say
+
+172
+0:09:37.03 --> 0:09:39.26
+它的课特别沉闷\Nthat it is a total
+
+173
+0:09:39.26 --> 0:09:40.33
+特别沉闷  小埃\NIt's a downer
+
+174
+0:09:40.33 --> 0:09:42.88
+然后我肯定你没有听我说话\Nand I'm so sure that you're not even listening to me.
+
+175
+0:09:42.88 --> 0:09:45.65
+-小埃  -我听着呢\N- Em! - Yes
+
+176
+0:09:45.65 --> 0:09:47.26
+你刚刚说特别沉闷\NYou said it's a total and utter downer.
+
+177
+0:09:47.56 --> 0:09:48.41
+他们来了\NThey're here.
+
+178
+0:10:03.33 --> 0:10:04.65
+滚吧\NGet out of here!
+
+179
+0:10:04.82 --> 0:10:05.74
+滚回家\NGo home!
+
+180
+0:10:05.74 --> 0:10:09.88
+滚回家  滚回家\NGo home! Go home!
+
+181
+0:10:11.66 --> 0:10:12.55
+都下车\NEverybody off.
+
+182
+0:10:13.95 --> 0:10:14.86
+都下车\NEverybody off.
+
+183
+0:10:29.01 --> 0:10:30.00
+好了  跟我来\NAll right
+
+184
+0:10:42.67 --> 0:10:43.97
+来吧  快点\NLet's go. Move it.
+
+185
+0:10:43.97 --> 0:10:46.03
+排好队  排成一排  肩并肩站好\NLine it up
+
+186
+0:10:46.49 --> 0:10:47.82
+到这里排好\NI want a line right here.
+
+187
+0:10:49.01 --> 0:10:49.81
+快排好\NLine it up.
+
+188
+0:10:50.40 --> 0:10:51.15
+成一直线\NForm a line.
+
+189
+0:10:51.87 --> 0:10:54.18
+在这儿排  你  站这里\NRight here along. You. Right here.
+
+190
+0:11:19.01 --> 0:11:21.75
+今天还能再疯狂一点吗\NI mean
+
+191
+0:11:22.36 --> 0:11:23.59
+刚才不就是吗\NI think it just did.
+
+192
+0:11:35.95 --> 0:11:37.18
+我叫格洛丽亚\NMy name is Gloria.
+
+193
+0:11:37.59 --> 0:11:41.04
+你们不认识我  但我熟悉你们每个人\NYou don't know me
+
+194
+0:11:41.23 --> 0:11:43.41
+[外星语]
+
+195
+0:11:43.41 --> 0:11:45.30
+没错  泰瑞  我最近是和人上床了\NYes
+
+196
+0:11:45.30 --> 0:11:48.86
+并且在马歇尔高中只能说英语\NAnd English is the language of choice here at Marshall High.
+
+197
+0:11:50.35 --> 0:11:51.78
+你们已经简单学习了礼仪\NI know you've been briefed on protocol
+
+198
+0:11:51.79 --> 0:11:53.76
+通过了MHS入学考试\Nand passed your MHS entrance exams
+
+199
+0:11:53.76 --> 0:11:56.29
+但是我认为有必要讲点规矩\Nbut I think it's necessary to set some ground rules
+
+200
+0:11:56.29 --> 0:11:57.53
+为了你们的安全着想\Nfor your own safety.
+
+201
+0:11:57.53 --> 0:11:59.58
+想必你们已经注意到增设的安全设施\NI'm sure you've noticed increased security.
+
+202
+0:11:59.59 --> 0:12:00.90
+我们不希望有任何暴力事件\NWe don't anticipate any violence
+
+203
+0:12:00.90 --> 0:12:03.43
+这些警卫是为了保护你们\Nbut the guards are here for your protection.
+
+204
+0:12:03.82 --> 0:12:04.97
+和奥特里安人\NAnd the Atrians.
+
+205
+0:12:04.97 --> 0:12:06.83
+警卫被批准使用震慑枪\NThe guards have been authorized to use their temblor guns
+
+206
+0:12:06.83 --> 0:12:08.19
+如果你们走出警戒线\Nif you step out of line.
+
+207
+0:12:08.19 --> 0:12:10.89
+你们只能离开隔离区去上学\NYou are only permitted to leave the Sector for school.
+
+208
+0:12:10.90 --> 0:12:12.31
+宵禁仍然存在\NCurfew still stands.
+
+209
+0:12:12.31 --> 0:12:14.90
+每晚必须在10点前回去\NBack in your pods by 10:00 p.m. every night.
+
+210
+0:12:14.90 --> 0:12:17.72
+在学校里面  他们和你们一样\NBehind the walls of this school
+
+211
+0:12:17.72 --> 0:12:18.81
+他们也是学生\NThey're students.
+
+212
+0:12:18.81 --> 0:12:20.33
+你们是实验对象\NYou're test subjects.
+
+213
+0:12:20.33 --> 0:12:21.91
+至少现在是\NAt least for the time being.
+
+214
+0:12:21.91 --> 0:12:23.98
+但是总有一天  你们可以从这里毕业\NBut one day
+
+215
+0:12:24.18 --> 0:12:26.21
+去上大学  或者工作\NHeading off to college or out in the work force.
+
+216
+0:12:26.21 --> 0:12:29.76
+想一下  这个项目有可能成功\NImagine the possibilities if this program is a success.
+
+217
+0:12:29.76 --> 0:12:31.28
+但是这很不容易\NBut it won't be easy.
+
+218
+0:12:31.28 --> 0:12:32.81
+很多人都希望你们会失败\NA lot of people are hoping you fail.
+
+219
+0:12:32.81 --> 0:12:35.74
+他们认为你们就是来毁灭我们的\NThey think your race has come here to destroy us.
+
+220
+0:12:35.74 --> 0:12:38.22
+你们要证明他们说错了\NIt's up to you to prove them wrong.
+
+221
+0:12:47.05 --> 0:12:49.39
+真希望咱们是那种拿着镭射枪的外星人\NWish we were the kind of aliens who carried ray guns.
+
+222
+0:12:49.40 --> 0:12:51.10
+还记得咱们在隔离区学校的第一天吗\NRemember our first day at the Sector School?
+
+223
+0:12:51.10 --> 0:12:52.54
+你们也不喜欢那里\NYou guys hated it there
+
+224
+0:12:52.54 --> 0:12:55.44
+在那咱们至少不用担心震慑枪\NAt least we didn't have to worry about temblor guns pointed at our heads.
+
+225
+0:12:55.44 --> 0:12:57.82
+或者更糟的  合唱团\NOr worse. Glee club.
+
+226
+0:13:00.42 --> 0:13:01.72
+咱们的柜子还被做了标记\NThey tagged our lockers.
+
+227
+0:13:14.42 --> 0:13:15.18
+右手\NRight.
+
+228
+0:13:15.76 --> 0:13:17.00
+你得用右手按\NYou got to use your right hand.
+
+229
+0:13:20.03 --> 0:13:20.79
+对了\NYes.
+
+230
+0:13:21.56 --> 0:13:24.14
+我发誓我用高科技产品不经常这么差劲的\NI swear I'm not usually this technologically inept.
+
+231
+0:13:24.14 --> 0:13:24.76
+这没什么\NIt's okay.
+
+232
+0:13:24.76 --> 0:13:26.28
+你第一天表现得不错\NYou get a pass on your first day.
+
+233
+0:13:27.39 --> 0:13:28.69
+你从哪转来的\NWhere you transferring from?
+
+234
+0:13:28.98 --> 0:13:30.57
+我不是转学来的\NOh
+
+235
+0:13:30.57 --> 0:13:33.00
+我只是过去四年\NI've just been out.
+
+236
+0:13:33.00 --> 0:13:34.65
+一直在外面\NFor the last four years.
+
+237
+0:13:34.65 --> 0:13:37.26
+我去年从纽霍尔转来的\NI transferred last year from Newhall.
+
+238
+0:13:37.26 --> 0:13:39.16
+我也没参加迎新会什么的\NAnd I'm not on the welcoming committee or anything
+
+239
+0:13:39.16 --> 0:13:41.83
+但我对这挺熟的  如果你需要什么帮忙\Nbut I know my way around
+
+240
+0:13:42.09 --> 0:13:42.91
+谢谢你\NThanks.
+
+241
+0:13:43.58 --> 0:13:44.69
+教我用手指\NFor the finger tip.
+
+242
+0:13:45.05 --> 0:13:48.34
+我是指教我开柜子的方法\NI mean
+
+243
+0:13:49.09 --> 0:13:50.34
+回见  再见\NSee you. Bye.
+
+244
+0:13:56.17 --> 0:13:57.56
+我从来没想过我会这么说\NI never thought I'd say this
+
+245
+0:13:57.56 --> 0:13:59.67
+但是我已经开始想念隔离区学校了\Nbut I'm already starting to miss our Sector School.
+
+246
+0:14:00.41 --> 0:14:01.68
+人类就是野蛮人\NHumans are savages
+
+247
+0:14:01.68 --> 0:14:02.96
+无一例外  罗曼\NRoman
+
+248
+0:14:04.43 --> 0:14:05.08
+是吧\NRight?
+
+249
+0:14:06.61 --> 0:14:08.50
+对  没错\NYeah. Right.
+
+250
+0:14:10.65 --> 0:14:13.07
+我宣誓忠实于美利坚合众国国旗\NI pledge allegiance to the flag of the United of America
+
+251
+0:14:15.29 --> 0:14:18.00
+忠实于她所代表的合众国\Nand to the republic
+
+252
+0:14:18.00 --> 0:14:20.28
+苍天之下一个无可分割的国家\None nation
+
+253
+0:14:20.28 --> 0:14:22.56
+在这里  人人享有自由与正义\Nwith liberty and justice for all.
+
+254
+0:14:25.25 --> 0:14:26.02
+好了\NAll right.
+
+255
+0:14:26.02 --> 0:14:28.56
+我将发给你们这个学期的课程表\NI'll be passing out your syllabus for the semester.
+
+256
+0:14:29.03 --> 0:14:30.25
+自己留一份  然后往后传\NTake one and pass it back.
+
+257
+0:14:30.26 --> 0:14:32.62
+据说他们有三个鸡鸡\NRumor is they have three penises.
+
+258
+0:14:32.62 --> 0:14:35.44
+小号  中号  还有超大号\NSmall
+
+259
+0:14:37.37 --> 0:14:40.32
+没错  她是泰勒  甜美  大姐大\NYep. Taylor. Sweet girl
+
+260
+0:14:40.32 --> 0:14:41.45
+记得中学时代吧\NRemember in middle school?
+
+261
+0:14:41.69 --> 0:14:43.11
+她现在掌权了\NYeah
+
+262
+0:14:43.64 --> 0:14:45.15
+掌什么权\NIn charge of what?
+
+263
+0:14:45.15 --> 0:14:45.99
+所有一切\NAll of it.
+
+264
+0:14:46.74 --> 0:14:48.49
+你听说过奥特里安人\NHey
+
+265
+0:14:48.49 --> 0:14:51.03
+可能在隔离区种了一种药草吗\Nthe Atrians supposedly grow in the Sector?
+
+266
+0:14:51.03 --> 0:14:53.31
+好像叫"柏草"\NSomething called "Cyper"?
+
+267
+0:14:53.31 --> 0:14:55.14
+据说这种药草有魔力\NIt's
+
+268
+0:14:55.14 --> 0:14:56.85
+柏草  没听说过\NCyper? No.
+
+269
+0:14:56.85 --> 0:14:58.40
+不过你要是指大麻\NBut if it's herbs you seek
+
+270
+0:14:58.40 --> 0:15:00.47
+说不定瘾君子的柜子里有\Nsome of the stoners probably have some in their lockers.
+
+271
+0:15:04.48 --> 0:15:07.48
+你们吃我们的食物  穿我们的衣服\NYou eat our food
+
+272
+0:15:07.48 --> 0:15:10.50
+呼吸我们的空气  却不愿对我们的国旗宣誓\Nbreathe our air
+
+273
+0:15:10.50 --> 0:15:11.52
+我们不是地球公民\NWe're not citizens.
+
+274
+0:15:11.52 --> 0:15:14.19
+没错  你们是火星人\NOh
+
+275
+0:15:14.19 --> 0:15:17.39
+实际上  火星人是火星来的\NWell
+
+276
+0:15:18.09 --> 0:15:19.66
+我们的星球要高级多了\NWe're from a far superior planet.
+
+277
+0:15:19.67 --> 0:15:20.88
+你说什么  怪胎\NWhat did you say to me
+
+278
+0:15:20.88 --> 0:15:22.99
+到此为止\NHey
+
+279
+0:15:23.30 --> 0:15:25.87
+奥特里安人不需要对国旗宣誓\NAtrians are not required to pledge to the flag.
+
+280
+0:15:26.64 --> 0:15:27.42
+振作点\NCheer up.
+
+281
+0:15:27.63 --> 0:15:30.12
+你们的自由和正义  我们不会夺去\NYou get to keep liberty and justice all to yourself.
+
+282
+0:15:30.12 --> 0:15:32.09
+打开秋季学期日程表\NOpen up the fall semester calendar.
+
+283
+0:15:32.59 --> 0:15:34.06
+有些重要活动\NWe have some events coming up.
+
+284
+0:15:35.33 --> 0:15:37.28
+诺克斯  你一直极力主张奥特里安人\NNox
+
+285
+0:15:37.29 --> 0:15:38.44
+与地球人享有平等权利\Nfor equal rights.
+
+286
+0:15:38.44 --> 0:15:40.71
+你真的认为会有这么一天\NDid you think this day would ever come?
+
+287
+0:15:40.71 --> 0:15:41.98
+我一直充满希望\NI never lost that hope.
+
+288
+0:15:42.24 --> 0:15:46.32
+这个项目是迈向种族统一的第一步\NThis program is the first step toward unifying our races.
+
+289
+0:15:46.33 --> 0:15:48.23
+我无比自豪\NAnd I couldn't be prouder
+
+290
+0:15:48.23 --> 0:15:51.81
+因为我自己的孩子参与了这历史性的一刻\Nthat my own children are part of history in the making.
+
+291
+0:15:51.82 --> 0:15:53.57
+-谢谢  先生  -谢谢你\N- Thank you
+
+292
+0:15:52.50 --> 0:15:57.46
+奥特里安隔离区 - 东门
+
+293
+0:15:54.07 --> 0:15:55.47
+这是奥特里安七人组  我们过去\NIt's the Atrian Seven! Let's go!
+
+294
+0:16:03.06 --> 0:16:04.37
+感觉怎样\NHey. How did it go?
+
+295
+0:16:04.84 --> 0:16:07.37
+很好  跟我们在隔离区受到的凌辱相比\NExcellent. We've been far too insulated in the Sector
+
+296
+0:16:07.37 --> 0:16:09.84
+这里的人们善良多了\Nfrom just how kind and compassionate these people can be.
+
+297
+0:16:09.84 --> 0:16:11.23
+你哥现在已经\NYour brother has mastered
+
+298
+0:16:11.23 --> 0:16:13.78
+深谙地球人的幽默艺术了\Nthe earthly art of sarcasm with relative ease.
+
+299
+0:16:13.78 --> 0:16:16.15
+说来听听  如果我有幸交到人类朋友\NTell me about it. If I have any chance of making friends
+
+300
+0:16:16.15 --> 0:16:17.89
+我就装作不认识他了\NI'm gonna have to distance myself from him.
+
+301
+0:16:17.89 --> 0:16:19.38
+为什么要跟人类做朋友\NWhy do you want to be friends with them?
+
+302
+0:16:19.38 --> 0:16:21.57
+人类比咱们有趣多了\NHumans are so much more colorful.
+
+303
+0:16:21.57 --> 0:16:23.66
+抱歉  但今天哪里有趣了\NI'm sorry. What about today was colorful?
+
+304
+0:16:23.67 --> 0:16:25.72
+是武装警卫还是抗议者\NWas it the armed guards or the protestors?
+
+305
+0:16:25.73 --> 0:16:28.41
+还是  我知道了  是憎恨我们的同学\NOr...? Oh
+
+306
+0:16:28.41 --> 0:16:29.35
+他们只是还不了解我们\NThey just don't know us yet.
+
+307
+0:16:29.35 --> 0:16:30.71
+[外星语]
+
+308
+0:16:30.71 --> 0:16:32.74
+玛雅  讲英文\NMaia
+
+309
+0:16:33.98 --> 0:16:36.39
+你们是去那里学习  不是交朋友的\NYou're there to learn
+
+310
+0:16:38.76 --> 0:16:40.43
+明天又是新的一天\NWell
+
+311
+0:16:58.81 --> 0:17:00.52
+你女儿自己会解释\NYour daughter will tell you exactly why
+
+312
+0:17:00.52 --> 0:17:03.09
+她为什么咽不下虾球捞面\Nshe's not devouring that shrimp lo mein.
+
+313
+0:17:05.83 --> 0:17:07.03
+没什么\NIt's nothing.
+
+314
+0:17:10.24 --> 0:17:15.00
+我今天一直在想那个躲在棚屋里的男孩\NI just... was thinking a lot about that boy in the shed today.
+
+315
+0:17:15.72 --> 0:17:16.61
+想他什么\NWhat about him?
+
+316
+0:17:17.34 --> 0:17:20.18
+想如果他没有要保护我\NAbout how
+
+317
+0:17:20.18 --> 0:17:21.69
+现在应该还活着\Nhe'd still be alive.
+
+318
+0:17:26.51 --> 0:17:28.58
+不是所有人都能获救  宝贝\NNot everyone can be saved
+
+319
+0:17:28.58 --> 0:17:31.91
+有时  要顾全大局\NSometimes... there's a greater plan at work.
+
+320
+0:17:36.05 --> 0:17:37.29
+用餐愉快\NEnjoy your meal.
+
+321
+0:17:40.76 --> 0:17:42.65
+下午好  奥特里安人\NGood afternoon
+
+322
+0:17:42.65 --> 0:17:45.36
+你的午餐选择为爆米花蛋糕\NYour lunch option is puffed rice cake.
+
+323
+0:17:45.65 --> 0:17:48.97
+你要鸡肉味  牛肉味  还是胡萝卜味\NWould you like chicken-flavored
+
+324
+0:17:50.64 --> 0:17:51.87
+用餐愉快\NEnjoy your meal.
+
+325
+0:18:00.18 --> 0:18:01.94
+你叫埃默里  对吧\NIt's Emery
+
+326
+0:18:01.94 --> 0:18:03.20
+你住在伍德格伦\NYou live over on Woodglen?
+
+327
+0:18:03.20 --> 0:18:05.05
+-是的  -手机拿出来\N- Yeah. - Let me see your phone.
+
+328
+0:18:08.14 --> 0:18:09.99
+我们要在这个废弃农舍开派对\NThere's a party at this abandoned farmhouse.
+
+329
+0:18:09.99 --> 0:18:10.91
+你也来吧\NYou should come.
+
+330
+0:18:12.26 --> 0:18:13.71
+我可以带卢卡斯吗\NCan I bring Lukas?
+
+331
+0:18:13.71 --> 0:18:17.01
+当然  如果你们俩是一对的话\NSure
+
+332
+0:18:17.01 --> 0:18:19.65
+-我们是朋友  -好\N- We're friends. - Oh
+
+333
+0:18:20.21 --> 0:18:21.85
+因为格雷森不确定\NBecause Grayson wasn't sure.
+
+334
+0:18:23.63 --> 0:18:26.97
+格雷森要约我吗\NGrayson... was... asking?
+
+335
+0:18:35.00 --> 0:18:36.88
+我来跟你换班\NI am relieving you of duties.
+
+336
+0:18:36.88 --> 0:18:39.97
+好  你来得刚好\NYes
+
+337
+0:18:40.60 --> 0:18:42.30
+那个大姐大要做什么\NSo
+
+338
+0:18:44.00 --> 0:18:45.56
+你怎么会受到邀请  小埃\NHow did you manage this
+
+339
+0:18:45.88 --> 0:18:47.98
+是她邀请我的  我们俩\NShe invited me. Or us.
+
+340
+0:18:48.31 --> 0:18:50.61
+她肯定爱上你了  卢克\NI think she's got a crush on you
+
+341
+0:18:50.61 --> 0:18:52.26
+不错啊  小埃  你真会哄人开心\NThat's cute
+
+342
+0:18:52.27 --> 0:18:53.86
+这是你的才能吧  很好\NWas that your material? Great.
+
+343
+0:18:57.31 --> 0:18:58.71
+好\NOkay.
+
+344
+0:19:01.81 --> 0:19:02.79
+这是你的社团\NThis is your club?
+
+345
+0:19:05.01 --> 0:19:05.99
+是的\NYeah.
+
+346
+0:19:05.99 --> 0:19:08.06
+就是去本地的医院\NYou go to local hospitals
+
+347
+0:19:08.06 --> 0:19:11.06
+陪病人画画  做剪贴\Nspend time with patients
+
+348
+0:19:11.06 --> 0:19:12.16
+诸如此类\Nthat sort of thing.
+
+349
+0:19:16.19 --> 0:19:17.86
+我觉得很抚慰人心\NI found it really comforting.
+
+350
+0:19:19.20 --> 0:19:20.53
+你去年是社团成员\NYou were in the club last year?
+
+351
+0:19:21.06 --> 0:19:23.77
+不是  我当时是病人\NNo. I was a patient.
+
+352
+0:19:24.30 --> 0:19:26.11
+过去四年由于免疫缺陷\NI spent the last four years in the hospital
+
+353
+0:19:26.11 --> 0:19:27.76
+我一直在住院\Nbecause of an immune deficiency.
+
+354
+0:19:31.46 --> 0:19:32.61
+那你更喜欢哪个\NSo
+
+355
+0:19:34.44 --> 0:19:35.76
+画画还是做剪贴\NThe painting or the scrapbooking?
+
+356
+0:19:37.28 --> 0:19:38.21
+做剪贴\NThe scrapbooking.
+
+357
+0:19:49.08 --> 0:19:50.31
+谁都可以参加吗\NSo anyone can join?
+
+358
+0:19:52.89 --> 0:19:55.18
+要占用很多课余时间\NIt's a lot of after-school hours
+
+359
+0:19:55.18 --> 0:19:58.75
+你们有宵禁令  也不准出隔离区\Nand with your curfew and not being permitted outside the Sector...
+
+360
+0:19:58.75 --> 0:19:59.57
+我是说  不准私自出隔离区\NI mean
+
+361
+0:19:59.58 --> 0:20:01.44
+不用说了  我懂  我懂\NNo
+
+362
+0:20:02.39 --> 0:20:04.63
+我的记忆存储在另一台电脑上\NMy memories are stored on a separate computer anyway
+
+363
+0:20:04.63 --> 0:20:06.57
+我可能不适合做剪贴\Nso I probably wouldn't be good at scrapbooking.
+
+364
+0:20:08.69 --> 0:20:09.38
+开玩笑的\NJoking.
+
+365
+0:20:11.52 --> 0:20:12.36
+还是谢了\NThanks anyway.
+
+366
+0:20:22.19 --> 0:20:24.09
+喜欢搭讪地球女孩啊  歪星人\NYou like talking to our girls there
+
+367
+0:20:24.09 --> 0:20:25.42
+很漂亮吧\NYou think they're pretty?
+
+368
+0:20:26.58 --> 0:20:29.25
+我是想加入她的社团  她没同意\NI was interested in joining her club
+
+369
+0:20:30.11 --> 0:20:31.28
+不用替我遗憾\NNo
+
+370
+0:20:31.28 --> 0:20:32.76
+还好没成\NIt's just as well.
+
+371
+0:20:32.76 --> 0:20:35.02
+我也没什么艺术骨头[细胞]\NI don't have an artistic bone in my body.
+
+372
+0:20:35.02 --> 0:20:36.82
+你全身上下有骨头吗\NDo you have any bones in your body?
+
+373
+0:20:36.82 --> 0:20:37.56
+说得好\NGood point.
+
+374
+0:20:37.56 --> 0:20:38.98
+我们的骨骼系统\NOur
+
+375
+0:20:38.98 --> 0:20:40.77
+由一万条蜈蚣手拉手组成\Nof 10
+
+376
+0:20:40.77 --> 0:20:43.51
+不过那是奥特里安人的145号秘密\Nbut that's Atrian secret number 145.
+
+377
+0:20:43.51 --> 0:20:44.64
+你怎么知道的\NHow do you know that?
+
+378
+0:20:45.46 --> 0:20:47.29
+-一切都好吗  罗曼  -没事\N- Everything okay
+
+379
+0:20:48.04 --> 0:20:49.76
+我们只是在互相了解\NWe're just getting to know each other.
+
+380
+0:20:49.77 --> 0:20:52.98
+我不在乎你爸爸是奥特里安人里的大人物\NI don't care that your dad is some big Atrian honcho.
+
+381
+0:20:52.98 --> 0:20:54.77
+你在这里就要遵守我们的规矩\NYou play by our rules here.
+
+382
+0:20:54.77 --> 0:20:55.73
+明白了吗  怪胎\NGot it
+
+383
+0:20:55.73 --> 0:20:56.95
+-得了吧  -泰瑞\N- Come on... - Teri.
+
+384
+0:21:01.23 --> 0:21:02.28
+明白了\NGot it.
+
+385
+0:21:08.03 --> 0:21:09.36
+等等  他们因为你跟\NSo
+
+386
+0:21:09.37 --> 0:21:10.98
+奥特里安人说话而大发雷霆\Nbecause you talked to an Atrian?
+
+387
+0:21:12.20 --> 0:21:14.91
+我想这有点像是所有人最糟糕的噩梦\NI mean
+
+388
+0:21:14.94 --> 0:21:16.18
+什么\NWhat is?
+
+389
+0:21:16.18 --> 0:21:18.66
+人类和奥特里安之间的恋爱倾向\NThe notion of the human-Atrian hookup.
+
+390
+0:21:18.66 --> 0:21:20.42
+"恋爱"  我们在谈论\NA "Hookup." Okay
+
+391
+0:21:20.42 --> 0:21:22.52
+绘画和剪贴\Npainting and scrapbooking.
+
+392
+0:21:22.53 --> 0:21:24.14
+恋爱都是这样开始的\NThat's how it begins.
+
+393
+0:21:25.10 --> 0:21:26.68
+我认为得给你找一个新的爱好\NI think we need to find you a new hobby
+
+394
+0:21:26.68 --> 0:21:29.14
+像是吹制玻璃  肚皮舞也可以\Nlike glassblowing
+
+395
+0:21:29.14 --> 0:21:30.48
+比如...\NSomething like...
+
+396
+0:21:37.00 --> 0:21:38.42
+这些是什么\NWhat are these?
+
+397
+0:21:41.13 --> 0:21:42.45
+出院表\NDischarge forms.
+
+398
+0:21:43.64 --> 0:21:45.44
+你要回家了\NYou're going home?
+
+399
+0:21:45.96 --> 0:21:46.98
+不回来了\NFor good?
+
+400
+0:21:47.72 --> 0:21:48.66
+没错\NYeah.
+
+401
+0:21:49.45 --> 0:21:50.53
+星期二\NTuesday.
+
+402
+0:21:51.27 --> 0:21:53.01
+你没有跟我说这件事\NA-And you didn't tell me?
+
+403
+0:21:58.25 --> 0:21:59.79
+化疗不管用\NThe chemo isn't working.
+
+404
+0:22:00.62 --> 0:22:01.74
+而且找到一个匹配的骨髓\NAnd finding a bone marrow match
+
+405
+0:22:01.74 --> 0:22:03.05
+也需耗费数年\Ncould take years.
+
+406
+0:22:05.57 --> 0:22:07.83
+那么你为什么要回家\NSo
+
+407
+0:22:07.83 --> 0:22:08.69
+我有贫血症\NI'm anemic.
+
+408
+0:22:08.69 --> 0:22:10.72
+我每隔一周就会得肺炎\NI'm getting pneumonia every other week.
+
+409
+0:22:10.74 --> 0:22:12.29
+我的血小板数目不停减少\NMy platelet count keeps dropping.
+
+410
+0:22:12.30 --> 0:22:13.74
+小朱  你不能就这么放弃了\NJules
+
+411
+0:22:13.74 --> 0:22:15.25
+这不是放弃的问题\NIt's not about giving up.
+
+412
+0:22:15.72 --> 0:22:17.29
+我一点都不在乎做检查\NI don't even care about the poking
+
+413
+0:22:17.29 --> 0:22:19.16
+针扎还有呕吐\Nand the prodding and the puking.
+
+414
+0:22:20.49 --> 0:22:22.04
+我再也承受不了的是\NWhat I can't take anymore
+
+415
+0:22:22.05 --> 0:22:24.36
+看见我的父母重燃希望\Nis seeing my parents get their hopes up...
+
+416
+0:22:24.79 --> 0:22:26.01
+却因为一次次的\Nonly to have them dashed
+
+417
+0:22:26.01 --> 0:22:28.45
+全血细胞数目测试结果而破灭\None lousy CBC test after another.
+
+418
+0:22:34.88 --> 0:22:36.66
+他们允许你外出一小时的  对吧\NThey'll let you out for an hour
+
+419
+0:22:37.44 --> 0:22:38.95
+怎么了  我们要去哪里\NWhy? Where are we going?
+
+420
+0:22:58.44 --> 0:23:00.31
+你确定你知道这个柏草长什么样吗\NAnd you're sure you know what this cyper herb looks like?
+
+421
+0:23:00.31 --> 0:23:02.20
+-确定  -很好\N- Yes. - Good.
+
+422
+0:23:02.20 --> 0:23:05.16
+因为我爸绝对不会轻饶我偷了他的通行证\N'Cause my dad will kill me for stealing his access badge.
+
+423
+0:23:12.25 --> 0:23:14.63
+隔离区执法队\N雷·怀特希尔
+
+424
+0:24:06.41 --> 0:24:07.99
+[外星语]
+
+425
+0:24:08.89 --> 0:24:10.78
+[外星语]
+
+426
+0:24:11.98 --> 0:24:14.99
+要手镯吗\NAh. Bracelets?
+
+427
+0:24:14.99 --> 0:24:16.54
+-好吧  我买三个  -不用了  谢谢\N- Okay. I'll take three. - Oh
+
+428
+0:24:16.54 --> 0:24:18.35
+-朱莉娅  不要买  -不用了  谢谢\N- Julia
+
+429
+0:24:18.35 --> 0:24:20.42
+看看这是谁来了\NWhat do we have here?
+
+430
+0:24:22.75 --> 0:24:25.78
+你们这些孩子知道不该来到这里的\NYou kids know you're not supposed to be here.
+
+431
+0:24:28.03 --> 0:24:29.42
+你有柏草吗\NDo you have any cyper?
+
+432
+0:24:30.00 --> 0:24:31.21
+柏草\NCyper.
+
+433
+0:24:34.19 --> 0:24:34.78
+跟我来\NRight here.
+
+434
+0:24:34.78 --> 0:24:35.83
+走吧\NCome on.
+
+435
+0:24:36.09 --> 0:24:38.17
+[外星语]
+
+436
+0:24:38.17 --> 0:24:41.05
+[外星语]
+
+437
+0:24:48.89 --> 0:24:50.08
+一级防范禁闭\NLockdown.
+
+438
+0:24:50.35 --> 0:24:53.78
+此隔离区现在正在封锁\NThis Sector is now under lockdown!
+
+439
+0:24:54.34 --> 0:24:54.93
+快走  快走  快走\NCome on
+
+440
+0:24:54.93 --> 0:24:56.59
+-跟我走  -好的\N- Let's go. - Okay.
+
+441
+0:24:56.80 --> 0:24:57.96
+一级防范禁闭\NLockdown!
+
+442
+0:25:01.13 --> 0:25:02.49
+我们在这里是安全的\NWe'll be safe up here.
+
+443
+0:25:02.83 --> 0:25:04.50
+小朱  你还好吗\NJules
+
+444
+0:25:04.70 --> 0:25:05.86
+你在跟我开玩笑吗\NAre you kidding?
+
+445
+0:25:06.29 --> 0:25:07.88
+这真是太不可思议了\NThat was amazing.
+
+446
+0:25:08.11 --> 0:25:09.47
+你们俩来这里干什么\NWhat are you guys doing here?
+
+447
+0:25:11.08 --> 0:25:12.66
+我们来找你们的柏草\NWe came for your cyper.
+
+448
+0:25:15.32 --> 0:25:17.04
+那你为什么不直接说就好了\NWell
+
+449
+0:25:17.04 --> 0:25:20.15
+我猜它的疗效已经不再只是我们族群之间的秘密了\NI guess its curative powers are no longer just our secret.
+
+450
+0:25:22.56 --> 0:25:23.64
+快过来\NCome on.
+
+451
+0:25:24.98 --> 0:25:27.58
+我们从太空船上偷偷带了一些种子进隔离区\NWe smuggled some seeds into the Sector from our ship.
+
+452
+0:25:27.58 --> 0:25:29.75
+-这是什么地方  -我和我爸一起建造的\N- What is this place? - My dad and I built it.
+
+453
+0:25:29.75 --> 0:25:32.35
+这儿有点像是我们的私人避难所\NIt's kind of like our own private sanctuary.
+
+454
+0:25:32.79 --> 0:25:33.90
+就在这里\NHere it is.
+
+455
+0:25:38.13 --> 0:25:40.00
+天哪  这里有好多柏草\NWow
+
+456
+0:25:40.47 --> 0:25:41.93
+想拿多少就拿多少吧\NTake as much as you'd like.
+
+457
+0:25:42.24 --> 0:25:43.89
+这真的是柏草吗\NIs this really cyper?
+
+458
+0:25:44.36 --> 0:25:45.36
+没错\NYep.
+
+459
+0:25:45.89 --> 0:25:47.25
+货真价实\NIt's really cyper.
+
+460
+0:25:48.67 --> 0:25:50.51
+或者是按照你们的说法\NOr
+
+461
+0:25:50.51 --> 0:25:51.64
+藏红花\Nsaffron.
+
+462
+0:25:53.05 --> 0:25:53.79
+藏红花\NSaffron?
+
+463
+0:25:53.79 --> 0:25:55.06
+我们是这么看待它的\NWell
+
+464
+0:25:55.06 --> 0:25:56.37
+我们用它来做饭\NWe use it for cooking.
+
+465
+0:25:56.93 --> 0:25:59.53
+但是一些胆大的警卫吹嘘我们香料的神奇功效\NBut some enterprising guards have made a good amount of cash
+
+466
+0:25:59.53 --> 0:26:02.08
+卖给在隔离区外容易上当受骗的人类\Nselling our spice's magic remedy to...
+
+467
+0:26:02.68 --> 0:26:05.09
+赚了一大票\Ngullible humans outside the Sector.
+
+468
+0:26:07.77 --> 0:26:09.08
+这总是值得一试的\NIt was worth a shot.
+
+469
+0:26:11.35 --> 0:26:13.69
+你有一个患病的朋友吗\NDo you... have a sick friend?
+
+470
+0:26:13.69 --> 0:26:15.20
+我没有\NUm
+
+471
+0:26:16.19 --> 0:26:17.32
+她有\NShe does.
+
+472
+0:26:23.10 --> 0:26:24.31
+对不起\NI'm sorry.
+
+473
+0:26:26.09 --> 0:26:28.20
+这也不能算是一无所获\NHey
+
+474
+0:26:28.29 --> 0:26:30.00
+至少我看到了这个地方\NAt least I got to see this place.
+
+475
+0:26:30.36 --> 0:26:33.13
+我对于奥特里安人的所有东西都很喜欢\NI'm... obsessed with all things Atrian.
+
+476
+0:26:34.85 --> 0:26:36.44
+你冷得直发抖  给你\NYou're shivering. Here.
+
+477
+0:26:39.72 --> 0:26:41.00
+谢谢\NThanks.
+
+478
+0:26:41.00 --> 0:26:42.45
+真有骑士风度\NSo chivalrous.
+
+479
+0:26:46.09 --> 0:26:48.00
+城市从这上面看好美\NCity looks beautiful from up here.
+
+480
+0:26:50.36 --> 0:26:52.33
+你这条疤怎么来的\NHow did you get that scar?
+
+481
+0:26:53.51 --> 0:26:56.05
+这是很久之前的事了\NIt... it happened a long time ago.
+
+482
+0:26:57.67 --> 0:26:58.93
+我们抵达地球的那天\NOn Arrival Day.
+
+483
+0:27:02.17 --> 0:27:05.26
+当时在那个棚屋的人是你  对吧\NThat was you i-in the shed
+
+484
+0:27:08.25 --> 0:27:10.02
+你一直都知道\NYou knew this whole time.
+
+485
+0:27:10.35 --> 0:27:11.64
+怎么知道的\NHow?
+
+486
+0:27:14.25 --> 0:27:15.27
+我在学校见到你的那一瞬间\NThe moment I saw you at school
+
+487
+0:27:15.27 --> 0:27:16.26
+我就产生了这种\NI had this...
+
+488
+0:27:16.79 --> 0:27:18.92
+对冷掉的意大利面条的异乎寻常的渴望\Nbizarre craving for cold spaghetti.
+
+489
+0:27:21.07 --> 0:27:22.65
+但是我很确定你已经死了\NBut I was sure you were dead.
+
+490
+0:27:22.65 --> 0:27:24.45
+我亲眼看到他们射死了你\NI saw them carry you away.
+
+491
+0:27:24.45 --> 0:27:25.73
+是差点死掉\NI came close.
+
+492
+0:27:27.19 --> 0:27:28.43
+我的一个心脏确实停跳了\NOne of my hearts actually stopped beating
+
+493
+0:27:28.43 --> 0:27:29.78
+几分钟\Nfor a few minutes.
+
+494
+0:27:30.39 --> 0:27:31.83
+幸好我还有备用的\NLuckily
+
+495
+0:27:36.68 --> 0:27:40.35
+我一直没机会谢谢你当年救了我\NI never got to thank you... for saving my life.
+
+496
+0:27:41.54 --> 0:27:43.22
+我当时才六岁\NI-I was six.
+
+497
+0:27:44.04 --> 0:27:45.23
+我没帮到你什么\NI hardly did anything.
+
+498
+0:27:45.23 --> 0:27:48.22
+别人冷酷无情时  你却宽容相待\NYou were kind... when everyone else was cruel.
+
+499
+0:27:48.22 --> 0:27:49.67
+这对我意义重大\NThat's something.
+
+500
+0:27:53.38 --> 0:27:55.03
+宵禁警告\NCurfew warning...
+
+501
+0:27:55.03 --> 0:27:57.28
+十分钟后就宵禁了  你们该走了\NCurfew starts in ten minutes; you guys should go.
+
+502
+0:27:57.57 --> 0:28:00.47
+宵禁警告  十...\NCurfew warning: ten...
+
+503
+0:28:01.16 --> 0:28:03.41
+我不敢相信当年棚屋里的男孩就是他\NI can't believe that was him
+
+504
+0:28:03.42 --> 0:28:05.84
+不过他显然已经长大了\NBut
+
+505
+0:28:06.47 --> 0:28:07.71
+朱莉娅\NJulia...
+
+506
+0:28:10.50 --> 0:28:11.76
+我很抱歉\NI'm sorry.
+
+507
+0:28:19.61 --> 0:28:20.96
+你在隔离区肯定\NCome on
+
+508
+0:28:20.96 --> 0:28:22.67
+有男友吧\Nback in the Sector
+
+509
+0:28:23.14 --> 0:28:25.28
+我真没有\NNo. There's nobody.
+
+510
+0:28:25.62 --> 0:28:27.85
+谁会想到奥特里安人能这么性感\NWho knew an Atrian could be so sexy?
+
+511
+0:28:27.85 --> 0:28:29.29
+你是校园里的话题女王\NYou're the talk of the school.
+
+512
+0:28:29.29 --> 0:28:30.83
+不过别告诉你的朋友泰瑞\NOh
+
+513
+0:28:30.83 --> 0:28:32.98
+因为我们觉得她可能会咬人\N'cause we think she might bite.
+
+514
+0:28:34.78 --> 0:28:36.23
+我该去上课了\NI should get to class.
+
+515
+0:28:36.82 --> 0:28:38.07
+你去哪里  你去哪里\NWhere you going? Where you going?
+
+516
+0:28:38.07 --> 0:28:39.33
+跟我说说\NHey
+
+517
+0:28:39.33 --> 0:28:41.00
+有关歪星人的传言是真的吗\Nis it true what they say about Tatties?
+
+518
+0:28:41.00 --> 0:28:41.90
+别碰我\NOh... Don't!
+
+519
+0:28:42.19 --> 0:28:43.59
+你性子还挺烈的嘛\NWell
+
+520
+0:28:43.59 --> 0:28:45.84
+-别碰我  -喂  你\N- Stop it! - Hey! Hey!
+
+521
+0:28:46.02 --> 0:28:47.33
+离她远点\NLeave her alone.
+
+522
+0:28:52.07 --> 0:28:54.04
+你非得碍我的事是吧\NYou just can't seem to get out of my way
+
+523
+0:28:54.04 --> 0:28:55.41
+她是我妹妹\NThat's my sister.
+
+524
+0:28:56.99 --> 0:28:57.96
+那好\NOkay.
+
+525
+0:28:59.63 --> 0:29:00.61
+罗曼\NRoman!
+
+526
+0:29:01.80 --> 0:29:02.89
+罗曼\NRoman!
+
+527
+0:29:03.89 --> 0:29:05.04
+-来人啊  -放开他\N- Help! - Get off him!
+
+528
+0:29:05.04 --> 0:29:05.74
+放开他\NHey
+
+529
+0:29:05.74 --> 0:29:07.38
+谁来帮帮他\NSomebody help him!
+
+530
+0:29:09.21 --> 0:29:12.99
+别打了  别再打了\NHey! Hey
+
+531
+0:29:14.21 --> 0:29:15.29
+滚吧\NGet out of here!
+
+532
+0:29:15.91 --> 0:29:18.15
+滚回你的垃圾星球去吧\NGo back to your own damn planet!
+
+533
+0:29:18.38 --> 0:29:20.39
+快让他滚\NHey
+
+534
+0:29:39.64 --> 0:29:41.87
+我观察你很久了  罗曼\NI've been watching you for a long time
+
+535
+0:29:42.09 --> 0:29:43.51
+我和你父亲一起\NI worked closely with your father
+
+536
+0:29:43.51 --> 0:29:45.22
+促成了这个项目\Nto help build this program.
+
+537
+0:29:45.22 --> 0:29:46.50
+你要是不想让它失败\NUnless you want to see it fail
+
+538
+0:29:46.51 --> 0:29:48.74
+就别像个野兽一样为所欲为\Nyou have to stop acting like an animal.
+
+539
+0:29:49.55 --> 0:29:51.86
+他攻击我妹妹  我却成了野兽\NHe assaulted my sister
+
+540
+0:29:51.86 --> 0:29:53.25
+要是这种事再次发生\NThis happens again
+
+541
+0:29:53.31 --> 0:29:54.96
+他们就会把你交给军医\Nthey'll hand you over to military doctors to have
+
+542
+0:29:54.96 --> 0:29:56.65
+用你的睾丸做实验\Nyour testicles put in a jar and studied.
+
+543
+0:29:56.65 --> 0:29:57.98
+你不想这样吧\NYou don't want that.
+
+544
+0:29:59.36 --> 0:30:00.38
+我也不想这样\NI don't want that.
+
+545
+0:30:00.38 --> 0:30:03.03
+我的睾丸也绝对不想\NAnd my testicles definitely don't want that.
+
+546
+0:30:04.44 --> 0:30:06.84
+我一向倾力保护我的投入\NI always protect my investments.
+
+547
+0:30:10.00 --> 0:30:12.15
+但前提是他们有生存能力\NThat is
+
+548
+0:30:23.36 --> 0:30:24.38
+罗曼\NRoman.
+
+549
+0:30:32.23 --> 0:30:33.10
+今晚你会来吧\NYou're coming tonight
+
+550
+0:30:33.10 --> 0:30:35.98
+没错  格雷森  你会看到她的\NYes
+
+551
+0:30:35.98 --> 0:30:37.93
+拜托  能洒脱一点吗\NGod. Attempt to be cool.
+
+552
+0:30:37.93 --> 0:30:40.41
+连像埃默里这样的社交新人\NEven social newbies like Emery
+
+553
+0:30:40.41 --> 0:30:42.96
+都还是喜欢那些暗恋者不要太过主动\Nstill like a little cool with their drool.
+
+554
+0:30:57.14 --> 0:30:59.15
+C区清人检查\NQuadrant C cleared for inspection.
+
+555
+0:30:59.15 --> 0:30:59.94
+不用你管  泰瑞\NStay out of it
+
+556
+0:30:59.94 --> 0:31:02.31
+就算你能闯进他们的烂派对\NEven if you can get out to crash their lame party
+
+557
+0:31:02.31 --> 0:31:04.46
+你也不可能在宵禁之前赶回来\Nyou'll never get back in time to make curfew.
+
+558
+0:31:04.55 --> 0:31:05.51
+不试试看怎么知道\NMaybe
+
+559
+0:31:05.51 --> 0:31:07.05
+我们得给他们点颜色看看\NBut we need to send a message
+
+560
+0:31:07.05 --> 0:31:09.55
+不能让今天罗曼的事再重演\NWhat happened to Roman today can never happen again.
+
+561
+0:31:13.66 --> 0:31:15.02
+都开始穿高跟鞋了\NHigh heels now?
+
+562
+0:31:15.17 --> 0:31:16.75
+要去约会了\NIt's the beginning of the end.
+
+563
+0:31:16.86 --> 0:31:18.70
+去参加派对而已\NNo
+
+564
+0:31:22.46 --> 0:31:23.66
+多加小心\NYou'll be careful?
+
+565
+0:31:23.94 --> 0:31:25.02
+一向如此\NAlways.
+
+566
+0:31:26.18 --> 0:31:27.24
+玩得开心点\NHave fun.
+
+567
+0:31:27.24 --> 0:31:28.43
+你该好好放松一下了\NYou deserve it.
+
+568
+0:31:29.63 --> 0:31:31.71
+我要去隔离区了\NI'm out of here. Off to the Sectoec
+
+569
+0:31:31.71 --> 0:31:32.86
+老爸再见\NBye
+
+570
+0:31:44.88 --> 0:31:46.12
+你想念它吗\NDo you ever miss it?
+
+571
+0:31:47.17 --> 0:31:48.15
+想念什么\NWhat?
+
+572
+0:31:48.81 --> 0:31:49.98
+奥特里安吗\NAtria?
+
+573
+0:31:50.29 --> 0:31:51.35
+当然\NOf course.
+
+574
+0:31:51.97 --> 0:31:53.24
+没有一天不想\NEvery day.
+
+575
+0:31:54.46 --> 0:31:55.46
+但是\NBut...
+
+576
+0:31:56.24 --> 0:31:58.36
+如今这里才是我们的家\Nthis is our home now.
+
+577
+0:31:59.01 --> 0:31:59.78
+武装守卫\NArmed guards
+
+578
+0:31:59.79 --> 0:32:02.40
+强制宵禁  还有铁丝网\Nmandatory curfew and barbed wire.
+
+579
+0:32:02.61 --> 0:32:04.70
+我印象里的家可不是这样的\NIt's not exactly my idea of home.
+
+580
+0:32:04.70 --> 0:32:06.06
+不会一成不变的\NIt won't be like that forever.
+
+581
+0:32:06.07 --> 0:32:07.29
+老爸  他们\NDad
+
+582
+0:32:07.91 --> 0:32:09.91
+他们不会平等对待我们的\Nthey're never gonna treat us like equals.
+
+583
+0:32:10.16 --> 0:32:12.28
+你们这代人会消除隔阂的\NYou know
+
+584
+0:32:12.28 --> 0:32:13.89
+有隔阂也是他们造成的\NA gap they created.
+
+585
+0:32:15.01 --> 0:32:17.22
+我不是说这一切能立马实现\NI-I'm not saying it's gonna happen tomorrow.
+
+586
+0:32:17.29 --> 0:32:19.25
+这需要时间\NThese things take time.
+
+587
+0:32:19.72 --> 0:32:21.57
+但我相信他们\NBut I have faith in them.
+
+588
+0:32:24.17 --> 0:32:26.58
+就如同我相信你一样\NJust like I have faith in you.
+
+589
+0:32:27.94 --> 0:32:29.70
+你跟其他人不一样\NYou're not like the rest.
+
+590
+0:32:31.69 --> 0:32:33.27
+我看不到希望\NI just don't see it.
+
+591
+0:32:40.43 --> 0:32:42.88
+我们明天再接着种吧\NWe'll finish this planting tomorrow.
+
+592
+0:32:51.19 --> 0:32:52.40
+怎么了  泰瑞\NWhat do you want
+
+593
+0:32:52.74 --> 0:32:54.17
+我看到你昨晚\NI saw you last night
+
+594
+0:32:54.31 --> 0:32:55.95
+和那个叫埃默里的女孩在一起\Nwith that girl Emery.
+
+595
+0:32:58.24 --> 0:32:59.72
+我只是帮她脱离困境\NI was keeping her out of trouble.
+
+596
+0:32:59.73 --> 0:33:02.52
+我不明白你为什么要费心和他们来往\NI don't know why you even bother making connections with them.
+
+597
+0:33:02.65 --> 0:33:05.67
+他们很快就会被隔离起来了\NSoon
+
+598
+0:33:06.45 --> 0:33:07.46
+你这话是什么意思\NWhat are you talking about?
+
+599
+0:33:07.46 --> 0:33:08.63
+我妈和其他人\NJust something my mother
+
+600
+0:33:08.63 --> 0:33:10.81
+在他们的周一聚会上这么说的\Nand the rest of the Trags talk about in their Monday meeting.
+
+601
+0:33:10.81 --> 0:33:13.27
+无意冒犯  泰瑞  但你妈屁也不懂\NNo offense
+
+602
+0:33:15.60 --> 0:33:17.06
+顺便说一句\NOh
+
+603
+0:33:17.68 --> 0:33:19.88
+德雷克他们去找那个埃里克了\NDrake and them went after that kid Eric.
+
+604
+0:33:24.28 --> 0:33:26.80
+一级防范禁闭  2200小时\NLockdown
+
+605
+0:33:26.80 --> 0:33:29.51
+一级防范禁闭  2200小时\NLockdown
+
+606
+0:33:33.59 --> 0:33:35.47
+我想要溜出去\NI'm looking for the path to Hades.
+
+607
+0:33:37.67 --> 0:33:39.44
+你不是诺克斯的儿子吗\NAren't you Nox's son?
+
+608
+0:33:45.19 --> 0:33:46.70
+你一定是认错人了\NYou must be confused.
+
+609
+0:33:47.21 --> 0:33:48.36
+能帮我吗\NCan you help?
+
+610
+0:33:56.98 --> 0:33:58.16
+就像我跟你朋友说的那样\NAs I told your friends
+
+611
+0:33:58.16 --> 0:33:59.45
+在标记重新启动之前\Nyou've got three hours
+
+612
+0:33:59.45 --> 0:34:01.66
+你只有三个小时\Nbefore the signal reactivates.
+
+613
+0:34:01.66 --> 0:34:04.18
+B区8号走廊\NZone B. Corridor 8.
+
+614
+0:34:05.34 --> 0:34:07.15
+找到那盏坏掉的灯\NLook for the broken light.
+
+615
+0:34:07.15 --> 0:34:09.79
+正下方有一块假墙板\NDirectly beneath
+
+616
+0:34:38.56 --> 0:34:39.46
+好了\NOkay.
+
+617
+0:34:39.46 --> 0:34:41.09
+我不得不动粗才从一个新生那里搞到\NI had to strong-arm a freshman to get the last
+
+618
+0:34:41.09 --> 0:34:42.93
+最后一点蓝色潘趣\Nof the blue punch.
+
+619
+0:34:43.33 --> 0:34:43.96
+谢谢\NThanks.
+
+620
+0:34:43.96 --> 0:34:44.97
+干杯\NCheers.
+
+621
+0:34:46.19 --> 0:34:47.30
+干杯\NCheers.
+
+622
+0:34:48.86 --> 0:34:49.91
+你还好吧\NYou all right?
+
+623
+0:34:50.65 --> 0:34:51.85
+当然了\NYeah. Sure.
+
+624
+0:34:51.86 --> 0:34:53.98
+你看上去有些心不在焉\NYou just seem a little distracted.
+
+625
+0:34:55.94 --> 0:34:57.57
+这一切对我来说\NThis is all just...
+
+626
+0:34:57.75 --> 0:34:58.86
+太新鲜了\Npretty new to me.
+
+627
+0:34:58.86 --> 0:35:01.10
+要试着放松  没人会说你闲话的\NJust try to relax. You're not being judged.
+
+628
+0:35:01.10 --> 0:35:02.54
+这里的大多数人都自恋得很\NMost people here are too self-obsessed
+
+629
+0:35:02.54 --> 0:35:03.74
+才不会关心别人呢\Nto care about anyone else.
+
+630
+0:35:06.94 --> 0:35:08.50
+大家快来看啊\NHey! You guys got to see this!
+
+631
+0:35:14.62 --> 0:35:16.68
+看看他们对布洛克干了什么\NLook what someone did to Brock!
+
+632
+0:35:19.37 --> 0:35:20.49
+谁干的\NWho did this?
+
+633
+0:35:21.65 --> 0:35:23.02
+谁干的\NWho did this?!
+
+634
+0:35:23.91 --> 0:35:25.47
+我们只想谈谈\NWe just want to have a little talk.
+
+635
+0:35:26.85 --> 0:35:27.87
+好吧\NAll right.
+
+636
+0:35:28.99 --> 0:35:30.37
+今晚得做个了结\NThis ends tonight.
+
+637
+0:35:31.20 --> 0:35:33.66
+只此一次  我同意\NFor once
+
+638
+0:35:37.76 --> 0:35:39.04
+我们受够了\NWe're sick of it!
+
+639
+0:35:39.50 --> 0:35:41.27
+你们这群人每天都来找我们麻烦\NYou guys messing with us every day!
+
+640
+0:35:41.27 --> 0:35:44.11
+都结束了  如果你们再纠缠我们\NIt's done! It's over! This is what's gonna happen
+
+641
+0:35:44.11 --> 0:35:46.20
+这就是你们的下场  听明白了吗\Nif you keep messing with us
+
+642
+0:35:46.32 --> 0:35:47.97
+住手\NHey! Come on!
+
+643
+0:35:47.98 --> 0:35:49.37
+罗曼  你来干什么\NRoman
+
+644
+0:35:49.37 --> 0:35:50.11
+你知道他们发现你们出了隔离区\NDo you know what they'd do to you
+
+645
+0:35:50.11 --> 0:35:51.26
+会拿你怎么样吗\Nif they found you outside the Sector?
+
+646
+0:35:51.26 --> 0:35:52.63
+你应该和我一条战线\NYou should be fighting alongside of me
+
+647
+0:35:52.63 --> 0:35:54.10
+而不是和我对着干\Ninstead of against me!
+
+648
+0:35:54.30 --> 0:35:55.15
+警察\NCops!
+
+649
+0:35:55.16 --> 0:35:56.25
+快跑\NCome on!
+
+650
+0:35:59.40 --> 0:36:01.79
+罗曼  罗曼  罗...\NRoman. Roman! Ro...!
+
+651
+0:36:05.81 --> 0:36:08.11
+-你没事吧  -埃默里  快走\N- Are you okay? - Emery
+
+652
+0:36:08.12 --> 0:36:10.43
+快来  罗曼  上车\NCome on! Roman
+
+653
+0:36:10.43 --> 0:36:12.68
+你疯了吗  埃默里  别管他了\NAre you nuts? Come on
+
+654
+0:36:12.68 --> 0:36:13.53
+警察来了怎么办\NBut what about the cops?!
+
+655
+0:36:13.53 --> 0:36:15.37
+那是他的问题  不关我们的事  快走\NHis problem
+
+656
+0:36:15.37 --> 0:36:17.19
+埃默里  你要干什么  走啊\NEmery
+
+657
+0:36:17.90 --> 0:36:19.63
+-埃默里  -格雷森  我们必须离开\N- Emery! - Grayson
+
+658
+0:36:19.63 --> 0:36:21.21
+罗曼  快跑  跑比较快\NRoman
+
+659
+0:36:21.21 --> 0:36:22.77
+-我们不能丢下她  -当然可以\N- We can't just leave her! - Yes
+
+660
+0:36:22.77 --> 0:36:23.80
+她简直是个疯子\NShe's a total freak!
+
+661
+0:36:23.80 --> 0:36:25.56
+伙计  她选择了那个歪星人\NDude
+
+662
+0:36:25.56 --> 0:36:26.66
+认了吧\NOwn it.
+
+663
+0:36:26.67 --> 0:36:28.34
+快点  我们走\NCome on! Let's go!
+
+664
+0:36:51.84 --> 0:36:52.94
+你还好吗\NAre you okay?
+
+665
+0:36:53.02 --> 0:36:56.10
+除了刚才社交自杀了一把\NOther than having possibly just committed social suicide?
+
+666
+0:36:53.02 --> 0:36:56.10
+社交自杀  指躲开人群  避免社交活动
+
+667
+0:36:56.96 --> 0:36:57.98
+还好\NSure.
+
+668
+0:37:00.85 --> 0:37:01.90
+你呢\NYou okay?
+
+669
+0:37:05.39 --> 0:37:06.66
+真好笑\NYou know
+
+670
+0:37:07.12 --> 0:37:08.48
+这么多年来我父亲一直在教我\NAll these years
+
+671
+0:37:08.48 --> 0:37:11.16
+那被称道的所谓"人性"\Nabout this vaunted thing called "Humanity
+
+672
+0:37:12.18 --> 0:37:13.36
+从定义上来说  那是我们\Nsomething that
+
+673
+0:37:13.36 --> 0:37:15.50
+不可能拥有的\Nwe could never possess.
+
+674
+0:37:16.46 --> 0:37:17.51
+但是...\NBut...
+
+675
+0:37:18.33 --> 0:37:21.64
+和你们人类接触了几天之后\Nafter spending just a few days amongst your kind...
+
+676
+0:37:23.02 --> 0:37:25.84
+我弄不明白"人性"这个概念了\Nthis concept of "Humanity" doesn't seem so clear to me.
+
+677
+0:37:25.84 --> 0:37:29.28
+不是的  世上还是有很多好人的\NNo. There are a lot of good people out there.
+
+678
+0:37:29.28 --> 0:37:30.20
+是吗\NYeah?
+
+679
+0:37:31.26 --> 0:37:33.18
+我只遇见过一个\NWell
+
+680
+0:37:56.13 --> 0:37:57.80
+你不必害怕\NYou don't have to be afraid.
+
+681
+0:38:08.47 --> 0:38:09.65
+对不起\NSorry.
+
+682
+0:38:10.10 --> 0:38:11.55
+是我妈\NIt's my mom.
+
+683
+0:38:13.24 --> 0:38:14.55
+我一会儿就到家\NI'll be home soon.
+
+684
+0:38:18.94 --> 0:38:21.27
+好的  我正在路上\NO-Okay. I'm on my way.
+
+685
+0:38:23.29 --> 0:38:25.39
+是...朱莉娅\NIt's... Julia.
+
+686
+0:38:26.27 --> 0:38:27.79
+我得走了\NI have to go.
+
+687
+0:38:29.28 --> 0:38:30.06
+我明白\NI understand.
+
+688
+0:38:30.06 --> 0:38:31.12
+继续往前直走\NIf you keep walking straight
+
+689
+0:38:31.12 --> 0:38:32.98
+你就会找到回隔离区的路\Nyou'll find the road to the Sector.
+
+690
+0:38:33.16 --> 0:38:34.19
+谢谢你\NThanks.
+
+691
+0:38:38.44 --> 0:38:39.55
+你没事吧\NAre you okay?
+
+692
+0:38:40.29 --> 0:38:41.73
+我得走了\NI have to go.
+
+693
+0:39:05.94 --> 0:39:06.86
+泰瑞\NTeri.
+
+694
+0:39:07.00 --> 0:39:08.10
+几小时前你和罗曼在一起\NYou were with Roman a few hours ago.
+
+695
+0:39:08.10 --> 0:39:10.10
+你知道他现在在哪里吗  都快宵禁了\NDo you know where he is? It's almost curfew.
+
+696
+0:39:11.03 --> 0:39:12.05
+泰瑞\NTeri?
+
+697
+0:39:56.79 --> 0:39:58.91
+你怎么能让我儿子出去\NHow could you let my son go out there?
+
+698
+0:40:09.30 --> 0:40:10.41
+先生们  出什么事了\NIs there a problem here
+
+699
+0:40:10.41 --> 0:40:11.88
+没事\NNo
+
+700
+0:40:17.57 --> 0:40:19.69
+离开桌子  让我看到你们的手\NStep away from the table. Let me see your hands.
+
+701
+0:40:26.79 --> 0:40:27.94
+那是什么\NWhat's that?
+
+702
+0:40:27.97 --> 0:40:29.33
+这可不行  威布尔\NNot good
+
+703
+0:40:37.39 --> 0:40:38.75
+放下武器\NDrop your weapon!
+
+704
+0:40:43.01 --> 0:40:44.17
+威布尔  不要\NWeeble
+
+705
+0:41:01.99 --> 0:41:03.09
+有人中枪\NMan down!
+
+706
+0:41:09.58 --> 0:41:11.02
+怀特希尔指挥官\NCommander Whitehill!
+
+707
+0:41:12.37 --> 0:41:13.55
+雷\NRay!
+
+708
+0:41:14.77 --> 0:41:16.03
+你没事吧\NAre you okay?
+
+709
+0:41:50.00 --> 0:41:56.21
+星恋
