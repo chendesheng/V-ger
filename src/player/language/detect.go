@@ -38,7 +38,7 @@ func DetectLanguages(str string) (string, string) {
 	}
 
 	if (asciiCnt+chsCnt+chtCnt)/anyCnt > 0.8 {
-		if chtCnt/anyCnt > 0.2 {
+		if chtCnt/(chsCnt+chtCnt) > 0.1 {
 			return "en", "cht"
 		} else {
 			return "en", "chs"

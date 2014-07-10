@@ -21,7 +21,6 @@ client
 *.mp4
 *.mkv
 *.wav
-*.srt
 *.log
 bin/player
 unar

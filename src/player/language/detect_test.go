@@ -1,6 +1,7 @@
 package language
 
 import (
+	"io/ioutil"
 	"testing"
 )
 
@@ -160,5 +161,22 @@ To this end, I have a few of those who opened his eyes and pride in the pursuit 
 
 	if lang2 != "chs" {
 		t.Errorf("Expect 'chs' but %s", lang2)
+	}
+}
+
+func TestCht(t *testing.T) {
+	data, err := ioutil.ReadFile("cht.srt")
+	if err != nil {
+		t.Error(err)
+	} else {
+		lang1, lang2 := DetectLanguages(string(data))
+
+		if lang1 != "en" {
+			t.Errorf("Expect 'en' but %s", lang1)
+		}
+
+		if lang2 != "cht" {
+			t.Errorf("Expect 'cht' but %s", lang2)
+		}
 	}
 }
