@@ -94,9 +94,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 
 	return true
 }
-func readSubtitlesFromDir(movieName, dir string) []string {
-	log.Print(dir)
-	subs := make([]string, 0)
+func readSubtitlesFromDir(movieName, dir string) {
 	util.EmulateFiles(dir, func(filename string) {
 		log.Print(filename)
 
@@ -114,14 +112,12 @@ func readSubtitlesFromDir(movieName, dir string) []string {
 			// lang1, lang2 := cld.DetectLanguage2(utf8Text)
 			log.Printf("insert subtitle %s", name)
 			InsertSubtitle(&Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
-			subs = append(subs, name)
 		} else {
 			log.Print(err)
 		}
 	}, ".srt", ".ass")
-	return subs
 }
-func downloadSubs(movieName string, url string, search string, quit chan struct{}) []string {
+func downloadSubs(movieName string, url string, search string, quit chan struct{}) {
 	chSubs := make(chan subtitles.Subtitle)
 	thunder.Login()
 	go subtitles.SearchSubtitlesMaxCount(search, url, chSubs, 2, quit)
@@ -129,9 +125,7 @@ func downloadSubs(movieName string, url string, search string, quit chan struct{
 	dir := path.Join(util.ReadConfig("dir"), "subs", movieName)
 	util.MakeSurePathExists(dir)
 	if receiveAndExtractSubtitles(chSubs, dir, quit) {
-		return readSubtitlesFromDir(movieName, dir)
-	} else {
-		return nil
+		readSubtitlesFromDir(movieName, dir)
 	}
 }
 
@@ -155,8 +149,8 @@ func (m *Movie) SearchDownloadSubtitle() {
 	defer w.SendHideMessage()
 
 	search, url := m.getSubtitleSearch()
-	subFiles := downloadSubs(m.p.Movie, url, search, m.quit)
-	// if len(subFiles) < 5 {
+	downloadSubs(m.p.Movie, url, search, m.quit)
+
 	name, content := subtitles.Addic7edSubtitle(search)
 	if len(name) > 0 && len(content) > 0 {
 		sub := &Sub{
@@ -166,10 +160,7 @@ func (m *Movie) SearchDownloadSubtitle() {
 		}
 		log.Print("insert subtitle:", sub.Name)
 		InsertSubtitle(sub)
-
-		subFiles = append(subFiles, name)
 	}
-	// }
 
 	select {
 	case <-m.quit:
@@ -185,17 +176,43 @@ func (m *Movie) SearchDownloadSubtitle() {
 		break
 	}
 }
-func (m *Movie) setupDefaultSubtitles(subs map[string]*Sub, width, height int) {
-	subtitles := make([]*Subtitle, 0, len(subs))
-
-	// var en, chs, cht, en_chs, en_cht *Subtitle
-	for _, sub := range subs {
-		s := NewSubtitle(sub, m.w, m.c, float64(width), float64(height))
-		subtitles = append(subtitles, s)
+func (m *Movie) getSub(name string) *Subtitle {
+	for _, s := range m.subs {
+		if s.Name == name {
+			return s
+		}
+	}
+	return nil
+}
+func (m *Movie) setupDefaultSubtitles() {
+	if len(m.p.Sub1) == 0 && len(m.p.Sub2) > 0 {
+		m.p.Sub1 = m.p.Sub2
+		m.p.Sub2 = ""
 	}
 
-	sort.Sort(Subtitles(subtitles))
-	m.s, m.s2 = Subtitles(subtitles).Select()
+	var s1, s2 *Subtitle
+	if len(m.p.Sub1) > 0 {
+		s1 = m.getSub(m.p.Sub1)
+		if s1 != nil {
+			m.s = s1
+		} else {
+			m.p.Sub1 = ""
+		}
+	}
+
+	if len(m.p.Sub2) > 0 {
+		s2 = m.getSub(m.p.Sub2)
+		if s2 != nil {
+			m.s2 = s2
+		} else {
+			m.p.Sub2 = ""
+		}
+	}
+
+	if m.s == nil && m.s2 == nil {
+		sort.Sort(Subtitles(m.subs))
+		m.s, m.s2 = Subtitles(m.subs).Select()
+	}
 
 	if m.s != nil {
 		m.s.IsMainOrSecondSub = true
@@ -208,8 +225,10 @@ func (m *Movie) setupDefaultSubtitles(subs map[string]*Sub, width, height int) {
 		m.p.Sub2 = m.s2.Name
 		go m.s2.Play()
 	}
+
+	SavePlayingAsync(m.p)
 }
-func (m *Movie) setupSubtitlesMenu(subs []*Sub) {
+func (m *Movie) setupSubtitlesMenu() {
 	HideSubtitleMenu()
 
 	tags := make([]int32, 0)
@@ -217,8 +236,8 @@ func (m *Movie) setupSubtitlesMenu(subs []*Sub) {
 
 	selected1 := -1
 	selected2 := -1
-	i := 0
-	for _, sub := range subs {
+
+	for i, sub := range m.subs {
 		tags = append(tags, int32(i))
 		names = append(names, filepath.Base(sub.Name))
 
@@ -229,8 +248,6 @@ func (m *Movie) setupSubtitlesMenu(subs []*Sub) {
 		if m.s2 != nil && sub.Name == m.s2.Name {
 			selected2 = i
 		}
-
-		i++
 	}
 
 	if selected1 == -1 && selected2 == -1 {
@@ -252,52 +269,17 @@ func getSubValues(subs map[string]*Sub) []*Sub {
 
 func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 	if len(subs) > 0 {
-		m.subs = getSubValues(subs)
+		for _, sub := range m.subs {
+			sub.Stop()
+		}
 
-		println("play subtitle:", subs)
+		m.subs = nil
 		width, height := m.v.Width, m.v.Height
-
-		if len(m.p.Sub1) == 0 && len(m.p.Sub2) > 0 {
-			m.p.Sub1 = m.p.Sub2
-			m.p.Sub2 = ""
+		for _, sub := range subs {
+			m.subs = append(m.subs, NewSubtitle(sub, m.w, m.c, float64(width), float64(height)))
 		}
 
-		var s1, s2 *Subtitle
-		if len(m.p.Sub1) > 0 {
-			s1 = NewSubtitle(subs[m.p.Sub1], m.w, m.c, float64(width), float64(height))
-			if s1 != nil {
-				s1.IsMainOrSecondSub = true
-
-				if s1 != nil {
-					go s1.Play()
-				}
-				m.s = s1
-			} else {
-				m.p.Sub1 = ""
-			}
-		}
-
-		if len(m.p.Sub2) > 0 {
-			s2 = NewSubtitle(subs[m.p.Sub2], m.w, m.c, float64(width), float64(height))
-			if s2 != nil {
-				s2.IsMainOrSecondSub = false
-
-				if s2 != nil {
-					go s2.Play()
-				}
-				m.s2 = s2
-			} else {
-				m.p.Sub2 = ""
-			}
-		}
-
-		if m.s == nil && m.s2 == nil {
-			println("auto select default subtitle")
-			m.setupDefaultSubtitles(subs, width, height)
-		}
-
-		SavePlayingAsync(m.p)
+		m.setupDefaultSubtitles()
+		m.setupSubtitlesMenu()
 	}
-
-	m.setupSubtitlesMenu(m.subs)
 }

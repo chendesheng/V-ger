@@ -36,6 +36,10 @@ func (w *Window) InitAudioMenu(names []string, tags []int32, selected int) {
 	}
 }
 
+func SetSubtitleMenuItem(t1, t2 int) {
+	C.setSubtitleMenuItem(C.int(t1), C.int(t2))
+}
+
 func (w *Window) InitSubtitleMenu(names []string, tags []int32, selected1 int, selected2 int) {
 	if len(names) == 0 {
 		return

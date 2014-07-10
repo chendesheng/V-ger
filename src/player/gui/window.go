@@ -35,7 +35,7 @@ type Window struct {
 	FuncOnFullscreenChanged []func(bool)
 	FuncOnProgressChanged   []func(int, float64)
 	FuncAudioMenuClicked    []func(int)
-	FuncSubtitleMenuClicked []func(int, bool)
+	FuncSubtitleMenuClicked []func(int)
 	FuncMouseWheelled       []func(float64)
 	FuncMouseMoved          []func()
 
@@ -548,11 +548,11 @@ func goOnAudioMenuClicked(ptr unsafe.Pointer, tag int) {
 }
 
 //export goOnSubtitleMenuClicked
-func goOnSubtitleMenuClicked(ptr unsafe.Pointer, tag int, showOrHide int) {
+func goOnSubtitleMenuClicked(ptr unsafe.Pointer, tag int) {
 	w := windows[ptr]
 
 	for _, fn := range w.FuncSubtitleMenuClicked {
-		fn(tag, showOrHide != 0)
+		fn(tag)
 	}
 }
 

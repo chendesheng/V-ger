@@ -23,8 +23,8 @@ void onFullscreenChanged(void* wptr, int b) {
 void onAudioMenuClicked(void* wptr, int tag) {
 	goOnAudioMenuClicked(wptr, tag);
 }
-void onSubtitleMenuClicked(void* wptr, int tag, int showOrHide) {
-	goOnSubtitleMenuClicked(wptr, tag, showOrHide);
+void onSubtitleMenuClicked(void* wptr, int tag) {
+	goOnSubtitleMenuClicked(wptr, tag);
 }
 
 int onOpenFile(const char* file) {

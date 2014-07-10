@@ -46,8 +46,8 @@ void hideSubtitleMenu();
 // typedef void (* DrawFunc)(void*);
 
 void onAudioMenuClicked(void*, int);
-void onSubtitleMenuClicked(void*, int, int);
-
+void onSubtitleMenuClicked(void*, int);
+void setSubtitleMenuItem(int t1, int t2);
 
 void onDraw(void*);
 void onTimerTick(void*);

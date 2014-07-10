@@ -3,7 +3,7 @@ package movie
 import (
 	"fmt"
 	. "player/shared"
-	. "player/subtitle"
+	// . "player/subtitle"
 	// "log"
 	"player/gui"
 	// . "player/video"
@@ -208,52 +208,76 @@ func (m *Movie) uievents() {
 		}
 	})
 
-	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int, showOrHide bool) {
+	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int) {
 		go func() {
 			subs := m.subs
 			clicked := subs[index]
 			log.Print("toggle subtitle:", clicked.Name, index)
-			if showOrHide {
-				// m.s.Stop()
-				width, height := m.w.GetWindowSize()
-				s := NewSubtitle(clicked, m.w, m.c, float64(width), float64(height))
-				if s != nil {
-					if m.s == nil {
-						m.s = s
-						s.IsMainOrSecondSub = true
-					} else {
-						m.s2 = s
-						s.IsMainOrSecondSub = false
-					}
-					go s.Play()
+
+			if m.s == clicked {
+				m.s.Stop()
+				if m.s2 != nil {
+					m.s = m.s2
+					m.s.IsMainOrSecondSub = true //race condition here
+					m.s2 = nil
+				} else {
+					m.s = nil
 				}
+			} else if m.s2 == clicked {
+				m.s2.Stop()
+				m.s2 = nil
 			} else {
-				if (m.s != nil) && (m.s.Name == clicked.Name) {
+				if m.s == nil && m.s2 == nil {
+					m.s = clicked
+					go m.s.Play()
+				} else {
 					m.s.Stop()
 					if m.s2 != nil {
-						m.s = m.s2
-						m.s.IsMainOrSecondSub = true
-						m.s2 = nil
-					} else {
-						m.s = nil
+						m.s2.Stop()
 					}
-				} else if (m.s2 != nil) && (m.s2.Name == clicked.Name) {
-					m.s2.Stop()
-					m.s2 = nil
+
+					if clicked.IsTwoLangs() {
+						m.s = clicked
+						m.s2 = nil
+					} else if m.s.IsTwoLangs() {
+						m.s = clicked
+						m.s2 = nil
+					} else if isLangEqual(m.s.Lang1, clicked.Lang1) {
+						m.s = clicked
+					} else if m.s2 == nil {
+						m.s2 = clicked
+					} else if isLangEqual(m.s2.Lang1, clicked.Lang1) {
+						m.s2 = clicked
+					}
+
+					if m.s != nil {
+						m.s.IsMainOrSecondSub = true
+						m.p.Sub1 = m.s.Name
+						go m.s.Play()
+					} else {
+						m.p.Sub1 = ""
+					}
+
+					if m.s2 != nil {
+						m.s2.IsMainOrSecondSub = false
+						m.p.Sub2 = m.s2.Name
+						go m.s2.Play()
+					} else {
+						m.p.Sub2 = ""
+					}
 				}
 			}
 
-			if m.s != nil {
-				m.p.Sub1 = m.s.Name
-			} else {
-				m.p.Sub1 = ""
+			t1, t2 := -1, -1
+			for i, s := range m.subs {
+				if m.s == s {
+					t1 = i
+				}
+				if m.s2 == s {
+					t2 = i
+				}
 			}
-
-			if m.s2 != nil {
-				m.p.Sub2 = m.s2.Name
-			} else {
-				m.p.Sub2 = ""
-			}
+			gui.SetSubtitleMenuItem(t1, t2)
 
 			SavePlayingAsync(m.p)
 		}()
@@ -283,4 +307,14 @@ func (m *Movie) uievents() {
 			break
 		}
 	})
+}
+
+func isLangEqual(l1, l2 string) bool {
+	if l1 == l2 {
+		return true
+	} else if l1 == "en" || l2 == "en" {
+		return false
+	} else {
+		return true
+	}
 }

@@ -30,7 +30,7 @@ type Movie struct {
 	quit        chan struct{}
 	finishClose chan bool
 
-	subs []*Sub
+	subs []*Subtitle
 
 	audioStreams []AVStream
 

@@ -51,19 +51,34 @@ void initialize() {
 
     [appMenuItem setSubmenu:appMenu];
 }
-void hideMenuNSString(NSString* title) {
-    NSLog(@"remove subtitle menu %@", title);
-
+NSMenuItem* getTopMenuByTitle(NSString* title) {
     NSMenu* menubar = [NSApp mainMenu];
     NSArray* menus = [menubar itemArray];
     for (NSMenuItem* menu in menus) {
-        NSLog(@"compare %@ to %@", [menu title], title);
         if ([menu title] == title) {
-            NSLog(@"remove menu item");
-            [menubar removeItem:menu];
-            break;
+            return menu;
         }
     }
+
+    return nil;
+}
+void hideMenuNSString(NSString* title) {
+    NSLog(@"remove subtitle menu %@", title);
+
+    // NSMenu* menubar = [NSApp mainMenu];
+    // NSArray* menus = [menubar itemArray];
+    NSMenuItem* item = getTopMenuByTitle(title);
+    if (item != nil) {
+        [[NSApp mainMenu] removeItem:item];
+    }
+    // for (NSMenuItem* menu in menus) {
+    //     NSLog(@"compare %@ to %@", [menu title], title);
+    //     if ([menu title] == title) {
+    //         NSLog(@"remove menu item");
+    //         [menubar removeItem:menu];
+    //         break;
+    //     }
+    // }
 }
 void hideSubtitleMenu() {
     hideMenuNSString(@"Subtitle");
@@ -126,11 +141,7 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
             [item setTag: tag];
             [subtitleMenu addItem:item];
 
-            if (tag == selected1) {
-                [item setState: NSOnState];
-            }
-
-            if (tag == selected2) {
+            if (tag == selected1 || tag == selected2) {
                 [item setState: NSOnState];
             }
         }
@@ -139,6 +150,17 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
     }
 
     [pool drain];
+}
+void setSubtitleMenuItem(int t1, int t2) {
+    NSMenuItem* menu = getTopMenuByTitle(@"Subtitle");
+    for (NSMenuItem* item in [[menu submenu] itemArray]) {
+        int tag = (int)[item tag];
+        if (tag == t1 || tag == t2) {
+            [item setState:NSOnState];
+        } else {
+            [item setState:NSOffState];
+        }
+    }
 }
 
 void setWindowTitle(void* wptr, char* title) {
