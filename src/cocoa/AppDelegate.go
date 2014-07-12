@@ -3,6 +3,9 @@ package cocoa
 import (
 	"download"
 	"fmt"
+	"github.com/mkrautz/objc"
+	. "github.com/mkrautz/objc/AppKit"
+	. "github.com/mkrautz/objc/Foundation"
 	"log"
 	"native"
 	"os/exec"
@@ -11,9 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"thunder"
-	"github.com/mkrautz/objc"
-	. "github.com/mkrautz/objc/AppKit"
-	. "github.com/mkrautz/objc/Foundation"
 	// "path"
 	// "runtime"
 	// "sync"
@@ -194,7 +194,13 @@ func (delegate *AppDelegate) updateStatusBar(t *task.Task) {
 	}
 }
 func (delegate *AppDelegate) OpenClick(sender uintptr) {
-	cmd := exec.Command("open", "http://"+util.ReadConfig("server"))
+	var openUrl string
+	if util.IsPathExists(util.ReadConfig("client-app")) {
+		openUrl = util.ReadConfig("client-app")
+	} else {
+		openUrl = "http://" + util.ReadConfig("server")
+	}
+	cmd := exec.Command("open", openUrl)
 	cmd.Start()
 }
 func (delegate *AppDelegate) ShutdownAfterFinishClick(sender uintptr) {
