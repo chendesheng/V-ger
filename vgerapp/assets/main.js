@@ -169,12 +169,18 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			});
 		}
 
-		$http.get('subscribe').success(function (subscribes) {
-			angular.forEach(subscribes, function (s) {
-				$scope.subscribes.push(s);
+		function loadSubscribes() {
+			$http.get('subscribe').success(function (subscribes) {
+				angular.forEach(subscribes, function (s) {
+					$scope.subscribes.push(s);
+				});
+				monitor_process();
+			}).error(function() {
+				//simply retry
+				setTimeout(loadSubscribes, 3000)
 			});
-			monitor_process();
-		})
+		}
+		loadSubscribes();
 
 		$scope.new_url = document.getElementById('new-url').value;
 
@@ -662,19 +668,24 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			$scope.alerts.pop();
 		}
 
-		window.onload = function() {
+		$(function() {
 			setTimeout(function() {
 				document.getElementById('box-overlay').style.display = '';
 			}, 500);
 			var ele = document.getElementById('new-url');
 			ele.value = getCookie('input');
-			ele.select();
 			ele.addEventListener("input", function(e) {
 				setCookie('input', document.getElementById('new-url').value, 10000)
 			});
 
 			$scope.new_url = ele.value;
-		}
+
+			setTimeout(function() {
+				if ($scope.subscribes.length == 0) {
+					loadSubscribes();
+				}
+			}, 3000);
+		});
 	}
 
 );

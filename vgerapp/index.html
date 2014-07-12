@@ -125,8 +125,8 @@
 
 		<form  ng-submit="go()">
 			<div id="start-download" ui-event="{drop:'upload_torrent($event)'}" ondragover="return;">
-				<textarea ui-keypress="{enter: '$event.preventDefault();go();'}" autofocus ng-model="new_url" type="text" id="new-url" placeHolder="Input anything you want"></textarea>
-				<input id="new-task" type="submit" ng-hide="waiting" value="Go"/>
+				<textarea ui-keypress="{enter: '$event.preventDefault();go();'}" ng-model="new_url" type="text" id="new-url" placeHolder="Input anything you want"></textarea>
+				<!-- <input id="new-task" type="submit" ng-hide="waiting" value="Go"/> -->
 				<span ng-show="waiting" id="waiting"></span>
 			</div>
 		</form>
@@ -197,7 +197,7 @@
 			</div>
 		</div>
 	</div>
-	<div ng-show="tasks.length==0" class="task-loading">
+	<div ng-show="subscribes.length==0" class="task-loading">
 		Loading...
 	</div>
 </body>
