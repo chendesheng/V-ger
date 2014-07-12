@@ -176,7 +176,7 @@
     self->textView2 = tv;
 }
 -(TextView*)showText:(SubItem*)items length:(int)length position:(int)position x:(double)x y:(double)y {
-    double padding = 35;
+    double padding = 30;
 
     double spacing = 5;
 
