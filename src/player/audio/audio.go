@@ -112,7 +112,7 @@ func (a *Audio) decode(packet *AVPacket, fn func([]byte)) {
 				}
 			}
 		} else {
-			println("audio decode error")
+			log.Print("audio decode error")
 			break
 		}
 	}
@@ -152,7 +152,7 @@ func (a *Audio) Open(stream AVStream) error {
 		return fmt.Errorf("Open decoder error:%d", errCode)
 	}
 
-	println("open audio")
+	log.Print("open audio")
 	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(),
 		func(length int) []byte {
 			if a.c.WaitUtilRunning(a.quit) {

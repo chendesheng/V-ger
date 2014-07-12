@@ -26,7 +26,7 @@ type Clock struct {
 func (c *Clock) GetTime() time.Duration {
 	// c.waitUntilRunning()
 	t := c.getTime()
-	// println("clock get time:", t.String())
+	// log.Print("clock get time:", t.String())
 
 	return t
 }
@@ -81,7 +81,7 @@ func (c *Clock) getTime() time.Duration {
 }
 
 func (c *Clock) SetTime(t time.Duration) {
-	// log.Println("clock set time:", t.String())
+	// log.log.Print("clock set time:", t.String())
 
 	c.Lock()
 	defer c.Unlock()
@@ -96,7 +96,7 @@ func (c *Clock) SetTime(t time.Duration) {
 func (c *Clock) AddTime(d time.Duration) {
 	c.Lock()
 	defer c.Unlock()
-	// println("clock base:", c.base.String())
+	// log.Print("clock base:", c.base.String())
 	c.base = c.base.Add(-d)
 }
 
@@ -143,12 +143,12 @@ func (c *Clock) ResumeWithTime(t time.Duration) {
 
 	if c.status == "paused" {
 		c.status = "running"
-		println("clock running")
+		log.Print("clock running")
 		c.base = time.Now().Add(-t)
 
 		close(c.wait)
 		c.wait = make(chan bool)
-		println("close wait")
+		log.Print("close wait")
 	}
 }
 
@@ -163,7 +163,7 @@ func (c *Clock) resume() {
 func (c *Clock) Reset() {
 	c.Lock()
 	defer c.Unlock()
-	// println(c)
+	// log.Print(c)
 	c.base = time.Now()
 	c.pausedTime = 0
 	c.status = "running"
@@ -172,8 +172,8 @@ func (c *Clock) Reset() {
 func (c *Clock) waitUntilRunning(quit chan bool) bool {
 	var ch chan bool
 	var status string
-	// println("clock:", c)
-	// println("quit:", quit)
+	// log.Print("clock:", c)
+	// log.Print("quit:", quit)
 	c.Lock()
 	ch = c.wait
 	status = c.status
@@ -182,7 +182,7 @@ func (c *Clock) waitUntilRunning(quit chan bool) bool {
 	if status == "paused" {
 		select {
 		case <-ch:
-			println("after paused")
+			log.Print("after paused")
 			return false
 		case <-quit:
 			return true
@@ -222,7 +222,7 @@ func (c *Clock) WaitUtilRunning2(fn beforeWait) bool {
 	if status == "paused" {
 		fn()
 		<-ch
-		println("after paused")
+		log.Print("after paused")
 
 		return true
 	}
@@ -253,7 +253,7 @@ func (c *Clock) AfterWithQuit(d time.Duration, quit chan bool) bool {
 }
 
 func (c *Clock) WaitUtilWithQuit(t time.Duration, quit chan bool) bool {
-	// println("wait until", t.String())
+	// log.Print("wait until", t.String())
 	now := c.getTime()
 
 	if t > now {

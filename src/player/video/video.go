@@ -71,7 +71,7 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 		return errors.New("Unsupported codec!!")
 	}
 
-	println("end of setupCodec1")
+	log.Print("end of setupCodec1")
 	errCode := codec.Open(decoder)
 	if errCode < 0 {
 		return fmt.Errorf("open decoder error code %s", errCode)
@@ -80,7 +80,7 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 	v.lastPts = math.MinInt64
 	v.lastDts = math.MinInt64
 
-	println("end of setupCodec")
+	log.Print("end of setupCodec")
 
 	return nil
 }
@@ -115,7 +115,7 @@ func (v *Video) setupPictureRGB() {
 	for i, _ := range v.pictureObjects {
 		obj := AVObject{}
 		obj.Malloc(sz)
-		// println("setup picture objects", obj.Size())
+		// log.Print("setup picture objects", obj.Size())
 		v.pictureObjects[i] = &obj
 	}
 	// for i, _ := range v.pictureRGBs {
@@ -155,7 +155,7 @@ func (v *Video) setupSwsContext() {
 		width += 1
 	}
 
-	println("setupSwsContext", v.Width, v.Height, v.codec.PixelFormat())
+	log.Print("setupSwsContext", v.Width, v.Height, v.codec.PixelFormat())
 	v.swsCtx = SwsGetContext(width, v.Height, AV_PIX_FMT_YUV420P,
 		v.Width, v.Height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
 }
@@ -235,8 +235,8 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 		// var rebase bool
 		// if v.lastDts == float64(math.MinInt64) {
 		// rebase = true
-		// println("rebase is true")
-		// println("time:", v.c.GetTime().String())
+		// log.Print("rebase is true")
+		// log.Print("time:", v.c.GetTime().String())
 		// }
 
 		pts := v.guessCorrectPts(frame.Pts(), frame.Dts())
@@ -313,7 +313,7 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 		return false, 0, nil
 	}
 	if frameFinished, pts := v.Decode(packet); frameFinished {
-		// println("decode pts:", pts.String())
+		// log.Print("decode pts:", pts.String())
 		frame := v.frame
 		// pictureRGB := v.getPictureRGB()
 		// swsCtx := v.swsCtx
@@ -348,7 +348,7 @@ func (v *Video) FlushBuffer() {
 
 func (v *Video) Play() {
 	for {
-		// println("playing...")
+		// log.Print("playing...")
 		select {
 		case data := <-v.ChanDecoded:
 			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
@@ -403,7 +403,7 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 	for ctx.ReadFrame(&packet) >= 0 {
 		if frameFinished, pts := v.Decode(&packet); frameFinished {
 
-			// println("pts:", pts.String())
+			// log.Print("pts:", pts.String())
 			packet.Free()
 
 			if t-pts < 0*time.Millisecond {
@@ -420,8 +420,8 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 				// pd.Bytes()
 				// picYUV.SaveToPPMFile("test.yuv", width, height)
 				// ioutil.WriteFile("test.yuv", picYUV.RGBBytes(width, height), 0666)
-				// println(len(pd.Bytes()))
-				// println(width, height)
+				// log.Print(len(pd.Bytes()))
+				// log.Print(width, height)
 				// ioutil.WriteFile("test.yuv", obj.Bytes(), 0666)
 				// log.Fatal("yes")
 

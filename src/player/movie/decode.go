@@ -27,7 +27,7 @@ func (m *Movie) Pause(flushBuffer bool) (ch chan time.Duration) {
 		return
 	}
 
-	println("send pause movie")
+	log.Print("send pause movie")
 
 	ch = make(chan time.Duration)
 	select {
@@ -50,10 +50,10 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 		case m.v.ChanDecoded <- &VideoFrame{pts, img}:
 			break
 		case ch := <-m.chPause:
-			println("pause movie")
+			log.Print("pause movie")
 			select {
 			case t := <-ch:
-				println("resume movie", t.String())
+				log.Print("resume movie", t.String())
 				m.c.SetTime(t)
 			case <-m.quit:
 				packet.Free()
@@ -97,9 +97,9 @@ func (m *Movie) decode(name string) {
 		case m.chProgress <- m.c.GetTime():
 		case <-m.quit:
 		case <-time.After(50 * time.Millisecond):
-			println("write m.chProgress timeout")
+			log.Print("write m.chProgress timeout")
 		}
-		// println(buffering)
+		// log.Print(buffering)
 
 		resCode := ctx.ReadFrame(&packet)
 
@@ -133,20 +133,20 @@ func (m *Movie) decode(name string) {
 				t, _, err := m.v.Seek(m.c.GetTime())
 				m.w.SendHideSpinning()
 				if err == nil {
-					println("seek success:", t.String())
+					log.Print("seek success:", t.String())
 					m.c.SetTime(t)
 					continue
 				} else {
 					log.Print("seek error:", err)
 				}
 
-				// println("seek to unfinished:", m.c.GetTime().String())
+				// log.Print("seek to unfinished:", m.c.GetTime().String())
 				log.Print("get frame error:", resCode)
 				// }
 			}
 			select {
 			case ch := <-m.chPause:
-				println("pause movie")
+				log.Print("pause movie")
 				select {
 				case t := <-ch:
 					m.c.SetTime(t)
