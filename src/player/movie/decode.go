@@ -65,13 +65,7 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 			return
 		}
 
-		t := m.c.GetTime()
-		if m.s != nil {
-			m.s.Seek(t)
-		}
-		if m.s2 != nil {
-			m.s2.Seek(t)
-		}
+		m.seekPlayingSubs(m.c.GetTime(), false)
 	}
 }
 
@@ -98,9 +92,9 @@ func (m *Movie) decode(name string) {
 	ctx := m.ctx
 
 	for {
-		t := m.c.GetTime()
+		// t := m.c.GetTime()
 		select {
-		case m.chProgress <- t:
+		case m.chProgress <- m.c.GetTime():
 		case <-m.quit:
 		case <-time.After(50 * time.Millisecond):
 			println("write m.chProgress timeout")
@@ -109,7 +103,7 @@ func (m *Movie) decode(name string) {
 
 		resCode := ctx.ReadFrame(&packet)
 
-		m.c.SetTime(t)
+		// m.c.SetTime(t)
 
 		if resCode >= 0 {
 			if m.v.StreamIndex == packet.StreamIndex() {
