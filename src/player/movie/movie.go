@@ -99,7 +99,7 @@ func NewMovie() *Movie {
 
 func updateSubscribeDuration(movie string, duration time.Duration) {
 	if t, _ := task.GetTask(movie); t != nil {
-		println("get subscribe:", t.Subscribe)
+		log.Print("get subscribe:", t.Subscribe)
 		if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
 			subscribe.UpdateDuration(t.Subscribe, duration)
 		}
@@ -107,7 +107,7 @@ func updateSubscribeDuration(movie string, duration time.Duration) {
 }
 
 func (m *Movie) Open(w *Window, file string) {
-	println("open ", file)
+	log.Print("open ", file)
 
 	m.w = w
 	w.InitEvents()
@@ -148,7 +148,7 @@ func (m *Movie) Open(w *Window, file string) {
 		} else {
 			//overflow, divide before cross
 			capacity = int64(float64(m.httpBuffer.size) / float64(duration) * 10 * float64(time.Minute))
-			println(capacity)
+			log.Print(capacity)
 		}
 
 		if capacity > 200*block.MB {
@@ -192,7 +192,7 @@ func (m *Movie) Open(w *Window, file string) {
 		if len(subs) == 0 {
 			m.SearchDownloadSubtitle()
 		} else {
-			println("setupSubtitles")
+			log.Print("setupSubtitles")
 			m.setupSubtitles(subs)
 
 			m.seekPlayingSubs(m.c.GetTime(), false)

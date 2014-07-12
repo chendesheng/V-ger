@@ -89,7 +89,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
 	runtime.LockOSThread()
 
-	logger.InitLog("VgerPlayer", util.ReadConfig("log"))
+	logger.InitLog("[Player]", util.ReadConfig("log"))
 
 	go http.ListenAndServe("localhost:8080", nil)
 

@@ -3,6 +3,7 @@ package movie
 import (
 	"block"
 	"io"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -48,7 +49,7 @@ func NewBuffer(size int64) *buffer {
 }
 
 func (b *buffer) SetCapacity(capacity int64) {
-	println("SetCapacity:", capacity)
+	log.Print("SetCapacity:", capacity)
 
 	b.Lock()
 	defer b.Unlock()
@@ -110,7 +111,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 }
 
 func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) error {
-	// println("WriteAt:", off, len(p))
+	// log.Print("WriteAt:", off, len(p))
 
 	b.Lock()
 	defer b.Unlock()
@@ -172,7 +173,7 @@ func (b *buffer) IsFinish() bool {
 	return b.size <= bk.To()
 }
 func (b *buffer) Wait(size int64) {
-	println("Wait:", b.SizeAhead(), b.IsFinish())
+	log.Print("Wait:", b.SizeAhead(), b.IsFinish())
 	for b.BufferFinish(size) {
 		time.Sleep(100 * time.Millisecond)
 	}
@@ -181,7 +182,7 @@ func (b *buffer) BufferFinish(size int64) bool {
 	return b.SizeAhead() < size && !b.IsFinish()
 }
 func (b *buffer) WaitQuit(size int64, quit chan struct{}) {
-	// println("WaitQuit:", b.SizeAhead(), b.IsFinish())
+	// log.Print("WaitQuit:", b.SizeAhead(), b.IsFinish())
 	for b.BufferFinish(size) {
 		select {
 		case <-time.After(100 * time.Millisecond):
@@ -194,6 +195,8 @@ func (b *buffer) WaitQuit(size int64, quit chan struct{}) {
 func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 	b.Lock()
 	defer b.Unlock()
+
+	log.Print("buffer seek:", offset, whence)
 
 	switch whence {
 	case os.SEEK_SET:
@@ -229,7 +232,7 @@ func (b *buffer) BufferPercent() float64 {
 
 	res := float64(b.currentPos+b.sizeAhead()) / float64(b.size)
 	if res >= 1.0 {
-		println("bufferPercent:", b.currentPos, b.sizeAhead(), b.size)
+		log.Print("bufferPercent:", b.currentPos, b.sizeAhead(), b.size)
 	}
 	return res
 }

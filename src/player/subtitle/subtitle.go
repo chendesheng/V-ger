@@ -80,7 +80,7 @@ func (s *Subtitle) Play() {
 	for {
 		select {
 		case arg := <-chRes:
-			// println("res from show:", arg.Id, arg.Handle)
+			// log.Print("res from show:", arg.Id, arg.Handle)
 			s.items[arg.Id].Handle = arg.Handle
 			break
 		case arg := <-s.ChanOffset:
@@ -99,7 +99,7 @@ func (s *Subtitle) Play() {
 			}
 
 			// pos += arg.offset
-			// println("pos:", pos)
+			// log.Print("pos:", pos)
 			for s.checkPos(pos, arg.t) {
 				pos += arg.offset
 			}
@@ -147,7 +147,7 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool
 	for i, item := range s.items {
 		if refersh || !s.checkPos(i, t) {
 			if item.Handle != 0 && item.Handle != 1 {
-				// println(t.String(), "hide sub: ", item.Id, item.Content[0].Content)
+				// log.Print(t.String(), "hide sub: ", item.Id, item.Content[0].Content)
 				s.hideSubItem(*item)
 				item.Handle = 0
 			}
@@ -157,7 +157,7 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool
 	for i, item := range s.items {
 		if s.checkPos(i, t) {
 			if item.Handle == 0 {
-				// println(t.String(), "show sub: ", item.Id, item.Content[0].Content)
+				// log.Print(t.String(), "show sub: ", item.Id, item.Content[0].Content)
 				s.showSubitem(*item, chRes)
 				item.Handle = 1
 			}
@@ -185,7 +185,7 @@ func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
 	}
 
 	from, to := s.calcFromTo(pos)
-	// println("check pos:", pos, t.String(), from.String(), to.String())
+	// log.Print("check pos:", pos, t.String(), from.String(), to.String())
 	return t >= from && t < to
 }
 
@@ -276,7 +276,7 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	simplized(s.items)
 
 	if err != nil {
-		log.Println(err)
+		log.Print(err)
 		return nil
 	}
 

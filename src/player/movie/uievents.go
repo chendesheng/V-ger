@@ -63,7 +63,7 @@ func (m *Movie) uievents() {
 			if s1 != nil {
 				t := m.c.GetTime()
 				subTime := s1.GetSubtime(t, 1)
-				println("subtime:", subTime)
+				log.Print("subtime:", subTime)
 
 				if subTime == 0 {
 					offset = 10 * time.Second
@@ -82,7 +82,7 @@ func (m *Movie) uievents() {
 			m.seekOffsetAsync(-5 * time.Second)
 			break
 		case gui.KEY_MINUS:
-			println("key minus pressed")
+			log.Print("key minus pressed")
 			go func() {
 				s1, _ := m.getPlayingSubs()
 				if s1 != nil {
@@ -94,7 +94,7 @@ func (m *Movie) uievents() {
 			}()
 			break
 		case gui.KEY_EQUAL:
-			println("key equal pressed")
+			log.Print("key equal pressed")
 			go func() {
 				s1, _ := m.getPlayingSubs()
 				if s1 != nil {
@@ -106,7 +106,7 @@ func (m *Movie) uievents() {
 			}()
 			break
 		case gui.KEY_LEFT_BRACKET:
-			println("left bracket pressed")
+			log.Print("left bracket pressed")
 			go func() {
 				// if m.s != nil {
 				// 	offset := m.s.AddOffset(-1000 * time.Millisecond)
@@ -122,7 +122,7 @@ func (m *Movie) uievents() {
 			}()
 			break
 		case gui.KEY_RIGHT_BRACKET:
-			println("right bracket pressed")
+			log.Print("right bracket pressed")
 			go func() {
 				// if m.s != nil {
 				// 	offset := m.s.AddOffset(1000 * time.Millisecond)
@@ -162,7 +162,7 @@ func (m *Movie) uievents() {
 			p := m.c.CalcPlayProgress(t)
 			m.w.ShowProgress(p)
 
-			println("release dragging:", t.String())
+			log.Print("release dragging:", t.String())
 
 			m.SeekEnd(t)
 			chCursorAutoHide <- struct{}{}

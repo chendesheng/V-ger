@@ -55,12 +55,12 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 	}
 
 	if m.httpBuffer != nil {
-		m.w.SendShowBufferInfo(&BufferInfo{"KB/s", 0})
+		m.w.SendShowBufferInfo(&BufferInfo{"-- KB/s", 0})
 	}
 
 	t := arg.t
 
-	println("seekProgress:", arg.t.String())
+	log.Print("seekProgress:", arg.t.String())
 	t = m.Seek(t)
 
 	if arg.isEnd {
@@ -80,7 +80,7 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 		m.p.LastPos = t
 		SavePlayingAsync(m.p)
 
-		println("seek end end time:", t.String())
+		log.Print("seek end end time:", t.String())
 		select {
 		case ch <- t:
 			ch = nil
@@ -128,7 +128,7 @@ func recentPipe(in chan *seekArg, out chan *seekArg, quit chan struct{}) {
 }
 
 func (m *Movie) SeekAsync(t time.Duration) {
-	println("seek async:", t.String())
+	log.Print("seek async:", t.String())
 	select {
 	case m.chSeekProgress <- &seekArg{t, false}:
 		SavePlayingAsync(m.p)
@@ -137,7 +137,7 @@ func (m *Movie) SeekAsync(t time.Duration) {
 }
 
 func (m *Movie) SeekAccurate(t time.Duration) time.Duration {
-	println("seek2:", t.String())
+	log.Print("seek2:", t.String())
 
 	var img []byte
 	var err error
@@ -149,7 +149,7 @@ func (m *Movie) SeekAccurate(t time.Duration) time.Duration {
 	}
 
 	if len(img) > 0 {
-		println("send draw image:", t.String())
+		log.Print("send draw image:", t.String())
 		m.w.SendDrawImage(img)
 	}
 
@@ -166,7 +166,7 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 	}
 
 	if len(img) > 0 {
-		println("sendDrawImage")
+		log.Print("sendDrawImage")
 		m.w.SendDrawImage(img)
 	}
 
@@ -175,10 +175,10 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 }
 
 func (m *Movie) SeekEnd(t time.Duration) {
-	println("begin SeekEnd:", t.String())
+	log.Print("begin SeekEnd:", t.String())
 	select {
 	case <-m.quit:
 	case m.chSeekProgress <- &seekArg{t, true}:
 	}
-	println("end SeekEnd:", t.String())
+	log.Print("end SeekEnd:", t.String())
 }
