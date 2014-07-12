@@ -183,45 +183,31 @@ func (m *Movie) getSub(name string) *Subtitle {
 	return nil
 }
 func (m *Movie) setupDefaultSubtitles() {
-	if len(m.p.Sub1) == 0 && len(m.p.Sub2) > 0 {
-		m.p.Sub1 = m.p.Sub2
-		m.p.Sub2 = ""
+	m.stopPlayingSubs()
+
+	s1, s2 := m.getSub(m.p.Sub1), m.getSub(m.p.Sub2)
+	if s1 == nil && s2 == nil {
+		s1, s2 = Subtitles(m.subs).Select()
 	}
 
-	var s1, s2 *Subtitle
-	if len(m.p.Sub1) > 0 {
-		s1 = m.getSub(m.p.Sub1)
-		if s1 != nil {
-			m.s = s1
-		} else {
-			m.p.Sub1 = ""
-		}
+	if s1 == nil && s2 != nil {
+		s1 = s2
+		s2 = nil
 	}
 
-	if len(m.p.Sub2) > 0 {
-		s2 = m.getSub(m.p.Sub2)
-		if s2 != nil {
-			m.s2 = s2
-		} else {
-			m.p.Sub2 = ""
-		}
+	if s1 != nil {
+		s1.IsMainOrSecondSub = true
+		m.p.Sub1 = s1.Name
+		go s1.Play()
 	}
 
-	if m.s == nil && m.s2 == nil {
-		m.s, m.s2 = Subtitles(m.subs).Select()
+	if s2 != nil {
+		s2.IsMainOrSecondSub = true
+		m.p.Sub1 = s2.Name
+		go s2.Play()
 	}
 
-	if m.s != nil {
-		m.s.IsMainOrSecondSub = true
-		m.p.Sub1 = m.s.Name
-		go m.s.Play()
-	}
-
-	if m.s2 != nil {
-		m.s.IsMainOrSecondSub = false
-		m.p.Sub2 = m.s2.Name
-		go m.s2.Play()
-	}
+	m.setPlayingSubs(s1, s2)
 
 	SavePlayingAsync(m.p)
 }
@@ -234,15 +220,16 @@ func (m *Movie) setupSubtitlesMenu() {
 	selected1 := -1
 	selected2 := -1
 
+	s1, s2 := m.getPlayingSubs()
 	for i, sub := range m.subs {
 		tags = append(tags, int32(i))
 		names = append(names, filepath.Base(sub.Name))
 
-		if m.s != nil && sub.Name == m.s.Name {
+		if s1 != nil && sub.Name == s1.Name {
 			selected1 = i
 		}
 
-		if m.s2 != nil && sub.Name == m.s2.Name {
+		if s2 != nil && sub.Name == s2.Name {
 			selected2 = i
 		}
 	}
@@ -266,10 +253,6 @@ func getSubValues(subs map[string]*Sub) []*Sub {
 
 func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 	if len(subs) > 0 {
-		for _, sub := range m.subs {
-			sub.Stop()
-		}
-
 		m.subs = nil
 		width, height := m.v.Width, m.v.Height
 		for _, sub := range subs {

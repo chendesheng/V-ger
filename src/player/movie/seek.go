@@ -153,13 +153,7 @@ func (m *Movie) SeekAccurate(t time.Duration) time.Duration {
 		m.w.SendDrawImage(img)
 	}
 
-	if m.s != nil {
-		m.s.Seek(t)
-	}
-	if m.s2 != nil {
-		m.s2.Seek(t)
-	}
-
+	m.seekPlayingSubs(t, false)
 	return t
 }
 
@@ -176,13 +170,7 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 		m.w.SendDrawImage(img)
 	}
 
-	if m.s != nil {
-		m.s.Seek(t)
-	}
-	if m.s2 != nil {
-		m.s2.Seek(t)
-	}
-
+	m.seekPlayingSubs(t, false)
 	return t
 }
 

@@ -13,6 +13,7 @@ import (
 	. "player/video"
 	"strings"
 	"subscribe"
+	"sync"
 	"task"
 	"time"
 )
@@ -21,11 +22,10 @@ type Movie struct {
 	ctx AVFormatContext
 	v   *Video
 	a   *Audio
-	s   *Subtitle
-	s2  *Subtitle
 	c   *Clock
 	w   *Window
 	p   *Playing
+	movieSubs
 
 	quit        chan struct{}
 	finishClose chan bool
@@ -43,6 +43,46 @@ type Movie struct {
 	chPause        chan chan time.Duration
 	chProgress     chan time.Duration
 	chSpeed        chan float64
+}
+
+type movieSubs struct {
+	sync.Mutex
+
+	s1 *Subtitle
+	s2 *Subtitle
+}
+
+func (m *movieSubs) getPlayingSubs() (*Subtitle, *Subtitle) {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.s1, m.s2
+}
+func (m *movieSubs) setPlayingSubs(s1, s2 *Subtitle) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.s1, m.s2 = s1, s2
+}
+func (m *movieSubs) seekPlayingSubs(t time.Duration, refresh bool) {
+	s1, s2 := m.getPlayingSubs()
+	if s1 != nil {
+		s1.Seek(t, refresh)
+	}
+	if s2 != nil {
+		s2.Seek(t, refresh)
+	}
+}
+func (m *movieSubs) stopPlayingSubs() {
+	s1, s2 := m.getPlayingSubs()
+	m.setPlayingSubs(nil, nil)
+
+	if s1 != nil {
+		s1.Stop()
+	}
+	if s2 != nil {
+		s2.Stop()
+	}
 }
 
 type seekArg struct {
@@ -155,12 +195,7 @@ func (m *Movie) Open(w *Window, file string) {
 			println("setupSubtitles")
 			m.setupSubtitles(subs)
 
-			if m.s != nil {
-				m.s.Seek(m.c.GetTime())
-			}
-			if m.s2 != nil {
-				m.s2.Seek(m.c.GetTime())
-			}
+			m.seekPlayingSubs(m.c.GetTime(), false)
 		}
 	}()
 
@@ -193,15 +228,7 @@ func (m *Movie) Close() {
 
 	m.w.ClearEvents()
 
-	if m.s != nil {
-		m.s.Stop()
-		m.s = nil
-	}
-
-	if m.s2 != nil {
-		m.s2.Stop()
-		m.s2 = nil
-	}
+	m.stopPlayingSubs()
 
 	<-m.finishClose
 }

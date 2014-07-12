@@ -287,12 +287,20 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	return s
 }
 
-func (s *Subtitle) Seek(t time.Duration) {
-	s.ChanSeek <- t
-}
-
-func (s *Subtitle) SeekRefresh(t time.Duration) {
-	s.ChanSeekRefersh <- t
+func (s *Subtitle) Seek(t time.Duration, refresh bool) {
+	if refresh {
+		select {
+		case s.ChanSeekRefersh <- t:
+		case <-time.After(200 * time.Millisecond):
+			log.Print("Seek sub timeout1")
+		}
+	} else {
+		select {
+		case s.ChanSeek <- t:
+		case <-time.After(200 * time.Millisecond):
+			log.Print("Seek sub timeout2")
+		}
+	}
 }
 
 func (s *Subtitle) AddOffset(d time.Duration) time.Duration {

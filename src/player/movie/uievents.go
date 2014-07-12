@@ -3,7 +3,7 @@ package movie
 import (
 	"fmt"
 	. "player/shared"
-	// . "player/subtitle"
+	. "player/subtitle"
 	// "log"
 	"player/gui"
 	// . "player/video"
@@ -42,9 +42,10 @@ func (m *Movie) uievents() {
 			break
 		case gui.KEY_LEFT:
 			var offset time.Duration
-			if m.s != nil {
+			s1, _ := m.getPlayingSubs()
+			if s1 != nil {
 				t := m.c.GetTime()
-				subTime := m.s.GetSubtime(t, -1)
+				subTime := s1.GetSubtime(t, -1)
 
 				if subTime == 0 {
 					offset = -10 * time.Second
@@ -58,9 +59,10 @@ func (m *Movie) uievents() {
 			break
 		case gui.KEY_RIGHT:
 			var offset time.Duration
-			if m.s != nil {
+			s1, _ := m.getPlayingSubs()
+			if s1 != nil {
 				t := m.c.GetTime()
-				subTime := m.s.GetSubtime(t, 1)
+				subTime := s1.GetSubtime(t, 1)
 				println("subtime:", subTime)
 
 				if subTime == 0 {
@@ -82,22 +84,24 @@ func (m *Movie) uievents() {
 		case gui.KEY_MINUS:
 			println("key minus pressed")
 			go func() {
-				if m.s != nil {
-					offset := m.s.AddOffset(-200 * time.Millisecond)
+				s1, _ := m.getPlayingSubs()
+				if s1 != nil {
+					offset := s1.AddOffset(-200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
-					UpdateSubtitleOffsetAsync(m.s.Name, offset)
+					UpdateSubtitleOffsetAsync(s1.Name, offset)
 				}
 			}()
 			break
 		case gui.KEY_EQUAL:
 			println("key equal pressed")
 			go func() {
-				if m.s != nil {
-					offset := m.s.AddOffset(200 * time.Millisecond)
+				s1, _ := m.getPlayingSubs()
+				if s1 != nil {
+					offset := s1.AddOffset(200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
-					UpdateSubtitleOffsetAsync(m.s.Name, offset)
+					UpdateSubtitleOffsetAsync(s1.Name, offset)
 				}
 			}()
 			break
@@ -108,11 +112,12 @@ func (m *Movie) uievents() {
 				// 	offset := m.s.AddOffset(-1000 * time.Millisecond)
 				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 				// }
-				if m.s2 != nil {
-					offset := m.s2.AddOffset(-200 * time.Millisecond)
+				_, s2 := m.getPlayingSubs()
+				if s2 != nil {
+					offset := s2.AddOffset(-200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
-					UpdateSubtitleOffsetAsync(m.s2.Name, offset)
+					UpdateSubtitleOffsetAsync(s2.Name, offset)
 				}
 			}()
 			break
@@ -123,11 +128,12 @@ func (m *Movie) uievents() {
 				// 	offset := m.s.AddOffset(1000 * time.Millisecond)
 				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 				// }
-				if m.s2 != nil {
-					offset := m.s2.AddOffset(200 * time.Millisecond)
+				_, s2 := m.getPlayingSubs()
+				if s2 != nil {
+					offset := s2.AddOffset(200 * time.Millisecond)
 					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
-					UpdateSubtitleOffsetAsync(m.s2.Name, offset)
+					UpdateSubtitleOffsetAsync(s2.Name, offset)
 				}
 			}()
 			break
@@ -164,15 +170,7 @@ func (m *Movie) uievents() {
 	})
 
 	m.w.FuncOnFullscreenChanged = append(m.w.FuncOnFullscreenChanged, func(b bool) {
-		if m.s != nil {
-			t := m.c.GetTime()
-			m.s.SeekRefresh(t)
-		}
-
-		if m.s2 != nil {
-			t := m.c.GetTime()
-			m.s2.SeekRefresh(t)
-		}
+		m.seekPlayingSubs(m.c.GetTime(), true)
 	})
 
 	var chVolume chan byte
@@ -214,66 +212,93 @@ func (m *Movie) uievents() {
 			clicked := subs[index]
 			log.Print("toggle subtitle:", clicked.Name, index)
 
-			if m.s == clicked {
-				m.s.Stop()
-				if m.s2 != nil {
-					m.s = m.s2
-					m.s.IsMainOrSecondSub = true //race condition here
-					m.s2 = nil
-				} else {
-					m.s = nil
+			var s1, s2 *Subtitle
+			ps1, ps2 := m.getPlayingSubs()
+
+			if ps1 == nil && ps2 == nil {
+				//add playing s1
+				s1 = clicked
+				go s1.Play()
+
+				m.p.Sub1 = s1.Name
+				m.p.Sub2 = ""
+
+			} else if ps1 == clicked {
+				//remove playing s1
+				ps1.Stop()
+				if ps2 != nil {
+					s1 = ps2
+					s1.IsMainOrSecondSub = true
+
+					m.p.Sub1 = s1.Name
+					m.p.Sub2 = ""
 				}
-			} else if m.s2 == clicked {
-				m.s2.Stop()
-				m.s2 = nil
+			} else if ps2 == clicked {
+				//remove playing s2
+				ps2.Stop()
+				s1 = ps1
+
+				m.p.Sub1 = s1.Name
+				m.p.Sub2 = ""
 			} else {
-				if m.s == nil && m.s2 == nil {
-					m.s = clicked
-					go m.s.Play()
+				//replace playing subtitle
+				if clicked.IsTwoLangs() {
+					s1 = clicked
+					s2 = nil
+				} else if ps1.IsTwoLangs() {
+					s1 = clicked
+					s2 = nil
+				} else if isLangEqual(ps1.Lang1, clicked.Lang1) {
+					s1 = clicked
+					s2 = ps2
+				} else if ps2 == nil {
+					s1 = ps1
+					s2 = clicked
+				} else if isLangEqual(ps2.Lang1, clicked.Lang1) {
+					s1 = ps1
+					s2 = clicked
+				} else { //third language which is impossible for now
+					s1 = ps1
+					s2 = clicked
+				}
+
+				if s1 != ps1 {
+					ps1.Stop()
+
+					s1.IsMainOrSecondSub = true
+					go s1.Play()
+
+					m.p.Sub1 = s1.Name
+				}
+
+				if s2 != nil {
+					if s2 != ps2 {
+						if ps2 != nil {
+							ps2.Stop()
+						}
+
+						s2.IsMainOrSecondSub = false
+						go s2.Play()
+
+						m.p.Sub2 = s2.Name
+					}
 				} else {
-					m.s.Stop()
-					if m.s2 != nil {
-						m.s2.Stop()
+					if ps2 != nil {
+						ps2.Stop()
 					}
 
-					if clicked.IsTwoLangs() {
-						m.s = clicked
-						m.s2 = nil
-					} else if m.s.IsTwoLangs() {
-						m.s = clicked
-						m.s2 = nil
-					} else if isLangEqual(m.s.Lang1, clicked.Lang1) {
-						m.s = clicked
-					} else if m.s2 == nil {
-						m.s2 = clicked
-					} else if isLangEqual(m.s2.Lang1, clicked.Lang1) {
-						m.s2 = clicked
-					}
-
-					if m.s != nil {
-						m.s.IsMainOrSecondSub = true
-						m.p.Sub1 = m.s.Name
-						go m.s.Play()
-					} else {
-						m.p.Sub1 = ""
-					}
-
-					if m.s2 != nil {
-						m.s2.IsMainOrSecondSub = false
-						m.p.Sub2 = m.s2.Name
-						go m.s2.Play()
-					} else {
-						m.p.Sub2 = ""
-					}
+					m.p.Sub2 = ""
 				}
 			}
 
+			m.setPlayingSubs(s1, s2)
+
 			t1, t2 := -1, -1
 			for i, s := range m.subs {
-				if m.s == s {
+				if s1 == s {
 					t1 = i
 				}
-				if m.s2 == s {
+				if s2 == s {
 					t2 = i
 				}
 			}
