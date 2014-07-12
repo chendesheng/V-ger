@@ -95,7 +95,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 	return true
 }
 func readSubtitlesFromDir(movieName, dir string) {
-	util.EmulateFiles(dir, func(filename string) {
+	util.WalkFiles(dir, func(filename string) {
 		log.Print(filename)
 
 		f, err := os.OpenFile(filename, os.O_RDONLY, 0666)
@@ -146,7 +146,6 @@ func (m *Movie) getSubtitleSearch() (string, string) {
 func (m *Movie) SearchDownloadSubtitle() {
 	w := m.w
 	w.SendShowMessage("Downloading subtitles...", false)
-	defer w.SendHideMessage()
 
 	search, url := m.getSubtitleSearch()
 	downloadSubs(m.p.Movie, url, search, m.quit)
@@ -165,15 +164,14 @@ func (m *Movie) SearchDownloadSubtitle() {
 	select {
 	case <-m.quit:
 		w.SendHideMessage()
-		return
 	default:
 		subs := GetSubtitlesMap(m.p.Movie)
 		if len(subs) == 0 {
 			w.SendShowMessage("No subtitle", true)
-			return
+		} else {
+			m.setupSubtitles(subs)
+			w.SendHideMessage()
 		}
-		m.setupSubtitles(subs)
-		break
 	}
 }
 func (m *Movie) getSub(name string) *Subtitle {
@@ -210,7 +208,6 @@ func (m *Movie) setupDefaultSubtitles() {
 	}
 
 	if m.s == nil && m.s2 == nil {
-		sort.Sort(Subtitles(m.subs))
 		m.s, m.s2 = Subtitles(m.subs).Select()
 	}
 
@@ -278,6 +275,8 @@ func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 		for _, sub := range subs {
 			m.subs = append(m.subs, NewSubtitle(sub, m.w, m.c, float64(width), float64(height)))
 		}
+
+		sort.Sort(Subtitles(m.subs))
 
 		m.setupDefaultSubtitles()
 		m.setupSubtitlesMenu()

@@ -48,7 +48,7 @@ func GetFileSize(file string) int64 {
 	return 0
 }
 
-func EmulateFiles(dir string, fn func(string), exts ...string) {
+func WalkFiles(dir string, fn func(string), exts ...string) {
 	f, err := os.Open(dir)
 	defer f.Close()
 
@@ -57,7 +57,7 @@ func EmulateFiles(dir string, fn func(string), exts ...string) {
 		return
 	}
 
-	files, err := f.Readdir(-1)
+	files, err := f.Readdir(0)
 	if err != nil {
 		log.Print(err)
 		return
@@ -66,7 +66,7 @@ func EmulateFiles(dir string, fn func(string), exts ...string) {
 	for _, file := range files {
 		name := file.Name()
 		if file.IsDir() {
-			EmulateFiles(path.Join(dir, name), fn, exts...)
+			WalkFiles(path.Join(dir, name), fn, exts...)
 		} else if CheckExt(name, exts...) {
 			fn(path.Join(dir, name))
 		}
