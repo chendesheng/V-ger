@@ -1,6 +1,7 @@
 package audio
 
 import (
+	"sync"
 	"unsafe"
 
 	"code.google.com/p/portaudio-go/portaudio"
@@ -13,6 +14,7 @@ func init() {
 type audioDriver interface{}
 
 type portAudio struct {
+	sync.Mutex
 	volume float64
 	stream *portaudio.Stream
 }
@@ -36,7 +38,7 @@ func (a *portAudio) Open(channels int, sampleRate int, callback func(int) []byte
 			if len(data) > 0 {
 				off := len(out) - length
 				for i, b := range data {
-					out[off+i] = int32(float64(b)*a.volume + 0.5)
+					out[off+i] = int32(float64(b)*a.getVolume() + 0.5)
 				}
 
 				length -= len(data)
@@ -58,6 +60,9 @@ func (a *portAudio) Close() {
 }
 
 func (a *portAudio) IncreaseVolume() float64 {
+	a.Lock()
+	defer a.Unlock()
+
 	a.volume += 0.01
 
 	if a.volume > 1 {
@@ -66,10 +71,19 @@ func (a *portAudio) IncreaseVolume() float64 {
 	return a.volume
 }
 func (a *portAudio) DecreaseVolume() float64 {
+	a.Lock()
+	defer a.Unlock()
+
 	a.volume -= 0.01
 
 	if a.volume < 0 {
 		a.volume = 0
 	}
+	return a.volume
+}
+func (a *portAudio) getVolume() float64 {
+	a.Lock()
+	defer a.Unlock()
+
 	return a.volume
 }
