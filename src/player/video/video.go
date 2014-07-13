@@ -43,9 +43,8 @@ type Video struct {
 
 	// ChanPacket  chan *AVPacket
 	ChanDecoded chan *VideoFrame
-	ChanFlush   chan bool
-	flushQuit   chan bool
-	quit        chan bool
+	flushQuit   chan struct{}
+	quit        chan struct{}
 	r           VideoRender
 
 	global_pts uint64 //for avframe only
@@ -203,9 +202,8 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, err
 	v.c = c
 
 	v.ChanDecoded = make(chan *VideoFrame, 20)
-	v.ChanFlush = make(chan bool)
-	v.flushQuit = make(chan bool)
-	v.quit = make(chan bool)
+	v.flushQuit = make(chan struct{})
+	v.quit = make(chan struct{})
 
 	log.Print("new video success")
 	return v, nil
@@ -340,7 +338,7 @@ func (v *Video) FlushBuffer() {
 			break
 		default:
 			close(v.flushQuit)
-			v.flushQuit = make(chan bool)
+			v.flushQuit = make(chan struct{})
 			return
 		}
 	}

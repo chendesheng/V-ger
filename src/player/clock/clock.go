@@ -15,7 +15,7 @@ type Clock struct {
 	pausedTime time.Duration
 	status     string
 
-	wait chan bool
+	wait chan struct{}
 
 	totalTime time.Duration
 
@@ -112,7 +112,7 @@ func (c *Clock) pause() {
 		c.status = "paused"
 		c.pausedTime = time.Since(c.base)
 	}
-	// c.wait = make(chan bool)
+	// c.wait = make(chan struct{})
 }
 
 func (c *Clock) Toggle() {
@@ -147,7 +147,7 @@ func (c *Clock) ResumeWithTime(t time.Duration) {
 		c.base = time.Now().Add(-t)
 
 		close(c.wait)
-		c.wait = make(chan bool)
+		c.wait = make(chan struct{})
 		log.Print("close wait")
 	}
 }
@@ -157,7 +157,7 @@ func (c *Clock) resume() {
 	c.status = "running"
 
 	close(c.wait)
-	c.wait = make(chan bool)
+	c.wait = make(chan struct{})
 }
 
 func (c *Clock) Reset() {
@@ -169,8 +169,8 @@ func (c *Clock) Reset() {
 	c.status = "running"
 }
 
-func (c *Clock) waitUntilRunning(quit chan bool) bool {
-	var ch chan bool
+func (c *Clock) waitUntilRunning(quit chan struct{}) bool {
+	var ch chan struct{}
 	var status string
 	// log.Print("clock:", c)
 	// log.Print("quit:", quit)
@@ -205,14 +205,14 @@ func (c *Clock) After(d time.Duration) {
 	// c.SetTime(b + d)
 }
 
-func (c *Clock) WaitUtilRunning(quit chan bool) bool {
+func (c *Clock) WaitUtilRunning(quit chan struct{}) bool {
 	return c.waitUntilRunning(quit)
 }
 
 type beforeWait func()
 
 func (c *Clock) WaitUtilRunning2(fn beforeWait) bool {
-	var ch chan bool
+	var ch chan struct{}
 	var status string
 	c.Lock()
 	ch = c.wait
@@ -238,7 +238,7 @@ func (c *Clock) WaitUtil(t time.Duration) {
 	}
 }
 
-func (c *Clock) AfterWithQuit(d time.Duration, quit chan bool) bool {
+func (c *Clock) AfterWithQuit(d time.Duration, quit chan struct{}) bool {
 	// c.waitUntilRunning()
 
 	select {
@@ -252,7 +252,7 @@ func (c *Clock) AfterWithQuit(d time.Duration, quit chan bool) bool {
 	return false
 }
 
-func (c *Clock) WaitUtilWithQuit(t time.Duration, quit chan bool) bool {
+func (c *Clock) WaitUtilWithQuit(t time.Duration, quit chan struct{}) bool {
 	// log.Print("wait until", t.String())
 	now := c.getTime()
 
@@ -274,7 +274,7 @@ func NewClock(totalTime time.Duration) *Clock {
 		pausedTime: 0,
 		status:     "running",
 		totalTime:  totalTime,
-		wait:       make(chan bool),
+		wait:       make(chan struct{}),
 	}
 	c.Mutex = sync.Mutex{}
 	return c

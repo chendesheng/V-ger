@@ -21,8 +21,7 @@ type Audio struct {
 
 	skipBytes int
 
-	quit       chan bool
-	quitFinish chan bool
+	quit chan struct{}
 
 	driver *portAudio
 
@@ -141,7 +140,7 @@ func (a *Audio) Open(stream AVStream) error {
 
 	a.diffThreshold = 50 * time.Millisecond
 
-	a.quit = make(chan bool)
+	a.quit = make(chan struct{})
 
 	decoder := codecCtx.FindDecoder()
 	if decoder.IsNil() {
