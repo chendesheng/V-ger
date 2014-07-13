@@ -255,7 +255,7 @@ func SavePlaying(p *Playing) {
 		return
 	}
 
-	log.Printf("Save playing: %v", p)
+	// log.Printf("Save playing: %v", p)
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
 

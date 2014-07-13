@@ -41,7 +41,6 @@ func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 	p.parse()
 
 	items = p.items
-	println(items)
 	sort.Sort(SubItems(items))
 
 	err = nil
