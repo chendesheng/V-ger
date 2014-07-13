@@ -2,12 +2,13 @@ package dbHelper
 
 import (
 	"database/sql"
-	"filelock"
 	"log"
-	"time"
+	"sync"
 )
 
 type connContext struct {
+	sync.Mutex
+
 	driverName     string
 	dataSourceName string
 }
@@ -20,12 +21,13 @@ func Init(driverName, dataSourceName string) {
 }
 
 func Open() *sql.DB {
-	b := time.Now()
-	filelock.Lock()
-	dur := time.Since(b)
-	if dur > 10*time.Millisecond {
-		println("filelock", dur.String())
-	}
+	globalCtx.Lock()
+	// b := time.Now()
+	// filelock.Lock()
+	// dur := time.Since(b)
+	// if dur > 10*time.Millisecond {
+	// println("filelock", dur.String())
+	// }
 
 	db, err := sql.Open(globalCtx.driverName, globalCtx.dataSourceName)
 	if err != nil {
@@ -37,7 +39,8 @@ func Open() *sql.DB {
 func Close(db *sql.DB) {
 	db.Close()
 
-	filelock.Unlock()
+	// filelock.Unlock()
+	globalCtx.Unlock()
 }
 
 type RowScanner interface {
