@@ -76,3 +76,6 @@ bin/testcrawler
 src/testcrawler/testcrawler
 cld
 src/chatserver
+bin/GoGradeAPI
+
+src/gopkg.in/check.v1/
