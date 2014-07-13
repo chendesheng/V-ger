@@ -163,6 +163,7 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 	var err error
 	t, img, err = m.v.Seek(t)
 	if err != nil {
+		log.Print(err)
 		return t
 	}
 

@@ -64,6 +64,8 @@ type Window struct {
 	render imageRender
 
 	forceRatio float64
+
+	showMessageDeadline time.Time
 }
 
 // func (w *Window) Show() {
@@ -336,7 +338,7 @@ func (w *Window) SendShowText(s SubItemArg) {
 	w.ChanShowText <- s
 	// return <-res
 }
-func (w *Window) SendShowMessage(msg string, autoHide bool) uintptr {
+func createMessageSubItem(msg string) SubItem {
 	s := SubItem{}
 	s.PositionType = 7
 	s.X = 20
@@ -344,17 +346,39 @@ func (w *Window) SendShowMessage(msg string, autoHide bool) uintptr {
 	s.Content = make([]AttributedString, 0)
 	s.Content = append(s.Content, AttributedString{msg, 3, 0xffffff})
 
-	res := make(chan SubItemExtra)
-	w.ChanShowMessage <- SubItemArg{s, res}
-	ptr := <-res
+	return s
+}
+func (w *Window) SendShowMessage(msg string, autoHide bool) {
+	s := createMessageSubItem(msg)
+
+	w.ChanShowMessage <- SubItemArg{s, autoHide, nil}
+}
+
+func (w *Window) ShowMessage(msg string, autoHide bool) {
+	s := createMessageSubItem(msg)
+	w.showMessage(&s, autoHide)
+}
+
+func (w *Window) showMessage(s *SubItem, autoHide bool) {
+	if w.currentMessagePtr != 0 {
+		w.HideText(w.currentMessagePtr)
+	}
+
+	w.currentMessagePtr = w.ShowText(s)
+	w.currentMessage = s
 
 	if autoHide {
-		time.Sleep(2 * time.Second)
-		w.ChanHideMessage <- ptr.Handle
-
-		return 0
+		w.showMessageDeadline = time.Now().Add(2 * time.Second)
 	} else {
-		return ptr.Handle
+		w.showMessageDeadline = time.Now().Add(1000 * time.Hour)
+	}
+}
+
+func (w *Window) HideMessage() {
+	if w.currentMessagePtr != 0 {
+		w.HideText(w.currentMessagePtr)
+		w.currentMessage = nil
+		w.currentMessagePtr = 0
 	}
 }
 
@@ -481,22 +505,13 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 		}
 		break
 	case arg := <-w.ChanShowMessage:
-		if w.currentMessagePtr != 0 {
-			w.HideText(w.currentMessagePtr)
-		}
-
-		item := arg.SubItem
-		w.currentMessagePtr = w.ShowText(&item)
-		w.currentMessage = &item
-
-		arg.Result <- SubItemExtra{0, w.currentMessagePtr}
+		w.showMessage(&arg.SubItem, arg.AutoHide)
 	case <-w.ChanHideMessage:
-		// if (ptr != 0) && (w.currentMessagePtr == ptr) {
-		w.HideText(w.currentMessagePtr)
-		w.currentMessage = nil
-		w.currentMessagePtr = 0
-		// }
+		w.HideMessage()
 	default:
+		if w.currentMessagePtr != 0 && time.Now().After(w.showMessageDeadline) {
+			w.HideMessage()
+		}
 	}
 }
 

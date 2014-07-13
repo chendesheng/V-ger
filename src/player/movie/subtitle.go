@@ -156,6 +156,7 @@ func (m *Movie) SearchDownloadSubtitle() {
 			Movie:   m.p.Movie,
 			Name:    name,
 			Content: content,
+			Lang1:   "en", //aways English for now
 		}
 		log.Print("insert subtitle:", sub.Name)
 		InsertSubtitle(sub)

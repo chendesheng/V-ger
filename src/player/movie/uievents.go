@@ -173,37 +173,21 @@ func (m *Movie) uievents() {
 		m.seekPlayingSubs(m.c.GetTime(), true)
 	})
 
-	var chVolume chan byte
 	m.w.FuncMouseWheelled = append(m.w.FuncMouseWheelled, func(deltaY float64) {
-		if chVolume == nil {
-			chVolume = make(chan byte, 100)
-			go func() {
-				for {
-					select {
-					case <-time.Tick(time.Second * 2):
-						m.w.SendHideMessage()
-
-						close(chVolume)
-						chVolume = nil
-						return
-					case volume := <-chVolume:
-						m.p.Volume = volume
-						SavePlayingAsync(m.p)
-						m.w.SendShowMessage(fmt.Sprintf("Volume: %d%%", volume), false)
-						break
-					}
-				}
-			}()
-		}
 		if deltaY == 0 {
 			return
 		}
 
+		var volume byte
 		if deltaY > 0 {
-			chVolume <- byte(m.a.DecreaseVolume() * 100)
+			volume = byte(m.a.DecreaseVolume() * 100)
 		} else {
-			chVolume <- byte(m.a.IncreaseVolume() * 100)
+			volume = byte(m.a.IncreaseVolume() * 100)
 		}
+
+		m.p.Volume = volume
+		SavePlayingAsync(m.p)
+		m.w.ShowMessage(fmt.Sprintf("Volume: %d%%", volume), true)
 	})
 
 	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int) {

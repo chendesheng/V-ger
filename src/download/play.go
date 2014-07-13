@@ -42,6 +42,8 @@ func (s *Streaming) run() {
 	}
 }
 func (s *Streaming) Restart(pos int64) {
+	log.Print("Streaming restart:", pos, s)
+
 	if s.quit != nil {
 		close(s.quit)
 	}

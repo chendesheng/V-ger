@@ -197,12 +197,12 @@ func (s *Subtitle) showSubitem(item SubItem, chRes chan SubItemExtra) {
 			item.PositionType = 10
 		}
 	}
-	arg := SubItemArg{item, chRes}
+	arg := SubItemArg{item, false, chRes}
 	go s.r.SendShowText(arg)
 }
 func (s *Subtitle) hideSubItem(item SubItem) {
 	if item.Handle != 0 && item.Handle != 1 {
-		go s.r.SendHideText(SubItemArg{item, nil})
+		go s.r.SendHideText(SubItemArg{item, false, nil})
 	}
 }
 

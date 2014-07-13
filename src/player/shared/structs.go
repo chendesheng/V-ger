@@ -62,7 +62,8 @@ type SubItemExtra struct {
 }
 type SubItemArg struct {
 	SubItem
-	Result chan SubItemExtra
+	AutoHide bool
+	Result   chan SubItemExtra
 }
 type Position struct {
 	X, Y float64
