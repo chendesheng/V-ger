@@ -18,9 +18,14 @@ import (
 	. "player/shared"
 )
 
+var regAn = regexp.MustCompile(`^\{\\an?([1-9])\}`)
+var regSvg = regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
+var regPos = regexp.MustCompile(`\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
+var regBreak = regexp.MustCompile("(?i)\\\\n")
+var regSubItem = regexp.MustCompile(`[0-9]+(?:\r\n|\r|\n)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3}).*-->.*([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3})(?:\r\n|\r|\n)((?:.*(?:\r\n|\r|\n))*?)(?:\r\n|\r|\n)`)
+
 func dropSvgContent(text string) string {
 	text = strings.TrimLeft(text, " \r\n\t")
-	regSvg := regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
 
 	if regSvg.MatchString(text) {
 		return ""
@@ -80,7 +85,6 @@ func removePositionInfo(text string) string {
 }
 
 func parsePos(text string, width, height float64) Position {
-	regPos := regexp.MustCompile(`\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
 	matches := regPos.FindStringSubmatch(text)
 	if matches == nil {
 		return Position{-1, -1}
@@ -93,8 +97,7 @@ func parsePos(text string, width, height float64) Position {
 	}
 }
 func parseAlign(text string) int {
-	regPos := regexp.MustCompile(`^\{\\an?([1-9])\}`)
-	matches := regPos.FindStringSubmatch(text)
+	matches := regAn.FindStringSubmatch(text)
 	if matches == nil {
 		return 2
 	} else {
@@ -171,12 +174,10 @@ func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 		}
 	}()
 
-	regBreakline := regexp.MustCompile("(?i)\\\\n")
 	bytes, _ := ioutil.ReadAll(r)
 	text := string(bytes) + "\n\n" //make sure the last item has enough \n to match the reg exp
-	reg := regexp.MustCompile(`[0-9]+(?:\r\n|\r|\n)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3}).*-->.*([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3})(?:\r\n|\r|\n)((?:.*(?:\r\n|\r|\n))*?)(?:\r\n|\r|\n)`)
 
-	matches := reg.FindAllStringSubmatch(text, -1)
+	matches := regSubItem.FindAllStringSubmatch(text, -1)
 
 	items = make([]*SubItem, 0, len(matches))
 
@@ -186,7 +187,7 @@ func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 		s.To = convertTime(item[5:9])
 
 		text := strings.TrimSpace(item[9])
-		text = regBreakline.ReplaceAllString(text, "\n")
+		text = regBreak.ReplaceAllString(text, "\n")
 
 		s.PositionType, s.Position, text = parsePosition(text, width, height)
 		s.Content = parseAttributedString(text)

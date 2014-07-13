@@ -16,6 +16,13 @@ import (
 	"unicode/utf8"
 )
 
+var regAn = regexp.MustCompile(`^an([0-9])`)
+var regSvg = regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
+var regBold = regexp.MustCompile(`^b([0-9])+`)
+var regColor = regexp.MustCompile(`^[0-9]?c&H([0-9a-fA-F]+)&`)
+var regPos = regexp.MustCompile(`^pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)`)
+var regBreak = regexp.MustCompile("(?i)\\\\n")
+
 type parser struct {
 	*LineScanner
 
@@ -192,7 +199,6 @@ func (p *parser) parseText(text string, item *SubItem) {
 }
 func dropSvgContent(text string) string {
 	text = strings.TrimLeft(text, " \r\n\t")
-	regSvg := regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
 
 	if regSvg.MatchString(text) {
 		return ""
@@ -201,7 +207,6 @@ func dropSvgContent(text string) string {
 	}
 }
 func (p *parser) parsePos(text string) (bool, Position) {
-	regPos := regexp.MustCompile(`^pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)`)
 	matches := regPos.FindStringSubmatch(text)
 
 	if matches != nil {
@@ -213,7 +218,6 @@ func (p *parser) parsePos(text string) (bool, Position) {
 	}
 }
 func parseAlignment(text string) int {
-	regAn := regexp.MustCompile(`^an([0-9])`)
 	matches := regAn.FindStringSubmatch(text)
 	if matches != nil {
 		i, _ := strconv.Atoi(matches[1])
@@ -223,7 +227,6 @@ func parseAlignment(text string) int {
 	}
 }
 func parseBold(text string) (bool, int) {
-	regBold := regexp.MustCompile(`^b([0-9])+`)
 	matches := regBold.FindStringSubmatch(text)
 	if matches != nil {
 		i, _ := strconv.Atoi(matches[1])
@@ -245,7 +248,6 @@ func hex2int(c byte) uint {
 //Dialogue: 0,0:04:26.38,0:04:32.38,FlancyForBrBa,NTP,0000,0000,0000,,{\fade(255,0,255,0,2000,4000,5000)}{\fs16\3c&H18490B&}本字幕由 {\fs22\b1\3c&H1E1EB9&}YounFlancy{\b0}{\fs22\3c&H6C0D0A&}@{\fs22\3c&H9449B1&\c&HFF06FE&\b1}Newsmth{\b0} {\fs16\c&HFFFFFF&\3c&H18490B&}翻译制作\N{\rFlancyForBrBa}仅供交流学习，勿用于商业用途
 func parseColor(text string) (bool, uint) {
 	// println(text)
-	regColor := regexp.MustCompile(`^[0-9]?c&H([0-9a-fA-F]+)&`)
 	matches := regColor.FindStringSubmatch(text)
 	if matches != nil {
 		hexStr := matches[1]
@@ -299,8 +301,7 @@ func parseLine(line string) (string, string) {
 	}
 	title := line[:i]
 	content := line[i+1:]
-	reg := regexp.MustCompile("(?i)\\n")
-	content = reg.ReplaceAllString(content, "\n")
+	content = regBreak.ReplaceAllString(content, "\n")
 	return title, content
 }
 

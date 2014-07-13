@@ -45,7 +45,21 @@ func TestParseB(t *testing.T) {
 	// if len(subs) != 904 {
 	// t.Errorf("Expect 904 but %d", len(subs))
 	// }
-	printSubs(subs)
+	// printSubs(subs)
+	println(subs)
+}
+
+func BenchmarkParseB(b *testing.B) {
+	b.StopTimer()
+	f, _ := os.Open("b.ass")
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := Parse(f, 100, 100)
+		if err != nil {
+			b.Error(err)
+			break
+		}
+	}
 }
 
 func printSubs(subs []*shared.SubItem) {
