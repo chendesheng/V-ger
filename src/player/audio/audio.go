@@ -17,7 +17,7 @@ type Audio struct {
 	frame       AVFrame
 
 	PacketChan  chan *AVPacket
-	audioBuffer []byte
+	audioBuffer safeSlice
 
 	skipBytes int
 
@@ -48,7 +48,7 @@ func NewAudio(c *Clock, volume float64) *Audio {
 	a.PacketChan = make(chan *AVPacket, 200)
 	a.c = c
 	a.driver = &portAudio{volume: volume}
-
+	a.audioBuffer = safeSlice{}
 	return a
 }
 func (a *Audio) StreamIndex() int {
@@ -159,11 +159,11 @@ func (a *Audio) Open(stream AVStream) error {
 				return a.getSilence(length)
 			}
 
-			for len(a.audioBuffer) == 0 {
+			for a.audioBuffer.empty() {
 				if packet, ok := a.receivePacket(); ok {
 					a.decode(packet, func(bytes []byte) {
 						if a.sync(packet) {
-							a.audioBuffer = append(a.audioBuffer, bytes...)
+							a.audioBuffer.append(bytes)
 						}
 					})
 
@@ -175,10 +175,10 @@ func (a *Audio) Open(stream AVStream) error {
 				}
 			}
 
-			retLen := min2(len(a.audioBuffer), length)
-			ret := a.audioBuffer[:retLen]
-			a.audioBuffer = a.audioBuffer[retLen:]
-			return ret
+			// retLen := min2(len(a.audioBuffer), length)
+			// ret := a.audioBuffer[:retLen]
+			// a.audioBuffer = a.audioBuffer[retLen:]
+			return a.audioBuffer.cut(length)
 		})
 }
 
@@ -199,7 +199,7 @@ func (a *Audio) FlushBuffer() {
 			p.Free()
 			break
 		default:
-			a.audioBuffer = a.audioBuffer[0:0]
+			a.audioBuffer.clear()
 			return
 		}
 	}
