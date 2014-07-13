@@ -85,5 +85,8 @@ func (a *portAudio) getVolume() float64 {
 	a.Lock()
 	defer a.Unlock()
 
-	return a.volume
+	//linear volume
+	//check this: http://www.dr-lex.be/info-stuff/volumecontrols.html
+	v2 := a.volume * a.volume
+	return v2 * v2 * 1.2
 }
