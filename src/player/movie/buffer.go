@@ -76,8 +76,8 @@ func (b *buffer) GC() {
 	}
 
 	if i > 0 {
-		copy(b.data, b.data[i:])
-		b.data = b.data[:len(b.data)-i]
+		l := copy(b.data, b.data[i:])
+		b.data = b.data[:l]
 	}
 }
 
