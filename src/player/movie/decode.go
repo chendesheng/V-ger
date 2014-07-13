@@ -86,7 +86,7 @@ func (m *Movie) decode(name string) {
 		}
 	}()
 
-	go m.seekRoutine()
+	m.startSeekRoutine()
 
 	packet := AVPacket{}
 	ctx := m.ctx

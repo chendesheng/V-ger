@@ -91,21 +91,22 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 
 	return ch
 }
-func (m *Movie) seekRoutine() {
+func (m *Movie) startSeekRoutine() {
 	m.chSeekProgress = make(chan *seekArg)
 	chSeekProgress := make(chan *seekArg)
 	go recentPipe(m.chSeekProgress, chSeekProgress, m.quit)
 
-	var ch chan time.Duration
-	for {
-		select {
-		case <-m.quit:
-			return
-		case arg := <-chSeekProgress:
-			ch = m.handleSeekProgress(ch, arg, chSeekProgress)
+	go func(chSeekProgress chan *seekArg) {
+		var ch chan time.Duration
+		for {
+			select {
+			case <-m.quit:
+				return
+			case arg := <-chSeekProgress:
+				ch = m.handleSeekProgress(ch, arg, chSeekProgress)
+			}
 		}
-	}
-
+	}(chSeekProgress)
 }
 
 func recentPipe(in chan *seekArg, out chan *seekArg, quit chan struct{}) {
