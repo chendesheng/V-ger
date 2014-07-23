@@ -170,7 +170,9 @@ func (m *Movie) uievents() {
 	})
 
 	m.w.FuncOnFullscreenChanged = append(m.w.FuncOnFullscreenChanged, func(b bool) {
-		m.seekPlayingSubs(m.c.GetTime(), true)
+		if m.c != nil {
+			m.seekPlayingSubs(m.c.GetTime(), true)
+		}
 	})
 
 	m.w.FuncMouseWheelled = append(m.w.FuncMouseWheelled, func(deltaY float64) {
