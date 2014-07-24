@@ -59,8 +59,8 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 
     CGFloat s = self->_fontSize*ratio;
 
-    if (s > 50) {
-        s = 50;
+    if (s > 45) {
+        s = 45;
     }
 
     if (s < 10) {
