@@ -232,16 +232,16 @@ func SavePlayingAsync(p *Playing) {
 		go func() {
 			timer := time.NewTicker(2 * time.Second)
 			var p *Playing
-			var lastP *Playing
+			// var lastP *Playing
 			for {
 				select {
 				case p = <-chPlaying:
 					break
 				case <-timer.C:
-					if p != nil && p != lastP {
-						SavePlaying(p)
-						lastP = p
-					}
+					// if p != nil && p != lastP {
+					SavePlaying(p)
+					// lastP = p
+					// }
 					break
 				}
 			}
