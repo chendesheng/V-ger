@@ -24,7 +24,8 @@ func (tc *taskControl) stopDownload() {
 func ensureQuit(quit chan struct{}) {
 	if quit != nil {
 		defer func() {
-			recover()
+			err := recover()
+			log.Print(err)
 		}()
 		select {
 		case <-quit:
@@ -67,7 +68,10 @@ func monitorTask() {
 				if _, ok := task.ResumeNextTask(); !ok {
 					if !task.HasDownloadingOrPlaying() {
 						if util.ReadBoolConfig("shutdown-after-finish") {
-							native.Shutdown(t.Name)
+							err := native.Shutdown(t.Name)
+							if err != nil {
+								log.Print(err)
+							}
 						}
 					}
 				}
@@ -117,14 +121,17 @@ func Start() {
 				if t.DownloadedSize > 1000 {
 					t.DownloadedSize -= 1000
 				}
-				task.SaveTask(t)
+				task.SaveTaskIgnoreErr(t)
 			}
 
 			go download(tc)
 		}
 	}
 	if !hasDownloading {
-		task.ResumeNextTask()
+		err, _ := task.ResumeNextTask()
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 
@@ -133,7 +140,7 @@ func download(tc *taskControl) {
 	if t.DownloadedSize >= t.Size {
 		if t.Status == "Downloading" {
 			t.Status = "Finished"
-			task.SaveTask(t)
+			task.SaveTaskIgnoreErr(t)
 		}
 		return
 	}
@@ -157,6 +164,7 @@ func download(tc *taskControl) {
 		return
 	}
 	defer f.Close()
+
 	for t.Status == "Downloading" {
 		tc.quit = make(chan struct{})
 		tc.chMaxSpeed = make(chan int)
@@ -185,7 +193,7 @@ func download(tc *taskControl) {
 			log.Println(t.Name, " Finished")
 
 			t.Status = "Finished"
-			task.SaveTask(t)
+			task.SaveTaskIgnoreErr(t)
 
 			return
 		}

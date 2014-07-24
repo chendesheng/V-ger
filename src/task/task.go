@@ -251,7 +251,7 @@ func insertTask(t *Task) error {
 
 	return err
 }
-func SaveTaskPrintErr(t *Task) {
+func SaveTaskIgnoreErr(t *Task) {
 	if err := SaveTask(t); err != nil {
 		log.Print(err)
 	}

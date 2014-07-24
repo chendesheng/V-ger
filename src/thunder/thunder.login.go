@@ -124,5 +124,5 @@ func setCookie(name, value string) {
 	url, _ := url.Parse("http://lixian.vip.xunlei.com")
 	http.DefaultClient.Jar.SetCookies(url, cookies)
 
-	http.DefaultClient.Get("http://lixian.vip.xunlei.com")
+	// http.DefaultClient.Get("http://lixian.vip.xunlei.com")
 }

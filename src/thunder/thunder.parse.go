@@ -84,7 +84,9 @@ func parseBtTaskList(text string) ([]ThunderTask, error) {
 	log.Println(jsonStr)
 
 	var r []interface{}
-	json.Unmarshal([]byte(jsonStr), &r)
+	if err := json.Unmarshal([]byte(jsonStr), &r); err != nil {
+		return nil, err
+	}
 
 	res := make([]ThunderTask, 0, len(r))
 
@@ -111,7 +113,9 @@ func parseNewlyCreateTask(text string) map[string]interface{} {
 		log.Println(jsonStr)
 
 		var r interface{}
-		json.Unmarshal([]byte(jsonStr), &r)
+		if err := json.Unmarshal([]byte(jsonStr), &r); err != nil {
+			return nil
+		}
 		return r.(map[string]interface{})
 	} else {
 		log.Println("parseNewlyCreateTask")
@@ -168,7 +172,11 @@ func parseUploadTorrentResutl(text string) (map[string]interface{}, error) {
 	text = text[i+s : j]
 	fmt.Println(text)
 	res := make(map[string]interface{})
-	json.Unmarshal([]byte(text), &res)
+
+	if err := json.Unmarshal([]byte(text), &res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 

@@ -73,7 +73,7 @@ func saveProgress(name string, speed float64, est time.Duration, downloaded int6
 
 		if err := task.SaveTask(t); err != nil {
 			log.Print(err)
-			task.SaveTask(t)
+			task.SaveTaskIgnoreErr(t)
 		}
 	}
 }

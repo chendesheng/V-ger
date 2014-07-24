@@ -2,7 +2,6 @@ package download
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -33,33 +32,33 @@ func addRangeHeader(req *http.Request, from, to int64) {
 	}
 }
 
-type secureWriter os.File
+// type secureWriter os.File
 
-func (w *secureWriter) WriteAt(p []byte, off int64) (n int, err error) {
-	f := (*os.File)(w)
-	n, err = f.WriteAt(p, off)
+// func (w *secureWriter) WriteAt(p []byte, off int64) (n int, err error) {
+// 	f := (*os.File)(w)
+// 	n, err = f.WriteAt(p, off)
 
-	fi, _ := f.Stat()
-	if fi.Size() < off {
-		log.Printf("Write file skip bytes")
-	}
+// 	fi, _ := f.Stat()
+// 	if fi.Size() < off {
+// 		log.Printf("Write file skip bytes")
+// 	}
 
-	if err == nil {
-		b := make([]byte, 1)
-		f.ReadAt(b, off+int64(n)-1)
-		if b[0] != p[n-1] {
-			println("write error")
-			return 0, fmt.Errorf("Write Error")
-		}
-	}
+// 	if err == nil {
+// 		b := make([]byte, 1)
+// 		f.ReadAt(b, off+int64(n)-1)
+// 		if b[0] != p[n-1] {
+// 			println("write error")
+// 			return 0, fmt.Errorf("Write Error")
+// 		}
+// 	}
 
-	return n, err
-}
+// 	return n, err
+// }
 
-func (w *secureWriter) Close() {
-	f := (*os.File)(w)
-	f.Close()
-}
+// func (w *secureWriter) Close() {
+// 	f := (*os.File)(w)
+// 	f.Close()
+// }
 
 func openOrCreateFileRW(path string, position int64) (*os.File, error) {
 	// log.Print("open or create file " + path)

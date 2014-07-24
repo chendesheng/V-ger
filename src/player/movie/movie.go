@@ -101,7 +101,10 @@ func updateSubscribeDuration(movie string, duration time.Duration) {
 	if t, _ := task.GetTask(movie); t != nil {
 		log.Print("get subscribe:", t.Subscribe)
 		if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
-			subscribe.UpdateDuration(t.Subscribe, duration)
+			err := subscribe.UpdateDuration(t.Subscribe, duration)
+			if err != nil {
+				log.Print(err)
+			}
 		}
 	}
 }
@@ -123,7 +126,10 @@ func (m *Movie) Open(w *Window, file string) {
 			log.Fatal("open failed: ", file)
 			return
 		}
-		ctx.FindStreamInfo()
+		err := ctx.FindStreamInfo()
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		ctx = NewAVFormatContext()
 		ctx.OpenInput(file)
@@ -134,7 +140,10 @@ func (m *Movie) Open(w *Window, file string) {
 
 		filename = filepath.Base(file)
 
-		ctx.FindStreamInfo()
+		err := ctx.FindStreamInfo()
+		if err != nil {
+			log.Fatal(err)
+		}
 		ctx.DumpFormat()
 	}
 

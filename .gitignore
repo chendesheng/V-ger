@@ -79,3 +79,7 @@ src/chatserver
 bin/GoGradeAPI
 
 src/gopkg.in/check.v1/
+
+src/honnef.co/go/importer/
+
+bin/errcheck

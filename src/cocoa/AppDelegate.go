@@ -3,9 +3,6 @@ package cocoa
 import (
 	"download"
 	"fmt"
-	"github.com/mkrautz/objc"
-	. "github.com/mkrautz/objc/AppKit"
-	. "github.com/mkrautz/objc/Foundation"
 	"log"
 	"native"
 	"os/exec"
@@ -14,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"thunder"
+	"github.com/mkrautz/objc"
+	. "github.com/mkrautz/objc/AppKit"
+	. "github.com/mkrautz/objc/Foundation"
 	// "path"
 	// "runtime"
 	// "sync"
@@ -249,11 +249,17 @@ func (delegate *AppDelegate) SimultaneousClick(sender uintptr) {
 	downloadingCnt := task.NumOfDownloadingTasks()
 
 	for i := cnt; i < downloadingCnt; i++ {
-		task.QueueDownloadingTask()
+		err := task.QueueDownloadingTask()
+		if err != nil {
+			log.Print(err)
+		}
 	}
 
 	for i := downloadingCnt; i < cnt; i++ {
-		task.ResumeNextTask()
+		err, _ := task.ResumeNextTask()
+		if err != nil {
+			log.Print(err)
+		}
 	}
 
 	util.SaveConfig("simultaneous-downloads", fmt.Sprint(cnt))

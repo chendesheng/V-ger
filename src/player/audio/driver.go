@@ -1,6 +1,7 @@
 package audio
 
 import (
+	"log"
 	"sync"
 	"unsafe"
 
@@ -8,7 +9,10 @@ import (
 )
 
 func init() {
-	portaudio.Initialize()
+	err := portaudio.Initialize()
+	if err != nil {
+		log.Print(err)
+	}
 }
 
 type audioDriver interface{}
@@ -49,14 +53,18 @@ func (a *portAudio) Open(channels int, sampleRate int, callback func(int) []byte
 		return err
 	}
 
-	a.stream.Start()
-
-	return nil
+	return a.stream.Start()
 }
 
 func (a *portAudio) Close() {
-	a.stream.Stop()
-	a.stream.Close()
+	err := a.stream.Stop()
+	if err != nil {
+		log.Print(err)
+	}
+	err = a.stream.Close()
+	if err != nil {
+		log.Print(err)
+	}
 }
 
 func (a *portAudio) IncreaseVolume() float64 {
@@ -88,5 +96,5 @@ func (a *portAudio) getVolume() float64 {
 	//linear volume
 	//check this: http://www.dr-lex.be/info-stuff/volumecontrols.html
 	v2 := a.volume * a.volume
-	return v2 * v2 * 1.2
+	return v2 * 1.2
 }

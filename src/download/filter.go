@@ -17,7 +17,7 @@ type filter interface {
 
 type WriterAtQuit interface {
 	//this method should return (nil) asap after close(quit)
-	WriteAtQuit(bk block.Block, quit chan struct{}) error
+	WriteAtQuit(bk block.Block, quit chan struct{})
 }
 
 type basicFilter struct {

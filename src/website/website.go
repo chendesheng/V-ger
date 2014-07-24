@@ -68,9 +68,10 @@ func openHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	cmd := exec.Command("open", path.Join(p, name))
 
-	cmd.Start()
-
-	w.Write([]byte(``))
+	err = cmd.Start()
+	if err != nil {
+		writeError(w, err)
+	}
 }
 
 func trashHandler(w http.ResponseWriter, r *http.Request) {
@@ -89,11 +90,17 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 			p != nil && p.Duration > 0 &&
 			float64(t.LastPlaying)/float64(p.Duration) > 0.85 &&
 			t.LastPlaying < s.Duration {
-			subscribe.UpdateDuration(t.Subscribe, t.LastPlaying)
+			err := subscribe.UpdateDuration(t.Subscribe, t.LastPlaying)
+			if err != nil {
+				log.Print(err)
+			}
 		}
 	}
 
-	task.DeleteTask(name)
+	err = task.DeleteTask(name)
+	if err != nil {
+		log.Print(err)
+	}
 }
 
 func resumeHandler(w http.ResponseWriter, r *http.Request) {
@@ -155,10 +162,13 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 					t.DownloadedSize = 0
 				}
 				t.URL = url
-				task.SaveTask(t)
+				task.SaveTaskIgnoreErr(t)
 
 				log.Print("task already exists")
-				task.ResumeTask(name)
+				err := task.ResumeTask(name)
+				if err != nil {
+					log.Print(err)
+				}
 			}
 		} else if err := task.StartNewTask(name, url, size); err != nil {
 			writeError(w, err)
@@ -182,7 +192,11 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	input, _ := ioutil.ReadAll(r.Body)
 
 	m := make(map[string]string)
-	json.Unmarshal(input, &m)
+	err := json.Unmarshal(input, &m)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
 
 	url := string(m["url"])
 	verifycode := string(m["verifycode"])
@@ -262,11 +276,17 @@ func configSimultaneousHandler(w http.ResponseWriter, r *http.Request) {
 		downloadingCnt := task.NumOfDownloadingTasks()
 
 		for i := cnt; i < downloadingCnt; i++ {
-			task.QueueDownloadingTask()
+			err := task.QueueDownloadingTask()
+			if err != nil {
+				log.Print(err)
+			}
 		}
 
 		for i := downloadingCnt; i < cnt; i++ {
-			task.ResumeNextTask()
+			err, _ := task.ResumeNextTask()
+			if err != nil {
+				log.Print(err)
+			}
 		}
 
 		util.SaveConfig("simultaneous-downloads", string(input))
@@ -374,13 +394,13 @@ func writeError(w http.ResponseWriter, err error) {
 
 	w.Write([]byte(err.Error()))
 }
-func writeJson(w io.Writer, obj interface{}) error {
+func writeJson(w io.Writer, obj interface{}) {
 	text, err := json.Marshal(obj)
 	if err != nil {
-		return err
+		log.Print(err)
 	} else {
 		_, err := w.Write(text)
-		return err
+		log.Print(err)
 	}
 }
 func videoHandler(w http.ResponseWriter, r *http.Request) {
@@ -391,7 +411,11 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if t.Status == "Downloading" {
-		task.StopTask(name)
+		err := task.StopTask(name)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	size := t.Size
@@ -516,7 +540,10 @@ func Run(isDebug bool) {
 		go Monitor()
 	}
 
-	util.MakeSurePathExists(path.Join(util.ReadConfig("dir"), "subs"))
+	err, _ := util.MakeSurePathExists(path.Join(util.ReadConfig("dir"), "subs"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "assets/favicon.png")
@@ -561,7 +588,7 @@ func Run(isDebug bool) {
 	server := util.ReadConfig("server")
 
 	log.Print("server ", server, " started.")
-	err := http.ListenAndServe(server, nil)
+	err = http.ListenAndServe(server, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

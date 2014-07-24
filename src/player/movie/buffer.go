@@ -110,7 +110,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 	return b.currentPos - lastPos
 }
 
-func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) error {
+func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) {
 	// log.Print("WriteAt:", off, len(p))
 
 	b.Lock()
@@ -125,7 +125,6 @@ func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) error {
 			break
 		case <-quit:
 			b.Lock()
-			return nil
 		}
 	}
 
@@ -133,8 +132,6 @@ func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) error {
 	// copy(bk1.Data, bk.Data)
 
 	b.data = append(b.data, &bk)
-
-	return nil
 }
 
 func (b *buffer) CurrentPos() int64 {

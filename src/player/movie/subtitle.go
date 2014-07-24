@@ -46,7 +46,10 @@ func saveThunderSubtitle(subFile string, data []byte) {
 	// data = bytes.Replace(data, []byte{'\\', 'N'}, []byte{'\n'}, -1)
 	// data = bytes.Replace(data, []byte{'\\', 'n'}, []byte{'\n'}, -1)
 
-	ioutil.WriteFile(subFile, data, 0666)
+	err := ioutil.WriteFile(subFile, data, 0666)
+	if err != nil {
+		log.Print(err)
+	}
 }
 func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit chan struct{}) bool {
 	deadline := time.Now().Add(time.Minute)
@@ -78,7 +81,11 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 			}
 
 			if util.CheckExt(subname, ".rar", ".zip") {
-				ioutil.WriteFile(subFile, data, 0666)
+				err := ioutil.WriteFile(subFile, data, 0666)
+				if err != nil {
+					log.Print(err)
+				}
+
 				extract(subFile)
 			} else {
 				saveThunderSubtitle(subFile, data)
@@ -106,7 +113,11 @@ func readSubtitlesFromDir(movieName, dir string) {
 
 		utf8Text, _, err := toutf8.ConverToUTF8(f)
 		if err == nil {
-			ioutil.WriteFile(filename, []byte(utf8Text), 0666)
+			err := ioutil.WriteFile(filename, []byte(utf8Text), 0666)
+			if err != nil {
+				log.Print(err)
+			}
+
 			name := path.Base(filename)
 
 			// lang1, lang2 := cld.DetectLanguage2(utf8Text)
@@ -119,11 +130,20 @@ func readSubtitlesFromDir(movieName, dir string) {
 }
 func downloadSubs(movieName string, url string, search string, quit chan struct{}) {
 	chSubs := make(chan subtitles.Subtitle)
-	thunder.Login()
+	err := thunder.Login()
+	if err != nil {
+		log.Print(err)
+	}
+
 	go subtitles.SearchSubtitlesMaxCount(search, url, chSubs, 2, quit)
 
 	dir := path.Join(util.ReadConfig("dir"), "subs", movieName)
-	util.MakeSurePathExists(dir)
+	err, _ = util.MakeSurePathExists(dir)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
 	if receiveAndExtractSubtitles(chSubs, dir, quit) {
 		readSubtitlesFromDir(movieName, dir)
 	}

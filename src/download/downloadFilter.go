@@ -101,7 +101,7 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan struct{}) (err
 	var resp *http.Response
 	go func() {
 		defer close(finish)
-		var err error
+
 		resp, err = http.DefaultClient.Do(req)
 		if err != nil {
 			return

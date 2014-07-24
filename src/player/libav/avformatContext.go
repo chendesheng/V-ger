@@ -53,8 +53,8 @@ func (ctx *AVFormatContext) DumpFormat() {
 }
 
 func (ctx *AVFormatContext) FindStreamInfo() error {
-	if int(C.avformat_find_stream_info(ctx.ptr, nil)) < 0 {
-		return errors.New("Fins stream info error")
+	if code := int(C.avformat_find_stream_info(ctx.ptr, nil)); code < 0 {
+		return errors.New(fmt.Sprint("Find stream info error: ", code))
 	} else {
 		return nil
 	}

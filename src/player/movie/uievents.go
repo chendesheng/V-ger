@@ -21,7 +21,10 @@ func (m *Movie) uievents() {
 			SavePlayingAsync(m.p)
 
 			m.a.Close()
-			m.a.Open(getStream(m.audioStreams, i))
+			err := m.a.Open(getStream(m.audioStreams, i))
+			if err != nil {
+				log.Print(err)
+			}
 		}()
 	})
 

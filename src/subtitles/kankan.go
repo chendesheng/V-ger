@@ -26,7 +26,9 @@ func kankanSearch(fileurl string, result chan Subtitle, quit chan struct{}) erro
 		println(content)
 
 		v := make(map[string]interface{})
-		json.Unmarshal([]byte(content), &v)
+		if err := json.Unmarshal([]byte(content), &v); err != nil {
+			return err
+		}
 
 		for _, s := range v["sublist"].([]interface{}) {
 			m := s.(map[string]interface{})

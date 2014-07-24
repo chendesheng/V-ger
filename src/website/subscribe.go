@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"runtime/debug"
-	"strings"
 	"subscribe"
 	"task"
 	"thunder"
@@ -39,25 +38,29 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 			t1, err := task.GetTask(t.Name)
 			if err != nil {
 				if err == task.ErrNoTask {
-					task.SaveTaskPrintErr(t)
+					task.SaveTaskIgnoreErr(t)
 				} else if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
-					task.SaveTaskPrintErr(t)
+					task.SaveTaskIgnoreErr(t)
 				} else {
 					log.Println("episode exists")
 				}
 			} else {
 				if t1.Subscribe != t.Subscribe || t1.Season != t.Season || t1.Episode != t.Episode {
-					task.SaveTaskPrintErr(t)
+					task.SaveTaskIgnoreErr(t)
 				}
 			}
 		}
 
 		writeJson(w, s1)
 	} else {
-		subscribe.SaveSubscribe(s)
+		err := subscribe.SaveSubscribe(s)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
 
 		for _, t := range tasks {
-			task.SaveTaskPrintErr(t)
+			task.SaveTaskIgnoreErr(t)
 		}
 		writeJson(w, s)
 	}
@@ -175,8 +178,6 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 
 	cache[s.Name] = len(html)
 
-	subscribe.ParseReader(strings.NewReader(html))
-
 	_, tasks, err := subscribe.Parse(s.URL)
 	if err != nil {
 		log.Print(err)
@@ -187,7 +188,7 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 					log.Printf("subscribe new task: %v", t)
 
 					if t.Season < 0 {
-						task.SaveTask(t)
+						task.SaveTaskIgnoreErr(t)
 						continue
 					}
 
@@ -203,7 +204,7 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 							log.Print(err)
 						} else {
 							t.Size = size
-							task.SaveTask(t)
+							task.SaveTaskIgnoreErr(t)
 							task.StartNewTask2(t)
 						}
 					}

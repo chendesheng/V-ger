@@ -58,9 +58,11 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 
 	arg := make(map[string]string)
 
-	println(string(input))
-	json.Unmarshal(input, &arg)
-	println(arg["url"], arg["name"])
+	err := json.Unmarshal(input, &arg)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
 
 	url := arg["url"]
 	url, name, _, err := download.GetDownloadInfo(url)
@@ -74,7 +76,11 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
-	util.MakeSurePathExists(subFileDir)
+	err, _ = util.MakeSurePathExists(subFileDir)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
 
 	subFile := path.Join(subFileDir, name)
 
