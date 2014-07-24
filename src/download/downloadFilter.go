@@ -108,7 +108,7 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan struct{}) (err
 		}
 		defer resp.Body.Close()
 
-		io.ReadFull(resp.Body, data)
+		_, err = io.ReadFull(resp.Body, data)
 		// if err != nil {
 		// 	println("download routine ReadFull:", err.Error())
 		// }
