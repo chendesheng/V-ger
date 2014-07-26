@@ -132,12 +132,9 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if url := string(input); url != "" {
 
 		_, name2, size, err := download.GetDownloadInfo(url)
-		if err != nil {
-			_, name2, size, err = download.GetDownloadInfo(url)
 
-			if err != nil {
-				writeError(w, err)
-			}
+		if err != nil {
+			writeError(w, err)
 			return
 		}
 
@@ -400,7 +397,9 @@ func writeJson(w io.Writer, obj interface{}) {
 		log.Print(err)
 	} else {
 		_, err := w.Write(text)
-		log.Print(err)
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 func videoHandler(w http.ResponseWriter, r *http.Request) {

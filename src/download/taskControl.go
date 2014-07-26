@@ -25,7 +25,9 @@ func ensureQuit(quit chan struct{}) {
 	if quit != nil {
 		defer func() {
 			err := recover()
-			log.Print(err)
+			if err != nil {
+				log.Print(err)
+			}
 		}()
 		select {
 		case <-quit:

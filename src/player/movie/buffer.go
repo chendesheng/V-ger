@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -194,6 +195,7 @@ func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 	defer b.Unlock()
 
 	log.Print("buffer seek:", offset, whence)
+	log.Print(string(debug.Stack()))
 
 	switch whence {
 	case os.SEEK_SET:
