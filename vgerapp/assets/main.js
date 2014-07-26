@@ -287,6 +287,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 			if (url.indexOf('lixian.vip.xunlei.com') != -1 ||
 				url.indexOf('cdn.baidupcs.com') != -1 ||
 				url.indexOf('googlevideo.com') != -1 ||
+				url.indexOf('baidupcs.com') != -1 ||
 				/.*dmg|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
 				$http.post('new/', url).success(function(resp) {
 					if (!resp) {
