@@ -168,12 +168,12 @@ func (m *Movie) Open(w *Window, file string) {
 			capacity = m.httpBuffer.size
 		} else {
 			//overflow, divide before cross
-			capacity = int64(float64(m.httpBuffer.size) / float64(duration) * 10 * float64(time.Minute))
+			capacity = int64(float64(m.httpBuffer.size) / float64(duration) * 5 * float64(time.Minute))
 			log.Print(capacity)
 		}
 
-		if capacity > 200*block.MB {
-			capacity = 200 * block.MB
+		if capacity > 100*block.MB {
+			capacity = 100 * block.MB
 		}
 		if capacity < 10*block.MB {
 			capacity = 10 * block.MB
