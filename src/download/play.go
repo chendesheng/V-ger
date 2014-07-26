@@ -16,7 +16,7 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 	}
 
 	t.Status = "Playing"
-	task.SaveTask(t)
+	task.SaveTaskIgnoreErr(t)
 
 	play_quit = make(chan struct{})
 
@@ -36,18 +36,24 @@ type Streaming struct {
 func (s *Streaming) run() {
 	for {
 		from := <-s.chArg
+		if from < 0 {
+			return
+		}
+
 		s.quit = make(chan struct{})
 
 		streaming(s.url, s.w, from, s.size, s.sm, s.quit)
 	}
 }
 func (s *Streaming) Restart(pos int64) {
-	log.Print("Streaming restart:", pos, s)
-
 	if s.quit != nil {
 		close(s.quit)
 	}
 	s.chArg <- pos
+}
+
+func (s *Streaming) Close() {
+	s.Restart(-1)
 }
 
 func StartStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {

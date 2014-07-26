@@ -31,6 +31,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	buf.Malloc(1024 * 64)
 
 	streaming := download.StartStreaming(url, size, m.httpBuffer, m)
+	m.streaming = streaming
 
 	ioctx := NewAVIOContext(buf, func(buf AVObject) int {
 		if buf.Size() == 0 {

@@ -434,6 +434,8 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 }
 
 func (v *Video) Close() {
+	log.Print("close video")
+
 	v.FlushBuffer()
 	close(v.quit)
 

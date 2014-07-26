@@ -59,6 +59,7 @@ func (m *Movie) showProgressPerSecond() {
 				m.w.SendShowBufferInfo(&BufferInfo{fmt.Sprintf("%.0f KB/s", speed), percent})
 			}
 		case <-m.quit:
+			log.Print("quit show progress")
 			return
 		}
 	}

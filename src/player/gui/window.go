@@ -6,6 +6,7 @@ package gui
 */
 import "C"
 import (
+	"log"
 	"math"
 	. "player/shared"
 	"time"
@@ -77,26 +78,28 @@ func (w *Window) SendDrawImage(img []byte) {
 func (w *Window) SendSetCursor(b bool) {
 	w.ChanSetCursor <- b
 }
-func (w *Window) FlushImageBuffer() {
-	for {
-		select {
-		case <-w.ChanDraw:
-			println("window drop image")
-			break
-		default:
-			println("window flush image buffer return")
-			return
-		}
-	}
-}
+
+// func (w *Window) FlushImageBuffer() {
+// 	for {
+// 		select {
+// 		case <-w.ChanDraw:
+// 			log.Print("window drop image")
+// 			break
+// 		default:
+// 			log.Print("window flush image buffer return")
+// 			return
+// 		}
+// 	}
+// }
 func (w *Window) RefreshContent(img []byte) {
 	w.img = img
 
 	C.refreshWindowContent(w.ptr)
 }
 
-func (w *Window) Destory() {
+func (w *Window) DestoryRender() {
 	w.render.delete()
+	w.render = nil
 }
 
 func (w *Window) GetWindowSize() (int, int) {
@@ -136,6 +139,8 @@ func (w *Window) SetSize(width, height int) {
 	w.ShowStartupView()
 
 	println("set size")
+
+	w.ChanDraw = make(chan []byte)
 
 	if width%4 != 0 {
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
@@ -273,6 +278,7 @@ func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
 
 func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	if len(img) == 0 {
+		log.Print("draw: no image")
 		return
 	}
 

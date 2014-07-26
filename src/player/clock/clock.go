@@ -268,6 +268,8 @@ func (c *Clock) TotalTime() time.Duration {
 }
 
 func NewClock(totalTime time.Duration) *Clock {
+	log.Print("NewClock")
+
 	now := time.Now()
 	c := &Clock{
 		base:       now,

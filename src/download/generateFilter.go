@@ -38,7 +38,7 @@ func (gf *generateFilter) active() {
 		gf.blockSize = 128 * block.KB
 	}
 
-	println("generateFilter:", gf.from, gf.to, gf.blockSize, gf.maxConnections)
+	log.Printf("generateFilter:%d %d %d %d\n", gf.from, gf.to, gf.blockSize, gf.maxConnections)
 
 	//boot
 	for i := 0; i < gf.maxConnections; i++ {

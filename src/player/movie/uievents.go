@@ -13,6 +13,8 @@ import (
 )
 
 func (m *Movie) uievents() {
+	log.Print("movie uievents")
+
 	m.w.FuncAudioMenuClicked = append(m.w.FuncAudioMenuClicked, func(i int) {
 		go func() {
 			log.Printf("Audio menu click:%d", i)

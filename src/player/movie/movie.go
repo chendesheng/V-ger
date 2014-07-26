@@ -2,6 +2,7 @@ package movie
 
 import (
 	"block"
+	"download"
 	"log"
 	"path/filepath"
 	. "player/audio"
@@ -43,6 +44,7 @@ type Movie struct {
 	chPause        chan chan time.Duration
 	chProgress     chan time.Duration
 	chSpeed        chan float64
+	streaming      *download.Streaming
 }
 
 type movieSubs struct {
@@ -91,6 +93,8 @@ type seekArg struct {
 }
 
 func NewMovie() *Movie {
+	log.Print("New movie")
+
 	m := &Movie{}
 	m.quit = make(chan struct{})
 	m.chProgress = make(chan time.Duration)
@@ -131,6 +135,14 @@ func (m *Movie) Open(w *Window, file string) {
 			log.Fatal(err)
 		}
 	} else {
+		log.Print("New AVFormatContext")
+
+		// test++
+		// if test > 1 {
+		// 	time.Sleep(10 * time.Second)
+		// 	return
+		// }
+
 		ctx = NewAVFormatContext()
 		ctx.OpenInput(file)
 		if ctx.IsNil() {
@@ -227,27 +239,43 @@ func (m *Movie) SavePlaying() {
 }
 
 func (m *Movie) Close() {
-	m.w.FlushImageBuffer()
-	m.w.RefreshContent(nil)
+	// m.w.Destory()
 	m.w.ShowStartupView()
 
 	m.finishClose = make(chan bool)
 	close(m.quit)
-	// time.Sleep(100 * time.Millisecond)
 
 	m.w.ClearEvents()
 
 	m.stopPlayingSubs()
 
+	HideSubtitleMenu()
+	HideAudioMenu()
+
+	if m.httpBuffer != nil {
+		m.httpBuffer.Clear()
+	}
+
+	if m.streaming != nil {
+		m.streaming.Close()
+	}
+
 	<-m.finishClose
+
+	m.w.DestoryRender()
 }
+
 func (m *Movie) PlayAsync() {
+	log.Print("movie play async")
+
 	go m.v.Play()
 	go m.showProgressPerSecond()
 	go m.decode(m.p.Movie)
 }
 
 func (m *Movie) setupVideo() {
+	log.Print("setup video")
+
 	ctx := m.ctx
 	videoStream := ctx.VideoStream()
 	if !videoStream.IsNil() {

@@ -53,7 +53,7 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 			log.Print("pause movie")
 			select {
 			case t := <-ch:
-				log.Print("resume movie", t.String())
+				log.Print("resume movie:", t.String())
 				m.c.SetTime(t)
 			case <-m.quit:
 				packet.Free()
@@ -96,6 +96,7 @@ func (m *Movie) decode(name string) {
 		select {
 		case m.chProgress <- m.c.GetTime():
 		case <-m.quit:
+			return
 		case <-time.After(50 * time.Millisecond):
 			log.Print("write m.chProgress timeout")
 		}
@@ -120,20 +121,21 @@ func (m *Movie) decode(name string) {
 
 			packet.Free()
 		} else {
-			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < time.Second) {
+			log.Printf("read frame error: %x", resCode)
+			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < 2*time.Second) {
 				m.c.SetTime(m.c.TotalTime())
 			} else {
-				// if m.httpBuffer != nil {
-				// 	t := m.c.GetTime()
-				// 	m.w.SendShowSpinning()
-				// 	m.httpBuffer.Wait(2 * 1024 * 1024)
-				// 	m.w.SendHideSpinning()
-				// 	m.c.SetTime(t)
-				// } else {
+				m.v.FlushBuffer()
+				m.a.FlushBuffer()
+
 				t, _, err := m.v.Seek(m.c.GetTime())
 				m.w.SendHideSpinning()
 				if err == nil {
 					log.Print("seek success:", t.String())
+
+					m.w.SendShowSpinning()
+					m.httpBuffer.Wait(2 * 1024 * 1024)
+					m.w.SendHideSpinning()
 					m.c.SetTime(t)
 					continue
 				} else {
