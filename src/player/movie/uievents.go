@@ -15,6 +15,8 @@ import (
 func (m *Movie) uievents() {
 	log.Print("movie uievents")
 
+	m.w.InitEvents()
+
 	m.w.FuncAudioMenuClicked = append(m.w.FuncAudioMenuClicked, func(i int) {
 		go func() {
 			log.Printf("Audio menu click:%d", i)
@@ -154,7 +156,11 @@ func (m *Movie) uievents() {
 	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
 		switch typ {
 		case 0:
-			chCursorAutoHide <- struct{}{}
+			select {
+			case chCursorAutoHide <- struct{}{}:
+			case <-m.quit:
+				return
+			}
 			fallthrough
 		case 1:
 			t := m.c.CalcTime(percent)
@@ -170,7 +176,11 @@ func (m *Movie) uievents() {
 			log.Print("release dragging:", t.String())
 
 			m.SeekEnd(t)
-			chCursorAutoHide <- struct{}{}
+			select {
+			case chCursorAutoHide <- struct{}{}:
+			case <-m.quit:
+				return
+			}
 		}
 	})
 
@@ -309,17 +319,28 @@ func (m *Movie) uievents() {
 			case <-chCursor:
 				break
 			case <-chCursorAutoHide:
-				<-chCursorAutoHide
+				select {
+				case <-chCursorAutoHide:
+				case <-m.quit:
+					return
+				}
+
 				break
+			case <-m.quit:
+				return
 			}
 		}
 	}()
 	m.w.FuncMouseMoved = append(m.w.FuncMouseMoved, func() {
+		m.w.ShowCursor()
+
 		select {
 		case chCursor <- struct{}{}:
 			break
 		case <-time.After(50 * time.Millisecond):
 			log.Print("stop hide cursor timeout")
+			break
+		case <-m.quit:
 			break
 		}
 	})

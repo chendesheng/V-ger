@@ -207,9 +207,6 @@ func NewWindow(title string, width, height int) *Window {
 		originalWidth:  width,
 		originalHeight: height,
 	}
-	w.FuncMouseMoved = append(w.FuncMouseMoved, func() {
-		w.ShowCursor()
-	})
 
 	println("window:", ptr)
 
@@ -238,6 +235,7 @@ func (w *Window) ClearEvents() {
 	w.FuncAudioMenuClicked = nil
 	w.FuncSubtitleMenuClicked = nil
 	w.FuncMouseWheelled = nil
+	w.FuncMouseMoved = nil
 }
 
 func (w *Window) ToggleFullScreen() {

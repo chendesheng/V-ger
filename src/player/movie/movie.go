@@ -117,7 +117,6 @@ func (m *Movie) Open(w *Window, file string) {
 	log.Print("open ", file)
 
 	m.w = w
-	w.InitEvents()
 	m.uievents()
 
 	var ctx AVFormatContext
