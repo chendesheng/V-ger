@@ -137,16 +137,17 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 	// frameLock.Lock()
 	// defer frameLock.Unlock()
 
-	timeBase := stream.ptr.time_base
+	// timeBase := stream.ptr.time_base
 
-	seek_pos := t / time.Second * C.AV_TIME_BASE
+	// seek_pos := t / time.Second * C.AV_TIME_BASE
+	seek_pos := float64(t) / float64(time.Second) * AV_TIME_BASE
 
-	var timebaseq C.AVRational
-	timebaseq.num = 1
-	timebaseq.den = C.AV_TIME_BASE
+	// var timebaseq C.AVRational
+	// timebaseq.num = 1
+	// timebaseq.den = C.AV_TIME_BASE
 
-	seek_target := C.av_rescale_q(C.int64_t(seek_pos), timebaseq, timeBase)
-	res := C.av_seek_frame(ctx.ptr, C.int(stream.Index()), C.int64_t(seek_target), C.int(flags))
+	// seek_target := C.av_rescale_q(C.int64_t(seek_pos), timebaseq, timeBase)
+	res := C.av_seek_frame(ctx.ptr, -1, C.int64_t(seek_pos), C.int(flags))
 	if res < 0 {
 		return fmt.Errorf("Seek frame error:", res)
 	}
