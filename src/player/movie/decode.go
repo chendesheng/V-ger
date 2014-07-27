@@ -133,10 +133,14 @@ func (m *Movie) decode(name string) {
 				if err == nil {
 					log.Print("seek success:", t.String())
 
-					m.w.SendShowSpinning()
-					m.httpBuffer.Wait(2 * 1024 * 1024)
-					m.w.SendHideSpinning()
+					if m.httpBuffer != nil {
+						m.w.SendShowSpinning()
+						m.httpBuffer.Wait(2 * 1024 * 1024)
+						m.w.SendHideSpinning()
+					}
+
 					m.c.SetTime(t)
+
 					continue
 				} else {
 					log.Print("seek error:", err)
