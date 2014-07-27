@@ -132,7 +132,6 @@ func (m *Movie) SeekAsync(t time.Duration) {
 	//log.Print("seek async:", t.String())
 	select {
 	case m.chSeekProgress <- &seekArg{t, false}:
-		SavePlayingAsync(m.p)
 	case <-m.quit:
 	}
 }
