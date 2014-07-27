@@ -332,7 +332,7 @@ func (m *Movie) uievents() {
 		}
 	}()
 	m.w.FuncMouseMoved = append(m.w.FuncMouseMoved, func() {
-		m.w.ShowCursor()
+		go m.w.SendSetCursor(true)
 
 		select {
 		case chCursor <- struct{}{}:

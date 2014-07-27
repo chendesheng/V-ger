@@ -32,8 +32,10 @@ func (m *Movie) seekOffset(offset time.Duration) {
 
 	m.showProgressInner(t)
 	m.w.SendDrawImage(img)
-	m.w.SendSetCursor(true)
-	m.w.ShowCursor()
+
+	if len(m.w.FuncMouseMoved) > 0 {
+		m.w.FuncMouseMoved[0]()
+	}
 
 	m.p.LastPos = t
 	SavePlayingAsync(m.p)
