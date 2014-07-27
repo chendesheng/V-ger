@@ -99,7 +99,18 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = task.DeleteTask(name)
 	if err != nil {
-		log.Print(err)
+		writeError(w, err)
+		return
+	} else {
+		err = shared.DeleteSubtitle(name)
+		if err != nil {
+			log.Print(err)
+		}
+
+		err = shared.DeletePlaying(name)
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 

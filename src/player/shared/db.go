@@ -112,6 +112,22 @@ func InsertSubtitle(sub *Sub) {
 	}
 }
 
+func DeleteSubtitle(movie string) error {
+	db := dbHelper.Open()
+	defer dbHelper.Close(db)
+
+	_, err := db.Exec("delete from subtitle where Movie=?", movie)
+	return err
+}
+
+func DeletePlaying(movie string) error {
+	db := dbHelper.Open()
+	defer dbHelper.Close(db)
+
+	_, err := db.Exec("delete from playing where Movie=?", movie)
+	return err
+}
+
 var chUpdateSubtitleOffset chan map[string]interface{}
 
 func UpdateSubtitleOffsetAsync(name string, offset time.Duration) {

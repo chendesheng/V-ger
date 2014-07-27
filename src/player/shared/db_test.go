@@ -1,17 +1,19 @@
 package shared
 
 import (
+	"dbHelper"
 	// "database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"testing"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func setup() {
-	DbFile = "./test.db"
+	dbHelper.Init("sqlite3", "./test.db")
 
-	db := openDb()
-	defer db.Close()
+	db := dbHelper.Open()
+	defer dbHelper.Close(db)
 
 	_, err := db.Exec("delete from subtitle")
 	if err != nil {
@@ -31,7 +33,7 @@ func setup() {
 func TestInsertSubtitle(t *testing.T) {
 	setup()
 
-	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent", "srt"})
+	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent", "srt", "en", "cn"})
 
 	subs := GetSubtitles("moviename")
 	if len(subs) != 1 {
@@ -55,7 +57,7 @@ func TestInsertSubtitle(t *testing.T) {
 func TestUpdateSubtitle(t *testing.T) {
 	setup()
 
-	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent", "ass"})
+	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent", "ass", "en", "cn"})
 
 	UpdateSubtitleOffset("subname", 100)
 
@@ -81,7 +83,7 @@ func TestUpdateSubtitle(t *testing.T) {
 func TestPlaying(t *testing.T) {
 	setup()
 
-	p := &Playing{"moviename", 123, 8, "sub1name", "sub2name"}
+	p := &Playing{"moviename", 123, 8, "sub1name", "sub2name", 0, 0, 0}
 	SavePlaying(p)
 
 	p1 := GetPlaying("moviename")
@@ -99,5 +101,38 @@ func TestPlaying(t *testing.T) {
 	}
 	if p.Sub2 != p1.Sub2 {
 		t.Errorf("p.Sub2: expect %s, got %s", p.Sub2, p1.Sub2)
+	}
+}
+
+func TestDeleteSubtitle(t *testing.T) {
+	setup()
+	InsertSubtitle(&Sub{"moviename", "subname", 1, "subcontent", "srt", "en", "cn"})
+	InsertSubtitle(&Sub{"moviename", "subname1", 1, "subcontent", "srt", "en", "cn"})
+	err := DeleteSubtitle("moviename")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	s := GetSubtitle("subname1")
+	if s != nil {
+		t.Error("should gone")
+	}
+}
+func TestDeletePlaying(t *testing.T) {
+	setup()
+	SavePlaying(&Playing{
+		Movie: "playingmovie",
+	})
+
+	err := DeletePlaying("playingmovie")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	s := GetPlaying("playingmovie")
+	if s != nil {
+		t.Error("should gone")
 	}
 }
