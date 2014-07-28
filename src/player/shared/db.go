@@ -234,7 +234,7 @@ func PlayingExists(movie string) bool {
 
 func CreateOrGetPlaying(movie string) *Playing {
 	if !PlayingExists(movie) {
-		SavePlaying(&Playing{movie, 0, -1, "", "", 0, 50, 0})
+		SavePlaying(&Playing{movie, 0, -1, "", "", 0, 60, 0})
 	}
 
 	return GetPlaying(movie)
