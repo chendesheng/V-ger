@@ -6,6 +6,7 @@ import (
 	"math"
 	. "player/clock"
 	. "player/libav"
+	"sync/atomic"
 	"time"
 )
 
@@ -34,6 +35,8 @@ type Audio struct {
 
 	decodePkt     *AVPacket
 	decodePktSize int
+
+	Offset time.Duration
 }
 
 func NewAudio(c *Clock, volume float64) *Audio {
@@ -44,7 +47,7 @@ func NewAudio(c *Clock, volume float64) *Audio {
 
 	a.frame = AllocFrame()
 	a.resampleCtx = resampleCtx
-	a.PacketChan = make(chan *AVPacket, 200)
+	a.PacketChan = make(chan *AVPacket, 500)
 	a.c = c
 	a.driver = &portAudio{volume: volume}
 	a.audioBuffer = safeSlice{}
@@ -63,6 +66,14 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 	}
 }
 
+func (a *Audio) AddOffset(dur time.Duration) {
+	atomic.AddInt64((*int64)(&a.Offset), int64(dur))
+}
+
+func (a *Audio) GetOffset() time.Duration {
+	return time.Duration(atomic.LoadInt64((*int64)(&a.Offset)))
+}
+
 //drop packet if return false
 func (a *Audio) sync(packet *AVPacket) bool {
 	// println("sync audio")
@@ -70,6 +81,7 @@ func (a *Audio) sync(packet *AVPacket) bool {
 	if packet.Pts() != AV_NOPTS_VALUE {
 		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
 	}
+	pts += a.GetOffset()
 
 	now := a.c.GetTime()
 

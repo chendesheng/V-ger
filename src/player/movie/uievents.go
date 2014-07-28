@@ -147,6 +147,12 @@ func (m *Movie) uievents() {
 		case gui.KEY_ESCAPE:
 			m.w.ToggleFullScreen()
 			break
+		case gui.KEY_COMMA:
+			m.a.AddOffset(-100 * time.Millisecond)
+			break
+		case gui.KEY_PERIOD:
+			m.a.AddOffset(100 * time.Millisecond)
+			break
 		}
 	})
 
