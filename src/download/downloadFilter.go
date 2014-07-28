@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 	"sync"
 	"time"
@@ -98,26 +97,22 @@ func (df *downloadFilter) downloadBlock(url string, b block.Block) {
 
 func requestWithTimeout(req *http.Request, data []byte, quit chan struct{}) (err error) {
 	finish := make(chan error)
-	var resp *http.Response
 	go func() {
 		defer close(finish)
 
-		resp, err = http.DefaultClient.Do(req)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
+			finish <- err
 			return
 		}
 		defer resp.Body.Close()
 
 		_, err = io.ReadFull(resp.Body, data)
-		// if err != nil {
-		// 	println("download routine ReadFull:", err.Error())
-		// }
+		finish <- err
 	}()
 
-	// println("download routine NetworkTimeout:", NetworkTimeout)
 	select {
 	case <-time.After(NetworkTimeout): //cancelRequest if time.After before close(finish)
-		// println("download routine timeout")
 		cancelRequest(req)
 		err = errReadTimeout //return not nil error is required
 		break
@@ -125,14 +120,9 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan struct{}) (err
 		cancelRequest(req)
 		err = errStopFetch
 		break
-	case <-finish:
-		// println("download routine finish")
+	case err = <-finish:
 		if err != nil {
 			log.Print(err)
-			if resp != nil {
-				bytes, _ := httputil.DumpResponse(resp, false)
-				log.Print(string(bytes))
-			}
 		}
 		break
 	}
