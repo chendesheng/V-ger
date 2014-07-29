@@ -77,6 +77,10 @@ func (r *yuvRender) delete() {
 }
 
 func (r *yuvRender) draw(img []byte, width, height int) {
+	if len(img) != width*height*3/2 {
+		return
+	}
+
 	channels := getYUVChannels(img, width, height)
 
 	for i, tex := range r.texYUV {
@@ -120,10 +124,15 @@ func getYUVChannels(img []byte, width, height int) [3]channel {
 	return channels
 }
 
-func NewYUVRender(img []byte, width, height int) imageRender {
-	if len(img) == 0 {
-		img = make([]byte, width*height*3/2)
-	}
+func NewYUVRender(width, height int) imageRender {
+	size := width * height * 3 / 2
+	img := make([]byte, size)
+	// if cap(img) > size {
+	// 	img = img[:size]
+	// } else {
+
+	// }
+	log.Print("NewYUVRender:", len(img), size, width*height)
 
 	r := yuvRender{}
 

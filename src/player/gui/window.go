@@ -151,7 +151,8 @@ func (w *Window) SetSize(width, height int) {
 	}
 
 	println("NewYUVRender")
-	w.render = NewYUVRender(w.img, width, height)
+	// w.render = NewYUVRender(w.img, width, height)
+	w.render = NewYUVRender(width, height)
 
 	w.originalWidth, w.originalHeight = width, height
 
