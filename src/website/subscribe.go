@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"native"
 	"net/http"
 	"net/url"
 	"runtime/debug"
@@ -204,8 +205,10 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 							log.Print(err)
 						} else {
 							t.Size = size
+							t.Status = "Stopped"
 							task.SaveTaskIgnoreErr(t)
-							task.StartNewTask2(t)
+							native.SendNotification("New episode is ready", t.Name)
+							// task.StartNewTask2(t)
 						}
 					}
 				}

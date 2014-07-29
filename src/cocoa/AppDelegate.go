@@ -83,6 +83,17 @@ func (delegate *AppDelegate) DidActivateNotification(center objc.Object, notific
 		name := noti.InformativeText()
 		cmd := exec.Command("open", path.Join(util.ReadConfig("dir"), name))
 		cmd.Start()
+	} else if strings.Contains(title, "New episode") {
+		name := noti.InformativeText()
+		player := util.ReadConfig("video-player")
+
+		if t, err := task.GetTask(name); err == nil {
+			cmd := exec.Command("open", player, "--args", t.URL)
+			cmd.Start()
+		} else {
+			log.Print(err)
+			delegate.OpenClick(0)
+		}
 	} else {
 		delegate.OpenClick(0)
 	}
