@@ -58,6 +58,11 @@ func GetDownloadInfoN(url string, retryTimes int, quit chan struct{}) (finalUrl 
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		err = fmt.Errorf("response status code: %d", resp.StatusCode)
+		return
+	}
+
 	finalUrl = resp.Request.URL.String()
 
 	name, size = getFileInfo(resp.Header)

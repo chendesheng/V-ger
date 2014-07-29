@@ -107,7 +107,12 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan struct{}) (err
 		}
 		defer resp.Body.Close()
 
-		_, err = io.ReadFull(resp.Body, data)
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			err = fmt.Errorf("response status code: %d", resp.StatusCode)
+		} else {
+			_, err = io.ReadFull(resp.Body, data)
+		}
+
 		finish <- err
 	}()
 

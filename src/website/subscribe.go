@@ -146,6 +146,10 @@ func checkCache(s *subscribe.Subscribe, cachedlen int) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return "", fmt.Errorf("response status code: %d", resp.StatusCode)
+	}
+
 	bytes, err := ioutil.ReadAll(resp.Body)
 	html := string(bytes)
 	if err != nil {
