@@ -36,6 +36,8 @@ func min(a, b int64) int64 {
 	}
 }
 func NewBuffer(size int64) *buffer {
+	log.Print("NewBuffer:", size)
+
 	b := &buffer{}
 	b.size = size
 	b.data = make([]*block.Block, 0, 50)
@@ -99,6 +101,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 			from := b.currentPos - bk.From
 			to := min(int64(len(bk.Data)), nextPosition-bk.From)
 
+			// log.Printf("http buffer read: %d-%d", from, to)
 			w.Write(bk.Data[from:to])
 			b.currentPos += to - from
 
@@ -112,7 +115,7 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 }
 
 func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) {
-	// log.Print("WriteAt:", off, len(p))
+	// log.Print("WriteAt:", bk.From, bk.To())
 
 	b.Lock()
 	defer b.Unlock()
@@ -207,10 +210,6 @@ func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 	case os.SEEK_END:
 		b.currentPos = b.size + offset
 		break
-	}
-
-	if b.currentPos > b.size {
-		b.currentPos = b.size
 	}
 
 	from, to := b.fromTo()

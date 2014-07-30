@@ -48,6 +48,7 @@ func (s *Streaming) run() {
 func (s *Streaming) Restart(pos int64) {
 	if s.quit != nil {
 		close(s.quit)
+		s.quit = nil
 	}
 	s.chArg <- pos
 }

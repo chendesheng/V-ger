@@ -136,12 +136,6 @@ func (m *Movie) Open(w *Window, file string) {
 	} else {
 		log.Print("New AVFormatContext")
 
-		// test++
-		// if test > 1 {
-		// 	time.Sleep(10 * time.Second)
-		// 	return
-		// }
-
 		ctx = NewAVFormatContext()
 		ctx.OpenInput(file)
 		if ctx.IsNil() {

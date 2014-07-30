@@ -38,6 +38,10 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 			return 0
 		}
 
+		if m.httpBuffer.CurrentPos() >= size {
+			return AVERROR_EOF
+		}
+
 		require := int64(buf.Size())
 		got := m.httpBuffer.Read(&buf, require)
 		if got < require && !m.httpBuffer.IsFinish() {
@@ -55,7 +59,12 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 					break
 				} else {
 					if time.Since(startWaitTime) > download.NetworkTimeout {
-						streaming.Restart(m.httpBuffer.CurrentPos())
+						pos := m.httpBuffer.CurrentPos()
+
+						log.Print("Streamming timeout restart:", pos)
+
+						startWaitTime = time.Now()
+						streaming.Restart(pos)
 					}
 				}
 			}
