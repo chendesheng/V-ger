@@ -83,7 +83,7 @@ func (delegate *AppDelegate) DidActivateNotification(center objc.Object, notific
 		name := noti.InformativeText()
 		cmd := exec.Command("open", path.Join(util.ReadConfig("dir"), name))
 		cmd.Start()
-	} else if strings.Contains(title, "New episode") {
+	} else if strings.Contains(title, "new episode") {
 		name := noti.InformativeText()
 		player := util.ReadConfig("video-player")
 

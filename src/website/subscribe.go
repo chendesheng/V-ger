@@ -211,7 +211,7 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 							t.Size = size
 							t.Status = "Stopped"
 							task.SaveTaskIgnoreErr(t)
-							native.SendNotification("New episode is ready", t.Name)
+							native.SendNotification("A new episode is ready", t.Name)
 							// task.StartNewTask2(t)
 						}
 					}
