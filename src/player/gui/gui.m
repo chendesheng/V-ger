@@ -10,6 +10,7 @@
 #import "popupView.h"
 #import "subtitleView.h"
 #import "startupView.h"
+#import "volumeView.h"
 // #import "titleTextView.h"
 #import "app.h"
 
@@ -267,6 +268,18 @@ void* newWindow(char* title, int width, int height) {
     [v addSubview:spv positioned:NSWindowAbove relativeTo:nil];
     v->spinningView = spv;
 
+    BlurView* bv2 = [[BlurView alloc] initWithFrame:NSMakeRect((width-120)/2, (height-120)/2, 120, 120)];
+    [bv2 setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];    
+    bv2.wantsLayer = YES;
+    bv2.layer.masksToBounds = YES;
+    bv2.layer.cornerRadius = 4.1;
+    VolumeView* vv = [[VolumeView alloc] initWithFrame:NSMakeRect(0, 0, 120, 120)];
+    [vv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+    [v addSubview:bv2 positioned:NSWindowAbove relativeTo:spv];
+    [bv2 addSubview:vv];
+    v->volumeView = vv;
+    v->volumeView2 = bv2;
+    [bv2 setHidden:YES];
 
     [w makeFirstResponder:v];
     v->win = w;
@@ -424,4 +437,21 @@ CSize getScreenSize() {
     csz.width = (int)sz.width;
     csz.height = (int)sz.height;
     return csz;
+}
+
+void setVolume(void* wptr, int volume) {
+    Window* w = (Window*)wptr;
+
+    w->glView->volumeView->_volume = volume;
+    [w->glView->volumeView setNeedsDisplay:YES];
+}
+
+void setVolumeDisplay(void* wptr, int show) {
+    Window* w = (Window*)wptr;
+    if (show != 0) {
+        [w->glView->volumeView2 setHidden:NO];
+        [w->glView->volumeView setNeedsDisplay:YES];
+    } else {
+        [w->glView->volumeView2 setHidden:YES];
+    }
 }

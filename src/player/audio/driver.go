@@ -71,10 +71,10 @@ func (a *portAudio) IncreaseVolume() float64 {
 	a.Lock()
 	defer a.Unlock()
 
-	a.volume += 0.01
+	a.volume += 0.03
 
-	if a.volume > 1 {
-		a.volume = 1
+	if a.volume > 1.6 {
+		a.volume = 1.6
 	}
 	return a.volume
 }
@@ -82,7 +82,7 @@ func (a *portAudio) DecreaseVolume() float64 {
 	a.Lock()
 	defer a.Unlock()
 
-	a.volume -= 0.01
+	a.volume -= 0.03
 
 	if a.volume < 0 {
 		a.volume = 0

@@ -17,6 +17,8 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+        self->_height = frame.size.height;
+
         [self setUp];
     }
     return self;
@@ -116,7 +118,7 @@
         [self setFrameSize:NSMakeSize(self.frame.size.width, 0)];
     }
     else {
-        [self setFrameSize:NSMakeSize(self.frame.size.width, 22)];
+        [self setFrameSize:NSMakeSize(self.frame.size.width, self->_height)];
     }
     
     [super setHidden:flag];

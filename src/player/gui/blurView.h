@@ -14,6 +14,7 @@
 	// Keep a reference to the filters for later modification
 	CIFilter *_blurFilter, *_saturationFilter;
 	CALayer *_hostedLayer;
+	int _height;
 }
 
 /** The layer will be tinted using the tint color. By default it is a 70% White Color */

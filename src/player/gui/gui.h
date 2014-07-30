@@ -72,4 +72,6 @@ void showCursor(void*);
 void showSpinning(void*);
 void hideSpinning(void*);
 void onMouseMove(void*);
+void setVolume(void*, int);
+void setVolumeDisplay(void*, int);
 #endif

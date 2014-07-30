@@ -6,6 +6,7 @@
 #import "blurView.h"
 #import "titleTextView.h"
 #import "spinningView.h"
+#import "volumeView.h"
 
 @interface GLView : NSOpenGLView {
     NSTrackingArea* trackingArea;
@@ -23,6 +24,8 @@
     NSView* frameView;
     NSWindow* win;
     SpinningView* spinningView;
+    VolumeView* volumeView;
+    BlurView* volumeView2;
 }
 
 -(id)initWithFrame2:(NSRect)frame;

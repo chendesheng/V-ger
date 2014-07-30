@@ -158,6 +158,7 @@ func (m *Movie) uievents() {
 
 	chCursor := make(chan struct{})
 	chCursorAutoHide := make(chan struct{})
+	chVolume := make(chan struct{})
 
 	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
 		switch typ {
@@ -201,6 +202,10 @@ func (m *Movie) uievents() {
 			return
 		}
 
+		if m.a == nil {
+			return
+		}
+
 		var volume byte
 		if deltaY > 0 {
 			volume = byte(m.a.DecreaseVolume() * 100)
@@ -210,7 +215,17 @@ func (m *Movie) uievents() {
 
 		m.p.Volume = volume
 		SavePlayingAsync(m.p)
-		m.w.ShowMessage(fmt.Sprintf("Volume: %d%%", volume), true)
+		// m.w.ShowMessage(fmt.Sprintf("Volume: %d%%", volume), true)
+		m.w.SetVolume(volume)
+		m.w.SetVolumeDisplay(true)
+
+		select {
+		case chVolume <- struct{}{}:
+		case <-m.quit:
+			return
+		case <-time.After(100 * time.Millisecond):
+		}
+
 	})
 
 	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int) {
@@ -332,6 +347,18 @@ func (m *Movie) uievents() {
 				}
 
 				break
+			case <-m.quit:
+				return
+			}
+		}
+	}()
+	go func() {
+		for {
+			select {
+			case <-time.After(time.Second):
+				m.w.SendSetVolumeDisplay(false)
+				<-chVolume //prevent call SendSetCursor every 2 seconds
+			case <-chVolume:
 			case <-m.quit:
 				return
 			}

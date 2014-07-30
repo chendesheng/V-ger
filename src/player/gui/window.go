@@ -51,7 +51,10 @@ type Window struct {
 	ChanShowProgress chan *PlayProgressInfo
 	ChanShowSpeed    chan *BufferInfo
 
-	ChanSetCursor    chan bool
+	ChanSetCursor        chan bool
+	ChanSetVolume        chan byte
+	ChanSetVolumeDisplay chan bool
+
 	ChanShowSpinning chan bool
 
 	img []byte
@@ -204,6 +207,9 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanSetCursor:    make(chan bool),
 		ChanShowSpinning: make(chan bool),
+
+		ChanSetVolume:        make(chan byte),
+		ChanSetVolumeDisplay: make(chan bool),
 
 		originalWidth:  width,
 		originalHeight: height,
@@ -447,6 +453,32 @@ func (w *Window) SendShowSpinning() {
 func (w *Window) SendHideSpinning() {
 	w.ChanShowSpinning <- false
 }
+func (w *Window) SetVolume(volume byte) {
+	// if volume < 0 {
+	// 	volume = 0
+	// }
+
+	// if volume > 160 {
+	// 	volume = 160
+	// }
+	C.setVolume(w.ptr, C.int(volume))
+}
+
+func (w *Window) SetVolumeDisplay(b bool) {
+	if b {
+		C.setVolumeDisplay(w.ptr, 1)
+	} else {
+		C.setVolumeDisplay(w.ptr, 0)
+	}
+}
+
+func (w *Window) SendSetVolume(volume byte) {
+	w.ChanSetVolume <- volume
+}
+
+func (w *Window) SendSetVolumeDisplay(b bool) {
+	w.ChanSetVolumeDisplay <- b
+}
 
 //export goOnDraw
 func goOnDraw(ptr unsafe.Pointer) {
@@ -488,6 +520,10 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 			w.HideCursor()
 		}
 		break
+	case volume := <-w.ChanSetVolume:
+		w.SetVolume(volume)
+	case b := <-w.ChanSetVolumeDisplay:
+		w.SetVolumeDisplay(b)
 	case arg := <-w.ChanSetSize:
 		w.SetSize(arg.width, arg.height)
 		break
