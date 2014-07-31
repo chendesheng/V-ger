@@ -269,6 +269,7 @@ void* newWindow(char* title, int width, int height) {
     v->spinningView = spv;
 
     BlurView* bv2 = [[BlurView alloc] initWithFrame:NSMakeRect((width-120)/2, (height-120)/2, 120, 120)];
+    [bv2 setBlurRadius:30.0];
     [bv2 setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];    
     bv2.wantsLayer = YES;
     bv2.layer.masksToBounds = YES;
