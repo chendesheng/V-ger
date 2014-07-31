@@ -448,10 +448,14 @@ void setVolume(void* wptr, int volume) {
 
 void setVolumeDisplay(void* wptr, int show) {
     Window* w = (Window*)wptr;
+    BlurView* bv2 = w->glView->volumeView2;
+
     if (show != 0) {
-        [w->glView->volumeView2 setHidden:NO];
+        [bv2 setHidden:NO];
+        NSSize sz = w.frame.size;
+        [bv2 setFrame:NSMakeRect((sz.width-120)/2, (sz.height-120)/2, 120, 120)];
         [w->glView->volumeView setNeedsDisplay:YES];
     } else {
-        [w->glView->volumeView2 setHidden:YES];
+        [bv2 setHidden:YES];
     }
 }
