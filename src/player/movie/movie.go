@@ -187,7 +187,9 @@ func (m *Movie) Open(w *Window, file string) {
 		w.SendDrawImage(img)
 
 		if m.httpBuffer != nil {
-			m.httpBuffer.Wait(3 * 1024 * 1024)
+			if m.httpBuffer.WaitQuit(3*1024*1024, m.quit) {
+				return
+			}
 		}
 	}
 

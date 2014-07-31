@@ -69,7 +69,7 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 		if m.httpBuffer != nil {
 			m.w.SendShowSpinning()
 			defer m.w.SendHideSpinning()
-			m.httpBuffer.Wait(1024 * 1024)
+			m.httpBuffer.WaitQuit(1024*1024, m.quit)
 			select {
 			case arg := <-chSeekProgress:
 				return m.handleSeekProgress(ch, arg, chSeekProgress)

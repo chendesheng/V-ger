@@ -173,24 +173,27 @@ func (b *buffer) IsFinish() bool {
 	bk := b.data[len(b.data)-1]
 	return b.size <= bk.To()
 }
-func (b *buffer) Wait(size int64) {
-	log.Print("Wait:", b.SizeAhead(), b.IsFinish())
-	for b.BufferFinish(size) {
-		time.Sleep(100 * time.Millisecond)
-	}
-}
+
+// func (b *buffer) Wait(size int64) {
+// 	// log.Print("Wait:", b.SizeAhead(), b.IsFinish())
+// 	for b.BufferFinish(size) {
+// 		time.Sleep(100 * time.Millisecond)
+// 	}
+// }
 func (b *buffer) BufferFinish(size int64) bool {
 	return b.SizeAhead() < size && !b.IsFinish()
 }
-func (b *buffer) WaitQuit(size int64, quit chan struct{}) {
+func (b *buffer) WaitQuit(size int64, quit chan struct{}) bool {
 	// log.Print("WaitQuit:", b.SizeAhead(), b.IsFinish())
 	for b.BufferFinish(size) {
 		select {
 		case <-time.After(100 * time.Millisecond):
 		case <-quit:
-			return
+			return true
 		}
 	}
+
+	return false
 }
 
 func (b *buffer) Seek(offset int64, whence int) (int64, int64) {

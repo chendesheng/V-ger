@@ -140,7 +140,10 @@ func (m *Movie) decode(name string) {
 
 						if m.httpBuffer != nil {
 							m.w.SendShowSpinning()
-							m.httpBuffer.Wait(2 * 1024 * 1024)
+							if m.httpBuffer.WaitQuit(2*1024*1024, m.quit) {
+								m.w.SendHideSpinning()
+								return
+							}
 							m.w.SendHideSpinning()
 						}
 
