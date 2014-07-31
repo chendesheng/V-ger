@@ -125,29 +125,35 @@ func (m *Movie) decode(name string) {
 			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < 2*time.Second) {
 				m.c.SetTime(m.c.TotalTime())
 			} else {
-				m.v.FlushBuffer()
-				m.a.FlushBuffer()
-
-				t, _, err := m.v.Seek(m.c.GetTime())
-				m.w.SendHideSpinning()
-				if err == nil {
-					log.Print("seek success:", t.String())
-
-					if m.httpBuffer != nil {
-						m.w.SendShowSpinning()
-						m.httpBuffer.Wait(2 * 1024 * 1024)
-						m.w.SendHideSpinning()
-					}
-
+				if m.httpBuffer == nil && resCode == AVERROR_INVALIDDATA {
+					t := m.c.GetTime()
+					t = t / (500 * time.Millisecond) * 500 * time.Millisecond
 					m.c.SetTime(t)
-
-					continue
 				} else {
-					log.Print("seek error:", err)
+					m.v.FlushBuffer()
+					m.a.FlushBuffer()
+
+					t, _, err := m.v.Seek(m.c.GetTime())
+					m.w.SendHideSpinning()
+					if err == nil {
+						log.Print("seek success:", t.String())
+
+						if m.httpBuffer != nil {
+							m.w.SendShowSpinning()
+							m.httpBuffer.Wait(2 * 1024 * 1024)
+							m.w.SendHideSpinning()
+						}
+
+						m.c.SetTime(t)
+
+						continue
+					} else {
+						log.Print("seek error:", err)
+					}
 				}
 
 				// log.Print("seek to unfinished:", m.c.GetTime().String())
-				log.Print("get frame error:", resCode)
+				// log.Print("get frame error:", resCode)
 				// }
 			}
 			select {
