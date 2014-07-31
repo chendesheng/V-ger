@@ -196,3 +196,17 @@ func TestSpinningView(t *testing.T) {
 
 	PollEvents()
 }
+
+func TestVolumeView(t *testing.T) {
+	w := NewWindow("hello", 1280, 720)
+
+	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+		if key == KEY_A {
+			w.SetVolumeDisplay(true)
+		} else if key == KEY_B {
+			w.SetVolumeDisplay(false)
+		}
+	})
+
+	PollEvents()
+}
