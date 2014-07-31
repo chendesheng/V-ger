@@ -28,15 +28,23 @@ func (app *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 
 	if app.m != nil {
+		app.m.SavePlaying()
 		app.m.Close()
+
 		app.m = nil
 	}
 
 	app.m = NewMovie()
 
 	go func() {
-		app.m.Open(app.w, filename)
-		app.m.PlayAsync()
+		err := app.m.Open(app.w, filename)
+
+		if err == nil {
+			app.m.PlayAsync()
+		} else {
+			log.Print(err)
+			app.m = nil
+		}
 	}()
 
 	return len(filename) > 0

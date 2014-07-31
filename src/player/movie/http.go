@@ -2,6 +2,7 @@ package movie
 
 import (
 	"download"
+	"fmt"
 	"log"
 	"os"
 
@@ -13,7 +14,7 @@ import (
 	"util"
 )
 
-func (m *Movie) openHttp(file string) (AVFormatContext, string) {
+func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	download.BaseDir = util.ReadConfig("dir")
 
@@ -22,7 +23,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	url, name, size, err := download.GetDownloadInfoN(file, 3, m.quit)
 
 	if err != nil {
-		log.Fatal(err)
+		return AVFormatContext{}, "", err
 	}
 
 	m.httpBuffer = NewBuffer(size)
@@ -53,7 +54,12 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 			}
 
 			for {
-				time.Sleep(20 * time.Millisecond)
+				select {
+				case <-time.After(20 * time.Millisecond):
+				case <-m.quit:
+					return AVERROR_INVALIDDATA
+				}
+
 				got += m.httpBuffer.Read(&buf, require-got)
 				if got >= require || m.httpBuffer.IsFinish() {
 					break
@@ -64,7 +70,11 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 						log.Print("Streamming timeout restart:", pos)
 
 						startWaitTime = time.Now()
-						streaming.Restart(pos)
+						select {
+						case streaming.Restart() <- pos:
+						case <-m.quit:
+							return AVERROR_INVALIDDATA
+						}
 					}
 				}
 			}
@@ -79,7 +89,11 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
 			m.w.SendShowSpinning()
-			streaming.Restart(start)
+			select {
+			case streaming.Restart() <- start:
+			case <-m.quit:
+				return pos
+			}
 		}
 		return pos
 	})
@@ -88,10 +102,16 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string) {
 	ctx.SetPb(ioctx)
 
 	m.httpBuffer.Seek(0, os.SEEK_SET)
-	streaming.Restart(0)
+	select {
+	case streaming.Restart() <- 0:
+	case <-m.quit:
+		return ctx, name, fmt.Errorf("quit")
+	}
 
-	ctx.OpenInput(name)
+	if err := ctx.OpenInput(file); err != nil {
+		return ctx, name, err
+	}
 
 	log.Print("open http return")
-	return ctx, name
+	return ctx, name, nil
 }

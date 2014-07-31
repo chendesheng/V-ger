@@ -101,8 +101,10 @@ func (w *Window) RefreshContent(img []byte) {
 }
 
 func (w *Window) DestoryRender() {
-	w.render.delete()
-	w.render = nil
+	if w.render != nil {
+		w.render.delete()
+		w.render = nil
+	}
 }
 
 func (w *Window) GetWindowSize() (int, int) {
@@ -448,7 +450,10 @@ func (w *Window) HideSpinning() {
 	C.hideSpinning(w.ptr)
 }
 func (w *Window) SendShowSpinning() {
-	w.ChanShowSpinning <- true
+	select {
+	case w.ChanShowSpinning <- true:
+	case <-time.After(50 * time.Millisecond):
+	}
 }
 func (w *Window) SendHideSpinning() {
 	w.ChanShowSpinning <- false

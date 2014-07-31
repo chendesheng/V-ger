@@ -31,14 +31,16 @@ func NewAVFormatContext() AVFormatContext {
 	return AVFormatContext{ptr: ptr}
 }
 
-func (ctx *AVFormatContext) OpenInput(filename string) {
+func (ctx *AVFormatContext) OpenInput(filename string) error {
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
-	if int(C.avformat_open_input(&ctx.ptr, cfilename, nil, nil)) != 0 {
+	if code := int(C.avformat_open_input(&ctx.ptr, cfilename, nil, nil)); code != 0 {
 		// ctx.ptr = nil
-		println("open input error")
+		return fmt.Errorf("open input error: %x", code)
 	}
+
+	return nil
 }
 func NetworkInit() {
 	C.avformat_network_init()

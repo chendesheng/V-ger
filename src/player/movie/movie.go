@@ -3,6 +3,7 @@ package movie
 import (
 	"block"
 	"download"
+	"fmt"
 	"log"
 	"path/filepath"
 	. "player/audio"
@@ -98,6 +99,7 @@ func NewMovie() *Movie {
 	m := &Movie{}
 	m.quit = make(chan struct{})
 	m.chProgress = make(chan time.Duration)
+	m.finishClose = make(chan bool)
 	return m
 }
 
@@ -113,7 +115,7 @@ func updateSubscribeDuration(movie string, duration time.Duration) {
 	}
 }
 
-func (m *Movie) Open(w *Window, file string) {
+func (m *Movie) Open(w *Window, file string) error {
 	log.Print("open ", file)
 
 	m.w = w
@@ -124,33 +126,29 @@ func (m *Movie) Open(w *Window, file string) {
 
 	if strings.HasPrefix(file, "http://") ||
 		strings.HasPrefix(file, "https://") {
-		ctx, filename = m.openHttp(file)
-		if ctx.IsNil() {
-			log.Fatal("open failed: ", file)
-			return
-		}
-		err := ctx.FindStreamInfo()
-		if err != nil {
-			log.Fatal(err)
+		var err error
+
+		if ctx, filename, err = m.openHttp(file); err != nil {
+			close(m.finishClose)
+			return fmt.Errorf("open failed: %s", file)
 		}
 	} else {
 		log.Print("New AVFormatContext")
 
-		ctx = NewAVFormatContext()
-		ctx.OpenInput(file)
-		if ctx.IsNil() {
-			log.Fatal("open failed:", file)
-			return
-		}
-
 		filename = filepath.Base(file)
 
-		err := ctx.FindStreamInfo()
-		if err != nil {
-			log.Fatal(err)
+		ctx = NewAVFormatContext()
+		if err := ctx.OpenInput(file); err != nil {
+			close(m.finishClose)
+			return err
 		}
-		ctx.DumpFormat()
 	}
+
+	if err := ctx.FindStreamInfo(); err != nil {
+		close(m.finishClose)
+		return err
+	}
+	ctx.DumpFormat()
 
 	m.ctx = ctx
 
@@ -184,11 +182,17 @@ func (m *Movie) Open(w *Window, file string) {
 	if m.p.LastPos > time.Second && m.p.LastPos < duration-50*time.Millisecond {
 		var img []byte
 		start, img, _ = m.v.Seek(m.p.LastPos)
-		w.SendDrawImage(img)
+		select {
+		case w.ChanDraw <- img:
+		case <-m.quit:
+			close(m.finishClose)
+			return fmt.Errorf("quit open")
+		}
 
 		if m.httpBuffer != nil {
 			if m.httpBuffer.WaitQuit(3*1024*1024, m.quit) {
-				return
+				close(m.finishClose)
+				return fmt.Errorf("quit open")
 			}
 		}
 	}
@@ -227,17 +231,20 @@ func (m *Movie) Open(w *Window, file string) {
 
 	w.SendSetCursor(false)
 	w.SendHideSpinning()
+
+	return nil
 }
 
 func (m *Movie) SavePlaying() {
-	SavePlaying(m.p)
+	if m.p != nil {
+		SavePlaying(m.p)
+	}
 }
 
 func (m *Movie) Close() {
 	// m.w.Destory()
 	m.w.ShowStartupView()
 
-	m.finishClose = make(chan bool)
 	close(m.quit)
 
 	m.w.ClearEvents()

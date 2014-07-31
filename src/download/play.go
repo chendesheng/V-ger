@@ -45,16 +45,16 @@ func (s *Streaming) run() {
 		streaming(s.url, s.w, from, s.size, s.sm, s.quit)
 	}
 }
-func (s *Streaming) Restart(pos int64) {
+func (s *Streaming) Restart() chan int64 {
 	if s.quit != nil {
 		close(s.quit)
 		s.quit = nil
 	}
-	s.chArg <- pos
+	return s.chArg
 }
 
 func (s *Streaming) Close() {
-	s.Restart(-1)
+	s.Restart() <- -1
 }
 
 func StartStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {
