@@ -219,7 +219,7 @@ func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 	if b.currentPos >= from && b.currentPos < to {
 		return b.currentPos, -1
 	} else {
-		b.Clear()
+		b.clear()
 		return b.currentPos, b.currentPos
 	}
 }
@@ -235,9 +235,16 @@ func (b *buffer) BufferPercent() float64 {
 	return res
 }
 
-func (b *buffer) Clear() {
+func (b *buffer) clear() {
 	for _, bk := range b.data {
 		block.DefaultBlockPool.Put(bk)
 	}
 	b.data = b.data[0:0]
+}
+
+func (b *buffer) Clear() {
+	b.Lock()
+	defer b.Unlock()
+
+	b.clear()
 }
