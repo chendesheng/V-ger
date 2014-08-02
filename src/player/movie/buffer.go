@@ -115,8 +115,6 @@ func (b *buffer) Read(w io.Writer, require int64) int64 {
 }
 
 func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) {
-	// log.Print("WriteAt:", bk.From, bk.To())
-
 	b.Lock()
 	defer b.Unlock()
 
@@ -130,10 +128,8 @@ func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) {
 			b.Lock()
 			return
 		}
-	}
 
-	// bk1 := block.DefaultBlockPool.Get(bk.From, len(bk.Data))
-	// copy(bk1.Data, bk.Data)
+	}
 
 	b.data = append(b.data, &bk)
 }
@@ -168,18 +164,12 @@ func (b *buffer) IsFinish() bool {
 
 	if len(b.data) == 0 {
 		return false
+	} else {
+		bk := b.data[len(b.data)-1]
+		return b.size <= bk.To()
 	}
-
-	bk := b.data[len(b.data)-1]
-	return b.size <= bk.To()
 }
 
-// func (b *buffer) Wait(size int64) {
-// 	// log.Print("Wait:", b.SizeAhead(), b.IsFinish())
-// 	for b.BufferFinish(size) {
-// 		time.Sleep(100 * time.Millisecond)
-// 	}
-// }
 func (b *buffer) BufferFinish(size int64) bool {
 	return b.SizeAhead() < size && !b.IsFinish()
 }
