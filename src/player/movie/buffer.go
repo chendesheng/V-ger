@@ -221,6 +221,7 @@ func (b *buffer) BufferPercent() float64 {
 	res := float64(b.currentPos+b.sizeAhead()) / float64(b.size)
 	if res >= 1.0 {
 		log.Print("bufferPercent:", b.currentPos, b.sizeAhead(), b.size)
+		res = 1.0
 	}
 	return res
 }
