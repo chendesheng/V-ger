@@ -130,14 +130,14 @@ func TestGC(t *testing.T) {
 	}
 }
 
-func TestLastPos(t *testing.T) {
-	b := NewBuffer(1000)
-	if b.LastPos() != 0 {
-		t.Errorf("%d != 0", b.LastPos())
-	}
+// func TestLastPos(t *testing.T) {
+// 	b := NewBuffer(1000)
+// 	if b.LastPos() != 0 {
+// 		t.Errorf("%d != 0", b.LastPos())
+// 	}
 
-	b.WriteAtQuit(block.Block{10, make([]byte, 10)}, nil)
-	if b.LastPos() != 20 {
-		t.Errorf("%d != 20", b.LastPos())
-	}
-}
+// 	b.WriteAtQuit(block.Block{10, make([]byte, 10)}, nil)
+// 	if b.LastPos() != 20 {
+// 		t.Errorf("%d != 20", b.LastPos())
+// 	}
+// }
