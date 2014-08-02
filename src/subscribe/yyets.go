@@ -85,16 +85,16 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 				s.Banner = getAttr(getTag1(getClass1(n, "f_l_img"), "a"), "href")
 				props := getTag(getClass1(getClass1(n, "f_r_info"), "r_d_info"), "li")
 				for _, c := range props {
-					k := getRigOfTags(getTag1(c, "span"))
+					k := getRidOfTags(getTag1(c, "span"))
 					if k == "英文：" {
 						log.Print("get name")
 						if len(c.Child) > 1 {
-							s.Name = s.Name + getRigOfTags(c.Child[1])
+							s.Name = s.Name + getRidOfTags(c.Child[1])
 							log.Print("get name:", s.Name)
 						}
 					}
 					// if k == "播出：" {
-					// 	s.Name = fmt.Sprintf("[%s] %s", getRigOfTags(getTag1(c, "strong")), s.Name)
+					// 	s.Name = fmt.Sprintf("[%s] %s", getRidOfTags(getTag1(c, "strong")), s.Name)
 					// }
 				}
 				s.Name = strings.TrimLeft(s.Name, ".")
@@ -176,7 +176,7 @@ func parseSingle(n *html.Node) *task.Task {
 	t.Status = "New"
 
 	c := getClass1(getTag1(getClass1(getClass1(n, "lks"), "lks-1"), "a"), "a")
-	t.Name = getRigOfTags(c)
+	t.Name = getRidOfTags(c)
 	t.StartTime = time.Now().Unix()
 
 	c = getClass1(getClass1(n, "pks"), "download")

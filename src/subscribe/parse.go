@@ -112,7 +112,7 @@ func getChildAttr1(n *html.Node, key, val string) *html.Node {
 	return nil
 }
 
-func getRigOfTags(n *html.Node) (text string) {
+func getRidOfTags(n *html.Node) (text string) {
 	if n.Type == html.TextNode {
 		return strings.TrimSpace(n.Data)
 	}

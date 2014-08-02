@@ -1,9 +1,10 @@
 package subtitles
 
 import (
-	"github.com/peterbourgon/html"
 	"regexp"
 	"strings"
+
+	"github.com/peterbourgon/html"
 )
 
 func attr2Map(attrs []html.Attribute) (m map[string]string) {
@@ -97,7 +98,7 @@ func getTag1(n *html.Node, tagName string) *html.Node {
 	}
 	return nil
 }
-func getRigOfTags(n *html.Node) (text string) {
+func getRidOfTags(n *html.Node) (text string) {
 	text = ""
 	for _, c := range n.Child {
 		if c.Type == html.TextNode {

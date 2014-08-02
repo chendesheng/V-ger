@@ -19,7 +19,7 @@ func yyetsParseSub(n *html.Node) Subtitle {
 
 	sub.URL = "http://www.yyets.com/subtitle/index/download?id=" + id
 
-	text := getRigOfTags(a)
+	text := getRidOfTags(a)
 	regClean := regexp.MustCompile("([[][^]]*[]])")
 
 	sub.Description = regClean.ReplaceAllString(text, "")
