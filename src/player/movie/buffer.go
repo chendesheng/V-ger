@@ -126,9 +126,9 @@ func (b *buffer) WriteAtQuit(bk block.Block, quit chan struct{}) {
 		select {
 		case <-time.After(100 * time.Millisecond):
 			b.Lock()
-			break
 		case <-quit:
 			b.Lock()
+			return
 		}
 	}
 
