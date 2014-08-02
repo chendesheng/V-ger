@@ -1,6 +1,7 @@
 package subtitles
 
 import (
+	"time"
 	// "fmt"
 	// "io"
 	"io/ioutil"
@@ -173,6 +174,8 @@ func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxc
 			close(result)
 			return
 		}
+
+		time.Sleep(20 * time.Millisecond)
 	}
 
 	<-kankanFinish
