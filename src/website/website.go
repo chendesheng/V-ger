@@ -142,7 +142,7 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	if url := string(input); url != "" {
 
-		_, name2, size, err := download.GetDownloadInfo(url)
+		_, name2, size, _, err := download.GetDownloadInfo(url, false)
 
 		if err != nil {
 			writeError(w, err)

@@ -63,7 +63,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 			log.Printf("%v", s)
 			// text, _ := json.Marshal(s)
 			// io.WriteString(ws, string(text))
-			url, subname, _, err := download.GetDownloadInfo(s.URL)
+			_, subname, _, data, err := download.GetDownloadInfo(s.URL, true)
 			if err != nil {
 				log.Print(err)
 				break
@@ -74,11 +74,6 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 			}
 
 			subFile := path.Join(dir, subname)
-			data, err := subtitles.QuickDownload(url)
-			if err != nil {
-				log.Print(err)
-				break
-			}
 
 			if util.CheckExt(subname, ".rar", ".zip") {
 				err := ioutil.WriteFile(subFile, data, 0666)

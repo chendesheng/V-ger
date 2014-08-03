@@ -204,7 +204,7 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 					fmt.Printf("%v\n", files)
 					if err == nil && len(files) == 1 && files[0].Percent == 100 {
 						t.URL = files[0].DownloadURL
-						_, _, size, err := download.GetDownloadInfo(t.URL)
+						_, _, size, _, err := download.GetDownloadInfo(t.URL, false)
 						if err != nil {
 							log.Print(err)
 						} else {

@@ -20,7 +20,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 
 	m.chSpeed = make(chan float64)
 
-	url, name, size, err := download.GetDownloadInfoN(file, 3, m.quit)
+	url, name, size, _, err := download.GetDownloadInfoN(file, 3, false, m.quit)
 
 	if err != nil {
 		return AVFormatContext{}, "", err

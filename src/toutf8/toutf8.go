@@ -102,28 +102,22 @@ func ConverToUTF8(r io.Reader) (string, string, error) {
 	return string(res), encoding, nil
 }
 
-// func GB18030ToUTF8(filename string) (string, error) {
-// 	f, err := os.OpenFile(filename, os.O_RDONLY, 0666)
-// 	defer f.Close()
-// 	if err != nil {
-// 		return "", err
-// 	}
+func GB18030ToUTF8(text string) (res string, err error) {
+	res = text
 
-// 	c, err := iconv.Open("utf-8", "gb18030")
-// 	defer c.Close()
-// 	if err != nil {
-// 		return "", err
-// 	}
+	var encoding string
+	encoding, err = GuessEncoding([]byte(text))
+	if err != nil {
+		return
+	}
 
-// 	data, err := ioutil.ReadAll(f)
-// 	if err != nil {
-// 		return "", err
-// 	}
+	if encoding != "utf-8" && encoding != "ascii" {
+		var utf8text string
+		utf8text, err = ConvertToUTF8From(text, "gb18030")
+		if err == nil {
+			res = utf8text
+		}
+	}
 
-// 	res, _, err := c.Conv(data, make([]byte, 512))
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	return string(res), nil
-// }
+	return
+}

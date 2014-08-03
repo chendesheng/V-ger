@@ -65,7 +65,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url := arg["url"]
-	url, name, _, err := download.GetDownloadInfo(url)
+	_, name, _, data, err := download.GetDownloadInfo(url, true)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return
@@ -83,12 +83,6 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subFile := path.Join(subFileDir, name)
-
-	data, err := subtitles.QuickDownload(url)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
 
 	if util.CheckExt(name, ".rar", ".zip") {
 		ioutil.WriteFile(subFile, data, 0666)

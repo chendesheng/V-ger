@@ -1,6 +1,7 @@
 package download
 
 import (
+	"io/ioutil"
 	"log"
 	"toutf8"
 	// "bytes"
@@ -45,22 +46,29 @@ func fetchN(req *http.Request, n int, quit chan struct{}) (resp *http.Response, 
 	return
 }
 
-func GetDownloadInfo(url string) (finalUrl string, name string, size int64, err error) {
-	return GetDownloadInfoN(url, 3, nil)
+func GetDownloadInfo(url string, readBody bool) (finalUrl string, name string, size int64, body []byte, err error) {
+	return GetDownloadInfoN(url, 3, readBody, nil)
 }
 
-func GetDownloadInfoN(url string, retryTimes int, quit chan struct{}) (finalUrl string, name string, size int64, err error) {
+func GetDownloadInfoN(url string, retryTimes int, readBody bool, quit chan struct{}) (finalUrl string, name string, size int64, body []byte, err error) {
 	req := createDownloadRequest(url, -1, -1)
 
 	resp, err := fetchN(req, retryTimes, quit)
 	if err != nil {
-		return "", "", 0, err
+		return "", "", 0, nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		err = fmt.Errorf("response status code: %d", resp.StatusCode)
 		return
+	}
+
+	if readBody {
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Print(err)
+		}
 	}
 
 	finalUrl = resp.Request.URL.String()
@@ -74,19 +82,9 @@ func GetDownloadInfoN(url string, retryTimes int, quit chan struct{}) (finalUrl 
 		err = fmt.Errorf("Broken resource")
 	}
 
-	encoding, err := toutf8.GuessEncoding([]byte(name))
+	name, err = toutf8.GB18030ToUTF8(name)
 	if err != nil {
 		log.Print(err)
-	}
-
-	if encoding != "utf-8" && encoding != "ascii" {
-		log.Print("file name encoding:", encoding)
-		utf8name, err := toutf8.ConvertToUTF8From(name, "gb18030")
-		if err != nil {
-			log.Print(err)
-		} else {
-			name = utf8name
-		}
 	}
 
 	name = strings.Replace(name, "/", "|", -1)

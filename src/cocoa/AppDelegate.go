@@ -310,10 +310,8 @@ func (delegate *AppDelegate) NewTaskFromPasteboardClick(sender uintptr) {
 				return
 			}
 
-			_, name2, size, err := download.GetDownloadInfo(url)
+			_, name2, size, _, err := download.GetDownloadInfo(url, false)
 			if err != nil {
-				_, name2, size, err = download.GetDownloadInfo(url)
-
 				if err != nil {
 					SendNotification("Download failed", err.Error())
 				}
