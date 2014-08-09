@@ -57,13 +57,11 @@ func (a *portAudio) Open(channels int, sampleRate int, callback func(int) []byte
 }
 
 func (a *portAudio) Close() {
-	err := a.stream.Stop()
-	if err != nil {
-		log.Print(err)
-	}
-	err = a.stream.Close()
-	if err != nil {
-		log.Print(err)
+	if a.stream != nil {
+		err := a.stream.Stop()
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 
