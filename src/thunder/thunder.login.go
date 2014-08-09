@@ -58,7 +58,11 @@ func Login2(gdriveid string, user, password string) (string, string, error) {
 		return "", "", fmt.Errorf("Login faild")
 	}
 
-	verifyCode := strings.Split(result, ":")[1]
+	args := strings.Split(result, ":")
+	if len(args) < 2 {
+		return "", "", fmt.Errorf("Login faild")
+	}
+	verifyCode := args[1]
 	passwordMd5 := singleMd5(doubleMD5(password) + strings.ToUpper(verifyCode))
 
 	_, err = sendPost("http://login.xunlei.com/sec2login/", nil,
