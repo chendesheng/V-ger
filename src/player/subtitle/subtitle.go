@@ -259,8 +259,6 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	s.Lang1 = sub.Lang1
 	s.Lang2 = sub.Lang2
 
-	log.Print("parse sub:", sub.Name)
-
 	s.Format = sub.Type
 	if s.Format == "ass" {
 		s.items, err = ass.Parse(strings.NewReader(sub.Content), width, height)
@@ -283,23 +281,22 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	s.quit = make(chan bool)
 	s.r = r
 
-	log.Print("sub items:", len(s.items))
+	log.Printf("parse sub:%s; %d items", sub.Name, len(s.items))
 	return s
 }
 
 func (s *Subtitle) Seek(t time.Duration, refresh bool) {
+	var input chan<- time.Duration
 	if refresh {
-		select {
-		case s.ChanSeekRefersh <- t:
-		case <-time.After(200 * time.Millisecond):
-			log.Print("Seek sub timeout1")
-		}
+		input = s.ChanSeekRefersh
 	} else {
-		select {
-		case s.ChanSeek <- t:
-		case <-time.After(200 * time.Millisecond):
-			log.Print("Seek sub timeout2")
-		}
+		input = s.ChanSeek
+	}
+
+	select {
+	case input <- t:
+	case <-time.After(200 * time.Millisecond):
+		log.Print("Seek sub timeout1")
 	}
 }
 
