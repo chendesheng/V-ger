@@ -36,8 +36,6 @@ type Movie struct {
 
 	audioStreams []AVStream
 
-	size int64
-
 	httpBuffer *buffer
 
 	// chSeekEnd      chan time.Duration
