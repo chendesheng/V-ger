@@ -171,7 +171,10 @@ func (m *Movie) Open(w *Window, file string) error {
 
 	m.c = NewClock(duration)
 
-	m.setupVideo()
+	err := m.setupVideo()
+	if err != nil {
+		return err
+	}
 
 	m.p = CreateOrGetPlaying(filename)
 	log.Print("video duration:", duration.String(), m.p.LastPos)
@@ -272,7 +275,7 @@ func (m *Movie) PlayAsync() {
 	go m.decode(m.p.Movie)
 }
 
-func (m *Movie) setupVideo() {
+func (m *Movie) setupVideo() error {
 	log.Print("setup video")
 
 	ctx := m.ctx
@@ -281,12 +284,13 @@ func (m *Movie) setupVideo() {
 		var err error
 		m.v, err = NewVideo(ctx, videoStream, m.c)
 		if err != nil {
-			log.Fatal(err)
-			return
+			return err
 		}
 	} else {
-		log.Fatal("No video stream find.")
+		return fmt.Errorf("No video stream find.")
 	}
+
+	return nil
 }
 
 func (m *Movie) ResumeClock() {
