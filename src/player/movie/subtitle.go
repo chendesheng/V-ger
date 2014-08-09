@@ -228,6 +228,8 @@ func (m *Movie) setupDefaultSubtitles() {
 	SavePlayingAsync(m.p)
 }
 func (m *Movie) setupSubtitlesMenu() {
+	log.Print("setupSubtitlesMenu")
+
 	HideSubtitleMenu()
 
 	tags := make([]int32, 0)

@@ -3,12 +3,13 @@ package subtitles
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"thunder"
 )
 
 func kankanSearch(fileurl string, result chan Subtitle, quit chan struct{}) error {
-	println("kankan search:", fileurl)
+	log.Print("kankan search:", fileurl)
 	regFid := regexp.MustCompile("[?].*fid=([^&]+)")
 	if matches := regFid.FindStringSubmatch(fileurl); len(matches) > 0 {
 		fid := matches[1]
@@ -16,7 +17,6 @@ func kankanSearch(fileurl string, result chan Subtitle, quit chan struct{}) erro
 		userid := thunder.GetUserId()
 
 		sourceUrl := fmt.Sprintf("http://i.vod.xunlei.com/subtitle/list?gcid=%s&cid=%s&userid=%s", gcid, cid, userid)
-		println(sourceUrl)
 
 		content, err := sendGet(sourceUrl, nil)
 		if err != nil {

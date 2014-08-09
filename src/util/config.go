@@ -36,7 +36,7 @@ func ReadAllConfigs() map[string]string {
 	}
 
 	if err := ReadJson(getConfigPath(), &configCache); err != nil {
-		println(getConfigPath())
+		log.Print(getConfigPath())
 		log.Fatal(err)
 	}
 	return configCache

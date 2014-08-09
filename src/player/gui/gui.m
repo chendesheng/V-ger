@@ -25,7 +25,6 @@ void initialize() {
     Application *appDelegate = [[Application alloc] init];
     [NSApp setDelegate:appDelegate];
 
-	NSLog(@"initialized");
 	//create memu bar
 	id menubar = [[NSMenu new] autorelease];
     id appMenuItem = [[NSMenuItem new] autorelease];
@@ -64,8 +63,6 @@ NSMenuItem* getTopMenuByTitle(NSString* title) {
     return nil;
 }
 void hideMenuNSString(NSString* title) {
-    NSLog(@"remove subtitle menu %@", title);
-
     // NSMenu* menubar = [NSApp mainMenu];
     // NSArray* menus = [menubar itemArray];
     NSMenuItem* item = getTopMenuByTitle(title);
@@ -120,8 +117,6 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
     hideSubtitleMenu();
-
-    NSLog(@"len:%d", len);
 
     if (len > 0) {
         NSWindow* w = (NSWindow*)wptr;

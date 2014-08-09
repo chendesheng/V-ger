@@ -143,7 +143,7 @@ func (w *Window) ToggleForceScreenRatio() {
 func (w *Window) SetSize(width, height int) {
 	w.ShowStartupView()
 
-	println("set size")
+	log.Printf("set window size:%d %d", width, height)
 
 	w.ChanDraw = make(chan []byte)
 
@@ -155,8 +155,6 @@ func (w *Window) SetSize(width, height int) {
 		w.render.delete()
 	}
 
-	println("NewYUVRender")
-	// w.render = NewYUVRender(w.img, width, height)
 	w.render = NewYUVRender(width, height)
 
 	w.originalWidth, w.originalHeight = width, height
@@ -217,7 +215,7 @@ func NewWindow(title string, width, height int) *Window {
 		originalHeight: height,
 	}
 
-	println("window:", ptr)
+	log.Print("NewWindow:", ptr)
 
 	windows[ptr] = w
 

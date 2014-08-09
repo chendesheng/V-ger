@@ -27,8 +27,6 @@ func GetSubtitles(movie string) []*Sub {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
 
-	println("get local subtitles:", movie)
-
 	sql := `select Movie, Name, Offset, Content, Type, Lang1, Lang2 from subtitle where Movie=?`
 	rows, err := db.Query(sql, movie)
 	if err != nil {
@@ -51,8 +49,6 @@ func GetSubtitles(movie string) []*Sub {
 func GetSubtitlesMap(movie string) map[string]*Sub {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
-
-	println("get local subtitles:", movie)
 
 	sql := `select Movie, Name, Offset, Content, Type, Lang1, Lang2 from subtitle where Movie=?`
 	rows, err := db.Query(sql, movie)

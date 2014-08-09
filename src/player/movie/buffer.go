@@ -190,8 +190,10 @@ func (b *buffer) Seek(offset int64, whence int) (int64, int64) {
 	b.Lock()
 	defer b.Unlock()
 
-	log.Print("buffer seek:", offset, whence)
-	log.Print(string(debug.Stack()))
+	if whence == os.SEEK_SET && offset > b.size {
+		log.Print("buffer seek:", offset, whence)
+		log.Print(string(debug.Stack()))
+	}
 
 	switch whence {
 	case os.SEEK_SET:

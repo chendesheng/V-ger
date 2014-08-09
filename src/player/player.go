@@ -97,9 +97,15 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
 	runtime.LockOSThread()
 
-	logger.InitLog("[Player]", util.ReadConfig("log"))
+	logbase := util.ReadConfig("log")
+	logger.InitLog("[Player]", path.Join(logbase, "player.log"))
 
-	go http.ListenAndServe("localhost:8080", nil)
+	go func() {
+		err := http.ListenAndServe("localhost:8080", nil)
+		if err != nil {
+			log.Print(err)
+		}
+	}()
 
 	dbHelper.Init("sqlite3", path.Join(util.ReadConfig("dir"), "vger.db"))
 

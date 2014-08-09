@@ -4,7 +4,6 @@
 @implementation GLView : NSOpenGLView
 
 - (id)initWithFrame2:(NSRect)frame {
-    NSLog(@"glView initWithFrame2");
     self = [super init];
     if (self) {
         self->originalSize = frame.size;
@@ -133,8 +132,6 @@
 
     [self addTrackingArea:trackingArea];
     [super updateTrackingAreas];
-
-    NSLog(@"endupdateTrackingAreas");
 }
 
 - (void)keyDown:(NSEvent *)event {

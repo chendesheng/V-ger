@@ -5,7 +5,6 @@
 	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask 
 		| NSMiniaturizableWindowMask | NSResizableWindowMask;
 
-	NSLog(@"%dx%d", w, h);
     // NSRect rt = [super contentRectForFrameRect:NSMakeRect(0,0,w,h)];
     self = [super initWithContentRect:NSMakeRect(0,0,w,h-22)
     	styleMask:styleMask

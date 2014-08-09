@@ -209,7 +209,7 @@ func thunderNewHandler(w http.ResponseWriter, r *http.Request) {
 	url := string(m["url"])
 	verifycode := string(m["verifycode"])
 
-	println("thunderNewHandler:", url, verifycode)
+	log.Print("thunderNewHandler:", url, verifycode)
 
 	files, err := thunder.NewTask(url, verifycode)
 	if err == nil {

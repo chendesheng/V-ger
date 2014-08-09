@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"io"
 	"io/ioutil"
+	"log"
 	// "fmt"
 	// "log"
 	"bytes"
@@ -169,8 +170,8 @@ func Parse(r io.Reader, width, height float64) (items []*SubItem, err error) {
 		if r != nil {
 			err = r.(error)
 			items = nil
-			println(err.Error())
-			println(string(debug.Stack()))
+			log.Print(err.Error())
+			log.Print(string(debug.Stack()))
 		}
 	}()
 

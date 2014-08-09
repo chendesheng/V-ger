@@ -83,7 +83,7 @@ func GetSubscribe(name string) *Subscribe {
 	if rows.Next() {
 		s, err := scanSubscribe(rows)
 		if err == nil {
-			println("get subscribe:", s.Name)
+			log.Print("get subscribe:", s.Name)
 			return s
 		} else {
 			log.Print(err.Error())

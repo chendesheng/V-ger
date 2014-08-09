@@ -87,10 +87,8 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 				for _, c := range props {
 					k := getRidOfTags(getTag1(c, "span"))
 					if k == "英文：" {
-						log.Print("get name")
 						if len(c.Child) > 1 {
 							s.Name = s.Name + getRidOfTags(c.Child[1])
-							log.Print("get name:", s.Name)
 						}
 					}
 					// if k == "播出：" {
@@ -197,12 +195,9 @@ func parseSingle(n *html.Node) *task.Task {
 
 func YYetsLogin(name string, password string) {
 	if YYetsIfLogined() {
-		log.Println("logined")
 		return
-	} else {
-		log.Println("not logined")
 	}
-	//http://www.yyets.com/user/login/ajaxLogin
+
 	data := url.Values{
 		"type":     []string{"nickname"},
 		"account":  []string{name},
@@ -213,11 +208,11 @@ func YYetsLogin(name string, password string) {
 	resp, err := http.PostForm("http://www.yyets.com/user/login/ajaxLogin", data)
 	if err != nil {
 		log.Print(err)
+	} else {
+		log.Print("YYets login success")
 	}
-	defer resp.Body.Close()
 
-	respData, err := httputil.DumpResponse(resp, true)
-	println(string(respData))
+	resp.Body.Close()
 }
 
 func YYetsIfLogined() bool {

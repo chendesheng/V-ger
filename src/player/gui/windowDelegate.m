@@ -73,7 +73,6 @@
 	return r.size;
 }
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
-    NSLog(@"windowDidEndLiveResize");
     Window* w = (Window*)[notification object];
     [w updateRoundCorner];
 

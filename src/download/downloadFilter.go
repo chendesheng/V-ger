@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -127,6 +128,10 @@ func requestWithTimeout(req *http.Request, data []byte, quit chan struct{}) (err
 		break
 	case err = <-finish:
 		if err != nil {
+			if dnsErr, ok := err.(*net.DNSError); ok && dnsErr.Err == "no such host" {
+				break
+			}
+
 			log.Print(err)
 		}
 		break

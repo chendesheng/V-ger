@@ -105,7 +105,6 @@ func NewMovie() *Movie {
 
 func updateSubscribeDuration(movie string, duration time.Duration) {
 	if t, _ := task.GetTask(movie); t != nil {
-		log.Print("get subscribe:", t.Subscribe)
 		if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
 			err := subscribe.UpdateDuration(t.Subscribe, duration)
 			if err != nil {

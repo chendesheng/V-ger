@@ -1,5 +1,7 @@
 package language
 
+import "log"
+
 //only support Chinese & English for now  (can't detect German)
 func DetectLanguages(str string) (string, string) {
 	var chsCnt, chtCnt, asciiCnt, anyCnt float64
@@ -23,7 +25,7 @@ func DetectLanguages(str string) (string, string) {
 	}
 	asciiCnt /= 2
 	anyCnt -= asciiCnt
-	println("en:", asciiCnt, "chs:", chsCnt, "cht:", chtCnt, "all:", anyCnt)
+	log.Print("en:", asciiCnt, "chs:", chsCnt, "cht:", chtCnt, "all:", anyCnt)
 
 	if asciiCnt/anyCnt > 0.7 {
 		return "en", ""

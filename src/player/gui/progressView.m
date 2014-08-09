@@ -2,7 +2,6 @@
 @implementation ProgressView
 
 - (id)initWithFrame:(NSRect)frame {
-    NSLog(@"progressView initWithFrame");
     self = [super initWithFrame:frame];
     if (self) {
         self->leftString = @"00:00:00";

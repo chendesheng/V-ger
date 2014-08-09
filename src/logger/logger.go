@@ -16,10 +16,10 @@ func InitLog(prefix string, file string) {
 
 	log.SetFlags(log.Lshortfile | log.Ltime)
 	log.SetPrefix(prefix)
-	// l, _ := syslog.New(syslog.LOG_NOTICE, prefix)
-	// w := io.MultiWriter(f, l)
 
 	log.SetOutput(f)
+
+	println("\n\n==============================================================================")
 }
 
 func crashLog(file string) {

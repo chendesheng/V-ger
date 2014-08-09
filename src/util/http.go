@@ -9,7 +9,6 @@ import (
 
 func SetCookie(name, value, domainUrl string) {
 	u, _ := url.Parse(domainUrl)
-	println(u.Host)
 	cookie := http.Cookie{
 		Name:    name,
 		Value:   value,

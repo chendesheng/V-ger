@@ -40,8 +40,6 @@ func (a *addic7ed) search(keywords string) {
 		"Submit": {"Search"},
 	}
 
-	log.Print(params.Encode())
-
 	resp, err := http.Get("http://www.addic7ed.com/search.php?" + params.Encode())
 	if err != nil {
 		println(err)

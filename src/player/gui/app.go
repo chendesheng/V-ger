@@ -68,8 +68,8 @@ var appDelegate AppDelegate
 func Initialize(d AppDelegate) {
 	appDelegate = d
 
-	log.Println("before initialize")
 	C.initialize()
+	log.Println("gui initialized")
 }
 
 func GetScreenSize() (int, int) {

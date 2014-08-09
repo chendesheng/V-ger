@@ -23,12 +23,11 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 			writeError(w, err)
 		}
 	}()
-	log.Print("subscribeHandler")
 
 	input, _ := ioutil.ReadAll(r.Body)
 	url := string(input)
 
-	println(url)
+	log.Print("subscribeNewHandler:", url)
 	s, tasks, err := subscribe.Parse(url)
 	if err != nil {
 		panic(err)

@@ -1,6 +1,7 @@
 package main
 
 import (
+
 	// "cocoa/cookiejar"
 	"dbHelper"
 	"download"
@@ -25,18 +26,8 @@ func init() {
 		log.Fatal(err)
 	}
 
-	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	// if logPath := util.ReadConfig("log"); logPath != "" {
-	// 	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	// 	if err == nil {
-	// 		log.SetOutput(f)
-	// 		log.Print("log initialized.")
-	// 	} else {
-	// 		log.Print(err)
-	// 	}
-	// }
-
-	logger.InitLog("[V'ger]", util.ReadConfig("log"))
+	logbase := util.ReadConfig("log")
+	logger.InitLog("[V'ger]", path.Join(logbase, "vger.log"))
 
 	// http.DefaultClient.Jar = &cookiejar.SafariCookieJar{}
 	jar, _ := cookiejar.New(nil)
