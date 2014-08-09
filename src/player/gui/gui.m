@@ -63,6 +63,7 @@ NSMenuItem* getTopMenuByTitle(NSString* title) {
     return nil;
 }
 void hideMenuNSString(NSString* title) {
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     // NSMenu* menubar = [NSApp mainMenu];
     // NSArray* menus = [menubar itemArray];
     NSMenuItem* item = getTopMenuByTitle(title);
@@ -77,6 +78,7 @@ void hideMenuNSString(NSString* title) {
     //         break;
     //     }
     // }
+    [pool drain];
 }
 void hideSubtitleMenu() {
     hideMenuNSString(@"Subtitle");
@@ -87,6 +89,7 @@ void hideAudioMenu() {
 void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
     hideAudioMenu();
 
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     if (len > 0) {
         NSWindow* w = (NSWindow*)wptr;
 
@@ -111,13 +114,13 @@ void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selecte
         }
         [audioMenuItem setSubmenu:audioMenu];
     }
+    [pool drain];
 }
 
 void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t selected1, int32_t selected2) {
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-
     hideSubtitleMenu();
-
+    
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     if (len > 0) {
         NSWindow* w = (NSWindow*)wptr;
 
