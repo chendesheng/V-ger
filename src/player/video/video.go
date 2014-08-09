@@ -73,7 +73,7 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 	log.Print("end of setupCodec1")
 	errCode := codec.Open(decoder)
 	if errCode < 0 {
-		return fmt.Errorf("open decoder error code %s", errCode)
+		return fmt.Errorf("open decoder error code %d", errCode)
 	}
 
 	v.lastPts = math.MinInt64
