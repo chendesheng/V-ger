@@ -12,7 +12,7 @@ import (
 	"strconv"
 )
 
-var configCache map[string]string
+var configCache map[string]string = make(map[string]string)
 var ConfigPath string
 
 func getConfigPath() string {
@@ -27,14 +27,6 @@ func getConfigPath() string {
 	return ConfigPath
 }
 func ReadAllConfigs() map[string]string {
-	if configCache == nil {
-		configCache = make(map[string]string)
-		// go func() {
-		// 	time.Sleep(time.Second * 20)
-		// 	configCache = nil
-		// }()
-	}
-
 	if err := ReadJson(getConfigPath(), &configCache); err != nil {
 		log.Print(getConfigPath())
 		log.Fatal(err)
