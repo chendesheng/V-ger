@@ -31,7 +31,7 @@ func NewAVFormatContext() AVFormatContext {
 	return AVFormatContext{ptr: ptr}
 }
 
-func (ctx *AVFormatContext) OpenInput(filename string) error {
+func (ctx AVFormatContext) OpenInput(filename string) error {
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
@@ -50,11 +50,11 @@ func (ctx AVFormatContext) IsNil() bool {
 	return ctx.ptr == nil
 }
 
-func (ctx *AVFormatContext) DumpFormat() {
+func (ctx AVFormatContext) DumpFormat() {
 	C.av_dump_format(ctx.ptr, 0, &(ctx.ptr.filename[0]), 0)
 }
 
-func (ctx *AVFormatContext) FindStreamInfo() error {
+func (ctx AVFormatContext) FindStreamInfo() error {
 	if code := int(C.avformat_find_stream_info(ctx.ptr, nil)); code < 0 {
 		return errors.New(fmt.Sprint("Find stream info error: ", code))
 	} else {
@@ -62,11 +62,11 @@ func (ctx *AVFormatContext) FindStreamInfo() error {
 	}
 }
 
-func (ctx *AVFormatContext) SetInputFormat(f unsafe.Pointer) {
+func (ctx AVFormatContext) SetInputFormat(f unsafe.Pointer) {
 	ctx.ptr.iformat = (*_Ctype_struct_AVInputFormat)(f)
 }
 
-func (ctx *AVFormatContext) VideoStream() AVStream {
+func (ctx AVFormatContext) VideoStream() AVStream {
 	var streams []*C.AVStream
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&streams))
 	header.Len = int(ctx.ptr.nb_streams)
@@ -83,7 +83,7 @@ func (ctx *AVFormatContext) VideoStream() AVStream {
 
 	return AVStream{ptr: nil}
 }
-func (ctx *AVFormatContext) AudioStream() []AVStream {
+func (ctx AVFormatContext) AudioStream() []AVStream {
 	var streams []*C.AVStream
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&streams))
 	header.Len = int(ctx.ptr.nb_streams)
@@ -100,7 +100,7 @@ func (ctx *AVFormatContext) AudioStream() []AVStream {
 	}
 	return res
 }
-func (ctx *AVFormatContext) Stream(i int) AVStream {
+func (ctx AVFormatContext) Stream(i int) AVStream {
 	var streams []*C.AVStream
 	header := (*reflect.SliceHeader)(unsafe.Pointer(&streams))
 	header.Len = int(ctx.ptr.nb_streams)
@@ -114,7 +114,7 @@ func (ctx *AVFormatContext) ReadFrame(packet *AVPacket) int {
 	// defer frameLock.Unlock()
 	return int(C.av_read_frame(ctx.ptr, &packet.cAVPacket))
 }
-func (ctx *AVFormatContext) SeekFrame2(stream AVStream, t time.Duration, flags int) error {
+func (ctx AVFormatContext) SeekFrame2(stream AVStream, t time.Duration, flags int) error {
 	var timeBase C.AVRational
 	timeBase.num = 1
 	timeBase.den = C.AV_TIME_BASE
@@ -135,7 +135,7 @@ func (ctx *AVFormatContext) SeekFrame2(stream AVStream, t time.Duration, flags i
 	C.avcodec_flush_buffers(stream.Codec().ptr)
 	return nil
 }
-func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags int) error {
+func (ctx AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags int) error {
 	// frameLock.Lock()
 	// defer frameLock.Unlock()
 
@@ -158,7 +158,7 @@ func (ctx *AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags in
 	C.avcodec_flush_buffers(stream.Codec().ptr)
 	return nil
 }
-func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) error {
+func (ctx AVFormatContext) SeekFile(t time.Duration, flags int) error {
 	// frameLock.Lock()
 	// defer frameLock.Unlock()
 	// timeBase := stream.ptr.time_base
@@ -178,11 +178,11 @@ func (ctx *AVFormatContext) SeekFile(t time.Duration, flags int) error {
 	return nil
 }
 
-func (ctx *AVFormatContext) Duration() uint64 {
+func (ctx AVFormatContext) Duration() uint64 {
 	return uint64(ctx.ptr.duration)
 }
 
-func (ctx *AVFormatContext) Duration2() time.Duration {
+func (ctx AVFormatContext) Duration2() time.Duration {
 	var duration time.Duration
 	if ctx.Duration() != AV_NOPTS_VALUE {
 		duration = time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
@@ -193,16 +193,16 @@ func (ctx *AVFormatContext) Duration2() time.Duration {
 	return duration
 }
 
-func (ctx *AVFormatContext) StartTime() time.Duration {
+func (ctx AVFormatContext) StartTime() time.Duration {
 	return time.Duration((float64(ctx.ptr.start_time) / float64(AV_TIME_BASE)) * float64(time.Second))
 }
 
-func (ctx *AVFormatContext) SetPb(pb AVIOContext) {
+func (ctx AVFormatContext) SetPb(pb AVIOContext) {
 	ctx.ptr.pb = pb.ptr
 	ctx.ptr.flags |= AVFMT_FLAG_CUSTOM_IO
 }
 
-func (ctx *AVFormatContext) CloseInput() {
+func (ctx AVFormatContext) Close() {
 	C.avformat_close_input(&ctx.ptr)
 }
 
