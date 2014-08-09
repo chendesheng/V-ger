@@ -79,7 +79,7 @@ func (m *Movie) decode(name string) {
 		if m.v != nil {
 			m.v.Close()
 		}
-		m.ctx.CloseInput()
+		m.ctx.Close()
 
 		if m.finishClose != nil {
 			close(m.finishClose)

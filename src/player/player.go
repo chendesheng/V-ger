@@ -4,6 +4,7 @@ import (
 	"dbHelper"
 	"filelock"
 	"net/http"
+	"sync"
 
 	_ "net/http/pprof"
 	. "player/shared"
@@ -20,6 +21,7 @@ import (
 )
 
 type appDelegate struct {
+	sync.Mutex
 	w *Window
 	m *Movie
 }
@@ -27,16 +29,18 @@ type appDelegate struct {
 func (app *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 
-	if app.m != nil {
-		app.m.SavePlaying()
-		app.m.Close()
-
-		app.m = nil
-	}
-
-	app.m = NewMovie()
-
 	go func() {
+		app.Lock()
+		defer app.Unlock()
+
+		if app.m != nil {
+			app.m.SavePlaying()
+			app.m.Close()
+
+			app.m = nil
+		}
+		app.m = NewMovie()
+
 		err := app.m.Open(app.w, filename)
 
 		if err == nil {
@@ -51,27 +55,32 @@ func (app *appDelegate) OpenFile(filename string) bool {
 }
 
 func (app *appDelegate) WillTerminate() {
-	if app.m == nil {
+	app.Lock()
+	m := app.m
+	app.Unlock()
+
+	if m == nil {
 		return
 	}
 
-	app.m.SavePlaying()
+	m.SavePlaying()
+	app.w.DestoryRender()
 
-	done := make(chan bool)
-	go func() {
-		if app.m != nil {
+	// done := make(chan bool)
+	// go func() {
+	// 	if app.m != nil {
 
-			app.m.Close()
-		}
-		done <- true
-	}()
-	select {
-	case <-done:
-		return
-	case <-time.After(100 * time.Millisecond):
-		log.Print("WillTerminate timeout")
-		return
-	}
+	// 		app.m.Close()
+	// 	}
+	// 	done <- true
+	// }()
+	// select {
+	// case <-done:
+	// 	return
+	// case <-time.After(100 * time.Millisecond):
+	// 	log.Print("WillTerminate timeout")
+	// 	return
+	// }
 }
 func (app *appDelegate) SearchSubtitleMenuItemClick() {
 	log.Print("SearchSubtitleMenuItemClick")

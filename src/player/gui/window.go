@@ -152,6 +152,7 @@ func (w *Window) SetSize(width, height int) {
 	}
 
 	if w.render != nil {
+		log.Print("delete render")
 		w.render.delete()
 	}
 

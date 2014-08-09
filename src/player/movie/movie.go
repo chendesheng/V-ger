@@ -252,7 +252,7 @@ func (m *Movie) Close() {
 	HideAudioMenu()
 
 	if m.httpBuffer != nil {
-		m.httpBuffer.Clear()
+		m.httpBuffer.Close()
 	}
 
 	if m.streaming != nil {
@@ -261,7 +261,7 @@ func (m *Movie) Close() {
 
 	<-m.finishClose
 
-	m.w.DestoryRender()
+	// m.w.DestoryRender()
 }
 
 func (m *Movie) PlayAsync() {

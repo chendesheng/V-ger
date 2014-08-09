@@ -235,7 +235,7 @@ func (b *buffer) clear() {
 	b.data = b.data[0:0]
 }
 
-func (b *buffer) Clear() {
+func (b *buffer) Close() {
 	b.Lock()
 	defer b.Unlock()
 
