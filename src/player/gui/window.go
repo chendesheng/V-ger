@@ -452,7 +452,6 @@ func (w *Window) HideSpinning() {
 	C.hideSpinning(w.ptr)
 }
 func (w *Window) SendShowSpinning() {
-	log.Print("SendShowSpinning:", w)
 	select {
 	case w.ChanShowSpinning <- true:
 	case <-time.After(50 * time.Millisecond):

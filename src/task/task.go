@@ -100,6 +100,18 @@ func GetTask(name string) (*Task, error) {
 		return t, nil
 	}
 }
+func GetEpisodeTask(subscribeName string, season, episode int) (string, string, string, error) {
+	db := dbHelper.Open()
+	defer dbHelper.Close(db)
+
+	var name string
+	var url string
+	var status string
+	err := db.QueryRow("select Name, Status, URL from task where Subscribe=? and Season=? and Episode=? and Status<>'Deleted' and Status<>'New'",
+		subscribeName, season, episode).Scan(&name, &status, &url)
+
+	return name, status, url, err
+}
 func ExistsEpisode(subscribeName string, season, episode int) (bool, error) {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)

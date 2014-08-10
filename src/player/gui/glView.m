@@ -145,10 +145,20 @@
     ProgressView* pv = self->progressView;
     
     [pv->leftString autorelease];
-    pv->leftString = [[NSString stringWithUTF8String:left] retain];
+
+    if (strlen(left) == 0) {
+        pv->leftString = @"00:00:00";
+    } else {
+        pv->leftString = [[NSString stringWithUTF8String:left] retain];
+    }
 
     [pv->rightString autorelease];
-    pv->rightString = [[NSString stringWithUTF8String:right] retain];
+
+    if (strlen(right) == 0) {
+        pv->rightString = @"00:00:00";
+    } else {
+        pv->rightString = [[NSString stringWithUTF8String:right] retain];
+    }
 
     pv->percent = percent;
     

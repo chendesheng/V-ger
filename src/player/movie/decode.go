@@ -2,9 +2,14 @@ package movie
 
 import (
 	"log"
+	"os"
+	"path"
 	. "player/libav"
+	"player/shared"
 	. "player/video"
+	"task"
 	"time"
+	"util"
 )
 
 func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
@@ -69,6 +74,72 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 	}
 }
 
+func getNextEpisode(filename string) (bool, string) {
+	t, err := task.GetTask(filename)
+	if err != nil {
+		log.Print(err)
+		return false, ""
+	}
+
+	if len(t.Subscribe) == 0 {
+		return false, ""
+	}
+
+	season := t.Season
+	episode := t.Episode + 1
+	url := ""
+	name := ""
+	status := ""
+	if name, status, url, err = task.GetEpisodeTask(t.Subscribe, season, episode); err != nil {
+		season = t.Season + 1
+		episode = 1
+
+		if name, status, url, err = task.GetEpisodeTask(t.Subscribe, season, episode); err != nil {
+			return false, ""
+		}
+	}
+
+	if status == "Finished" {
+		file := path.Join(util.ReadConfig("dir"), t.Subscribe, name)
+		_, err := os.Stat(file)
+		if err != nil {
+			log.Print(err)
+			return false, ""
+		} else {
+			return true, file
+		}
+	} else if len(url) > 0 {
+		return true, url
+	}
+
+	return false, ""
+}
+
+func (m *Movie) playNextEpisode() bool {
+
+	if ok, file := getNextEpisode(m.filename); ok {
+		log.Print("playNextEpisode:", file)
+
+		go func() {
+			m.w.SendShowProgress(&shared.PlayProgressInfo{})
+
+			m.SavePlaying()
+			m.Close()
+			m.Reset()
+			err := m.Open(m.w, file)
+			if err == nil {
+				m.PlayAsync()
+			} else {
+				log.Print(err)
+			}
+		}()
+
+		return true
+	}
+
+	return false
+}
+
 func (m *Movie) decode(name string) {
 	m.chPause = make(chan chan time.Duration)
 
@@ -97,10 +168,10 @@ func (m *Movie) decode(name string) {
 		if m.httpBuffer != nil && m.httpBuffer.WaitQuit(3*1024*1024, m.quit) {
 			return
 		}
-
-		m.w.SendHideSpinning()
-		m.w.SendSetSize(m.v.Width, m.v.Height)
 	}
+
+	m.w.SendHideSpinning()
+	m.w.SendSetSize(m.v.Width, m.v.Height)
 
 	m.startSeekRoutine()
 
@@ -141,6 +212,9 @@ func (m *Movie) decode(name string) {
 			log.Printf("read frame error: %x", resCode)
 			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < 2*time.Second) {
 				m.c.SetTime(m.c.TotalTime())
+				if m.playNextEpisode() {
+					return
+				}
 			} else {
 				if m.httpBuffer == nil && resCode == AVERROR_INVALIDDATA {
 					t := m.c.GetTime()

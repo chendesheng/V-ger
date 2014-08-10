@@ -44,6 +44,8 @@ type Movie struct {
 	chProgress     chan time.Duration
 	chSpeed        chan float64
 	streaming      *download.Streaming
+
+	filename string
 }
 
 type movieSubs struct {
@@ -95,10 +97,28 @@ func NewMovie() *Movie {
 	log.Print("New movie")
 
 	m := &Movie{}
+	m.Reset()
+	return m
+}
+
+func (m *Movie) Reset() {
 	m.quit = make(chan struct{})
 	m.chProgress = make(chan time.Duration)
 	m.finishClose = make(chan bool)
-	return m
+	m.filename = ""
+	m.a = nil
+	m.v = nil
+	m.p = nil
+	m.c = nil
+	m.httpBuffer = nil
+	m.s1 = nil
+	m.s2 = nil
+	m.streaming = nil
+	m.subs = nil
+	m.audioStreams = nil
+	m.chSeekProgress = nil
+	m.chPause = nil
+	m.chSpeed = nil
 }
 
 func updateSubscribeDuration(movie string, duration time.Duration) {
@@ -179,6 +199,8 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 }
 
 func (m *Movie) Open(w *Window, file string) (err error) {
+	w.ShowStartupView()
+
 	defer func() {
 		if err != nil {
 			close(m.finishClose)
@@ -186,7 +208,6 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 	}()
 
 	log.Print("open ", file)
-
 	m.w = w
 	m.uievents()
 
@@ -194,6 +215,7 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 	if err != nil {
 		return
 	}
+	m.filename = filename
 
 	if m.httpBuffer != nil {
 		setBufferCapacity(m.httpBuffer, duration)
