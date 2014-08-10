@@ -112,127 +112,115 @@ func updateSubscribeDuration(movie string, duration time.Duration) {
 	}
 }
 
-func (m *Movie) Open(w *Window, file string) error {
+func checkDownloadSubtitle(m *Movie, file string, filename string) {
+	if strings.Contains(file, "googlevideo.com/videoplayback") {
+		return
+	}
+
+	subs := GetSubtitlesMap(filename)
+	log.Printf("%v", subs)
+	if len(subs) == 0 {
+		m.SearchDownloadSubtitle()
+	} else {
+		log.Print("setupSubtitles")
+		m.setupSubtitles(subs)
+
+		m.seekPlayingSubs(m.c.GetTime(), false)
+	}
+}
+
+func setBufferCapacity(buf *buffer, duration time.Duration) {
+	var capacity int64
+	if duration < 10*time.Minute {
+		capacity = buf.size
+	} else {
+		//overflow, divide before cross
+		capacity = int64(float64(buf.size) / float64(duration) * 5 * float64(time.Minute))
+		log.Print(capacity)
+	}
+
+	if capacity > 100*block.MB {
+		capacity = 100 * block.MB
+	}
+	if capacity < 10*block.MB {
+		capacity = 10 * block.MB
+	}
+	buf.SetCapacity(capacity)
+}
+
+func (m *Movie) setupContext(file string) (filename string, duration time.Duration, err error) {
+	var ctx AVFormatContext
+
+	if strings.HasPrefix(file, "http://") ||
+		strings.HasPrefix(file, "https://") {
+
+		ctx, filename, err = m.openHttp(file)
+		if err != nil {
+			err = fmt.Errorf("open failed: %s", file)
+			return
+		}
+	} else {
+		filename = filepath.Base(file)
+
+		ctx = NewAVFormatContext()
+		if err = ctx.OpenInput(file); err != nil {
+			return
+		}
+	}
+
+	if err = ctx.FindStreamInfo(); err != nil {
+		return
+	}
+	ctx.DumpFormat()
+	m.ctx = ctx
+
+	duration = ctx.Duration()
+	return
+}
+
+func (m *Movie) Open(w *Window, file string) (err error) {
+	defer func() {
+		if err != nil {
+			close(m.finishClose)
+		}
+	}()
+
 	log.Print("open ", file)
 
 	m.w = w
 	m.uievents()
 
-	var ctx AVFormatContext
-	var filename string
-
-	if strings.HasPrefix(file, "http://") ||
-		strings.HasPrefix(file, "https://") {
-		var err error
-
-		if ctx, filename, err = m.openHttp(file); err != nil {
-			close(m.finishClose)
-			return fmt.Errorf("open failed: %s", file)
-		}
-	} else {
-		log.Print("New AVFormatContext")
-
-		filename = filepath.Base(file)
-
-		ctx = NewAVFormatContext()
-		if err := ctx.OpenInput(file); err != nil {
-			close(m.finishClose)
-			return err
-		}
+	filename, duration, err := m.setupContext(file)
+	if err != nil {
+		return
 	}
 
-	if err := ctx.FindStreamInfo(); err != nil {
-		close(m.finishClose)
-		return err
-	}
-	ctx.DumpFormat()
-
-	m.ctx = ctx
-
-	duration := ctx.Duration2()
 	if m.httpBuffer != nil {
-		var capacity int64
-		if duration < 10*time.Minute {
-			capacity = m.httpBuffer.size
-		} else {
-			//overflow, divide before cross
-			capacity = int64(float64(m.httpBuffer.size) / float64(duration) * 5 * float64(time.Minute))
-			log.Print(capacity)
-		}
-
-		if capacity > 100*block.MB {
-			capacity = 100 * block.MB
-		}
-		if capacity < 10*block.MB {
-			capacity = 10 * block.MB
-		}
-		m.httpBuffer.SetCapacity(capacity)
+		setBufferCapacity(m.httpBuffer, duration)
 	}
 
 	m.c = NewClock(duration)
 
-	err := m.setupVideo()
-	if err != nil {
-		return err
-	}
-
 	m.p = CreateOrGetPlaying(filename)
-	log.Print("video duration:", duration.String(), m.p.LastPos)
-	var start time.Duration
-	if m.p.LastPos > time.Second && m.p.LastPos < duration-50*time.Millisecond {
-		var img []byte
-		start, img, _ = m.v.Seek(m.p.LastPos)
-		select {
-		case w.ChanDraw <- img:
-		case <-m.quit:
-			close(m.finishClose)
-			return fmt.Errorf("quit open")
-		}
-
-		if m.httpBuffer != nil {
-			if m.httpBuffer.WaitQuit(3*1024*1024, m.quit) {
-				close(m.finishClose)
-				return fmt.Errorf("quit open")
-			}
-		}
-	}
-
-	m.p.LastPos = start
 	m.p.Duration = duration
 
+	err = m.setupVideo()
+	if err != nil {
+		return
+	}
+
+	err = m.setupAudio()
+	if err != nil {
+		return
+	}
+
 	go updateSubscribeDuration(m.p.Movie, m.p.Duration)
-
-	go func() {
-		if strings.Contains(file, "googlevideo.com/videoplayback") {
-			return
-		}
-
-		subs := GetSubtitlesMap(filename)
-		log.Printf("%v", subs)
-		if len(subs) == 0 {
-			m.SearchDownloadSubtitle()
-		} else {
-			log.Print("setupSubtitles")
-			m.setupSubtitles(subs)
-
-			m.seekPlayingSubs(m.c.GetTime(), false)
-		}
-	}()
+	go checkDownloadSubtitle(m, file, filename)
 
 	w.SendSetTitle(filename)
-	w.SendSetSize(m.v.Width, m.v.Height)
-	m.v.SetRender(m.w)
-
-	m.setupAudio()
-
-	m.c.SetTime(start)
-
-	m.showProgressInner(start)
-
 	w.SendSetCursor(false)
-	w.SendHideSpinning()
 
-	return nil
+	return
 }
 
 func (m *Movie) SavePlaying() {
@@ -264,7 +252,7 @@ func (m *Movie) Close() {
 
 	<-m.finishClose
 
-	// m.w.DestoryRender()
+	m.w.SendDestoryRender()
 }
 
 func (m *Movie) PlayAsync() {
@@ -282,7 +270,7 @@ func (m *Movie) setupVideo() error {
 	videoStream := ctx.VideoStream()
 	if !videoStream.IsNil() {
 		var err error
-		m.v, err = NewVideo(ctx, videoStream, m.c)
+		m.v, err = NewVideo(ctx, videoStream, m.c, m.w)
 		if err != nil {
 			return err
 		}

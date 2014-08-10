@@ -159,13 +159,14 @@ func (v *Video) setupSwsContext() {
 		v.Width, v.Height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
 }
 
-func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock) (*Video, error) {
+func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRender) (*Video, error) {
 	v := &Video{}
 	// globalVideo = v
 	v.formatCtx = formatCtx
 	v.stream = stream
 	v.StreamIndex = stream.Index()
 	v.global_pts = AV_NOPTS_VALUE
+	v.r = r
 
 	err := v.setupCodec(stream.Codec())
 	if err != nil {
@@ -286,6 +287,7 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 
 	ctx := v.formatCtx
 	err := ctx.SeekFrame(v.stream, t, flags)
+
 	if err != nil {
 		return t, nil, err
 	}
@@ -366,9 +368,10 @@ func (v *Video) Play() {
 		}
 	}
 }
-func (v *Video) SetRender(r VideoRender) {
-	v.r = r
-}
+
+// func (v *Video) SetRender(r VideoRender) {
+// 	v.r = r
+// }
 func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 	packet := AVPacket{}
 	ctx := v.formatCtx

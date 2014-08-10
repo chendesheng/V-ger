@@ -46,8 +46,8 @@ func (app *appDelegate) OpenFile(filename string) bool {
 		if err == nil {
 			app.m.PlayAsync()
 		} else {
-			log.Print(err)
 			app.m = nil
+			log.Print(err)
 		}
 	}()
 
@@ -55,9 +55,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 }
 
 func (app *appDelegate) WillTerminate() {
-	app.Lock()
 	m := app.m
-	app.Unlock()
 
 	if m == nil {
 		return

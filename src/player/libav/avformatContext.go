@@ -178,14 +178,14 @@ func (ctx AVFormatContext) SeekFile(t time.Duration, flags int) error {
 	return nil
 }
 
-func (ctx AVFormatContext) Duration() uint64 {
+func (ctx AVFormatContext) duration() uint64 {
 	return uint64(ctx.ptr.duration)
 }
 
-func (ctx AVFormatContext) Duration2() time.Duration {
+func (ctx AVFormatContext) Duration() time.Duration {
 	var duration time.Duration
-	if ctx.Duration() != AV_NOPTS_VALUE {
-		duration = time.Duration(float64(ctx.Duration()) / AV_TIME_BASE * float64(time.Second))
+	if ctx.duration() != AV_NOPTS_VALUE {
+		duration = time.Duration(float64(ctx.duration()) / AV_TIME_BASE * float64(time.Second))
 	} else {
 		// duration = 2 * time.Hour
 		log.Fatal("Can't get video duration.")

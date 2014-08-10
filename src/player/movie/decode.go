@@ -86,11 +86,28 @@ func (m *Movie) decode(name string) {
 		}
 	}()
 
+	var start time.Duration
+	if m.p.LastPos > time.Second && m.p.LastPos < m.p.Duration-50*time.Millisecond {
+		var img []byte
+		start, img, _ = m.v.Seek(m.p.LastPos)
+
+		m.showProgressInner(start)
+		m.w.SendDrawImage(img)
+
+		if m.httpBuffer != nil && m.httpBuffer.WaitQuit(3*1024*1024, m.quit) {
+			return
+		}
+
+		m.w.SendHideSpinning()
+		m.w.SendSetSize(m.v.Width, m.v.Height)
+	}
+
 	m.startSeekRoutine()
 
 	packet := AVPacket{}
 	ctx := m.ctx
 
+	m.c.SetTime(start)
 	for {
 		// t := m.c.GetTime()
 		select {

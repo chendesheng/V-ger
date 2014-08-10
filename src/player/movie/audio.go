@@ -60,7 +60,7 @@ func (m *Movie) setupAudioMenu(selected int) {
 		m.w.InitAudioMenu(audioStreamNames, audioStreamIndexes, selected)
 	}
 }
-func (m *Movie) setupAudio() {
+func (m *Movie) setupAudio() error {
 	ctx := m.ctx
 
 	audioStreams := ctx.AudioStream()
@@ -79,11 +79,12 @@ func (m *Movie) setupAudio() {
 
 		err = m.a.Open(selectedStream)
 		if err != nil {
-			log.Print(err)
-			return
+			return err
 		}
 
 		m.setupAudioMenu(selected)
 	}
+
+	return nil
 
 }

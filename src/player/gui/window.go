@@ -48,6 +48,8 @@ type Window struct {
 	ChanShowMessage chan SubItemArg
 	ChanHideMessage chan uintptr
 
+	ChanDestoryRender chan struct{}
+
 	ChanShowProgress chan *PlayProgressInfo
 	ChanShowSpeed    chan *BufferInfo
 
@@ -107,6 +109,10 @@ func (w *Window) DestoryRender() {
 	}
 }
 
+func (w *Window) SendDestoryRender() {
+	w.ChanDestoryRender <- struct{}{}
+}
+
 func (w *Window) GetWindowSize() (int, int) {
 	return int(C.getWindowWidth(w.ptr)), int(C.getWindowHeight(w.ptr))
 }
@@ -151,10 +157,10 @@ func (w *Window) SetSize(width, height int) {
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
 	}
 
-	if w.render != nil {
-		log.Print("delete render")
-		w.render.delete()
-	}
+	// if w.render != nil {
+	// 	log.Print("delete render")
+	// 	w.render.delete()
+	// }
 
 	w.render = NewYUVRender(width, height)
 
@@ -211,6 +217,8 @@ func NewWindow(title string, width, height int) *Window {
 
 		ChanSetVolume:        make(chan byte),
 		ChanSetVolumeDisplay: make(chan bool),
+
+		ChanDestoryRender: make(chan struct{}),
 
 		originalWidth:  width,
 		originalHeight: height,
@@ -449,6 +457,7 @@ func (w *Window) HideSpinning() {
 	C.hideSpinning(w.ptr)
 }
 func (w *Window) SendShowSpinning() {
+	log.Print("SendShowSpinning:", w)
 	select {
 	case w.ChanShowSpinning <- true:
 	case <-time.After(50 * time.Millisecond):
@@ -499,6 +508,8 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 		if ok {
 			w.RefreshContent(img)
 		}
+	case <-w.ChanDestoryRender:
+		w.DestoryRender()
 	default:
 	}
 

@@ -161,6 +161,10 @@ func (m *Movie) uievents() {
 	chVolume := make(chan struct{})
 
 	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
+		if m.c == nil {
+			return
+		}
+
 		switch typ {
 		case 0:
 			select {
