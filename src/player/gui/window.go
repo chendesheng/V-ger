@@ -157,17 +157,12 @@ func (w *Window) SetSize(width, height int) {
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
 	}
 
-	// if w.render != nil {
-	// 	log.Print("delete render")
-	// 	w.render.delete()
-	// }
-
 	w.render = NewYUVRender(width, height)
 
 	w.originalWidth, w.originalHeight = width, height
 
 	if w.IsFullScreen() {
-		w.ToggleFullScreen()
+		return
 	}
 
 	sw, sh := GetScreenSize()
