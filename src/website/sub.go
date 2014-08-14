@@ -10,16 +10,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	"path"
-	"task"
-	"github.com/gorilla/websocket"
-
-	// "regexp"
-	"strings"
 	"subtitles"
+	"task"
 	"unicode/utf8"
 	"util"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket" // "regexp"
 )
 
 func subtitlesSearchHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,17 +26,19 @@ func subtitlesSearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
-	log.Printf("search subtitle for '%s'", movieName)
+	vars := mux.Vars(r)
+	movie := vars["movie"]
+
+	log.Printf("search subtitle for '%s'", movie)
 
 	result := make(chan subtitles.Subtitle)
 	var t *task.Task
 	var url string
-	if t, _ = task.GetTask(movieName); t != nil {
+	if t, _ = task.GetTask(movie); t != nil {
 		url = t.URL
 	}
 
-	var search = util.CleanMovieName(movieName)
+	var search = util.CleanMovieName(movie)
 	if t != nil && len(t.Subscribe) != 0 && t.Season > 0 {
 		search = fmt.Sprintf("%s s%2de%2d", t.Subscribe, t.Season, t.Episode)
 	}
@@ -53,7 +52,9 @@ func subtitlesSearchHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
-	movieName, _ := url.QueryUnescape(r.URL.String()[strings.LastIndex(r.URL.String(), "/")+1:])
+	vars := mux.Vars(r)
+	movie := vars["movie"]
+
 	input, _ := ioutil.ReadAll(r.Body)
 
 	arg := make(map[string]string)
@@ -75,7 +76,7 @@ func subtitlesDownloadHandler(w http.ResponseWriter, r *http.Request) {
 		name = arg["name"] + ".srt"
 	}
 
-	subFileDir := path.Join(util.ReadConfig("dir"), "subs", movieName)
+	subFileDir := path.Join(util.ReadConfig("dir"), "subs", movie)
 	err, _ = util.MakeSurePathExists(subFileDir)
 	if err != nil {
 		writeError(w, err)

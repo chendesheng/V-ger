@@ -289,7 +289,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				url.indexOf('googlevideo.com') != -1 ||
 				url.indexOf('baidupcs.com') != -1 ||
 				/.*dmg|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
-				$http.post('new/', url).success(function(resp) {
+				$http.post('new', url).success(function(resp) {
 					if (!resp) {
 						url = '';
 					}

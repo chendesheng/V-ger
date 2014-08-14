@@ -13,8 +13,6 @@ import (
 	"native"
 	"net/http"
 	_ "net/http/pprof"
-	"net/url"
-	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -23,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 	"subscribe"
+	"github.com/gorilla/mux"
 	// "code.google.com/p/go.net/websocket"
 
 	"github.com/gorilla/websocket"
@@ -58,7 +57,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func openHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[6:])
+	vars := mux.Vars(r)
+	name := vars["name"]
+
 	fmt.Printf("open \"%s\".\n", name)
 	// cmd := exec.Command("./player", fmt.Sprintf("-task=%s", name))
 	t, err := task.GetTask(name)
@@ -75,7 +76,9 @@ func openHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func trashHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[7:])
+	vars := mux.Vars(r)
+	name := vars["name"]
+
 	log.Printf("trash \"%s\".\n", name)
 	t, err := task.GetTask(name)
 	if err != nil {
@@ -115,7 +118,9 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resumeHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[8:])
+	vars := mux.Vars(r)
+	name := vars["name"]
+
 	fmt.Printf("resume download \"%s\".\n", name)
 
 	if err := task.ResumeTask(name); err != nil {
@@ -133,10 +138,8 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	name := ""
-	if len(r.URL.String()) > 4 {
-		name, _ = url.QueryUnescape(r.URL.String()[5:])
-	}
+	vars := mux.Vars(r)
+	name := vars["name"]
 
 	input, _ := ioutil.ReadAll(r.Body)
 
@@ -252,7 +255,9 @@ func thunderTorrentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func stopHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[6:])
+	vars := mux.Vars(r)
+	name := vars["name"]
+
 	fmt.Printf("stop download \"%s\".\n", name)
 
 	if err := task.StopTask(name); err != nil {
@@ -262,7 +267,8 @@ func stopHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("stop download finish")
 }
 func limitHandler(w http.ResponseWriter, r *http.Request) {
-	input, _ := url.QueryUnescape(r.URL.String()[7:])
+	vars := mux.Vars(r)
+	input := vars["speed"]
 	speed, _ := strconv.Atoi(string(input))
 	fmt.Printf("limit speed %dKB/s.\n", speed)
 
@@ -303,7 +309,6 @@ func configSimultaneousHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func setAutoShutdownHandler(w http.ResponseWriter, r *http.Request) {
-	// name, _ := url.QueryUnescape(r.URL.String()[14:])
 	input, _ := ioutil.ReadAll(r.Body)
 
 	util.SaveConfig("shutdown-after-finish", string(input))
@@ -363,18 +368,10 @@ func progressHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func assetsHandler(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println(r.URL.Path)
-	path := r.URL.Path[1:]
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		http.NotFound(w, r)
-	} else {
-		http.ServeFile(w, r, path)
-	}
-}
-
 func playHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[6:])
+	vars := mux.Vars(r)
+	name := vars["name"]
+
 	fmt.Printf("play \"%s\".\n", name)
 
 	playerPath := util.ReadConfig("video-player")
@@ -414,7 +411,9 @@ func writeJson(w io.Writer, obj interface{}) {
 	}
 }
 func videoHandler(w http.ResponseWriter, r *http.Request) {
-	name, _ := url.QueryUnescape(r.URL.String()[7:])
+	vars := mux.Vars(r)
+	name := vars["name"]
+
 	t, err := task.GetTask(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -529,22 +528,16 @@ func parseRange(s string, size int64) ([]httpRange, error) {
 	return ranges, nil
 }
 
-func cocoaTestHandler(w http.ResponseWriter, r *http.Request) {
-	action, _ := url.QueryUnescape(r.URL.String()[11:])
-	log.Printf("test %s", action)
-	switch action {
-	case "notification":
-		native.SendNotification("title", "infoText")
-		break
-	}
+type MyServer struct {
+	r *mux.Router
 }
 
-func wrapHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		fn(w, r)
-	}
+func (s MyServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	s.r.ServeHTTP(w, req)
 }
+
 func Run(isDebug bool) {
 	if !isDebug {
 		go Monitor()
@@ -555,45 +548,54 @@ func Run(isDebug bool) {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "assets/favicon.png")
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./index.html")
+	})
+	r.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./assets/favicon.png")
 	})
 
-	http.HandleFunc("/assets/", wrapHandler(assetsHandler))
+	r.HandleFunc("/open/{name}", openHandler)
 
-	http.HandleFunc("/", wrapHandler(viewHandler))
-	http.HandleFunc("/open/", wrapHandler(openHandler))
-	http.HandleFunc("/play/", wrapHandler(playHandler))
-	http.HandleFunc("/video/", wrapHandler(videoHandler))
-	http.HandleFunc("/resume/", wrapHandler(resumeHandler))
-	http.HandleFunc("/stop/", wrapHandler(stopHandler))
+	r.HandleFunc("/play/{name}", playHandler)
+	r.HandleFunc("/video/{name}", videoHandler)
+	r.HandleFunc("/resume/{name}", resumeHandler)
+	r.HandleFunc("/stop/{name}", stopHandler)
 
-	http.HandleFunc("/progress", wrapHandler(progressHandler))
+	r.HandleFunc("/progress", progressHandler)
 
-	http.HandleFunc("/new/", wrapHandler(newTaskHandler))
-	http.HandleFunc("/limit/", wrapHandler(limitHandler))
-	http.HandleFunc("/config", wrapHandler(configHandler))
-	http.HandleFunc("/config/simultaneous", wrapHandler(configSimultaneousHandler))
-	http.HandleFunc("/trash/", wrapHandler(trashHandler))
-	http.HandleFunc("/autoshutdown", wrapHandler(setAutoShutdownHandler))
-	// http.HandleFunc("/queue/", wrapHandler(queueHandler))
+	r.HandleFunc("/new/{name}", newTaskHandler)
+	r.HandleFunc("/new", newTaskHandler)
 
-	http.HandleFunc("/subscribe/new", wrapHandler(subscribeNewHandler))
-	http.HandleFunc("/subscribe", wrapHandler(subscribeHandler))
-	http.HandleFunc("/subscribe/banner/", wrapHandler(subscribeBannerHandler))
-	http.HandleFunc("/unsubscribe/", wrapHandler(unsubscribeHandler))
+	r.HandleFunc("/limit/{speed:[0-9]+}", limitHandler)
+	r.HandleFunc("/config", configHandler)
+	r.HandleFunc("/config/simultaneous", configSimultaneousHandler)
+	r.HandleFunc("/trash/{name}", trashHandler)
+	r.HandleFunc("/autoshutdown", setAutoShutdownHandler)
+	// http.HandleFunc("/queue/", queueHandler)
 
-	http.HandleFunc("/thunder/new", wrapHandler(thunderNewHandler))
-	http.HandleFunc("/thunder/torrent", wrapHandler(thunderTorrentHandler))
-	http.HandleFunc("/thunder/verifycode", wrapHandler(thunderVerifyCodeHandler))
-	http.HandleFunc("/thunder/verifycode/", wrapHandler(thunderVerifyCodeHandler))
+	r.HandleFunc("/subscribe/new", subscribeNewHandler)
+	r.HandleFunc("/subscribe", subscribeHandler)
+	r.HandleFunc("/subscribe/banner/{name}", subscribeBannerHandler)
+	r.HandleFunc("/unsubscribe/{name}", unsubscribeHandler)
 
-	http.Handle("/subtitles/search/", wrapHandler(subtitlesSearchHandler))
-	http.HandleFunc("/subtitles/download/", wrapHandler(subtitlesDownloadHandler))
+	r.HandleFunc("/thunder/new", thunderNewHandler)
+	r.HandleFunc("/thunder/torrent", thunderTorrentHandler)
+	r.HandleFunc("/thunder/verifycode", thunderVerifyCodeHandler)
+	r.HandleFunc("/thunder/verifycode/", thunderVerifyCodeHandler)
 
-	http.HandleFunc("/app/status", wrapHandler(appStatusHandler))
-	http.HandleFunc("/app/shutdown", wrapHandler(appShutdownHandler))
-	http.HandleFunc("/app/gc", wrapHandler(appGCHandler))
+	r.HandleFunc("/subtitles/search/{movie}", subtitlesSearchHandler)
+	r.HandleFunc("/subtitles/download/{movie}", subtitlesDownloadHandler)
+
+	r.HandleFunc("/app/status", appStatusHandler)
+	r.HandleFunc("/app/shutdown", appShutdownHandler)
+	r.HandleFunc("/app/gc", appGCHandler)
+
+	r.PathPrefix("/assets/").Handler(http.FileServer(http.Dir(".")))
+
+	http.Handle("/", MyServer{r})
 
 	server := util.ReadConfig("server")
 

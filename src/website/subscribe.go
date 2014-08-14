@@ -7,12 +7,13 @@ import (
 	"log"
 	"native"
 	"net/http"
-	"net/url"
 	"runtime/debug"
 	"subscribe"
 	"task"
 	"thunder"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,11 +67,9 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func subscribeBannerHandler(w http.ResponseWriter, r *http.Request) {
-	name := ""
-	if len(r.URL.String()) > 17 {
-		name, _ = url.QueryUnescape(r.URL.String()[18:])
-	}
-	println(name)
+	vars := mux.Vars(r)
+	name := vars["name"]
+
 	s := subscribe.GetSubscribe(name)
 	if s != nil {
 		bytes := subscribe.GetBannerImage(name)
@@ -125,10 +124,8 @@ func unsubscribeHandler(w http.ResponseWriter, r *http.Request) {
 			writeError(w, err)
 		}
 	}()
-	name := ""
-	if len(r.URL.String()) > 13 {
-		name, _ = url.QueryUnescape(r.URL.String()[13:])
-	}
+	vars := mux.Vars(r)
+	name := vars["name"]
 
 	log.Print("unsubscribe:", name)
 
