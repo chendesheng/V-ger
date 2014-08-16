@@ -176,7 +176,6 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 
 		ctx, filename, err = m.openHttp(file)
 		if err != nil {
-			err = fmt.Errorf("open failed: %s", file)
 			return
 		}
 	} else {
@@ -184,6 +183,7 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 
 		ctx = NewAVFormatContext()
 		if err = ctx.OpenInput(file); err != nil {
+			ctx.Close()
 			return
 		}
 	}
