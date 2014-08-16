@@ -160,6 +160,7 @@ func checkCache(s *subscribe.Subscribe, cachedlen int) (string, error) {
 	}
 }
 func updateOne(s *subscribe.Subscribe, cache map[string]int) {
+	// log.Print("update:", s.Name)
 	defer func() {
 		if r := recover(); r != nil {
 			log.Print("check " + s.Name)

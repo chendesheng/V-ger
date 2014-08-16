@@ -51,7 +51,7 @@ void setSubtitleMenuItem(int t1, int t2);
 
 void onDraw(void*);
 void onTimerTick(void*);
-void onKeyDown(void*, int);
+int onKeyDown(void*, int);
 void onMouseWheel(void*, double);
 void onProgressChanged(void* wptr, int typ, double position);
 void onFullscreenChanged(void* wptr, int b);

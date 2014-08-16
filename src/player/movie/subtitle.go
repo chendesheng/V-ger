@@ -165,18 +165,32 @@ func (m *Movie) getSubtitleSearch() (string, string) {
 	}
 	return search, url
 }
-
+func (m *Movie) ToggleSearchSubtitle() {
+	if m.subQuit != nil {
+		close(m.subQuit)
+		m.subQuit = nil
+		// m.w.SendHideMessage()
+	} else {
+		m.SearchDownloadSubtitle()
+	}
+}
 func (m *Movie) SearchDownloadSubtitle() {
+	quit := make(chan struct{})
+	m.subQuit = quit
+
 	w := m.w
 	w.SendShowMessage("Downloading subtitles...", false)
 
 	search, url := m.getSubtitleSearch()
-	downloadSubs(m.p.Movie, url, search, m.quit)
+	downloadSubs(m.p.Movie, url, search, quit)
 
 	select {
-	case <-m.quit:
+	case <-quit:
 		w.SendHideMessage()
 	default:
+		close(quit)
+		m.subQuit = nil
+
 		subs := GetSubtitlesMap(m.p.Movie)
 		if len(subs) == 0 {
 			w.SendShowMessage("No subtitle", true)

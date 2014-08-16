@@ -135,7 +135,9 @@
 }
 
 - (void)keyDown:(NSEvent *)event {
-    onKeyDown([self window], [event keyCode]);
+    if (!onKeyDown([self window], [event keyCode])) {
+        [super keyDown:event];
+    }
 }
 
 - (void)keyUp:(NSEvent *)event {

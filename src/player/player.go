@@ -80,10 +80,12 @@ func (app *appDelegate) WillTerminate() {
 	// 	return
 	// }
 }
-func (app *appDelegate) SearchSubtitleMenuItemClick() {
-	log.Print("SearchSubtitleMenuItemClick")
+func (app *appDelegate) ToggleSearchSubtitle() {
+	log.Print("ToggleSearchSubtitle")
 
-	go app.m.SearchDownloadSubtitle()
+	if app.m != nil {
+		go app.m.ToggleSearchSubtitle()
+	}
 }
 func (app *appDelegate) OnOpenOpenPanel() {
 	if app.m != nil {

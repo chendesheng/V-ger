@@ -32,7 +32,7 @@ type Window struct {
 	ptr unsafe.Pointer
 
 	FuncTimerTick           []func()
-	FuncKeyDown             []func(int)
+	FuncKeyDown             []func(int) bool
 	FuncOnFullscreenChanged []func(bool)
 	FuncOnProgressChanged   []func(int, float64)
 	FuncAudioMenuClicked    []func(int)
@@ -566,11 +566,21 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 }
 
 //export goOnKeyDown
-func goOnKeyDown(ptr unsafe.Pointer, keycode int) {
+func goOnKeyDown(ptr unsafe.Pointer, keycode int) C.int { //true if already handled
 	w := windows[ptr]
 
+	ret := false
 	for _, fn := range w.FuncKeyDown {
-		fn(keycode)
+		b := fn(keycode)
+		if b {
+			ret = true
+		}
+	}
+
+	if ret {
+		return 1
+	} else {
+		return 0
 	}
 }
 

@@ -30,6 +30,7 @@ type Movie struct {
 	movieSubs
 
 	quit        chan struct{}
+	subQuit     chan struct{}
 	finishClose chan bool
 
 	subs []*Subtitle
@@ -254,6 +255,10 @@ func (m *Movie) SavePlaying() {
 func (m *Movie) Close() {
 	// m.w.Destory()
 	m.w.ShowStartupView()
+
+	if m.subQuit != nil {
+		close(m.subQuit)
+	}
 
 	close(m.quit)
 

@@ -35,7 +35,7 @@ func (m *Movie) uievents() {
 	// var chPausing chan seekArg
 	// chPausing = nil
 	// var pausingTime time.Duration
-	m.w.FuncKeyDown = append(m.w.FuncKeyDown, func(keycode int) {
+	m.w.FuncKeyDown = append(m.w.FuncKeyDown, func(keycode int) bool {
 		SavePlayingAsync(m.p)
 
 		switch keycode {
@@ -153,7 +153,11 @@ func (m *Movie) uievents() {
 		case gui.KEY_PERIOD:
 			m.a.AddOffset(100 * time.Millisecond)
 			break
+		default:
+			return false
 		}
+
+		return true
 	})
 
 	chCursor := make(chan struct{})

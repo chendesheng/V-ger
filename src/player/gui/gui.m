@@ -33,7 +33,8 @@ void initialize() {
     id appMenu = [[NSMenu new] autorelease];
 
     NSMenuItem *searchSubtitleMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Search Subtitle"
-        action:@selector(searchSubtitleMenuItemClick:) keyEquivalent:@""] autorelease];
+        action:@selector(searchSubtitleMenuItemClick:) keyEquivalent:@"s"] autorelease];
+    [searchSubtitleMenuItem setKeyEquivalentModifierMask:0];
     [searchSubtitleMenuItem setTarget: appDelegate];
     [appMenu addItem:searchSubtitleMenuItem];
 

@@ -36,7 +36,7 @@ func goOnWillTerminate() {
 //export goOnSearchSubtitleMenuItemClick
 func goOnSearchSubtitleMenuItemClick() {
 	if appDelegate != nil {
-		appDelegate.SearchSubtitleMenuItemClick()
+		appDelegate.ToggleSearchSubtitle()
 	}
 }
 
@@ -60,7 +60,7 @@ type AppDelegate interface {
 	OnOpenOpenPanel()
 	OnCloseOpenPanel(filename string)
 	WillTerminate()
-	SearchSubtitleMenuItemClick()
+	ToggleSearchSubtitle()
 }
 
 var appDelegate AppDelegate

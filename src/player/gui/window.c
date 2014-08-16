@@ -8,8 +8,8 @@ void onTimerTick(void* wptr) {
 	goOnTimerTick(wptr);
 }
 
-void onKeyDown(void* wptr, int key) {
-	goOnKeyDown(wptr, key);
+int onKeyDown(void* wptr, int key) {
+	return goOnKeyDown(wptr, key);
 }
 
 void onProgressChanged(void* wptr, int typ, double position) {

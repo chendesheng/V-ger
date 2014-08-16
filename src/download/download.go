@@ -3,7 +3,6 @@ package download
 import (
 	"io/ioutil"
 	"log"
-	"net/http/httputil"
 	"toutf8"
 	// "bytes"
 	"fmt"
@@ -68,22 +67,29 @@ func GetDownloadInfoN(url string, header http.Header, retryTimes int, readBody b
 	}
 	defer resp.Body.Close()
 
-	if header != nil {
-		data, _ := httputil.DumpRequest(req, false)
-		log.Println(string(data))
-		data, _ = httputil.DumpResponse(resp, false)
-		log.Print(string(data))
-	}
-
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		err = fmt.Errorf("response status code: %d", resp.StatusCode)
 		return
 	}
 
 	if readBody {
+		finish := make(chan struct{})
+		defer close(finish)
+
+		go func() {
+			select {
+			case <-quit:
+				cancelRequest(req)
+				log.Printf("quit ioutil.ReadAll")
+				break
+			case <-finish:
+				break
+			}
+		}()
+
 		body, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Print(err)
+			return "", "", 0, nil, err
 		}
 	}
 
