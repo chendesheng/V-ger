@@ -80,9 +80,9 @@ func (sh *shooterSearch) search(result chan Subtitle) error {
 
 	resp, err := httpGet("http://www.shooter.cn/search/"+url.QueryEscape(sh.name), sh.quit)
 	if err != nil {
-		resp.Body.Close()
 		return err
 	}
+	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
 
