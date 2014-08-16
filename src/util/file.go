@@ -48,7 +48,7 @@ func GetFileSize(file string) int64 {
 	return 0
 }
 
-func WalkFiles(dir string, fn func(string), exts ...string) {
+func WalkFiles(dir string, fn func(string) error, exts ...string) {
 	f, err := os.Open(dir)
 	defer f.Close()
 
@@ -68,7 +68,9 @@ func WalkFiles(dir string, fn func(string), exts ...string) {
 		if file.IsDir() {
 			WalkFiles(path.Join(dir, name), fn, exts...)
 		} else if CheckExt(name, exts...) {
-			fn(path.Join(dir, name))
+			if err := fn(path.Join(dir, name)); err != nil {
+				return
+			}
 		}
 	}
 }

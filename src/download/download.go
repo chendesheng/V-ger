@@ -3,6 +3,7 @@ package download
 import (
 	"io/ioutil"
 	"log"
+	"net/http/httputil"
 	"toutf8"
 	// "bytes"
 	"fmt"
@@ -47,17 +48,32 @@ func fetchN(req *http.Request, n int, quit chan struct{}) (resp *http.Response, 
 }
 
 func GetDownloadInfo(url string, readBody bool) (finalUrl string, name string, size int64, body []byte, err error) {
-	return GetDownloadInfoN(url, 3, readBody, nil)
+	return GetDownloadInfoN(url, nil, 3, readBody, nil)
 }
 
-func GetDownloadInfoN(url string, retryTimes int, readBody bool, quit chan struct{}) (finalUrl string, name string, size int64, body []byte, err error) {
-	req := createDownloadRequest(url, -1, -1)
+func GetDownloadInfoN(url string, header http.Header, retryTimes int, readBody bool, quit chan struct{}) (finalUrl string, name string, size int64, body []byte, err error) {
+	log.Printf("header: %v %s", header, url)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", "", 0, nil, err
+	}
+	if header != nil {
+		req.Header = header
+	}
 
 	resp, err := fetchN(req, retryTimes, quit)
 	if err != nil {
 		return "", "", 0, nil, err
 	}
 	defer resp.Body.Close()
+
+	if header != nil {
+		data, _ := httputil.DumpRequest(req, false)
+		log.Println(string(data))
+		data, _ = httputil.DumpResponse(resp, false)
+		log.Print(string(data))
+	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		err = fmt.Errorf("response status code: %d", resp.StatusCode)

@@ -35,7 +35,7 @@ func extract(subFile string) {
 	log.Print(subFile)
 	util.Extract(unar, subFile)
 }
-func saveThunderSubtitle(subFile string, data []byte) {
+func saveToDisk(subFile string, data []byte) {
 	data = bytes.Replace(data, []byte{'+'}, []byte{' '}, -1)
 	//replace chinese space to ascii space
 	spaceBytes := make([]byte, 4)
@@ -63,7 +63,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 			log.Printf("%v", s)
 			// text, _ := json.Marshal(s)
 			// io.WriteString(ws, string(text))
-			_, subname, _, data, err := download.GetDownloadInfo(s.URL, true)
+			_, subname, _, data, err := download.GetDownloadInfoN(s.URL, s.Context, 3, true, quit)
 			if err != nil {
 				log.Print(err)
 				break
@@ -83,7 +83,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 
 				extract(subFile)
 			} else {
-				saveThunderSubtitle(subFile, data)
+				saveToDisk(subFile, data)
 			}
 		case <-quit:
 			return false
@@ -96,14 +96,19 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 
 	return true
 }
-func readSubtitlesFromDir(movieName, dir string) {
-	util.WalkFiles(dir, func(filename string) {
+func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
+	util.WalkFiles(dir, func(filename string) error {
 		log.Print(filename)
+		select {
+		case <-quit:
+			return fmt.Errorf("quit")
+		default:
+		}
 
 		f, err := os.OpenFile(filename, os.O_RDONLY, 0666)
 		if err != nil {
 			log.Print(err)
-			return
+			return nil //still continue
 		}
 
 		utf8Text, _, err := toutf8.ConverToUTF8(f)
@@ -111,6 +116,7 @@ func readSubtitlesFromDir(movieName, dir string) {
 			err := ioutil.WriteFile(filename, []byte(utf8Text), 0666)
 			if err != nil {
 				log.Print(err)
+				return nil
 			}
 
 			name := path.Base(filename)
@@ -121,6 +127,8 @@ func readSubtitlesFromDir(movieName, dir string) {
 		} else {
 			log.Print(err)
 		}
+
+		return nil
 	}, ".srt", ".ass")
 }
 func downloadSubs(movieName string, url string, search string, quit chan struct{}) {
@@ -130,7 +138,7 @@ func downloadSubs(movieName string, url string, search string, quit chan struct{
 		log.Print(err)
 	}
 
-	go subtitles.SearchSubtitlesMaxCount(search, url, chSubs, 2, quit)
+	go subtitles.SearchSubtitles(search, url, chSubs, quit)
 
 	dir := path.Join(util.ReadConfig("dir"), "subs", movieName)
 	err, _ = util.MakeSurePathExists(dir)
@@ -140,7 +148,7 @@ func downloadSubs(movieName string, url string, search string, quit chan struct{
 	}
 
 	if receiveAndExtractSubtitles(chSubs, dir, quit) {
-		readSubtitlesFromDir(movieName, dir)
+		readSubtitlesFromDir(movieName, dir, quit)
 	}
 }
 
@@ -164,18 +172,6 @@ func (m *Movie) SearchDownloadSubtitle() {
 
 	search, url := m.getSubtitleSearch()
 	downloadSubs(m.p.Movie, url, search, m.quit)
-
-	name, content := subtitles.Addic7edSubtitle(search)
-	if len(name) > 0 && len(content) > 0 {
-		sub := &Sub{
-			Movie:   m.p.Movie,
-			Name:    name,
-			Content: content,
-			Lang1:   "en", //aways English for now
-		}
-		log.Print("insert subtitle:", sub.Name)
-		InsertSubtitle(sub)
-	}
 
 	select {
 	case <-m.quit:

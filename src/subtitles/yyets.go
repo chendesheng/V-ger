@@ -1,7 +1,7 @@
 package subtitles
 
 import (
-	"net/http"
+	"log"
 	"net/url"
 	"regexp"
 	"strings"
@@ -27,8 +27,17 @@ func yyetsParseSub(n *html.Node) Subtitle {
 	sub.Source = "YYets"
 	return sub
 }
-func yyetsSearchSubtitles(name string, result chan Subtitle, quit chan struct{}) error {
-	resp, err := http.Get("http://www.yyets.com/search/index?type=subtitle&order=uptime&keyword=" + url.QueryEscape(name))
+
+type yyetsSearch struct {
+	name   string
+	maxcnt int
+	quit   chan struct{}
+}
+
+func (y *yyetsSearch) search(result chan Subtitle) error {
+	log.Printf("YYets search subtitle: %s %d", y.name, y.maxcnt)
+
+	resp, err := httpGet("http://www.yyets.com/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
 	if err != nil {
 		return err
 	}
@@ -47,15 +56,13 @@ func yyetsSearchSubtitles(name string, result chan Subtitle, quit chan struct{})
 			if hasClass(n, "allsearch") {
 				for _, c := range getTag(n, "li")[1:] { //skip first item, first item is ad
 					s := yyetsParseSub(c)
-					// log.Printf("%v", s)
-					select {
-					case result <- s:
-						break
-					case <-quit:
-						return
-					}
 
-					if count++; count > 10 {
+					select {
+					case <-y.quit:
+						return
+					case result <- s:
+					}
+					if count++; count >= y.maxcnt {
 						return
 					}
 				}

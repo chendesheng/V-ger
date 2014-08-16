@@ -39,13 +39,20 @@ func getSubDesc(n *html.Node) string {
 
 	return desc
 }
-func getSub(n *html.Node) (Subtitle, error) {
+
+type shooterSearch struct {
+	name   string
+	maxcnt int
+	quit   chan struct{}
+}
+
+func (sh *shooterSearch) getSub(n *html.Node) (Subtitle, error) {
 	sub := Subtitle{}
 
 	a := getClass1(getClass1(getClass1(n, "sublist_box_title"), "sublist_box_title_l"), "introtitle")
 
 	var err error
-	sub.URL, err = getDownloadUrl(getAttr(a, "href"))
+	sub.URL, err = sh.getDownloadUrl(getAttr(a, "href"))
 	if err != nil {
 		return sub, err
 	}
@@ -55,7 +62,10 @@ func getSub(n *html.Node) (Subtitle, error) {
 
 	return sub, nil
 }
-func shooterSearch(name string, result chan Subtitle, quit chan struct{}) (err error) {
+
+func (sh *shooterSearch) search(result chan Subtitle) error {
+	log.Printf("Shooter search subtitle: %s %d", sh.name, sh.maxcnt)
+
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -68,34 +78,32 @@ func shooterSearch(name string, result chan Subtitle, quit chan struct{}) (err e
 
 	loadmain = ""
 
-	resp, err := http.Get("http://www.shooter.cn/search/" + url.QueryEscape(name))
+	resp, err := httpGet("http://www.shooter.cn/search/"+url.QueryEscape(sh.name), sh.quit)
 	if err != nil {
+		resp.Body.Close()
 		return err
 	}
-	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
 
 	if err != nil {
 		return err
 	}
+
 	count := 0
 	var f func(*html.Node)
 	f = func(n *html.Node) {
 		if n.Data == "div" {
 			if hasId(n, "resultsdiv") {
 				for _, c := range getClass(n, "subitem") {
-					s, err := getSub(c)
+					s, err := sh.getSub(c)
 					if err == nil {
-						// log.Printf("%v", s)
 						select {
-						case result <- s:
-							break
-						case <-quit:
+						case <-sh.quit:
 							return
+						case result <- s:
 						}
-
-						if count++; count > 10 {
+						if count++; count >= sh.maxcnt {
 							return
 						}
 					} else {
@@ -232,12 +240,12 @@ func decryptUrl(encryptedUrl string) string {
 
 var loadmain string
 
-func getDownloadUrl(webPageURL string) (string, error) {
+func (sh shooterSearch) getDownloadUrl(webPageURL string) (string, error) {
 	webPageURL = "http://www.shooter.cn" + webPageURL
 
 	getSubId(webPageURL)
 
-	pageHtml, err := sendGet(webPageURL, nil)
+	pageHtml, err := sendGet(webPageURL, nil, sh.quit)
 	if err != nil {
 		return "", err
 	}
@@ -245,7 +253,7 @@ func getDownloadUrl(webPageURL string) (string, error) {
 
 	if loadmain == "" {
 		var err error
-		loadmain, err = sendGet("http://www.shooter.cn/a/loadmain.js", nil)
+		loadmain, err = sendGet("http://www.shooter.cn/a/loadmain.js", nil, sh.quit)
 		if err != nil {
 			return "", err
 		}
@@ -253,7 +261,7 @@ func getDownloadUrl(webPageURL string) (string, error) {
 
 	hash := getHash(loadmain)
 
-	encryptedUrl, err := sendGet(fmt.Sprintf("http://www.shooter.cn/files/file3.php?hash=%s&fileid=%s", hash, fileId), nil)
+	encryptedUrl, err := sendGet(fmt.Sprintf("http://www.shooter.cn/files/file3.php?hash=%s&fileid=%s", hash, fileId), nil, sh.quit)
 	if err != nil {
 		return "", err
 	}

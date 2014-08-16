@@ -1,10 +1,8 @@
 package subtitles
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
 	"runtime/debug"
 	"github.com/peterbourgon/html"
 	// "net/http/cookiejar"
@@ -12,43 +10,49 @@ import (
 	"net/url"
 )
 
-func Addic7edSubtitle(keywords string) (name string, content string) {
+// func Addic7edSubtitle(keywords string, quit chan struct{}) (name string, content string) {
+
+// 	a := addic7ed{}
+// 	a.quit = quit
+// 	a.search()
+
+// 	return a.downloadSubtitle()
+// }
+
+type addic7ed struct {
+	name string
+	quit chan struct{}
+}
+
+func cancelRequest(req *http.Request) {
+	http.DefaultTransport.(*http.Transport).CancelRequest(req)
+}
+
+func (a *addic7ed) search(result chan Subtitle) error {
+	log.Printf("Addic7ed search subtitle: %s", a.name)
+
 	defer func() {
 		r := recover()
 		if r != nil {
 			log.Print(r)
 			log.Print(string(debug.Stack()))
-
-			name = ""
-			content = ""
 		}
 	}()
-	a := addic7ed{}
-	a.search(keywords)
 
-	return a.downloadSubtitle()
-}
-
-type addic7ed struct {
-	searchResultPage string
-	subtitleHref     string
-}
-
-func (a *addic7ed) search(keywords string) {
 	params := url.Values{
-		"search": {keywords},
+		"search": {a.name},
 		"Submit": {"Search"},
 	}
 
-	resp, err := http.Get("http://www.addic7ed.com/search.php?" + params.Encode())
+	resp, err := httpGet("http://www.addic7ed.com/search.php?"+params.Encode(), a.quit)
 	if err != nil {
-		println(err)
-		return
+		return nil
 	}
 
 	defer resp.Body.Close()
 
-	a.searchResultPage = resp.Request.URL.String()
+	searchResultPage := resp.Request.URL.String()
+
 	doc, err := html.Parse(resp.Body)
 
 	if err != nil {
@@ -60,7 +64,12 @@ func (a *addic7ed) search(keywords string) {
 			for _, c := range getTag(getTag(n, "center")[1], "div") {
 				if hasId(c, "container95m") {
 					if ok, href := a.parseItem(c); ok {
-						a.subtitleHref = href
+						u, _ := url.Parse(searchResultPage)
+						uhref, _ := url.Parse(href)
+						url := u.ResolveReference(uhref).String()
+						header := http.Header{}
+						header.Add("Referer", searchResultPage)
+						result <- Subtitle{url, "", "Addic7ed", header}
 						return
 					}
 				}
@@ -73,6 +82,10 @@ func (a *addic7ed) search(keywords string) {
 		}
 	}
 	f(doc)
+
+	// name, content := downloadSubtitle(searchResultPage, subtitleHref)
+	// result <- Subtitle{string(content), name, "Addic7ed"}
+	return nil
 }
 
 func (a *addic7ed) parseItem(n *html.Node) (bool, string) {
@@ -87,44 +100,4 @@ func (a *addic7ed) parseItem(n *html.Node) (bool, string) {
 	}
 
 	return false, ""
-}
-
-func (a *addic7ed) downloadSubtitle() (string, string) {
-	u, _ := url.Parse(a.searchResultPage)
-	// println(u)
-	uhref, _ := url.Parse(a.subtitleHref)
-	subtitleUrl := u.ResolveReference(uhref)
-
-	log.Print("subtitle url:", subtitleUrl.String())
-
-	req, _ := http.NewRequest("GET", subtitleUrl.String(), nil)
-	req.Header.Add("Referer", a.searchResultPage)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Print(err)
-		return "", ""
-	}
-	defer resp.Body.Close()
-	// data, _ := httputil.DumpResponse(resp, true)
-	// println(string(data))
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Print(err)
-		return "", ""
-	}
-
-	name := ""
-
-	contentDisposition := resp.Header["Content-Disposition"] //[0]
-	if len(contentDisposition) == 0 {
-		return "", ""
-	}
-
-	regexFile := regexp.MustCompile(`filename="?([^"]+)"?`)
-
-	if match := regexFile.FindStringSubmatch(contentDisposition[0]); len(match) > 1 {
-		name = match[1]
-	}
-
-	return name, string(data)
 }

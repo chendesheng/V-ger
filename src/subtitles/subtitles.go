@@ -1,43 +1,74 @@
 package subtitles
 
 import (
-	"time"
+	"sync"
+
 	// "fmt"
 	// "io"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"runtime/debug"
-	"strings"
+
 	// "os"
 )
+
+type subSearcher interface {
+	search(chan Subtitle) error
+}
 
 type Subtitle struct {
 	URL         string
 	Description string
 	Source      string
+	Context     http.Header
 }
 
 func (s *Subtitle) String() string {
 	return s.Description
 }
 
-func sendGet(url string, params *url.Values) (string, error) {
+func httpGet(url string, quit chan struct{}) (*http.Response, error) {
+	finish := make(chan error)
+	defer close(finish)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		select {
+		case <-quit:
+			cancelRequest(req)
+		case <-finish:
+		}
+	}()
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func sendGet(url string, params *url.Values, quit chan struct{}) (string, error) {
 	if params != nil {
 		url = url + "?" + params.Encode()
 	}
-	resp, err := http.Get(url)
+	resp, err := httpGet(url, quit)
 	if err != nil {
 		return "", err
 	}
 
-	text := readBody(resp)
-	return text, nil
+	return readBody(resp.Body), nil
 }
-func readBody(resp *http.Response) string {
-	defer resp.Body.Close()
-	bytes, err := ioutil.ReadAll(resp.Body)
+
+func readBody(body io.ReadCloser) string {
+	defer body.Close()
+	bytes, err := ioutil.ReadAll(body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,157 +78,23 @@ func readBody(resp *http.Response) string {
 }
 
 func SearchSubtitles(name string, url string, result chan Subtitle, quit chan struct{}) {
-	yyetsFinish := make(chan bool)
-	go func() {
-		err := yyetsSearchSubtitles(name, result, quit)
-		if err != nil {
-			log.Println(err)
-		}
-		close(yyetsFinish)
-	}()
+	searchers := []subSearcher{
+		&yyetsSearch{name, 1, quit},
+		&shooterSearch{name, 2, quit},
+		&kankanSearch{url, quit},
+		&addic7ed{name, quit},
+	}
 
-	shooterFinish := make(chan bool)
-	go func() {
-		err := shooterSearch(name, result, quit)
-		if err != nil {
-			log.Println(err)
-		}
-		close(shooterFinish)
-	}()
-
-	if len(url) > 0 && strings.Contains(url, "gdl.lixian.vip.xunlei.com") {
-		kankanFinish := make(chan bool)
-		go func() {
-			defer close(kankanFinish)
-			defer func() {
-				r := recover()
-				if r != nil {
-					log.Print(r.(error))
-				}
-			}()
-
-			err := kankanSearch(url, result, quit)
-			if err != nil {
+	w := sync.WaitGroup{}
+	w.Add(len(searchers))
+	for _, s := range searchers {
+		go func(s subSearcher) {
+			if err := s.search(result); err != nil {
 				log.Print(err)
 			}
-
-		}()
-
-		<-kankanFinish
+			w.Done()
+		}(s)
 	}
-
-	<-yyetsFinish
-	<-shooterFinish
-
-	println("search subtitle finish")
+	w.Wait()
 	close(result)
-}
-
-func SearchSubtitlesMaxCount(name string, url string, result chan Subtitle, maxcnt int, quit chan struct{}) {
-	yyetsRes := make(chan Subtitle)
-	yyetsQuit := make(chan struct{})
-	yyetsCnt := 0
-	go func() {
-		err := yyetsSearchSubtitles(name, yyetsRes, yyetsQuit)
-		if err != nil {
-			log.Println(err)
-		}
-		close(yyetsRes)
-	}()
-
-	shooterRes := make(chan Subtitle)
-	shooterQuit := make(chan struct{})
-	shooterCnt := 0
-	go func() {
-		err := shooterSearch(name, shooterRes, shooterQuit)
-		if err != nil {
-			log.Println(err)
-		}
-		close(shooterRes)
-	}()
-
-	kankanFinish := make(chan bool)
-	if len(url) > 0 && strings.Contains(url, "gdl.lixian.vip.xunlei.com") {
-		go func() {
-			defer close(kankanFinish)
-			defer func() {
-				r := recover()
-				if r != nil {
-					log.Print(r)
-					log.Print(string(debug.Stack()))
-				}
-			}()
-
-			err := kankanSearch(url, result, quit)
-			if err != nil {
-				log.Print(err)
-			}
-			log.Print("kankan search finished")
-		}()
-	} else {
-		close(kankanFinish)
-	}
-
-	yyetsOK, shoooterOK := true, true
-	// var s Subtitle
-	for yyetsOK || shoooterOK {
-		select {
-		case s, ok := <-yyetsRes:
-			if ok && yyetsOK {
-				yyetsCnt++
-				if yyetsCnt < maxcnt {
-					println("yyets:", s.Description)
-					result <- s
-				} else {
-					close(yyetsQuit)
-					yyetsOK = false
-				}
-			} else {
-				yyetsOK = false
-			}
-			break
-		case s, ok := <-shooterRes:
-			if ok && shoooterOK {
-				shooterCnt++
-				if shooterCnt < maxcnt {
-					println("shooter:", s.Description)
-					result <- s
-				} else {
-					close(shooterQuit)
-					shoooterOK = false
-				}
-			} else {
-				shoooterOK = false
-			}
-			break
-		case <-quit:
-			close(result)
-			return
-		}
-
-		time.Sleep(20 * time.Millisecond)
-	}
-
-	<-kankanFinish
-	close(result)
-}
-func QuickDownload(url string) ([]byte, error) {
-	resp, err := http.Get(url)
-	// bytes, err := httputil.DumpResponse(resp, false)
-	// fmt.Println(string(bytes))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	// print(len(data))
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	// fmt.Println(data)
-
-	return data, err
 }
