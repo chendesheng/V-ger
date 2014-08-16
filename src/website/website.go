@@ -374,13 +374,15 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("play \"%s\".\n", name)
 
-	playerPath := util.ReadConfig("video-player")
+	// playerPath := util.ReadConfig("video-player")
 	t, err := task.GetTask(name)
 	if err != nil {
 		writeError(w, err)
 		return
 	}
-	cmd := exec.Command("open", playerPath, "--args", t.URL)
+
+	fmt.Printf("open %s", fmt.Sprintf("vgerplayer://%s", t.URL))
+	cmd := exec.Command("open", fmt.Sprintf("vgerplayer://%s", t.URL)) //playerPath, "--args", t.URL)
 
 	// config := util.ReadAllConfigs()
 	// playerPath := config["video-player"]

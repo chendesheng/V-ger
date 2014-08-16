@@ -3,13 +3,9 @@
 
 @implementation Application
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
-     NSLog(@"doOpen filename = %@",filename);
+     NSLog(@"application openFile: %@",filename);
 	const char *cfilename = [filename UTF8String];
 	return onOpenFile(cfilename) == 1;
-}
-- (void)applicationWillTerminate:(NSNotification *)aNotification {
-	NSLog(@"applicationWillTerminate");
-	onWillTerminate();
 }
 
 -(void)searchSubtitleMenuItemClick:(id)sender {
@@ -33,5 +29,12 @@
      //      onCloseOpenPanel("");
      // 	return;
      // }
+}
+- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+     const char *cstr = [[urlString substringFromIndex:13] UTF8String];
+     if (onOpenFile(cstr) != 1) {
+          //
+     }
 }
 @end

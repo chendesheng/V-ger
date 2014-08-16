@@ -389,6 +389,20 @@
 		</dict>
 	</array>
 
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>vger player url</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>vgerplayer</string>
+			</array>
+		</dict>
+	</array>
+
 	<key>BuildMachineOSBuild</key>
 	<string>12F37</string>
 	<key>CFBundleDevelopmentRegion</key>

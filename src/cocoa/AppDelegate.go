@@ -85,10 +85,10 @@ func (delegate *AppDelegate) DidActivateNotification(center objc.Object, notific
 		cmd.Start()
 	} else if strings.Contains(title, "new episode") {
 		name := noti.InformativeText()
-		player := util.ReadConfig("video-player")
+		// player := util.ReadConfig("video-player")
 
 		if t, err := task.GetTask(name); err == nil {
-			cmd := exec.Command("open", player, "--args", t.URL)
+			cmd := exec.Command("open", fmt.Sprintf("vgerplayer://%s", t.URL))
 			cmd.Start()
 		} else {
 			log.Print(err)

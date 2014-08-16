@@ -50,6 +50,8 @@ void initialize() {
 
 
     [appMenuItem setSubmenu:appMenu];
+
+    [[NSAppleEventManager sharedAppleEventManager] setEventHandler:appDelegate andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 NSMenuItem* getTopMenuByTitle(NSString* title) {
     NSMenu* menubar = [NSApp mainMenu];
