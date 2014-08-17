@@ -30,6 +30,10 @@ func (s *SubItem) IsEmpty() bool {
 	return len(s.Content) == 0 //|| (s.To-s.From) < 100*time.Millisecond
 }
 
+func (s *SubItem) Contains(t time.Duration) bool {
+	return s.From <= t && t <= s.To
+}
+
 type Sub struct {
 	Movie   string
 	Name    string

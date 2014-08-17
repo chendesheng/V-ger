@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	_ "net/http/pprof"
-	. "player/shared"
+	// . "player/shared"
 	"time"
 
 	// "fmt"

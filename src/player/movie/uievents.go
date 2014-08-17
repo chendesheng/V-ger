@@ -258,7 +258,7 @@ func (m *Movie) uievents() {
 				ps1.Stop()
 				if ps2 != nil {
 					s1 = ps2
-					s1.IsMainOrSecondSub = true
+					s1.IsMainSub = true
 
 					m.p.Sub1 = s1.Name
 					m.p.Sub2 = ""
@@ -295,7 +295,7 @@ func (m *Movie) uievents() {
 				if s1 != ps1 {
 					ps1.Stop()
 
-					s1.IsMainOrSecondSub = true
+					s1.IsMainSub = true
 					// go s1.Play()
 
 					m.p.Sub1 = s1.Name
@@ -307,7 +307,7 @@ func (m *Movie) uievents() {
 							ps2.Stop()
 						}
 
-						s2.IsMainOrSecondSub = false
+						s2.IsMainSub = false
 						// go s2.Play()
 
 						m.p.Sub2 = s2.Name

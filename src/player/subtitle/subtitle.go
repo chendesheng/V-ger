@@ -29,7 +29,7 @@ type Subtitle struct {
 	sync.Mutex
 
 	r     SubRender
-	items []*SubItem
+	items *subItems
 
 	c *Clock
 
@@ -47,7 +47,7 @@ type Subtitle struct {
 
 	Name string
 
-	IsMainOrSecondSub bool
+	IsMainSub bool
 
 	Lang1 string //one subtitle file may has double languages
 	Lang2 string
@@ -55,6 +55,8 @@ type Subtitle struct {
 	Format string
 
 	chanRes chan SubItemExtra
+
+	displayed []*SubItem
 }
 
 type displayingItem struct {
@@ -66,34 +68,45 @@ func (s *Subtitle) Seek(t time.Duration, refersh bool) {
 	s.Lock()
 	defer s.Unlock()
 
+	t -= s.offset
+
 	if s.chanRes == nil {
 		s.chanRes = make(chan SubItemExtra, 20)
 		go func() {
 			for arg := range s.chanRes {
 				s.Lock()
-				s.items[arg.Id].Handle = arg.Handle
+
+				item := s.items.getById(arg.Id)
+				item.Handle = arg.Handle
+				s.displayed = append(s.displayed, item)
+
 				s.Unlock()
 			}
 		}()
 	}
 
-	for i, item := range s.items {
-		if refersh || !s.checkPos(i, t) {
-			if item.Handle != 0 && item.Handle != 1 {
-				// log.Print(t.String(), "hide sub: ", item.Id, item.Content[0].Content)
-				s.hideSubItem(*item)
-				item.Handle = 0
+	if refersh {
+		s.hideAll()
+	} else {
+		for i := len(s.displayed) - 1; i >= 0; i-- {
+			item := s.displayed[i]
+
+			if !item.Contains(t) {
+				s.hideSubItem(item)
+
+				if i == len(s.displayed)-1 {
+					s.displayed = s.displayed[:i]
+				} else {
+					copy(s.displayed[i:], s.displayed[i+1:])
+				}
 			}
 		}
 	}
 
-	for i, item := range s.items {
-		if s.checkPos(i, t) {
-			if item.Handle == 0 {
-				// log.Print(t.String(), "show sub: ", item.Id, item.Content[0].Content)
-				s.showSubitem(*item)
-				item.Handle = 1
-			}
+	for _, item := range s.items.get(t) {
+		if item.Handle == 0 {
+			s.showSubitem(*item)
+			item.Handle = 1
 		}
 	}
 }
@@ -102,92 +115,72 @@ func (s *Subtitle) Stop() {
 	s.Lock()
 	defer s.Unlock()
 
-	for _, item := range s.items {
-		if item.Handle != 0 {
-			s.hideSubItem(*item)
-			item.Handle = 0
-		}
+	s.hideAll()
+}
+
+func (s *Subtitle) hideAll() {
+	for _, item := range s.displayed {
+		s.hideSubItem(item)
 	}
-}
-
-func (s *Subtitle) calcFromTo(pos int) (time.Duration, time.Duration) {
-	item := s.items[pos]
-	return item.From + s.offset, item.To + s.offset
-}
-
-func (s *Subtitle) calcFrom(pos int) time.Duration {
-	item := s.items[pos]
-	return item.From + s.offset
+	s.displayed = nil
 }
 
 func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
-	if pos >= len(s.items) || pos < 0 {
+	item := s.items.getById(pos)
+	if item == nil {
 		return false
+	} else {
+		return item.Contains(t)
 	}
-
-	from, to := s.calcFromTo(pos)
-	// log.Print("check pos:", pos, t.String(), from.String(), to.String())
-	return t >= from && t < to
 }
 
 func (s *Subtitle) showSubitem(item SubItem) {
-	if !s.IsMainOrSecondSub && item.PositionType != 10 {
-		if (item.PositionType != 2) || (item.X >= 0) || (item.Y >= 0) {
-			return
-		} else {
+	if !s.IsMainSub && item.PositionType != 10 {
+		if item.IsInDefaultPosition() {
 			item.PositionType = 10
+		} else {
+			return
 		}
 	}
 	arg := SubItemArg{item, false, s.chanRes}
 	go s.r.SendShowText(arg)
 }
-func (s *Subtitle) hideSubItem(item SubItem) {
-	if item.Handle != 0 && item.Handle != 1 {
-		go s.r.SendHideText(SubItemArg{item, false, nil})
-	}
+func (s *Subtitle) hideSubItem(item *SubItem) {
+	go s.r.SendHideText(SubItemArg{*item, false, nil})
+	item.Handle = 0
 }
 
-func (s *Subtitle) findPos(t time.Duration) int {
-	for i := 0; i < len(s.items); i++ {
-		from, to := s.calcFromTo(i)
-		if t < to {
-			if t >= from {
-				return i
-			} else {
-				return i
-			}
-		}
-	}
-
-	return 1 << 31
-}
-
-func detectLanguage(items []*SubItem) (string, string) {
+func detectLanguage(si *subItems) (string, string) {
 	content := ""
-	for _, item := range items {
+	si.each(func(item *SubItem) {
 		for _, attrStr := range item.Content {
 			content += attrStr.Content
 		}
-	}
+	})
 
 	return language.DetectLanguages(content)
 }
 
-func simplized(items []*SubItem) {
-	for _, item := range items {
+func simplized(si *subItems) {
+	si.each(func(item *SubItem) {
 		for i, attrStr := range item.Content {
 			item.Content[i].Content = language.Simplized(attrStr.Content)
 		}
-	}
+	})
 }
 
 func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtitle {
-	var err error
-	// sub := GetSubtitle(file)
 	if sub == nil {
 		return nil
 	}
 	s := &Subtitle{}
+
+	err := s.parse(sub, width, height)
+	if err != nil {
+		log.Print(err)
+		return nil
+	}
+
 	s.c = c
 	s.offset = sub.Offset
 	s.ChanSeek = make(chan time.Duration)
@@ -196,20 +189,11 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	s.chanStop = make(chan bool)
 	s.chanGetSubTime = make(chan subTimeArg)
 	s.Name = sub.Name
-	s.IsMainOrSecondSub = true
+	s.IsMainSub = true
 	s.Lang1 = sub.Lang1
 	s.Lang2 = sub.Lang2
 
 	s.Format = sub.Type
-	if s.Format == "ass" {
-		s.items, err = ass.Parse(strings.NewReader(sub.Content), width, height)
-	} else {
-		s.items, err = srt.Parse(strings.NewReader(sub.Content), width, height)
-	}
-
-	for i, _ := range s.items {
-		s.items[i].Id = i
-	}
 
 	if len(sub.Lang1) == 0 && len(sub.Lang2) == 0 {
 		s.Lang1, s.Lang2 = detectLanguage(s.items)
@@ -218,16 +202,31 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 
 	simplized(s.items)
 
-	if err != nil {
-		log.Print(err)
-		return nil
-	}
-
 	s.quit = make(chan bool)
 	s.r = r
 
-	log.Printf("parse sub:%s; %d items", sub.Name, len(s.items))
+	log.Printf("parse sub:%s; %d items", sub.Name, len(s.items.nooverlap))
 	return s
+}
+
+func (s *Subtitle) parse(sub *Sub, width, height float64) error {
+	var items []*SubItem
+	var err error
+
+	if s.Format == "ass" {
+		items, err = ass.Parse(strings.NewReader(sub.Content), width, height)
+		if err != nil {
+			return err
+		}
+	} else {
+		items, err = srt.Parse(strings.NewReader(sub.Content), width, height)
+		if err != nil {
+			return err
+		}
+	}
+
+	s.items = newSubItems(items)
+	return nil
 }
 
 func (s *Subtitle) AddOffset(d time.Duration) time.Duration {
@@ -242,39 +241,18 @@ func (s *Subtitle) GetSubtime(t time.Duration, offset int) time.Duration {
 	s.Lock()
 	defer s.Unlock()
 
-	pos := s.findPos(t)
-	if pos >= len(s.items) {
-		return 0
-	}
+	t -= s.offset
 
-	if offset < 0 && s.calcFrom(pos) > t {
-		pos--
-	}
-
-	for s.checkPos(pos, t) {
+	pos, ok := s.items.findPos(t)
+	if ok || offset > 0 {
 		pos += offset
 	}
 
-	for {
-		if pos < 0 {
-			pos = 0
-			break
-		}
-		if pos >= len(s.items) {
-			pos = len(s.items) - 1
-			break
-		}
-
-		item := s.items[pos]
-		if !item.IsInDefaultPosition() {
-			pos += offset
-
-		} else {
-			break
-		}
+	if item := s.items.getById(pos); item != nil {
+		return item.From
+	} else {
+		return 0
 	}
-
-	return s.calcFrom(pos)
 }
 
 func (s *Subtitle) IsTwoLangs() bool {
