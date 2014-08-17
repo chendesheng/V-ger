@@ -439,6 +439,25 @@ func TestReplaceBreakline(t *testing.T) {
 	}
 }
 
+func TestEmptyBetweenLinebreaks(t *testing.T) {
+	text := `38
+00:06:11,610 --> 00:06:15,580
+Let me see your hands.Let me see your fucking hands.
+举起手来！举起手来！
+Where is my daughter? You...
+我女儿在哪儿，你这混...
+ 	
+ 	   
+39
+00:06:24,110 --> 00:06:26,620
+疯了。
+Jesus.`
+	items, _ := Parse(strings.NewReader(text), 384, 303)
+	if len(items) != 2 {
+		t.Errorf("expect 2 items but %d", len(items))
+	}
+}
+
 func printSubs(subs []*shared.SubItem) {
 	for _, s := range subs {
 		for _, c := range s.Content {
