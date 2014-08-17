@@ -1,6 +1,7 @@
 package subtitle
 
 import (
+	"sync"
 	// "io/ioutil"
 	// "cld"
 	"log"
@@ -25,6 +26,8 @@ type subTimeArg struct {
 }
 
 type Subtitle struct {
+	sync.Mutex
+
 	r     SubRender
 	items []*SubItem
 
@@ -50,6 +53,8 @@ type Subtitle struct {
 	Lang2 string
 
 	Format string
+
+	chanRes chan SubItemExtra
 }
 
 type displayingItem struct {
@@ -57,93 +62,21 @@ type displayingItem struct {
 	handle uintptr
 }
 
-func (s *Subtitle) printSub(pos int) {
-	if pos >= len(s.items) {
-		return
+func (s *Subtitle) Seek(t time.Duration, refersh bool) {
+	s.Lock()
+	defer s.Unlock()
+
+	if s.chanRes == nil {
+		s.chanRes = make(chan SubItemExtra, 20)
+		go func() {
+			for arg := range s.chanRes {
+				s.Lock()
+				s.items[arg.Id].Handle = arg.Handle
+				s.Unlock()
+			}
+		}()
 	}
 
-	item := s.items[pos]
-	content := ""
-	if len(item.Content) > 0 {
-		content = item.Content[0].Content
-	}
-
-	log.Printf("%d:%s", pos, content)
-}
-
-func (s *Subtitle) Play() {
-	for i, _ := range s.items {
-		s.items[i].Id = i
-	}
-
-	chRes := make(chan SubItemExtra, 20)
-	for {
-		select {
-		case arg := <-chRes:
-			// log.Print("res from show:", arg.Id, arg.Handle)
-			s.items[arg.Id].Handle = arg.Handle
-			break
-		case arg := <-s.ChanOffset:
-			s.offset += arg.d
-			arg.res <- s.offset
-			break
-		case arg := <-s.chanGetSubTime:
-			pos, _ := s.findPos(arg.t)
-			if pos >= len(s.items) {
-				arg.res <- 0
-				break
-			}
-
-			if arg.offset < 0 && s.calcFrom(pos) > arg.t {
-				pos--
-			}
-
-			// pos += arg.offset
-			// log.Print("pos:", pos)
-			for s.checkPos(pos, arg.t) {
-				pos += arg.offset
-			}
-
-			for {
-				if pos < 0 {
-					pos = 0
-					break
-				}
-				if pos >= len(s.items) {
-					pos = len(s.items) - 1
-					break
-				}
-
-				item := s.items[pos]
-				if !item.IsInDefaultPosition() {
-					pos += arg.offset
-
-				} else {
-					break
-				}
-			}
-
-			arg.res <- s.calcFrom(pos)
-			break
-		case t := <-s.ChanSeek:
-			s.render(t, chRes, false)
-			break
-		case t := <-s.ChanSeekRefersh:
-			s.render(t, chRes, true)
-			break
-		case <-s.chanStop:
-			for _, item := range s.items {
-				if item.Handle != 0 {
-					s.hideSubItem(*item)
-					item.Handle = 0
-				}
-			}
-			return
-		}
-	}
-}
-
-func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool) {
 	for i, item := range s.items {
 		if refersh || !s.checkPos(i, t) {
 			if item.Handle != 0 && item.Handle != 1 {
@@ -158,7 +91,7 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool
 		if s.checkPos(i, t) {
 			if item.Handle == 0 {
 				// log.Print(t.String(), "show sub: ", item.Id, item.Content[0].Content)
-				s.showSubitem(*item, chRes)
+				s.showSubitem(*item)
 				item.Handle = 1
 			}
 		}
@@ -166,7 +99,15 @@ func (s *Subtitle) render(t time.Duration, chRes chan SubItemExtra, refersh bool
 }
 
 func (s *Subtitle) Stop() {
-	s.chanStop <- true
+	s.Lock()
+	defer s.Unlock()
+
+	for _, item := range s.items {
+		if item.Handle != 0 {
+			s.hideSubItem(*item)
+			item.Handle = 0
+		}
+	}
 }
 
 func (s *Subtitle) calcFromTo(pos int) (time.Duration, time.Duration) {
@@ -189,7 +130,7 @@ func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
 	return t >= from && t < to
 }
 
-func (s *Subtitle) showSubitem(item SubItem, chRes chan SubItemExtra) {
+func (s *Subtitle) showSubitem(item SubItem) {
 	if !s.IsMainOrSecondSub && item.PositionType != 10 {
 		if (item.PositionType != 2) || (item.X >= 0) || (item.Y >= 0) {
 			return
@@ -197,7 +138,7 @@ func (s *Subtitle) showSubitem(item SubItem, chRes chan SubItemExtra) {
 			item.PositionType = 10
 		}
 	}
-	arg := SubItemArg{item, false, chRes}
+	arg := SubItemArg{item, false, s.chanRes}
 	go s.r.SendShowText(arg)
 }
 func (s *Subtitle) hideSubItem(item SubItem) {
@@ -206,19 +147,19 @@ func (s *Subtitle) hideSubItem(item SubItem) {
 	}
 }
 
-func (s *Subtitle) findPos(t time.Duration) (int, *SubItem) {
+func (s *Subtitle) findPos(t time.Duration) int {
 	for i := 0; i < len(s.items); i++ {
 		from, to := s.calcFromTo(i)
 		if t < to {
 			if t >= from {
-				return i, s.items[i]
+				return i
 			} else {
-				return i, nil
+				return i
 			}
 		}
 	}
 
-	return 1 << 31, nil
+	return 1 << 31
 }
 
 func detectLanguage(items []*SubItem) (string, string) {
@@ -266,6 +207,10 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 		s.items, err = srt.Parse(strings.NewReader(sub.Content), width, height)
 	}
 
+	for i, _ := range s.items {
+		s.items[i].Id = i
+	}
+
 	if len(sub.Lang1) == 0 && len(sub.Lang2) == 0 {
 		s.Lang1, s.Lang2 = detectLanguage(s.items)
 		UpdateSubtitleLanguage(s.Name, s.Lang1, s.Lang2)
@@ -285,32 +230,51 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	return s
 }
 
-func (s *Subtitle) Seek(t time.Duration, refresh bool) {
-	var input chan<- time.Duration
-	if refresh {
-		input = s.ChanSeekRefersh
-	} else {
-		input = s.ChanSeek
-	}
-
-	select {
-	case input <- t:
-	case <-time.After(200 * time.Millisecond):
-		log.Print("Seek sub timeout1")
-	}
-}
-
 func (s *Subtitle) AddOffset(d time.Duration) time.Duration {
-	res := make(chan time.Duration)
-	s.ChanOffset <- durationArg{d, res}
-	return <-res
+	s.Lock()
+	defer s.Unlock()
+
+	s.offset += d
+	return s.offset
 }
 
 func (s *Subtitle) GetSubtime(t time.Duration, offset int) time.Duration {
-	res := make(chan time.Duration)
-	arg := subTimeArg{t, offset, res}
-	s.chanGetSubTime <- arg
-	return <-arg.res
+	s.Lock()
+	defer s.Unlock()
+
+	pos := s.findPos(t)
+	if pos >= len(s.items) {
+		return 0
+	}
+
+	if offset < 0 && s.calcFrom(pos) > t {
+		pos--
+	}
+
+	for s.checkPos(pos, t) {
+		pos += offset
+	}
+
+	for {
+		if pos < 0 {
+			pos = 0
+			break
+		}
+		if pos >= len(s.items) {
+			pos = len(s.items) - 1
+			break
+		}
+
+		item := s.items[pos]
+		if !item.IsInDefaultPosition() {
+			pos += offset
+
+		} else {
+			break
+		}
+	}
+
+	return s.calcFrom(pos)
 }
 
 func (s *Subtitle) IsTwoLangs() bool {

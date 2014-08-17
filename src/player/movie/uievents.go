@@ -248,7 +248,7 @@ func (m *Movie) uievents() {
 			if ps1 == nil && ps2 == nil {
 				//add playing s1
 				s1 = clicked
-				go s1.Play()
+				// go s1.Play()
 
 				m.p.Sub1 = s1.Name
 				m.p.Sub2 = ""
@@ -296,7 +296,7 @@ func (m *Movie) uievents() {
 					ps1.Stop()
 
 					s1.IsMainOrSecondSub = true
-					go s1.Play()
+					// go s1.Play()
 
 					m.p.Sub1 = s1.Name
 				}
@@ -308,7 +308,7 @@ func (m *Movie) uievents() {
 						}
 
 						s2.IsMainOrSecondSub = false
-						go s2.Play()
+						// go s2.Play()
 
 						m.p.Sub2 = s2.Name
 					}
@@ -365,7 +365,7 @@ func (m *Movie) uievents() {
 			select {
 			case <-time.After(time.Second):
 				m.w.SendSetVolumeDisplay(false)
-				<-chVolume //prevent call SendSetCursor every 2 seconds
+				<-chVolume //prevent call SendSetVolumeDisplay every second
 			case <-chVolume:
 			case <-m.quit:
 				return
