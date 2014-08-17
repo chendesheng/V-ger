@@ -283,7 +283,7 @@ func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
 }
 
 func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
-	flags := AVSEEK_FLAG_FRAME
+	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
 
 	ctx := v.formatCtx
 	err := ctx.SeekFrame(v.stream, t, flags)
@@ -292,7 +292,6 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 		return t, nil, err
 	}
 
-	// return v.DropFramesUtil(t)
 	return v.ReadOneFrame()
 }
 

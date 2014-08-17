@@ -51,7 +51,7 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	}
 }
 
-func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekProgress chan *seekArg) chan time.Duration {
+func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekProgress chan *seekArg) (chan time.Duration, time.Duration) {
 	if ch == nil {
 		ch = m.Pause(true)
 	}
@@ -62,7 +62,7 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 
 	t := arg.t
 
-	log.Print("seekProgress:", arg.t.String())
+	// log.Print("seekProgress:", arg.t.String())
 	t = m.Seek(t)
 
 	if arg.isEnd {
@@ -74,7 +74,7 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 			case arg := <-chSeekProgress:
 				return m.handleSeekProgress(ch, arg, chSeekProgress)
 			case <-m.quit:
-				return nil
+				return nil, 0
 			default:
 			}
 		}
@@ -87,11 +87,11 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 		case ch <- t:
 			ch = nil
 		case <-m.quit:
-			return nil
+			return nil, 0
 		}
 	}
 
-	return ch
+	return ch, t
 }
 func (m *Movie) startSeekRoutine() {
 	m.chSeekProgress = make(chan *seekArg)
@@ -100,12 +100,17 @@ func (m *Movie) startSeekRoutine() {
 
 	go func(chSeekProgress chan *seekArg) {
 		var ch chan time.Duration
+		var t time.Duration
 		for {
 			select {
 			case <-m.quit:
 				return
 			case arg := <-chSeekProgress:
-				ch = m.handleSeekProgress(ch, arg, chSeekProgress)
+				ch, t = m.handleSeekProgress(ch, arg, chSeekProgress)
+			case <-time.After(30 * time.Millisecond):
+				if ch != nil {
+					m.showProgressInner(t)
+				}
 			}
 		}
 	}(chSeekProgress)
@@ -169,7 +174,7 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 	}
 
 	if len(img) > 0 {
-		log.Print("sendDrawImage")
+		// log.Print("sendDrawImage")
 		m.w.SendDrawImage(img)
 	}
 

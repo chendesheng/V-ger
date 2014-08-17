@@ -179,14 +179,14 @@ func (m *Movie) uievents() {
 			fallthrough
 		case 1:
 			t := m.c.CalcTime(percent)
+			t = t / time.Second * time.Second
 			p := m.c.CalcPlayProgress(t)
 			m.w.ShowProgress(p)
 
 			m.SeekAsync(t)
 		case 2:
 			t := m.c.CalcTime(percent)
-			p := m.c.CalcPlayProgress(t)
-			m.w.ShowProgress(p)
+			t = t / time.Second * time.Second
 
 			log.Print("release dragging:", t.String())
 
