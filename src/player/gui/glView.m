@@ -318,6 +318,7 @@
         }
     } else {
         NSSize wsz = [self frame].size;
+
         x = x/self->originalSize.width * wsz.width;
         y = wsz.height - y/self->originalSize.height * wsz.height;
 
@@ -328,7 +329,6 @@
 
             NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
-            y -= - sz.height;
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];       
             return tv;
         } else if(position<1||position == 2||position>10) {
@@ -339,7 +339,6 @@
             NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
             x -= sz.width/2;
-            y -= sz.height;
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
             return tv;
         } else if (position == 3) {
@@ -350,7 +349,6 @@
             NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
             x -= sz.width;
-            y -= sz.height;
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
             return tv;
         } else if (position == 4) {
@@ -392,6 +390,7 @@
 
             NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
+            y -= sz.height;
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
             return tv;
         } else if (position==8) {        
@@ -402,6 +401,7 @@
             NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
             x -= sz.width/2;
+            y -= sz.height;
 
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
             return tv;
@@ -413,6 +413,7 @@
             NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
 
             x -= sz.width;
+            y -= sz.height;
 
             [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];  
             return tv;
