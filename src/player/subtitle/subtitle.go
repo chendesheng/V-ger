@@ -56,7 +56,7 @@ type Subtitle struct {
 
 	chanRes chan SubItemExtra
 
-	displayed []*SubItem
+	displaying []*SubItem
 }
 
 type displayingItem struct {
@@ -78,7 +78,7 @@ func (s *Subtitle) Seek(t time.Duration, refersh bool) {
 
 				item := s.items.getById(arg.Id)
 				item.Handle = arg.Handle
-				s.displayed = append(s.displayed, item)
+				s.displaying = append(s.displaying, item)
 
 				s.Unlock()
 			}
@@ -88,17 +88,13 @@ func (s *Subtitle) Seek(t time.Duration, refersh bool) {
 	if refersh {
 		s.hideAll()
 	} else {
-		for i := len(s.displayed) - 1; i >= 0; i-- {
-			item := s.displayed[i]
+		for i := len(s.displaying) - 1; i >= 0; i-- {
+			item := s.displaying[i]
 
 			if !item.Contains(t) {
 				s.hideSubItem(item)
 
-				if i == len(s.displayed)-1 {
-					s.displayed = s.displayed[:i]
-				} else {
-					copy(s.displayed[i:], s.displayed[i+1:])
-				}
+				s.displaying = sliceRemove(s.displaying, i)
 			}
 		}
 	}
@@ -111,6 +107,13 @@ func (s *Subtitle) Seek(t time.Duration, refersh bool) {
 	}
 }
 
+//check https://code.google.com/p/go-wiki/wiki/SliceTricks
+func sliceRemove(a []*SubItem, i int) []*SubItem {
+	l := len(a)
+	a[i], a[l-1], a = a[l-1], nil, a[:l-1]
+	return a
+}
+
 func (s *Subtitle) Stop() {
 	s.Lock()
 	defer s.Unlock()
@@ -119,10 +122,10 @@ func (s *Subtitle) Stop() {
 }
 
 func (s *Subtitle) hideAll() {
-	for _, item := range s.displayed {
+	for _, item := range s.displaying {
 		s.hideSubItem(item)
 	}
-	s.displayed = nil
+	s.displaying = nil
 }
 
 func (s *Subtitle) checkPos(pos int, t time.Duration) bool {

@@ -543,6 +543,9 @@ func goOnTimerTick(ptr unsafe.Pointer) {
 	skip:
 		for {
 			if arg.Handle == 0 || arg.Handle == 1 {
+				if arg.Result == nil {
+					log.Print("arg.Result == nil: ", arg.String())
+				}
 				arg.Result <- SubItemExtra{arg.Id, w.ShowText(&arg.SubItem)}
 			} else {
 				w.HideText(arg.Handle)
