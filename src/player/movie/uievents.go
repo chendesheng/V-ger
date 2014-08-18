@@ -238,9 +238,10 @@ func (m *Movie) uievents() {
 
 	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int) {
 		go func() {
+			log.Print("toggle subtitle:", index)
+
 			subs := m.subs
 			clicked := subs[index]
-			log.Print("toggle subtitle:", clicked.Name, index)
 
 			var s1, s2 *Subtitle
 			ps1, ps2 := m.getPlayingSubs()

@@ -1,6 +1,7 @@
 package subtitle
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	. "player/shared"
@@ -28,8 +29,8 @@ func (si *subItemsForTest) get(t time.Duration) []*SubItem {
 
 	return ret
 }
-func parseTestFile() []*SubItem {
-	f, err := os.Open("srt/b.srt")
+func parseTestFile(name string) []*SubItem {
+	f, err := os.Open(fmt.Sprintf("srt/%s", name))
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +44,7 @@ func parseTestFile() []*SubItem {
 }
 
 func TestSubItemsNotFind(t *testing.T) {
-	items := parseTestFile()
+	items := parseTestFile("b.srt")
 	si := newSubItems(items)
 	si2 := newSubItemsForTest(items)
 
@@ -56,7 +57,7 @@ func TestSubItemsNotFind(t *testing.T) {
 }
 
 func TestSubItemsNotFindLarger(t *testing.T) {
-	items := parseTestFile()
+	items := parseTestFile("b.srt")
 	si := newSubItems(items)
 	si2 := newSubItemsForTest(items)
 
@@ -69,7 +70,7 @@ func TestSubItemsNotFindLarger(t *testing.T) {
 }
 
 func TestSubItemsOverlap(t *testing.T) {
-	items := parseTestFile()
+	items := parseTestFile("b.srt")
 	si := newSubItems(items)
 	si2 := newSubItemsForTest(items)
 
@@ -89,7 +90,7 @@ func TestSubItemsOverlap(t *testing.T) {
 }
 
 func TestSubItemsCompare(t *testing.T) {
-	items := parseTestFile()
+	items := parseTestFile("b.srt")
 	si := newSubItems(items)
 	si2 := newSubItemsForTest(items)
 
@@ -120,7 +121,7 @@ func TestSubItemsCompare(t *testing.T) {
 }
 
 func TestFindPosBeforeFirst(t *testing.T) {
-	items := parseTestFile()
+	items := parseTestFile("b.srt")
 	si := newSubItems(items)
 
 	i, ok := si.findPos(0)
@@ -134,7 +135,7 @@ func TestFindPosBeforeFirst(t *testing.T) {
 }
 
 func TestFindPosAfterLast(t *testing.T) {
-	items := parseTestFile()
+	items := parseTestFile("b.srt")
 	si := newSubItems(items)
 
 	i, ok := si.findPos(10 * time.Hour)
@@ -147,7 +148,7 @@ func TestFindPosAfterLast(t *testing.T) {
 	}
 }
 func TestFindPosNotFind(t *testing.T) {
-	items := parseTestFile()
+	items := parseTestFile("b.srt")
 	si := newSubItems(items)
 
 	i, ok := si.findPos(50 * time.Second)
@@ -162,7 +163,7 @@ func TestFindPosNotFind(t *testing.T) {
 func BenchmarkSubItems(b *testing.B) {
 	b.StopTimer()
 
-	items := parseTestFile()
+	items := parseTestFile("g.srt")
 	si := newSubItems(items)
 
 	rnd := make([]time.Duration, 0)
@@ -180,13 +181,7 @@ func BenchmarkSubItems(b *testing.B) {
 func BenchmarkSubItemsForTest(b *testing.B) {
 	b.StopTimer()
 
-	f, err := os.Open("srt/b.srt")
-	if err != nil {
-		b.Error(err)
-		return
-	}
-
-	items, _ := srt.Parse(f, 384, 303)
+	items := parseTestFile("g.srt")
 
 	si := newSubItemsForTest(items)
 	rnd := make([]time.Duration, 0)
@@ -198,5 +193,18 @@ func BenchmarkSubItemsForTest(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		si.get(rnd[i])
+	}
+}
+
+func TestGetById(t *testing.T) {
+	items := parseTestFile("g.srt")
+	si := newSubItems(items)
+
+	// println(si.nooverlap)
+	// println(si.others)
+
+	item := si.getById(1510)
+	if item == nil {
+		t.Error("should found")
 	}
 }

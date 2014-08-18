@@ -1,0 +1,2730 @@
+5
+00:02:06,000 --> 00:02:09,000
+{\an7}本字幕由人人影视字幕组翻译
+禁止用于任何商业盈利行为
+
+6
+00:02:09,000 --> 00:02:13,000
+{\an7}翻译  草血蛆   没网好心塞的时光蛆   红蛆公  
+
+7
+00:02:13,000 --> 00:02:17,000
+{\an7}翻译  大蛆粒酸奶   S蛆很爱笑   持久君   小shy
+
+8
+00:02:17,000 --> 00:02:21,000
+{\an7}翻译  暴龙蛋   幸田实果子   Dust蛆   持久×小shy
+
+9
+00:02:21,000 --> 00:02:25,000
+{\an7}校对   草血蛆   苏小黛   时间轴   薛定谔的蛆   三水
+
+10
+00:02:25,000 --> 00:02:29,000
+{\an7}后期    鱼骨头      总监    蛆橙氏
+
+11
+00:01:55,400 --> 00:01:58,730
+血族  第一季  第六集
+
+13
+00:00:01,140 --> 00:00:02,560
+「血族」前情提要
+Previously on The Strain...
+
+14
+00:00:02,560 --> 00:00:04,770
+你知道吗  我今天上地铁的时候
+You know, I was getting on the subway today and I did see
+
+15
+00:00:04,770 --> 00:00:07,130
+看到十来只老鼠在站台上
+like, ten rats. Like, on the platform.
+
+16
+00:00:07,220 --> 00:00:08,720
+老鼠一般不会这样
+Rats don't migrate like that.
+
+17
+00:00:08,720 --> 00:00:10,840
+肯定是有什么东西把它们赶出来了
+Something is driving them out of their nests.
+
+18
+00:00:10,840 --> 00:00:11,460
+比如说
+Like what?
+
+19
+00:00:11,460 --> 00:00:12,680
+一种更强大的捕食者
+A bigger predator.
+
+20
+00:00:12,680 --> 00:00:13,610
+该死
+Oh shit.
+
+21
+00:00:18,010 --> 00:00:19,110
+天哪
+Oh God!
+
+22
+00:00:19,250 --> 00:00:21,260
+我们说好了要找到治愈方法
+We were talking about finding a cure.
+
+23
+00:00:21,260 --> 00:00:23,380
+可谁知道它的传染速度如此之快
+That was before we knew how quickly it spreads.
+
+24
+00:00:23,380 --> 00:00:24,750
+这不是我的家
+And this isn't my home.
+
+25
+00:00:25,010 --> 00:00:27,220
+我会陪你躺着  直到你睡着为止
+I'll lie down with you until you fall asleep.
+
+26
+00:00:27,410 --> 00:00:28,210
+怎么回事
+What's going on?
+
+27
+00:00:31,630 --> 00:00:32,530
+我们得走了  快点
+We have to go, come on!
+
+28
+00:00:32,530 --> 00:00:33,250
+什么
+What?
+
+29
+00:00:33,270 --> 00:00:36,590
+我们需要隔离所有与飞机上的死者有关的人
+We need to lock down anyone related to the plane casualties.
+
+30
+00:00:36,590 --> 00:00:40,510
+我有实际证据表明死者正在回家
+I have empirical proof that the victims are returning home
+
+31
+00:00:40,510 --> 00:00:42,010
+去感染他们的亲属
+and infecting their families.
+
+32
+00:00:42,010 --> 00:00:43,600
+他们手上有录像
+They have you on video
+
+33
+00:00:43,600 --> 00:00:45,550
+内容是你拖着雷德芬的尸体
+dragging Redfern's body down the hallway.
+
+34
+00:00:45,550 --> 00:00:46,730
+我得走了
+I have to get out of here.
+
+35
+00:00:47,980 --> 00:00:49,670
+扔掉电话  我来处理它
+Drop your phone. I'll see what I can do.
+
+36
+00:01:04,990 --> 00:01:08,530
+...还有多起类似的大规模服务中断
+Reporting similar accounts of widespread Service interruptions.
+
+37
+00:01:08,530 --> 00:01:12,170
+多个消息源称「自由公民」与此事有关...
+Certain sources are implicating the "Citizens for liberty"--
+
+38
+00:01:14,330 --> 00:01:17,990
+美国国际市场继续大幅度下滑...
+The us and international markets continue to plummet. The cure--
+
+39
+00:01:23,720 --> 00:01:25,890
+大家都很慌张  这简直...
+Everyone's freaking out. I mean you've got, like,
+
+40
+00:01:25,890 --> 00:01:28,400
+就像新年前夜时代广场上那样
+all the best elements of new year's eve and times square going on.
+
+41
+00:01:28,400 --> 00:01:30,680
+小偷小摸和变态都在活动
+You got pickpockets and perverts doing their thing
+
+42
+00:01:30,680 --> 00:01:33,280
+再加上日食的事
+and then you've got this added attraction of a lunar event.
+
+43
+00:01:33,290 --> 00:01:35,230
+不用说  大家都一惊一乍
+And then of course, all those people are going like
+
+44
+00:01:35,230 --> 00:01:39,110
+「天哪  掩星是天启的预兆啊」
+"Oh no! This occultation, that's the sign of some apocalyptic thing."
+
+45
+00:01:39,110 --> 00:01:40,830
+我也是这样的人
+You guys, I am one Of those people. 
+
+46
+00:01:40,830 --> 00:01:43,590
+我好害怕啊  现在城里的情况太乱了
+I am freaking out, there's so much craziness in the city right now. -
+
+47
+00:01:43,590 --> 00:01:45,560
+就纽约这几天的新闻而言
+The way the news is going in New York these days, 
+
+48
+00:01:45,560 --> 00:01:47,280
+简直就像是世界末日
+this could be the end of the world.
+
+49
+00:02:19,130 --> 00:02:20,410
+天哪
+H-- oh my God...
+
+50
+00:02:21,840 --> 00:02:23,680
+不  不
+No... No...
+
+51
+00:02:25,220 --> 00:02:27,690
+杀了我吧
+Just k-- just kill me.
+
+52
+00:02:27,910 --> 00:02:29,770
+我就是要杀你
+That is what I am doing.
+
+53
+00:02:32,770 --> 00:02:33,930
+不要啊
+No! No!
+
+54
+00:02:35,370 --> 00:02:39,130
+求你了  别这样
+Please! Please! Please! No!
+
+55
+00:02:40,450 --> 00:02:44,630
+不要啊
+No!
+
+56
+00:02:51,250 --> 00:02:53,330
+谁救救我啊
+Argh! Someone help me!
+
+57
+00:02:54,820 --> 00:02:56,160
+不要
+N-- no!
+
+58
+00:02:56,380 --> 00:02:59,920
+不要啊
+No! No! No!
+
+59
+00:03:01,330 --> 00:03:04,580
+救命啊  救救我
+Please! Somebody help me!
+
+60
+00:03:10,580 --> 00:03:13,870
+我们等待世界改变的时候
+But while we wait for the world to change,
+
+61
+00:03:14,370 --> 00:03:18,140
+我需要你再为我支撑几顿
+I need you to last me a few meals more.
+
+62
+00:03:36,330 --> 00:03:40,880
+{\an3}{\pos(164,227)}皇后区伍德赛德  凯尔顿街
+
+63
+00:03:40,860 --> 00:03:43,320
+凯莉·古德温泽  我是特别探员门罗
+Kelly Goodweather? I'm special agent Monroe,
+
+64
+00:03:43,320 --> 00:03:45,730
+这位是特别探员伍德布里奇  我们是联调局的
+this is special agent Woodbridge. FBI.
+
+65
+00:03:45,820 --> 00:03:47,470
+-好吧  -我们在找你丈夫
+- Ok. - We're looking for your husband
+
+66
+00:03:47,470 --> 00:03:49,950
+伊弗雷姆·古德温泽博士  他在吗
+Dr. Ephraim Goodweather. Is he here by any chance?
+
+67
+00:03:50,080 --> 00:03:54,470
+-不在  我们分居了  -真遗憾
+- No. Um, we're separated. - Oh sorry to hear that.
+
+68
+00:03:54,810 --> 00:03:56,790
+我们找不到他
+We've been having trouble reaching him.
+
+69
+00:04:03,750 --> 00:04:04,830
+你知道他现在在哪
+Well, do you know where he is right now 
+
+70
+00:04:04,830 --> 00:04:06,490
+或者我们怎么能联系到他吗
+or how we can get in contact with him?
+
+71
+00:04:07,620 --> 00:04:09,550
+我有他电话号
+I... I have his phone number.
+
+72
+00:04:09,790 --> 00:04:11,840
+不行  他的手机关了
+No his cellphone has gone dark.
+
+73
+00:04:12,860 --> 00:04:15,820
+伊弗没事吧  这跟飞机的事有关吗
+Wait, is Eph ok? Does this have something to do with the airplane? 
+
+74
+00:04:15,980 --> 00:04:17,210
+是的
+It does, yeah.
+
+75
+00:04:18,010 --> 00:04:21,230
+-怎么了  -联调局的  我是门罗探员
+- What's going on? - FBI. I'm Agent Monroe
+
+76
+00:04:21,230 --> 00:04:22,740
+这位是伍德布里奇探员
+and this is Agent Woodbridge.
+
+77
+00:04:23,760 --> 00:04:26,720
+我们在找伊弗雷姆·古德温泽  你是哪位
+We're looking for Ephraim Goodweather. And you are?
+
+78
+00:04:26,760 --> 00:04:30,310
+马特·塞尔斯  凯莉的男朋友  怎么回事
+Matt Sayles, Kelly's boyfriend. What's the matter?
+
+79
+00:04:30,310 --> 00:04:31,410
+这样吧  马特  我来处理
+You know what, Matt, I've got it. 
+
+80
+00:04:31,410 --> 00:04:32,770
+你去看看扎克
+If you want to go check on Zack,
+
+81
+00:04:32,770 --> 00:04:34,630
+确保他没闲逛
+make sure he doesn't wander over.
+
+82
+00:04:34,630 --> 00:04:37,020
+古德温泽博士要是联系了你们
+If Dr. Goodweather gets in touch with either one of you,
+
+83
+00:04:37,160 --> 00:04:39,670
+麻烦立即告诉我们  我们将不胜感激
+we'd appreciate it if you contacted us immediately.
+
+84
+00:04:40,700 --> 00:04:42,620
+没别的事的话  我得送儿子去上学了
+If you don't mind, I have to get my son off to school.
+
+85
+00:04:49,160 --> 00:04:50,330
+你觉得他在里面吗
+You think he's in there?
+
+86
+00:04:50,360 --> 00:04:54,330
+跟他老婆的男友共处一室  不可能
+With his wife's boyfriend in the house? Eh, not a chance.
+
+87
+00:04:57,530 --> 00:04:59,340
+只能星期四  行吗
+Can only be Thursday, can it?
+
+88
+00:04:57,540 --> 00:05:01,050
+{\an3}{\pos(121,227)}布鲁克林  红钩区
+
+89
+00:04:59,340 --> 00:05:00,430
+你也忙成一团了吗
+You jammed up too? 
+
+90
+00:05:00,740 --> 00:05:01,930
+办公室的电话接连不断
+Office's so flooded with calls,
+
+91
+00:05:01,930 --> 00:05:03,550
+我们都把生意推给竞争对手
+we're referring business to the competition,
+
+92
+00:05:03,550 --> 00:05:06,330
+-他们也忙得四脚朝天  -我知道  笨蛋
+- who're too busy to take it. - I know, you dope.
+
+93
+00:05:06,330 --> 00:05:09,170
+-我就是你们的对手  -肯定出事了
+- I'm the competition. - Something's going on.
+
+94
+00:05:09,690 --> 00:05:13,460
+有哪个黑手党  抱歉  是卫生部
+One of the mafia - 'scuse me, the Sanitation Department--
+
+95
+00:05:13,460 --> 00:05:15,220
+这周忘收垃圾了吗
+forget to do their trash pick-up this week?
+
+96
+00:05:15,220 --> 00:05:16,560
+我昨天去莫特港一个楼顶上
+I was on a roof in Mott Haven yesterday, 
+
+97
+00:05:16,560 --> 00:05:19,060
+那里住了一堆老鼠  就跟一群鸽子似的
+a whole squad of munchers livin' up there, like pigeons.
+
+98
+00:05:19,060 --> 00:05:21,480
+我在晨边高地见过他们从一个下水道口涌出
+Yeah, I saw them pourin' out of a sewer in Morningside Heights. 
+
+99
+00:05:21,940 --> 00:05:24,400
+有上百只  像「圣经」里的天灾似的
+Hundreds. Like somethin' Biblical.
+
+100
+00:05:24,720 --> 00:05:26,500
+这是大规模迁居
+It's a mass displacement.
+
+101
+00:05:28,530 --> 00:05:30,790
+有东西把他们从地下赶出来了
+Something's driving them out from underground.
+
+102
+00:05:31,960 --> 00:05:33,150
+你怎么知道  费特
+How you know this, Fet? 
+
+103
+00:05:33,470 --> 00:05:36,050
+我见到他们了  在隧道里
+I seen 'em. In the tunnels.
+
+104
+00:05:36,620 --> 00:05:39,330
+-见到什么了  -很大的东西
+- Seen what? - Something big.
+
+105
+00:05:40,660 --> 00:05:42,730
+隐藏在地下的黑暗中
+And it's hiding down there in the dark.
+
+106
+00:05:42,740 --> 00:05:43,850
+什么  鼹鼠人吗
+What? The Mole People?
+
+107
+00:05:47,840 --> 00:05:51,200
+比起这些东西  你会更乐意遇见鼹鼠人
+You'd be happy to see the Mole People instead of these things.
+
+108
+00:05:52,570 --> 00:05:53,580
+他们长什么样
+What'd they look like?
+
+109
+00:06:10,560 --> 00:06:12,960
+我只是想说多加小心  仅此而已
+I'm just saying be careful, that's all.
+
+110
+00:06:14,320 --> 00:06:16,500
+费特  下次你看见他们时
+Hey, Fet. Next time you see 'em,
+
+111
+00:06:16,510 --> 00:06:17,620
+谢谢他们让我们加班
+thank 'em for all the overtime.
+
+112
+00:06:25,310 --> 00:06:29,000
+{\an3}{\pos(128,227)}哈莱姆  东第123街
+
+113
+00:06:31,000 --> 00:06:34,030
+-太无聊了  -来这可不是为了小打小闹
+- Is this boring or what? - Didn't come here to pitty-pat.
+
+114
+00:06:35,880 --> 00:06:38,050
+漂亮小子  我向来不喜欢你
+Pretty boy, I never liked you anyway.
+
+115
+00:06:43,010 --> 00:06:44,560
+这话可真让我伤心
+Now you hurt my feelings.
+
+116
+00:06:46,360 --> 00:06:47,670
+来接人的吗
+My ride here?
+
+117
+00:06:47,750 --> 00:06:50,410
+是的  我来找埃利萨尔德先生的
+It is. I'm here for Mr. Elizalde.
+
+118
+00:06:53,910 --> 00:06:55,220
+这下不是小打小闹了吧
+Pitty-pat that.
+
+119
+00:06:59,250 --> 00:07:03,220
+-谁找我  女王吗  -艾霍斯特先生
+- With who? The queen? - Mr. Eichhorst.
+
+120
+00:07:03,220 --> 00:07:05,260
+不  我不再为他办事儿了
+Nah, I don't work for him no more.
+
+121
+00:07:06,030 --> 00:07:07,800
+你还是请回吧  朋友
+You'd better step up out of here, home boy.
+
+122
+00:07:07,800 --> 00:07:09,750
+恐怕他坚持如此
+I'm afraid he insists.
+
+123
+00:07:15,740 --> 00:07:20,460
+好吧  兄弟  你悠着点
+Alright, man. Be easy with that heat, eh?
+
+124
+00:07:21,610 --> 00:07:24,630
+我先去洗个澡  菲利克斯
+Let me get cleaned up. Felix.
+
+125
+00:07:27,780 --> 00:07:30,800
+-什么事儿  -我之前替这个人办过事
+- What's up? - This guy I used to work for.
+
+126
+00:07:31,490 --> 00:07:33,280
+现在还逼着我
+Putting the press on me. 
+
+127
+00:07:34,240 --> 00:07:35,870
+今天就把这事儿了结了
+We gon' end that shit today, though.
+
+128
+00:07:37,230 --> 00:07:38,780
+他们想干什么
+What did those men want?
+
+129
+00:07:38,950 --> 00:07:42,340
+-没事  -爸爸是不是有麻烦了
+- Nothing. - Is dad in trouble?
+
+130
+00:07:42,810 --> 00:07:45,270
+-为什么这么问  -因为他上电视了
+- Why do you ask? - 'Cause he's on TV.
+
+131
+00:07:45,280 --> 00:07:48,520
+{\an8}疾控中心博士被通缉问话
+
+132
+00:07:45,350 --> 00:07:46,990
+联邦调查局要找他问话
+Wanted for questioning by the FBI.
+
+133
+00:07:47,170 --> 00:07:49,900
+今早联调局宣布伊弗雷姆·古德温泽博士
+This morning the bureau announced that Dr. Ephraim Goodweather
+
+134
+00:07:49,900 --> 00:07:51,040
+与失踪事件有关...
+is a person of interest in the sudden disappearance of--
+
+135
+00:07:51,040 --> 00:07:51,960
+爸爸
+Dad!
+
+136
+00:07:54,750 --> 00:07:56,360
+伊弗  你究竟做了什么
+Eph what the hell did you do?
+
+137
+00:07:57,180 --> 00:07:59,000
+显然  昨晚雷德芬
+Redfern apparently went missing last night
+
+138
+00:07:59,000 --> 00:07:59,910
+从圣塞巴斯蒂安医院失踪...
+from St. Sebastian's hospital--
+
+139
+00:07:59,910 --> 00:08:00,830
+不管他们说什么
+Whatever they're saying,
+
+140
+00:08:00,830 --> 00:08:02,720
+都是骗人的
+it's completely bogus.
+
+141
+00:08:06,990 --> 00:08:08,500
+我们得马上把扎克送出城去
+We need to get Zack out of the city right now.
+
+142
+00:08:08,500 --> 00:08:09,600
+去佛蒙特州找你妈妈吧
+Go to your mother's in Vermont. 
+
+143
+00:08:09,600 --> 00:08:10,660
+等等  你在说些什么啊
+Wait-- what the hell are you talking about? 
+
+144
+00:08:10,660 --> 00:08:12,190
+大事不妙了
+Something awful is happening.
+
+145
+00:08:12,200 --> 00:08:16,450
+一种非常可怕的传染病暴发了
+Um... The contagion. It's a terrible disease, an outbreak.
+
+146
+00:08:16,450 --> 00:08:18,630
+正在城里蔓延  而他们却想方设法
+It's burning its way through the city and they're trying
+
+147
+00:08:18,630 --> 00:08:20,420
+让人们不相信我
+to make sure nobody'll listen to me.
+
+148
+00:08:20,480 --> 00:08:23,890
+-那么糟啊  -你怎么进来的
+- Is it that bad? - How did you get in here?
+
+149
+00:08:25,870 --> 00:08:29,290
+快去准备几件衣服  收拾下就出发吧
+Just... Just pack a bag. Throw some clothes in, get out.
+
+150
+00:08:29,590 --> 00:08:31,500
+-你吓到我了  -我也被吓到了
+- Look, you're scaring me. - I'm scared. 
+
+151
+00:08:31,500 --> 00:08:33,690
+我从未见过这样的病  这是史无前例的
+I've never seen anything like this. Nobody has. 
+
+152
+00:08:33,690 --> 00:08:36,720
+如果事情这样紧急  为何没有一点风声呢
+If there's some big emergency why isn't there any news about it?
+
+153
+00:08:36,720 --> 00:08:39,380
+为什么政府不警告我们  而是在到处找你呢
+Why isn't the government warning us instead of looking for you.
+
+154
+00:08:39,380 --> 00:08:41,310
+他们想混淆视听
+They're trying to turn it around on me.
+
+155
+00:08:42,500 --> 00:08:45,850
+我知道的太多了  也许这听起来很疯狂
+Look, I know too much. Maybe that sounds crazy. 
+
+156
+00:08:45,850 --> 00:08:48,610
+你得把手机扔了  不然他们会追踪到你的
+You gotta get rid of your phone, dad. They can use it to trace you.
+
+157
+00:08:49,780 --> 00:08:50,520
+我已经这么做了
+I did that already.
+
+158
+00:08:50,520 --> 00:08:51,560
+上楼去准备下  要去学校了
+Go upstairs and get ready for school.
+
+159
+00:08:51,560 --> 00:08:52,880
+上楼去  扎克
+Upstairs, Zack.
+
+160
+00:08:54,760 --> 00:08:56,910
+你吓到我了  也会吓到你儿子的
+You're scaring me and you're going to scare your son.
+
+161
+00:08:57,300 --> 00:08:58,840
+是因为监护权听证会吗
+Is it the custody hearing?
+
+162
+00:08:58,840 --> 00:09:00,220
+你是终于崩溃了吗
+I mean, have you finally snapped?
+
+163
+00:09:00,220 --> 00:09:02,210
+你今早喝了多少酒  伊弗
+How many drinks have you had this morning, Eph?
+
+164
+00:09:05,800 --> 00:09:07,570
+凯莉  你了解我的  你必须这么做
+You know me Kelly. You need to do this.
+
+165
+00:09:07,570 --> 00:09:09,680
+你不能再给我下命令了
+Look, you need to stop giving me orders, ok?
+
+166
+00:09:09,810 --> 00:09:11,120
+何况你说过多少次
+Besides, how many times have you said
+
+167
+00:09:11,120 --> 00:09:12,590
+「人跑不过病毒」
+"You can't outrun a virus"?
+
+168
+00:09:12,590 --> 00:09:13,990
+这次你至少得试试
+Well this one, you need to try.
+
+169
+00:09:16,020 --> 00:09:18,110
+如果不是事关重要  我不会这么说的
+Look, I wouldn't be saying this if it wasn't important!
+
+170
+00:09:18,110 --> 00:09:20,490
+你可以占用我的办公室  把它拆掉
+You can take my office, you can tear it down,
+
+171
+00:09:20,490 --> 00:09:22,460
+你可以把它改造成游戏室  我无所谓
+you can turn it into a game room, I don't give a shit.
+
+172
+00:09:22,460 --> 00:09:24,000
+但现在事关重大
+But this matters.
+
+173
+00:09:26,830 --> 00:09:29,750
+-你居然打给联调局  -你这个傻逼
+- You called the FBI? - Goddamn fool.
+
+174
+00:09:30,790 --> 00:09:33,670
+放轻松  博士  把你的手放在脑后
+Take it easy, doctor. Put your hands behind your head.
+
+175
+00:09:33,840 --> 00:09:35,400
+好了博士  站着那别动
+Ok, doc. Stop right there.
+
+176
+00:09:35,400 --> 00:09:36,530
+我的天哪  伊弗
+My God, Eph.
+
+177
+00:09:36,530 --> 00:09:38,300
+我们只是要问你几个问题
+We just have a few questions for you.
+
+178
+00:09:38,300 --> 00:09:40,400
+把手放在脑后
+Put your hands behind your head!
+
+179
+00:09:48,750 --> 00:09:49,430
+快跑
+Run.
+
+180
+00:10:00,060 --> 00:10:01,430
+他们让他坐在了后座
+They left with him in the backseat.
+
+181
+00:10:01,430 --> 00:10:03,450
+我觉得邻居们应该没看到
+I don't think any of the neighbours noticed anything.
+
+182
+00:10:03,460 --> 00:10:04,640
+你为什么要这么做
+Why did you do that?
+
+183
+00:10:04,640 --> 00:10:07,780
+做什么  按照联调局的要求打给他们吗
+What? Call the FBI as they instructed us to do?
+
+184
+00:10:07,820 --> 00:10:10,420
+怎么  你想让我们变成从犯吗
+What? You want us to be an accessory to whatever?
+
+185
+00:10:10,420 --> 00:10:11,690
+这不是你可以决定的事
+It wasn't your call to make.
+
+186
+00:10:11,690 --> 00:10:14,870
+-他强行闯入了我们家  -是我的家
+- He forced his way into our house. - Into my house!
+
+187
+00:10:14,870 --> 00:10:17,730
+他是我前夫  我来决定怎么对待他
+My ex-husband. And I will decide how to deal with him.
+
+188
+00:10:17,830 --> 00:10:20,070
+你居然在袒护他
+You, you're actually defending him.
+
+189
+00:10:20,070 --> 00:10:22,900
+-为什么他们要抓走爸爸  -这只是
+- Why did they arrest dad? - You know what? It was just
+
+190
+00:10:22,900 --> 00:10:25,440
+一个天大的误会  我们会解决的
+a big misunderstanding and we're going to sort it out.
+
+191
+00:10:25,450 --> 00:10:29,640
+-我们要去佛蒙特州吗  -也许我们该去
+- Are we going to Vermont? - You know what? Maybe we should.
+
+192
+00:10:30,000 --> 00:10:32,000
+-为了安全起见  -你说真的吗
+- Just to be safe. - Are you kidding me?
+
+193
+00:10:32,000 --> 00:10:34,900
+然后呢  你就打算让扎克这么逃课了
+And do what? You're just going to pull Zack out of school?
+
+194
+00:10:34,900 --> 00:10:38,610
+而且这么晚了你去找谁给你替课
+And how are you going to find a substitute for your class this late?
+
+195
+00:10:38,610 --> 00:10:42,110
+抱歉  我可不要因为你前夫的胡扯丢了饭碗
+I'm sorry, but I'm not losing my job because your ex went crazy.
+
+196
+00:10:42,110 --> 00:10:43,820
+不许这么说我爸爸
+Don't say that about him!
+
+197
+00:10:44,480 --> 00:10:47,440
+扎克  到车里等我好吗
+Zack, just go wait in the car for me, ok?
+
+198
+00:10:48,700 --> 00:10:50,510
+我知道你现在不开心  考虑到以前的事
+Look, I know you're upset. With your history...
+
+199
+00:10:50,510 --> 00:10:52,090
+不  你闭上嘴听我说
+No, you shut your mouth and you listen to me.
+
+200
+00:10:52,090 --> 00:10:53,920
+这是我的家庭  我的生活
+This is my family, my life.
+
+201
+00:10:53,930 --> 00:10:54,990
+我让你参与其中
+I invited you in,
+
+202
+00:10:54,990 --> 00:10:56,270
+你只是一个客人
+you are a guest
+
+203
+00:10:56,270 --> 00:10:59,700
+-而你需要有个客人的样子  -客人
+- and you need to start acting like one. - A guest?
+
+204
+00:11:01,490 --> 00:11:04,670
+也许这是个错误  也许我进展太快了
+Maybe this was a mistake. Maybe I acted too quickly.
+
+205
+00:11:05,240 --> 00:11:07,340
+不不  我们的事我们心里有数  我在这
+No no no. We know what we're doing here, ok? I'm here.
+
+206
+00:11:07,340 --> 00:11:09,300
+我在这是因为我爱你
+I'm here because I love you. 
+
+207
+00:11:09,820 --> 00:11:12,400
+我在这是因为我想保护这个家庭
+I'm here because I'm trying to protect this family.
+
+208
+00:11:13,710 --> 00:11:16,150
+我早已不是客人了
+We're way past me being a guest. 
+
+209
+00:11:16,970 --> 00:11:19,220
+我得去上班了
+I need to go to work.
+
+210
+00:11:19,890 --> 00:11:22,240
+-这事还没说完呢  -我说完了
+- We're not done here! - I am.
+
+211
+00:11:23,430 --> 00:11:26,260
+行  行  我也得去工作了
+Fine. Fine, I gotta go to work too.
+
+212
+00:11:26,800 --> 00:11:28,010
+-很好  -很好
+- Great. - Great.
+
+213
+00:11:29,920 --> 00:11:33,650
+我们今晚要点库存  会有些晚
+We've inventory tonight and it's gonna go late.
+
+214
+00:11:33,650 --> 00:11:34,850
+我不会等的
+I won't wait up.
+
+215
+00:11:41,350 --> 00:11:47,480
+{\an3}{\pos(342,227)}皇后区  奥松公园
+
+216
+00:14:07,250 --> 00:14:10,460
+我的剑闪耀着银色光辉
+Sabia mea fredonaza argint.
+
+217
+00:15:41,770 --> 00:15:45,310
+{\an3}{\pos(121,227)}布鲁克林  公园坡
+
+218
+00:15:47,740 --> 00:15:51,420
+妈妈  你还好吗  你还记得昨晚的事吗
+Mama, are you OK? Do you remember anything from last night? 
+
+219
+00:15:53,900 --> 00:15:55,770
+晚餐真不错
+It-- it was a lovely dinner.
+
+220
+00:15:57,430 --> 00:15:58,950
+我真想像你一样忘掉
+I wish I could forget like you.
+
+221
+00:16:09,030 --> 00:16:09,710
+你好
+Hello?
+
+222
+00:16:09,870 --> 00:16:11,740
+诺拉  我是金  你还好吗
+Nora, it's Jim. Are you alright?
+
+223
+00:16:11,740 --> 00:16:14,290
+不怎么好  伊弗联系你了吗
+I've been better. Have you heard from Eph?
+
+224
+00:16:14,310 --> 00:16:15,290
+你不知道吗
+You don't know?
+
+225
+00:16:15,290 --> 00:16:17,860
+他把雷德芬的尸检视频给了巴恩斯
+He took Redfern's autopsy video to Barnes
+
+226
+00:16:17,860 --> 00:16:19,060
+结果他叫联调局来抓他
+who put the FBI on him.
+
+227
+00:16:19,060 --> 00:16:20,120
+他被逮捕了
+He has been arrested.
+
+228
+00:16:20,120 --> 00:16:21,120
+逮捕了
+Arrested?
+
+229
+00:16:21,370 --> 00:16:22,700
+谁被逮捕了
+Who's been arrested?
+
+230
+00:16:22,700 --> 00:16:23,490
+诺拉 
+So Nora...
+
+231
+00:16:24,740 --> 00:16:26,130
+他们看不清状况吗
+Don't they see what's happening?
+
+232
+00:16:26,130 --> 00:16:27,650
+这说不通啊
+This doesn't make any sense.
+
+233
+00:16:27,650 --> 00:16:28,350
+我知道
+I konw...
+
+234
+00:16:31,500 --> 00:16:32,950
+诺拉  诺拉
+Nora? Nora?!
+
+235
+00:16:33,460 --> 00:16:34,020
+金
+Jim?
+
+236
+00:16:34,020 --> 00:16:34,810
+诺拉  你还在吗
+Nora, are you there...
+
+237
+00:16:34,810 --> 00:16:36,580
+金  我听不到你了  别开
+Jim, I'm losing you. Don't!
+
+238
+00:16:36,790 --> 00:16:38,760
+妈妈  别开门
+Mama, don't open the door! 
+
+239
+00:16:39,770 --> 00:16:42,240
+-诺拉  你又弄疼我了  -抱歉
+- Nora! You're hurting me again. - I'm sorry.
+
+240
+00:16:42,250 --> 00:16:45,050
+-我很抱歉  -他们要让人消失吗
+- I'm sorry. - Are they making people disappear?
+
+241
+00:16:45,550 --> 00:16:46,420
+我们得走了
+We have to go.
+
+242
+00:17:15,610 --> 00:17:17,000
+别死在我车里
+Don't die in my cab.
+
+243
+00:17:17,950 --> 00:17:20,780
+谢谢您的关心
+Thank you for your concern.
+
+244
+00:17:22,450 --> 00:17:24,540
+哈莱姆挺远的  你钱够吗
+Harlem is a long fare. You got money?
+
+245
+00:17:26,880 --> 00:17:28,610
+我钱够  就...
+I have money. Just...
+
+246
+00:17:29,430 --> 00:17:31,990
+在日食前送我回家就行
+Get me home before this eclipse.
+
+247
+00:17:34,140 --> 00:17:37,250
+{\an8}嫌犯被捕  经过全市范围的搜捕
+伊弗雷姆·古德温泽博士已被拘禁
+
+248
+00:17:34,640 --> 00:17:37,230
+这次日食要把大家逼疯了
+This eclipse is making everyone nuts.
+
+249
+00:17:38,480 --> 00:17:41,020
+加上之前那个飞机的事  电话也用不了
+The plane thing and cellphones aren't working.
+
+250
+00:17:41,070 --> 00:17:42,270
+整个城市都要疯了
+The whole city's losing their minds, 
+
+251
+00:17:42,270 --> 00:17:44,230
+就跟最终审判降临了似的
+it's like judgement day out there.
+
+252
+00:17:47,330 --> 00:17:48,880
+你想扭转这一切吗
+You wanna help fix this?
+
+253
+00:17:49,640 --> 00:17:52,600
+你想帮我阻止这一切吗
+You wanna help me stop all of this?
+
+254
+00:17:56,020 --> 00:17:59,620
+你没法对付疯子的  老兄  没办法
+You can't fix crazy, man. You can't.
+
+255
+00:18:07,890 --> 00:18:13,000
+{\an3}{\pos(123,227)}曼哈顿  57街地下
+
+256
+00:18:11,660 --> 00:18:15,210
+-我们在哪啊老兄  -地狱上一层
+- Where the hell are we, man? - One story above hell.
+
+257
+00:18:16,620 --> 00:18:19,890
+那人是恶魔的帮手  你带了我的枪吗
+This idiot's the devil's butler. You got my gun on you?
+
+258
+00:18:19,890 --> 00:18:20,710
+带了
+Yeah.
+
+259
+00:18:24,460 --> 00:18:27,330
+你还带了个朋友
+Ah, you brought a friend.
+
+260
+00:18:28,240 --> 00:18:32,960
+听着  小白脸  我跟你说过我不干了
+Look, slick. I told you. I'm out.
+
+261
+00:18:32,960 --> 00:18:35,050
+我怎样才能让你明白这一点呢
+What do I gotta do to convince you that I'm done?
+
+262
+00:18:35,050 --> 00:18:39,190
+格斯  你违反了其中一条规则
+Gus. You violated one of the three rules. 
+
+263
+00:18:39,200 --> 00:18:41,800
+你想顺一点货走
+You attempted to take some of the cargo.
+
+264
+00:18:42,220 --> 00:18:45,070
+因此我们的协议就失效了
+The deal we made Therefore is no longer valid.
+
+265
+00:18:45,280 --> 00:18:47,230
+你还得听我差使
+But you remain in my employ.
+
+266
+00:18:47,230 --> 00:18:48,990
+我没有看过箱子里的东西
+I didn't look in that box.
+
+267
+00:18:50,090 --> 00:18:52,520
+我们不会争论这件事情了
+We're not going to debate the issue.
+
+268
+00:18:52,860 --> 00:18:54,950
+这是你的新任务
+Here is your new assignment:
+
+269
+00:18:54,950 --> 00:18:57,110
+在圣塞巴斯蒂安医院的地下室里
+In the basement of St. Sebastian's hospital,
+
+270
+00:18:57,110 --> 00:19:00,090
+你会找到一具冷藏的尸体残骸
+you will find the refrigerated remains of a body.
+
+271
+00:19:00,460 --> 00:19:03,320
+有个助手会带你找到这具尸体
+An associate will pick you up and take you to this body.
+
+272
+00:19:03,320 --> 00:19:06,970
+你把它从医院里带出来
+You will remove it from the hospital premises
+
+273
+00:19:06,970 --> 00:19:09,100
+然后再把它处理掉
+and you will dispose of it.
+
+274
+00:19:09,530 --> 00:19:13,860
+我相信你自有安全的地方处理这种任务
+I trust you know of a secure location for such a task.
+
+275
+00:19:14,330 --> 00:19:16,020
+我觉得你没懂我的意思
+I don't think you're hearing me.
+
+276
+00:19:19,370 --> 00:19:20,570
+{\an8}{\pos(192,220)}我们走
+
+277
+00:19:20,850 --> 00:19:23,410
+{\an8}{\pos(192,220)}他要想拦我们  就干掉他
+
+278
+00:19:23,620 --> 00:19:25,340
+{\an8}{\pos(192,220)}这个任务
+
+279
+00:19:25,560 --> 00:19:28,210
+{\an8}{\pos(192,220)}酬劳是八百元
+
+280
+00:19:28,350 --> 00:19:31,870
+{\an8}{\pos(192,220)}你的母亲也不会被驱逐出境
+
+281
+00:19:32,980 --> 00:19:35,140
+{\an8}{\pos(192,220)}你懂了吗
+
+282
+00:19:36,210 --> 00:19:38,020
+你不该把她卷进来
+You should never brought her into this.
+
+283
+00:19:38,380 --> 00:19:39,840
+你很爱她
+You love her very much.
+
+284
+00:19:41,700 --> 00:19:43,130
+但我觉得有意思的是
+What I find fascinating is
+
+285
+00:19:43,130 --> 00:19:45,580
+人们往往把爱说成一种馈赠  一种祝福
+how love is considered a gift, a blessing,
+
+286
+00:19:46,280 --> 00:19:49,630
+却不肯正视爱其实是一种羁绊
+with no acceptance to the fact that it also binds
+
+287
+00:19:50,330 --> 00:19:53,700
+枷锁  令人窒息
+and chokes and strangles.
+
+288
+00:19:57,280 --> 00:19:59,080
+闭嘴  蠢货  你去死吧
+Shut up, fool. You're over!
+
+289
+00:20:23,280 --> 00:20:25,800
+-怎么  -你到底是个什么东西
+- Yes? - What are you?
+
+290
+00:20:33,540 --> 00:20:37,550
+我是你的救星还是噩梦  你自己选
+I am your salvation or your downfall. Your choice.
+
+291
+00:20:38,400 --> 00:20:40,160
+你是个聪明人  格斯
+You're a smart boy, Gus. 
+
+292
+00:20:40,740 --> 00:20:43,540
+我想你不会再犯相同的错误
+I doubt you will make the same mistake again.
+
+293
+00:20:47,150 --> 00:20:48,860
+现在  赶快去
+Now get going!
+
+294
+00:21:03,920 --> 00:21:08,590
+{\an8}国土安全部
+
+295
+00:21:08,590 --> 00:21:14,640
+{\an8}联邦大厦
+
+296
+00:21:09,670 --> 00:21:14,640
+{\an3}{\pos(342,227)}曼哈顿下城区  联邦广场26号
+
+297
+00:21:11,610 --> 00:21:15,050
+他们告诉你的一切都是捏造的
+Everything you've been told is 100% false.
+
+298
+00:21:15,250 --> 00:21:18,770
+这么说你没杀多伊尔·雷德芬机长
+So you didn't kill Doyle Redfern, the pilot?
+
+299
+00:21:19,200 --> 00:21:23,410
+是的  我没杀多伊尔·雷德芬机长
+No. I did not kill Doyle Redfern the pilot.
+
+300
+00:21:23,410 --> 00:21:25,650
+你只是碰巧在走廊上拖着他的尸体
+Just happened to be dragging his body down the hallway,
+
+301
+00:21:25,650 --> 00:21:26,980
+是这样吗
+is that right?
+
+302
+00:21:27,430 --> 00:21:29,260
+你能给我儿子发条短信吗
+Look, could you text my son?
+
+303
+00:21:30,360 --> 00:21:32,320
+你在他面前把我给拷走了
+You handcuffed me right in front of him.
+
+304
+00:21:34,460 --> 00:21:36,180
+你只用打字就行  我口述
+You can type it in, I'll dictate it to you,
+
+305
+00:21:36,180 --> 00:21:37,510
+我只是想让他知道我没事
+he just needs to know that I'm ok.
+
+306
+00:21:37,510 --> 00:21:38,940
+但我不确定你是不是真没事  医生
+Yeah, but I'm not sure that you are, Doc.
+
+307
+00:21:38,950 --> 00:21:40,880
+实际上  我更确信你大事不妙
+In fact, I'm sure that you're not.
+
+308
+00:21:40,880 --> 00:21:41,960
+我不想再和你兜圈子了
+Now I'm not going to dick around with you,
+
+309
+00:21:41,960 --> 00:21:43,990
+你现在是一堆麻烦缠身
+you are in a shitstorm of trouble here
+
+310
+00:21:43,990 --> 00:21:46,020
+你能为自己做的最佳选择
+and the best thing you can do for yourself
+
+311
+00:21:46,020 --> 00:21:47,330
+就是告诉我真相
+is to tell me the truth.
+
+312
+00:21:47,340 --> 00:21:49,080
+听着  我知道这是你们办案的方式
+Look, I know that this is the way that you do things
+
+313
+00:21:49,080 --> 00:21:51,040
+但我们真的没时间在这儿磨嘴皮子了
+but we really just don't have time for this shit.
+
+314
+00:21:51,040 --> 00:21:52,420
+你现在有的只剩时间了  老兄
+That's all you got is time, Fella. 
+
+315
+00:21:52,430 --> 00:21:54,030
+不  我没有  我们都没有
+No, I don't. We don't.
+
+316
+00:21:54,030 --> 00:21:55,220
+现在的时间很关键
+These hours are crucial.
+
+317
+00:21:55,220 --> 00:21:57,850
+我们得利用日光进行战斗  捕杀它们
+We need daylight to fight these things, to hunt them.
+
+318
+00:21:57,850 --> 00:21:59,360
+现在几点了
+What time is it?
+
+319
+00:22:00,250 --> 00:22:01,430
+我才不管你是谁
+I don't give a shit who you are
+
+320
+00:22:01,440 --> 00:22:03,970
+或是什么名牌医学院毕业的
+or what fancy medical school you went to.
+
+321
+00:22:03,970 --> 00:22:07,450
+现在你落在我手上  让我出去
+Now I own you. Buzz me out.
+
+322
+00:22:07,930 --> 00:22:10,230
+把这混蛋先在这儿关上一两天
+Let's leave this asshole in here for a day or two
+
+323
+00:22:10,230 --> 00:22:11,710
+让他好好想想吧
+and let him stew.
+
+324
+00:22:16,650 --> 00:22:20,730
+{\an3}{\pos(208,227)}曼哈顿  西高速公路和58大街交叉口
+
+325
+00:22:28,340 --> 00:22:29,180
+是你
+You?
+
+326
+00:22:42,090 --> 00:22:43,960
+-这是什么  -快穿上
+- What's this? - Just put 'em on
+
+327
+00:22:44,000 --> 00:22:45,290
+别跟我说话
+and don't talk to me.
+
+328
+00:22:48,470 --> 00:22:49,840
+给你钱  谢谢
+Here you go, thanks.
+
+329
+00:22:49,050 --> 00:22:53,430
+{\an3}{\pos(342,227)}曼哈顿  第28大街
+
+330
+00:22:52,000 --> 00:22:55,200
+-手机还是没信号  -我们这是要去哪儿
+- Cellphone's still out. - Where are we going?
+
+331
+00:22:55,810 --> 00:22:56,960
+我不知道  妈妈
+I don't know, mama.
+
+332
+00:22:58,860 --> 00:23:02,110
+但这里不安全  很快就要黑了...
+But it isn't safe here. It'll be dark soon...
+
+333
+00:23:02,810 --> 00:23:05,870
+女儿啊  别犯傻了  现在可是大中午
+Don't be silly mi hija, it's the middle of the day.
+
+334
+00:23:08,360 --> 00:23:10,220
+-日食眼镜  -在这等我
+- Eclipse glasses! - Just wait here.
+
+335
+00:23:10,220 --> 00:23:14,110
+只要一块钱  卖纪念品啦
+Just $1. Souvenirs!
+
+336
+00:23:14,290 --> 00:23:15,500
+日食眼镜
+Eclipse glasses.
+
+337
+00:23:15,500 --> 00:23:16,620
+抱歉
+Excuse me.
+
+338
+00:23:17,840 --> 00:23:19,560
+我想有人能帮我们
+I think there's someone who can help us.
+
+339
+00:23:22,640 --> 00:23:25,100
+保护你的眼睛  只要一块
+Protect your eyes! $1.
+
+340
+00:23:34,100 --> 00:23:36,910
+-我要坐下来  拜托了  -走吧  走吧
+- Necesito sentarme, por favor! - Come on, come on.
+
+341
+00:23:39,530 --> 00:23:41,760
+-我们很快能到了  好吗  -好吧
+- We'll be there soon, ok? - Ok.
+
+342
+00:23:46,480 --> 00:23:50,900
+{\an3}{\pos(342,227)}皇后区  长岛市  28街
+
+343
+00:23:57,300 --> 00:24:00,780
+你们俩听说奥松公园房屋爆炸的事了吗
+You two hear about the house explosion out in Ozone Park?
+
+344
+00:24:29,990 --> 00:24:32,380
+你居然还有个小女儿
+Didn't know you had a little girl.
+
+345
+00:25:11,010 --> 00:25:13,770
+得来点更有力的家伙才行
+Gonna need something with a little more punch.
+
+346
+00:25:18,440 --> 00:25:23,220
+偷吃贼溜进敌方总部了啊
+Munchers sneaking in in the enemy headquarters, huh?
+
+347
+00:25:30,060 --> 00:25:31,120
+老大
+Boss?
+
+348
+00:25:36,380 --> 00:25:37,510
+你还好吗
+You alright?
+
+349
+00:26:15,090 --> 00:26:16,880
+好吧
+Ok then.
+
+350
+00:26:23,590 --> 00:26:24,830
+劳蕾塔
+Lauretta...?
+
+351
+00:27:02,570 --> 00:27:03,620
+你是对的
+You were right.
+
+352
+00:27:03,620 --> 00:27:04,850
+应该多等几天
+Shoulda waited a couple of days
+
+353
+00:27:04,850 --> 00:27:06,610
+不该现在就把他带过来
+instead of bringing him back in.
+
+354
+00:27:06,610 --> 00:27:07,850
+还净听他这些瞎扯
+And hearing this bullshit.
+
+355
+00:27:07,850 --> 00:27:09,690
+你们想听事情的全部  就这些了
+You wanted to hear the whole story, that's it.
+
+356
+00:27:09,690 --> 00:27:12,400
+我已经告诉你们了  所有的事
+I just gave it to you. All of it.
+
+357
+00:27:12,400 --> 00:27:13,540
+这就是真相
+It's the truth.
+
+358
+00:27:13,950 --> 00:27:18,970
+这可不是全部  那家伙呢
+Well, not everything. What about that guy?
+
+359
+00:27:18,970 --> 00:27:21,520
+彼得·毕什普  航空交通管制处主管
+Peter Bishop. Head of airport ATC,
+
+360
+00:27:21,520 --> 00:27:23,130
+被发现死在肯尼迪机场
+found dead at JFK.
+
+361
+00:27:23,140 --> 00:27:24,850
+他也是感染者之一吗
+Was he also one of these infected people
+
+362
+00:27:24,850 --> 00:27:26,840
+也必须被消灭吗
+who needed to be destroyed?
+
+363
+00:27:26,840 --> 00:27:28,910
+你们能不能稍微考虑下
+How about just for one minute,
+
+364
+00:27:28,910 --> 00:27:31,770
+我有可能是对的
+you entertain the possibility that I'm right.
+
+365
+00:27:31,770 --> 00:27:34,500
+现在正有一种严重的传染病
+That there is a massive contagious event 
+
+366
+00:27:34,500 --> 00:27:36,310
+在纽约城肆虐蔓延
+rolling through New York city.
+
+367
+00:27:36,310 --> 00:27:37,220
+好啊
+Ok.
+
+368
+00:27:38,840 --> 00:27:40,700
+你们就去某个乘客的家中
+Well, just go to one of the passenger's houses.
+
+369
+00:27:40,700 --> 00:27:43,120
+随便选一个  看看会有什么发现
+Just pick one, any one and see what you find there.
+
+370
+00:27:43,640 --> 00:27:45,970
+还是把这家伙关回监狱吧
+Let's put this guy back in his cell.
+
+371
+00:27:47,170 --> 00:27:50,930
+再见了博士  我们五到六个月后法庭上见
+Goodbye doctor, we'll see you in court in five or six months.
+
+372
+00:27:50,940 --> 00:27:53,370
+好吧  好吧  我...
+Alright, alright, alright. I...
+
+373
+00:27:54,890 --> 00:27:57,000
+我带你们去找尸体  我知道尸体都在哪儿
+I'll take you to the bodies. I know where the bodies are.
+
+374
+00:28:03,600 --> 00:28:05,380
+你现在是要换个说法了吗
+Are you saying something different now?
+
+375
+00:28:05,380 --> 00:28:07,970
+-是的  -你知道尸体在哪吗
+- I am. - You know where the bodies are?
+
+376
+00:28:07,970 --> 00:28:10,710
+-我知道  所有的  -把地址给我们
+- I do. All of them. - Give us an address.
+
+377
+00:28:10,710 --> 00:28:12,770
+不不不  地址不行  我得带你们去看
+No, no, no. No address. I need to show you.
+
+378
+00:28:13,300 --> 00:28:14,920
+我看他还是在扯蛋
+It's just more bullshit.
+
+379
+00:28:14,920 --> 00:28:16,620
+不  不  我想做辩诉交易
+No, no, no. I want to make a deal.
+
+380
+00:28:20,680 --> 00:28:21,780
+你要是敢耍我们
+If you're jacking us around,
+
+381
+00:28:21,780 --> 00:28:25,080
+我会让你吃不了兜着走
+what I did to you before was nothing.
+
+382
+00:28:25,900 --> 00:28:26,790
+你要是想弄清整件事
+You want answers to your questions
+
+383
+00:28:26,800 --> 00:28:29,000
+一直待在这里可不行
+you're not going to find them in here.
+
+384
+00:28:33,510 --> 00:28:36,860
+就我所知  日食是法语欢乐时光的意思
+As far as I'm concerned, eclipse is French for happy hour.
+
+385
+00:28:38,830 --> 00:28:41,720
+我从来没见过伊弗这样
+I've just never seen Eph like that.
+
+386
+00:28:41,720 --> 00:28:43,460
+他就是故意给你们添堵
+It's a classic cock-block.
+
+387
+00:28:43,460 --> 00:28:46,520
+现在城里危机四伏  一触即发
+Oh, there's just some big city wide emergency,
+
+388
+00:28:46,520 --> 00:28:49,030
+快救你和儿子  我是你们的大英雄
+save yourself and Zack, I'm your hero.
+
+389
+00:28:49,030 --> 00:28:52,360
+我是说  我狠狠地呵斥了马特
+I mean, I just shut Matt down hard.
+
+390
+00:28:52,720 --> 00:28:55,000
+他只是想帮忙
+He was trying to help.
+
+391
+00:28:55,000 --> 00:28:57,080
+虽然是帮倒忙  但有这份心
+Failing, but trying.
+
+392
+00:28:57,080 --> 00:28:59,090
+其实你也没做错
+Hey, what you did was fine.
+
+393
+00:28:59,090 --> 00:29:01,820
+有些事情有时候需要慢慢来
+They need to be put in their place from time to time.
+
+394
+00:29:01,920 --> 00:29:02,920
+他到现在都没联系我
+He hasn't called or texted,
+
+395
+00:29:02,920 --> 00:29:04,590
+这一点都不像他
+I mean, that is so not like him.
+
+396
+00:29:05,290 --> 00:29:06,400
+男人都爱面子
+That's male pride.
+
+397
+00:29:06,410 --> 00:29:07,880
+你觉得这里的装修
+You think this redecorating thing
+
+398
+00:29:07,880 --> 00:29:09,880
+是他的心血来潮吗
+is some random home improvement?
+
+399
+00:29:09,880 --> 00:29:10,910
+他没搞大男子主义宣布主权
+You're lucky he's not marking his territory
+
+400
+00:29:10,910 --> 00:29:12,730
+你就偷着乐吧
+in a more traditional way.
+
+401
+00:29:14,930 --> 00:29:16,910
+也许不该那么快让他搬进来
+Maybe I let him move in too soon.
+
+402
+00:29:19,120 --> 00:29:21,300
+也许我就是想气气伊弗
+Maybe I did want to hurt Eph.
+
+403
+00:29:21,310 --> 00:29:23,910
+离婚就像是街头斗殴
+Hey. Divorce is a street fight.
+
+404
+00:29:23,910 --> 00:29:25,550
+你可别忘了伊弗那份奇葩工作
+Don't you forget about Eph's spicy
+
+405
+00:29:25,560 --> 00:29:27,560
+让你遭的罪  好吗
+side-dish there at work, Ok?
+
+406
+00:29:27,560 --> 00:29:30,180
+-不要动摇  -也对
+- Stay strong. - Right.
+
+407
+00:29:32,950 --> 00:29:34,810
+要是被伊弗说对了怎么办
+And what if Eph's right?
+
+408
+00:29:35,010 --> 00:29:36,010
+不知道...
+I don't know...
+
+409
+00:29:36,010 --> 00:29:37,990
+那就去佛蒙特州
+Then go to Vermont.
+
+410
+00:29:37,990 --> 00:29:40,190
+你要是觉得有压力  就给自己放个长假
+Take a long weekend if you're stressing out about it.
+
+411
+00:29:40,340 --> 00:29:42,490
+你不用去解释  也不用...
+You don't have to justify it, you don't have to...
+
+412
+00:29:42,490 --> 00:29:44,550
+也不用征求马特的同意
+you don't have to ask Matt's permission.
+
+413
+00:29:44,560 --> 00:29:47,960
+-去吧  你应得的  -好  那你呢
+- You go, you deserve it. - Right. What about you?
+
+414
+00:29:47,960 --> 00:29:50,670
+你就不担心真的有疫情暴发
+You're not worried that there's some horrible new epidemic
+
+415
+00:29:50,670 --> 00:29:52,240
+而政府却对我们有所隐瞒吗
+they're not telling us about?
+
+416
+00:29:53,380 --> 00:29:54,240
+你想跟我们一起走吗
+You want to come with us?
+
+417
+00:29:54,250 --> 00:29:55,850
+当然不  小凯  拜托
+Nah. Kel, come on.
+
+418
+00:29:55,850 --> 00:29:58,150
+生是皇后人  死做皇后鬼
+I'm a Queens girl, we never leave.
+
+419
+00:30:00,620 --> 00:30:05,430
+{\an3}{\pos(170,227)}皇后区  长岛市  韦尔南大街
+
+420
+00:30:11,370 --> 00:30:13,630
+天  感觉这里面又粘稠又恶心
+Man, it's so loose and nasty in there.
+
+421
+00:30:14,830 --> 00:30:17,300
+我跟你说  肯定被人分尸了
+I'm telling you, someone got their ass chopped up.
+
+422
+00:30:18,080 --> 00:30:20,780
+是谁啊  黑帮的人还是政客
+Who is it? Mob guy? Politician?
+
+423
+00:30:21,210 --> 00:30:22,110
+你不用知道那么多
+You don't need to know.
+
+424
+00:30:22,110 --> 00:30:23,810
+别多管闲事  菲利克斯
+Leave it alone, Felix.
+
+425
+00:30:24,950 --> 00:30:26,620
+想得美  兄弟  我得瞧瞧
+Nice try, Homie. I gotta see this.
+
+426
+00:30:26,620 --> 00:30:28,990
+别  别打开  你疯了吗
+Hey! Stop! Stop! Stop! Hey, what are you doing?!
+
+427
+00:30:31,270 --> 00:30:32,370
+这货不是人类啊
+That shit ain't human.
+
+428
+00:30:35,390 --> 00:30:36,460
+还不滚开
+Get out of the way!
+
+429
+00:30:49,420 --> 00:30:50,420
+该死
+Goddamnit.
+
+430
+00:30:53,470 --> 00:30:54,640
+我们赶紧了事吧
+Let's get this over with.
+
+431
+00:31:21,680 --> 00:31:26,750
+{\an3}{\pos(202,227)}布鲁克林  布莱顿海滩  布莱顿一街
+
+432
+00:31:42,100 --> 00:31:44,980
+-爸爸  -瓦西里
+- Pop. - Vasiliy.
+
+433
+00:31:51,620 --> 00:31:56,200
+-妈不在家吗  -她就回来
+- Mom's not home? - She's on her way.
+
+434
+00:31:56,320 --> 00:31:57,740
+去集市了
+Market day.
+
+435
+00:32:02,790 --> 00:32:04,490
+烤肉饼
+Pirozkhi.
+
+436
+00:32:05,950 --> 00:32:09,290
+熟悉的味道  刚做的吗
+Always. Fresh made, huh?
+
+437
+00:32:13,110 --> 00:32:14,350
+你要钱吗
+You need money?
+
+438
+00:32:18,840 --> 00:32:20,850
+抱歉让你失望了
+Sorry to disappoint you.
+
+439
+00:32:26,080 --> 00:32:28,580
+还搞「疯狂天才」的那一套啊
+Still the Mad Genius I see, huh?
+
+440
+00:32:29,710 --> 00:32:31,240
+快完成了
+It is almost done.
+
+441
+00:32:35,040 --> 00:32:37,860
+「乌克兰建筑史」
+The History of Ukrainian Architecture.
+
+442
+00:32:38,110 --> 00:32:41,520
+作者却是三十年前就离开那里
+Authored by a man who fled the country 30 years ago
+
+443
+00:32:41,930 --> 00:32:44,590
+-再没回去的人  -我的书即于六月份
+- to never return. - My book is to be published
+
+444
+00:32:44,590 --> 00:32:48,820
+由敖德萨国立大学大学出版社出版
+in June by the Odessa Mechnikov University Press.
+
+445
+00:32:49,120 --> 00:32:53,400
+我还受邀秋天去敖德萨讲座
+I have also been invited to lecture there in Odessa,
+
+446
+00:32:53,400 --> 00:32:57,580
+-还有哈科夫和基辅市  -恭喜你啊
+- Kharkiv and kiev in the fall. - Congratulations.
+
+447
+00:33:00,850 --> 00:33:02,300
+你呢瓦西里
+And you Vasiliy?
+
+448
+00:33:03,060 --> 00:33:06,110
+忙着杀老鼠  都没时间来看妈妈吗
+Too busy killing rats to come visit your mother?
+
+449
+00:33:09,110 --> 00:33:11,640
+我还一直想你能不能放下这事
+I always wonder if you'll get past it.
+
+450
+00:33:13,420 --> 00:33:17,080
+约德嘉夫妇还以为我是市规划局的吗
+Do Mr. and Mrs. Yodka still think I work in City Planning?
+
+451
+00:33:17,080 --> 00:33:18,990
+我要为你的工作到处宣扬吗
+I should advertise what you do?
+
+452
+00:33:19,320 --> 00:33:22,150
+如果我告诉别人你拒绝了
+Is there any gain for me in telling people
+
+453
+00:33:22,150 --> 00:33:25,530
+康乃尔大学的建筑学研究生奖学金
+that you turned down a graduate school scholarship
+
+454
+00:33:25,530 --> 00:33:30,460
+去做捕鼠员  对我有什么好处
+in Architecture at Cornell to become a rat catcher?
+
+455
+00:33:30,630 --> 00:33:34,170
+是没什么好处
+No. Not much.
+
+456
+00:33:36,650 --> 00:33:38,700
+但我不是来跟你吵的
+But I didn't come here to fight.
+
+457
+00:33:39,810 --> 00:33:42,640
+我是来警告你的  你和妈妈
+I came here to warn you. You and Ma.
+
+458
+00:33:43,350 --> 00:33:45,510
+你们得马上离城
+You need to get out of this city.
+
+459
+00:33:45,930 --> 00:33:47,180
+为什么
+And why is that?
+
+460
+00:33:48,170 --> 00:33:50,500
+邪恶在这里扎根了
+Something evil has taken root.
+
+461
+00:33:51,160 --> 00:33:55,530
+一种疾病  异常可怕的菌株
+Some disease. Some horrible, horrible strain.
+
+462
+00:33:55,990 --> 00:33:58,710
+城里在暴发瘟疫
+A pestilence that's overrunning the city.
+
+463
+00:33:59,060 --> 00:34:01,860
+把人变成了饥渴的害虫
+It's turning people into hungry vermin.
+
+464
+00:34:03,010 --> 00:34:07,010
+瓦西里  你的工作  扭曲了你的理智
+Your job, Vasiliy, it has warped your mind--
+
+465
+00:34:07,010 --> 00:34:08,550
+这是实话
+It's the truth.
+
+466
+00:34:10,420 --> 00:34:13,130
+这是我的工作  我了解这个
+This is what I do. This is what I know.
+
+467
+00:34:16,330 --> 00:34:19,360
+你得跟妈妈去度假  你早就答应过她
+You need to take that vacation you always promised ma,
+
+468
+00:34:19,360 --> 00:34:22,250
+却一直没实现  你们得走
+but never given her. You know, you need to go.
+
+469
+00:34:30,930 --> 00:34:32,530
+我就知道会这样
+I knew this would happen.
+
+470
+00:34:33,190 --> 00:34:35,450
+你走了两年  现在突然出现
+You appear after two years.
+
+471
+00:34:36,630 --> 00:34:38,880
+要我背井离乡  凭什么
+And I'm supposed to flee my home on what?
+
+472
+00:34:39,780 --> 00:34:42,160
+陌生人的只言片语吗
+The word of a stranger.
+
+473
+00:34:48,990 --> 00:34:50,170
+我劝过你了
+I tried.
+
+474
+00:34:52,570 --> 00:34:53,860
+再见  爸爸
+Goodbye, da.
+
+475
+00:34:55,160 --> 00:34:58,280
+留下来  为了你妈
+Stay. For your mother.
+
+476
+00:35:01,190 --> 00:35:02,330
+快走
+Go.
+
+477
+00:35:03,660 --> 00:35:04,800
+为了我
+For me.
+
+478
+00:35:15,000 --> 00:35:16,770
+谢谢
+Thanks.
+
+479
+00:35:16,950 --> 00:35:19,380
+一定要戴好了再抬头看啊
+Make sure you put these on before you look up.
+
+480
+00:35:25,860 --> 00:35:27,820
+好神奇
+It's so cool.
+
+481
+00:35:27,820 --> 00:35:29,710
+我不喜欢日食
+Yeah, I don't like it.
+
+482
+00:35:31,870 --> 00:35:33,390
+这是不祥之兆
+It's a bad omen.
+
+483
+00:35:36,180 --> 00:35:39,290
+我们怎么做  小扎  留下还是离开
+So what should we do, Z? Stay here or go?
+
+484
+00:35:39,300 --> 00:35:40,650
+爸爸说离开
+Dad says go.
+
+485
+00:35:43,000 --> 00:35:45,580
+很抱歉今早让你看到那些
+I'm sorry you had to see that this morning.
+
+486
+00:35:50,190 --> 00:35:55,100
+很抱歉现在所有事情都一团糟
+I'm sorry everything is so chaotic right now.
+
+487
+00:35:57,300 --> 00:36:00,020
+可能我们都需要点正常的状态  是吧
+Maybe what we both need is a little normalcy, huh?
+
+488
+00:36:02,470 --> 00:36:04,320
+没有哪里能比得上自己家
+No place like home, right? 
+
+489
+00:36:04,910 --> 00:36:06,890
+而且你还要上学
+And you've got school.
+
+490
+00:36:11,880 --> 00:36:12,980
+我爱你
+I love you.
+
+491
+00:36:12,980 --> 00:36:14,700
+我也爱你
+I love you, too.
+
+492
+00:37:03,590 --> 00:37:07,300
+{\an3}{\pos(342,227)}曼哈顿  中城区  第46街
+
+493
+00:37:20,620 --> 00:37:21,420
+快走啊
+C'mon.
+
+494
+00:37:21,670 --> 00:37:22,870
+为什么走这条路
+Why'd we go this way?
+
+495
+00:37:22,920 --> 00:37:24,660
+因为我手机上是这么显示的
+Because my phone told me to.
+
+496
+00:37:26,240 --> 00:37:27,370
+老天啊  快看
+Jesus, look at that!
+
+497
+00:37:29,180 --> 00:37:30,130
+班尼特  
+Bennett? 
+
+498
+00:37:30,920 --> 00:37:31,580
+什么
+What?
+
+499
+00:37:31,690 --> 00:37:33,410
+那是曼哈顿的验尸官
+That's the Manhattan medical examiner.
+
+500
+00:37:33,800 --> 00:37:35,690
+就是他  之前这个人
+That's the guy right there who disappeared
+
+501
+00:37:35,690 --> 00:37:37,580
+和乘客的尸体一起消失了
+along with the bodies of the passengers.
+
+502
+00:37:37,580 --> 00:37:38,880
+就是他  就是那个人  
+That's him, right there. 
+
+503
+00:37:38,880 --> 00:37:40,780
+他只是个无家可归的疯子
+He's just a crazy homeless guy.
+
+504
+00:37:41,830 --> 00:37:42,840
+上帝啊
+My God!
+
+505
+00:37:44,480 --> 00:37:45,250
+他妈的
+Holy shit!
+
+506
+00:37:45,250 --> 00:37:46,800
+别管他  这不归我们管
+Leave it, it's not our problem.
+
+507
+00:37:46,860 --> 00:37:49,200
+-你开什么玩笑  -别管他
+- You kidding me? - Leave it!
+
+508
+00:37:53,030 --> 00:37:54,740
+-万恶的纽约  -别  别去
+- Damn New York City... - No. No! No! No!
+
+509
+00:37:54,740 --> 00:37:58,570
+等等  站住  探员  别去
+Wait! Wait! Stop! Federal agent! Stop!
+
+510
+00:38:01,510 --> 00:38:02,870
+住手  我说了住手
+Stop! I said stop!
+
+511
+00:38:10,110 --> 00:38:11,770
+联调局  不许动
+FBI. Freeze!
+
+512
+00:38:28,930 --> 00:38:30,780
+救我  求你
+Help... Please...
+
+513
+00:38:32,870 --> 00:38:35,440
+钥匙给我  钥匙给我
+Give me your keys. Give me your keys!
+
+514
+00:38:35,440 --> 00:38:36,290
+救我
+Help me.
+
+515
+00:38:50,880 --> 00:38:52,240
+我警告过你的  
+I warned you. 
+
+516
+00:38:53,470 --> 00:38:55,190
+对不起
+I'm sorry.
+
+517
+00:39:00,810 --> 00:39:04,450
+{\an3}{\pos(142,227)}皇后区  雷格公园中心
+
+518
+00:39:01,610 --> 00:39:03,390
+哥们儿  你错过天上的好戏了
+Yo matty, you missing the big show in the sky.
+
+519
+00:39:05,480 --> 00:39:06,310
+你没事吧
+You ok, man?
+
+520
+00:39:06,950 --> 00:39:10,260
+没事  我跟女朋友吵架了
+Yeah, yeah, I... just got into a fight with my girlfriend.
+
+521
+00:39:10,530 --> 00:39:12,190
+想找个法子跟她和好
+Just trying to find a way to make it right.
+
+522
+00:39:12,200 --> 00:39:13,920
+别发短信  一点诚意都没有
+Ah, don't text her man. It's impermanent.
+
+523
+00:39:14,160 --> 00:39:15,480
+不过我倒是认识个人
+Look I know a guy who could
+
+524
+00:39:15,480 --> 00:39:16,790
+能帮你想出非常诚恳的道歉方案
+sleeve you up a real apology, though.
+
+525
+00:39:17,510 --> 00:39:19,990
+我还是想着送送花什么的  不过谢了
+I was thinking more along the lines of flowers, but thanks.
+
+526
+00:39:20,090 --> 00:39:20,820
+好吧
+Alright.
+
+527
+00:39:23,760 --> 00:39:24,720
+杰夫  出什么事了
+Jeff, what happened?!
+
+528
+00:39:26,330 --> 00:39:29,460
+快叫保安  拿急救箱  快去
+Call security, get a first aid kit. Go! Go!
+
+529
+00:39:29,730 --> 00:39:32,370
+没事的  救护马上就来了
+Everything-- help is on the way, ok buddy?
+
+530
+00:39:32,640 --> 00:39:34,680
+谁  是谁干的  是谁干的
+Who...who did this? Who did this?
+
+531
+00:39:38,320 --> 00:39:41,130
+多起报告称有可怕的攻击事件...
+Many reports of gruesome attacks occurring...
+
+532
+00:39:43,260 --> 00:39:44,910
+是不是你们干的
+Did you do this?!
+
+533
+00:39:58,770 --> 00:40:00,200
+那袋子里是什么  哥们儿
+What was in the bag, homie? 
+
+534
+00:40:00,200 --> 00:40:01,630
+别吵  让我想想
+Shut up, bro. Let me think.
+
+535
+00:40:01,790 --> 00:40:05,020
+格斯图  咱们该把它烧了  还得找个神父
+We should've burned it Gusto. Need a priest.
+
+536
+00:40:05,320 --> 00:40:06,970
+我该用圣水好好洗一下手
+Coulda washed my hands in holy water.
+
+537
+00:40:07,110 --> 00:40:08,990
+我说多少次了  别管了  菲利克斯
+How many times I gotta tell you...let it go, Felix.
+
+538
+00:40:10,260 --> 00:40:11,440
+接我们那哥们儿
+That dude who picked us up...
+
+539
+00:40:11,980 --> 00:40:14,550
+他吓坏了  你也是
+He was scared, and so were you.
+
+540
+00:40:15,530 --> 00:40:17,860
+还有那德国佬  我们今天碰到了魔鬼
+And that German dude? We met a diablo today, esse...
+
+541
+00:40:17,860 --> 00:40:19,050
+我跟你说过了  闭嘴
+Man, I told you. Shut up!
+
+542
+00:40:20,140 --> 00:40:21,490
+我没有害怕  怕的是你
+I wasn't scared, you were scared.
+
+543
+00:40:26,950 --> 00:40:28,620
+别激动伙计  放松
+Hey yo, be easy man. Relax.
+
+544
+00:40:33,430 --> 00:40:35,460
+退后  伙计  退后  他妈的
+Back up, man. Back up, puto.
+
+545
+00:40:35,460 --> 00:40:37,410
+格斯图  救我  救我
+Gusto! Help! Help!
+
+546
+00:40:47,990 --> 00:40:50,530
+这什么啊  格斯图  救我
+What is it? Gusto, help!
+
+547
+00:40:51,320 --> 00:40:52,550
+-什么玩意儿  -把它拽出来
+- What is it? - Get it off!
+
+548
+00:40:54,010 --> 00:40:55,500
+这他妈什么玩意儿  把它拽出来
+What is that shit, bro? Get it out!
+
+549
+00:40:57,370 --> 00:40:58,320
+警察
+Hey! Police!
+
+550
+00:41:00,760 --> 00:41:01,550
+过来
+Come here!
+
+551
+00:41:04,630 --> 00:41:08,370
+-好了  不准反抗  -现在才知道露面吗
+- Here we go. Stop resisting! - Ha! Ha! Ha! Now you show up.
+
+552
+00:41:19,570 --> 00:41:24,610
+{\an3}{\pos(118,227)}哈莱姆  东118街
+
+553
+00:41:42,520 --> 00:41:43,580
+我准备好谈谈了
+I'm ready to talk.
+
+554
+00:41:45,300 --> 00:41:46,280
+跟我来
+Follow me.
+
+555
+00:42:27,020 --> 00:42:28,020
+你来了
+You're here.
+
+556
+00:42:34,990 --> 00:42:36,890
+你们都准备好了  很好
+You're both ready. Good.
+
+557
+00:42:40,290 --> 00:42:41,670
+我有个新计划
+I have a new plan.
+

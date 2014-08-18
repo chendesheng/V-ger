@@ -31,7 +31,7 @@ func (s *SubItem) IsEmpty() bool {
 }
 
 func (s *SubItem) Contains(t time.Duration) bool {
-	return s.From <= t && t <= s.To
+	return s.From <= t && t < s.To
 }
 
 type Sub struct {

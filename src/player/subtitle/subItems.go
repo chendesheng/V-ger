@@ -23,7 +23,7 @@ func newSubItems(items []*SubItem) *subItems {
 	others := make([]*SubItem, 0)
 
 	for i, item := range items[1:] {
-		if item.IsInDefaultPosition() && items[i].To < item.From {
+		if item.IsInDefaultPosition() && items[i].To <= item.From {
 			nooverlap = append(nooverlap, item)
 		} else {
 			others = append(others, item)
@@ -91,8 +91,8 @@ func (si *subItems) getById(id int) *SubItem {
 		return si.nooverlap[id]
 	case id < l+GAP:
 		return nil
-	case id < l+l1:
-		return si.others[id-l1]
+	case id < l+GAP+l1:
+		return si.others[id-GAP-l]
 	default:
 		return nil
 	}
