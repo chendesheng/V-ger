@@ -216,21 +216,21 @@ func (m *Movie) setupDefaultSubtitles() {
 		s1, s2 = Subtitles(m.subs).Select()
 	}
 
-	if s1 == nil && s2 != nil {
-		s1 = s2
-		s2 = nil
-	}
+	switch {
+	case s1 != nil && s2 != nil:
+		m.p.Sub1, m.p.Sub2 = s1.Name, s2.Name
+		s1.IsMainSub, s2.IsMainSub = true, false
 
-	if s1 != nil {
+	case s1 != nil && s2 == nil:
 		s1.IsMainSub = true
 		m.p.Sub1 = s1.Name
-		// go s1.Play()
-	}
 
-	if s2 != nil {
-		s2.IsMainSub = true
-		m.p.Sub1 = s2.Name
-		// go s2.Play()
+	case s1 == nil && s2 != nil:
+		s1 = s2
+		s1.IsMainSub = true
+		m.p.Sub1 = s1.Name
+
+	case s1 == nil && s2 == nil:
 	}
 
 	m.setPlayingSubs(s1, s2)
