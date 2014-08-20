@@ -208,7 +208,7 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	s.quit = make(chan bool)
 	s.r = r
 
-	log.Printf("parse sub:%s; %d items", sub.Name, len(s.items.nooverlap))
+	log.Printf("parse sub:%s, %s, %s; %d items", sub.Name, sub.Lang1, sub.Lang2, len(s.items.nooverlap))
 	return s
 }
 

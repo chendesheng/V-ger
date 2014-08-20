@@ -82,8 +82,7 @@ func trace(output string) {
 	traceLock.Lock()
 	defer traceLock.Unlock()
 
-	print("[trace]")
-	println(output)
+	log.Print(output)
 }
 
 func activeFilters(filters []filter) {

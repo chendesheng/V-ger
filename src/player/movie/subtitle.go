@@ -30,9 +30,8 @@ func extract(subFile string) {
 	} else {
 		unar = path.Join(dir, "unar")
 	}
-	log.Print(path.Dir(os.Args[0]))
-	log.Print(unar)
-	log.Print(subFile)
+
+	log.Print("Extract file: ", subFile)
 	util.Extract(unar, subFile)
 }
 func saveToDisk(subFile string, data []byte) {
@@ -98,7 +97,6 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 }
 func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
 	util.WalkFiles(dir, func(filename string) error {
-		log.Print(filename)
 		select {
 		case <-quit:
 			return fmt.Errorf("quit")
