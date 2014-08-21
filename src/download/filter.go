@@ -106,7 +106,6 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 		to,
 		maxSpeed,
 		chMaxSpeed,
-		// block.DefaultBlockPool.GetBlocks(maxConnections*2, 512*block.KB),
 		maxConnections * 2,
 	}
 
@@ -151,8 +150,6 @@ func doDownload(t *task.Task, w io.WriterAt, from, to int64,
 
 	activeFilters([]filter{gf, df, sf, tf, wf, pf})
 
-	// <-wf.output
-	// block.DefaultBlockPool.PutBlocks(gf.blocks)
 	return
 }
 
@@ -167,7 +164,6 @@ func streaming(url string, w WriterAtQuit, from, to int64,
 		to,
 		0,
 		nil,
-		// block.DefaultBlockPool.GetBlocks(maxConnections*2, 512*block.KB),
 		maxConnections * 2,
 	}
 

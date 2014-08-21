@@ -130,14 +130,35 @@ func TestGC(t *testing.T) {
 	}
 }
 
-// func TestLastPos(t *testing.T) {
-// 	b := NewBuffer(1000)
-// 	if b.LastPos() != 0 {
-// 		t.Errorf("%d != 0", b.LastPos())
-// 	}
+func TestGCClear(t *testing.T) {
+	b := NewBuffer(1000)
+	from := int64(0)
+	i := int64(1)
+	for from < b.size {
+		b.WriteAtQuit(block.Block{from, make([]byte, 50*i)}, make(chan struct{}))
+		from += 50 * i //50+100+150+200+250+300(250)
+		i++
+	}
+	b.currentPos = 10000
+	b.GC()
 
-// 	b.WriteAtQuit(block.Block{10, make([]byte, 10)}, nil)
-// 	if b.LastPos() != 20 {
-// 		t.Errorf("%d != 20", b.LastPos())
-// 	}
-// }
+	if len(b.data) != 0 {
+		t.Errorf("expect len(b.data)=0 but %d", len(b.data))
+	}
+}
+func TestGCNoRelease(t *testing.T) {
+	b := NewBuffer(1000)
+	from := int64(0)
+	i := int64(1)
+	for from < b.size {
+		b.WriteAtQuit(block.Block{from, make([]byte, 50*i)}, make(chan struct{}))
+		from += 50 * i //50+100+150+200+250+300(250)
+		i++
+	}
+	b.currentPos = 0
+	b.GC()
+
+	if len(b.data) != 6 {
+		t.Errorf("expect len(b.data)=0 but %d", len(b.data))
+	}
+}

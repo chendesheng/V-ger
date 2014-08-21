@@ -68,9 +68,9 @@ func (b *buffer) GC() {
 		return
 	}
 
-	var bk *block.Block
 	var i int
-	for i, bk = range b.data {
+	for i = 0; i < len(b.data); i++ {
+		bk := b.data[i]
 		if b.currentPos < bk.To() {
 			break
 		} else {
