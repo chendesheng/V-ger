@@ -25,8 +25,8 @@
 }
 -(void)drawRect:(NSRect)dirtyRect {
     CGFloat barHeight = 2;
-    CGFloat knotHeight = 12;
-    CGFloat knotWidth = 3;
+    CGFloat knotHeight = 6;
+    CGFloat knotWidth = 6;
 
     CGFloat progressHeight = 22;
 
@@ -64,7 +64,7 @@
     
     [[NSColor whiteColor] setFill];    
     [self drawRoundedRect:NSMakeRect(stringWidth+self->paddingLeft, (progressHeight-barHeight)/2, position, barHeight) radius:2];
-    [self drawRoundedRect:NSMakeRect(position-knotWidth/2+stringWidth+self->paddingLeft, (progressHeight-knotHeight)/2, knotWidth, knotHeight) radius:1.5];
+    [self drawRoundedRect:NSMakeRect(position-knotWidth/2+stringWidth+self->paddingLeft, (progressHeight-knotHeight)/2, knotWidth, knotHeight) radius:5];
     
     [super drawRect:dirtyRect];
 }
