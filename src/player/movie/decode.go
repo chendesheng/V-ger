@@ -157,8 +157,6 @@ func (m *Movie) decode(name string) {
 		}
 	}()
 
-	m.w.SendSetSize(m.v.Width, m.v.Height)
-
 	var start time.Duration
 	if m.p.LastPos > time.Second && m.p.LastPos < m.p.Duration-50*time.Millisecond {
 		var img []byte
@@ -172,6 +170,7 @@ func (m *Movie) decode(name string) {
 		}
 	}
 
+	m.w.SendSetSize(m.v.Width, m.v.Height)
 	m.startSeekRoutine()
 
 	packet := AVPacket{}
