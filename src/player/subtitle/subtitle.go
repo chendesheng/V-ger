@@ -52,7 +52,7 @@ type Subtitle struct {
 	Lang1 string //one subtitle file may has double languages
 	Lang2 string
 
-	Format string
+	Type string
 
 	chanRes chan SubItemExtra
 
@@ -196,7 +196,7 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 	s.Lang1 = sub.Lang1
 	s.Lang2 = sub.Lang2
 
-	s.Format = sub.Type
+	s.Type = sub.Type
 
 	if len(sub.Lang1) == 0 && len(sub.Lang2) == 0 {
 		s.Lang1, s.Lang2 = detectLanguage(s.items)
@@ -216,7 +216,7 @@ func (s *Subtitle) parse(sub *Sub, width, height float64) error {
 	var items []*SubItem
 	var err error
 
-	if s.Format == "ass" {
+	if sub.Type == "ass" {
 		items, err = ass.Parse(strings.NewReader(sub.Content), width, height)
 		if err != nil {
 			return err
@@ -330,7 +330,7 @@ func (s Subtitles) Less(i, j int) bool {
 	if c != 0 {
 		return c > 0
 	} else {
-		c = compareFormat(a.Format, b.Format)
+		c = compareFormat(a.Type, b.Type)
 		if c != 0 {
 			return c > 0
 		}
