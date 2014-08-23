@@ -3,18 +3,10 @@ package video
 import (
 	"errors"
 	"fmt"
-	"math"
-
-	// "io/ioutil"
-	. "player/clock"
-	// "github.com/go-gl/gl"
 	"log"
-	// "path/filepath"
+	"math"
+	. "player/clock"
 	. "player/libav"
-	// "player/glfw"
-	// "runtime"
-	// "player/gui"
-	// "sync"
 	"time"
 )
 
@@ -30,18 +22,14 @@ type Video struct {
 	stream      AVStream
 	StreamIndex int
 	codec       AVCodecContext
-	swsCtx      SwsContext
 
-	//buffers
-	frame AVFrame
-	// pictureRGBs         [8]AVPicture
+	frame               AVFrame
 	pictureObjects      [40]*AVObject
 	currentPictureIndex int
 
 	Width, Height int
 	c             *Clock
 
-	// ChanPacket  chan *AVPacket
 	ChanDecoded chan *VideoFrame
 	flushQuit   chan struct{}
 	quit        chan struct{}
@@ -55,12 +43,6 @@ type Video struct {
 	lastPts float64
 	lastDts float64
 }
-
-// void init_pts_correction(PtsCorrectionContext *ctx)
-// {
-//     ctx->num_faulty_pts = ctx->num_faulty_dts = 0;
-//     ctx->last_pts = ctx->last_dts = INT64_MIN;
-// }
 
 func (v *Video) setupCodec(codec AVCodecContext) error {
 	v.codec = codec
@@ -114,19 +96,8 @@ func (v *Video) setupPictureRGB() {
 	for i, _ := range v.pictureObjects {
 		obj := AVObject{}
 		obj.Malloc(sz)
-		// log.Print("setup picture objects", obj.Size())
 		v.pictureObjects[i] = &obj
 	}
-	// for i, _ := range v.pictureRGBs {
-	// 	numBytes := AVPictureGetSize(AV_PIX_FMT_RGB24, v.Width, v.Height)
-	// 	picFrame := AllocFrame()
-	// 	pictureRGB := picFrame.Picture()
-	// 	pictureRGBBuffer := AVObject{}
-	// 	pictureRGBBuffer.Malloc(numBytes)
-	// 	pictureRGB.Fill(pictureRGBBuffer, AV_PIX_FMT_RGB24, v.Width, v.Height)
-
-	// 	v.pictureRGBs[i] = pictureRGB
-	// }
 }
 
 func (v *Video) getPictureObject() *AVObject {
@@ -136,32 +107,8 @@ func (v *Video) getPictureObject() *AVObject {
 	return obj
 }
 
-// func (v *Video) getPictureRGB() AVPicture {
-// 	pic := v.pictureRGBs[v.currentPictureIndex]
-// 	v.currentPictureIndex++
-// 	v.currentPictureIndex = v.currentPictureIndex % len(v.pictureRGBs)
-// 	return pic
-// }
-
-func (v *Video) setupSwsContext() {
-	width := v.Width
-	if width%4 != 0 {
-		/*
-			It's a trick for some videos with weired width (like 1278x720), but don't known why it works.
-			I got this trick from here:
-				http://forum.doom9.org/showthread.php?t=169036
-		*/
-		width += 1
-	}
-
-	log.Print("setupSwsContext", v.Width, v.Height, v.codec.PixelFormat())
-	v.swsCtx = SwsGetContext(width, v.Height, AV_PIX_FMT_YUV420P,
-		v.Width, v.Height, AV_PIX_FMT_RGB24, SWS_BICUBIC)
-}
-
 func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRender) (*Video, error) {
 	v := &Video{}
-	// globalVideo = v
 	v.formatCtx = formatCtx
 	v.stream = stream
 	v.StreamIndex = stream.Index()
@@ -177,29 +124,6 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 
 	v.setupPictureRGB()
 	v.frame = AllocFrame()
-
-	// v.videoPktPts = AV_NOPTS_VALUE
-
-	// v.setupSwsContext()
-
-	// v.codec.SetGetBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) int {
-	// 	ret := ctx.DefaultGetBuffer(frame)
-	// 	obj := AVObject{}
-	// 	obj.Malloc(8)
-	// 	obj.WriteUInt64(v.global_pts)
-	// 	frame.SetOpaque(obj)
-
-	// 	return ret
-	// })
-	// v.codec.SetReleaseBufferCallback(func(ctx *AVCodecContext, frame *AVFrame) {
-	// 	pts := frame.Opaque()
-	// 	if !pts.IsNil() {
-	// 		pts.Free()
-	// 	}
-
-	// 	ctx.DefaultReleaseBuffer(frame)
-	// })
-
 	v.c = c
 
 	v.ChanDecoded = make(chan *VideoFrame, 20)
@@ -208,15 +132,6 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 
 	log.Print("new video success")
 	return v, nil
-}
-
-func getFrameOpaque(frame AVFrame) uint64 {
-	o := frame.Opaque()
-	if o.IsNil() {
-		return AV_NOPTS_VALUE
-	} else {
-		return o.UInt64()
-	}
 }
 
 func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
@@ -231,23 +146,13 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 	frameFinished := codec.DecodeVideo(frame, packet)
 
 	if frameFinished {
-		// var rebase bool
-		// if v.lastDts == float64(math.MinInt64) {
-		// rebase = true
-		// log.Print("rebase is true")
-		// log.Print("time:", v.c.GetTime().String())
-		// }
-
 		pts := v.guessCorrectPts(frame.Pts(), frame.Dts())
 		if pts == AV_NOPTS_VALUE {
 			pts = 0
 		}
 
 		dur := time.Duration(float64(pts) * v.stream.Timebase().Q2D() * (float64(time.Second)))
-		// if rebase && dur-v.c.GetTime() > time.Minute {
-		// 	v.c.AddBase(v.c.GetTime() - dur)
-		// 	dur = 0
-		// }
+
 		return true, dur
 	}
 
@@ -283,7 +188,7 @@ func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
 }
 
 func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
-	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
+	flags := AVSEEK_FLAG_FRAME
 
 	ctx := v.formatCtx
 	err := ctx.SeekFrame(v.stream, t, flags)
@@ -295,34 +200,13 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 	return v.ReadOneFrame()
 }
 
-// func (v *Video) Seek2(t time.Duration) (time.Duration, []byte, error) {
-// 	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
-
-// 	ctx := v.formatCtx
-// 	err := ctx.SeekFrame(v.stream, t, flags)
-// 	if err != nil {
-// 		return t, nil, err
-// 	}
-
-// 	return v.DropFramesUtil(t)
-// 	// return v.ReadOneFrame()
-// }
 func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0, nil
 	}
 	if frameFinished, pts := v.Decode(packet); frameFinished {
-		// log.Print("decode pts:", pts.String())
 		frame := v.frame
-		// pictureRGB := v.getPictureRGB()
-		// swsCtx := v.swsCtx
 		width, height := v.Width, v.Height
-
-		// frame.Flip(height)
-		// swsCtx.Scale(frame, pictureRGB)
-
-		// return true, pts, pictureRGB.RGBBytes(width, height)
-
 		pic := frame.Picture()
 		obj := v.getPictureObject()
 		pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
@@ -347,7 +231,6 @@ func (v *Video) FlushBuffer() {
 
 func (v *Video) Play() {
 	for {
-		// log.Print("playing...")
 		select {
 		case data := <-v.ChanDecoded:
 			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
@@ -368,9 +251,6 @@ func (v *Video) Play() {
 	}
 }
 
-// func (v *Video) SetRender(r VideoRender) {
-// 	v.r = r
-// }
 func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 	packet := AVPacket{}
 	ctx := v.formatCtx
@@ -397,9 +277,6 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
-	// pictureRGB := v.getPictureRGB()
-	// swsCtx := v.swsCtx
-
 	for ctx.ReadFrame(&packet) >= 0 {
 		if frameFinished, pts := v.Decode(&packet); frameFinished {
 
@@ -407,25 +284,10 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 			packet.Free()
 
 			if t-pts < 0*time.Millisecond {
-				// frame.Flip(height)
-				// swsCtx.Scale(frame, pictureRGB)
-
 				pic := frame.Picture()
 				obj := v.getPictureObject()
 				pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
 				return pts, obj.Bytes(), nil
-
-				// pd := frame.DataObject()
-				// pd.SetSize(width*height + width*height/2)
-				// pd.Bytes()
-				// picYUV.SaveToPPMFile("test.yuv", width, height)
-				// ioutil.WriteFile("test.yuv", picYUV.RGBBytes(width, height), 0666)
-				// log.Print(len(pd.Bytes()))
-				// log.Print(width, height)
-				// ioutil.WriteFile("test.yuv", obj.Bytes(), 0666)
-				// log.Fatal("yes")
-
-				// return pts, pictureRGB.RGBBytes(width, height), nil
 			}
 		} else {
 			packet.Free()
@@ -441,14 +303,7 @@ func (v *Video) Close() {
 	v.FlushBuffer()
 	close(v.quit)
 
-	v.swsCtx.Free()
 	v.frame.Free()
-
-	// for _, pic := range v.pictureRGBs {
-	// 	pic.FreeBuffer()
-	// 	f := pic.Frame()
-	// 	f.Free()
-	// }
 
 	for _, obj := range v.pictureObjects {
 		obj.Free()
