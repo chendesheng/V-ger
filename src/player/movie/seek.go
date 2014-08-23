@@ -22,7 +22,7 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	if t < 0 {
 		t = 0
 	}
-	ch := m.Pause(true)
+	ch := m.Hold()
 
 	t, img, err := m.v.SeekOffset(t)
 	if err != nil {
@@ -51,19 +51,16 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	}
 }
 
-func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekProgress chan *seekArg) (chan time.Duration, time.Duration) {
+func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeek chan *seekArg) (chan time.Duration, time.Duration) {
 	if ch == nil {
-		ch = m.Pause(true)
+		ch = m.Hold()
 	}
 
 	if m.httpBuffer != nil {
 		m.w.SendShowBufferInfo(&BufferInfo{"-- KB/s", 0})
 	}
 
-	t := arg.t
-
-	// log.Print("seekProgress:", arg.t.String())
-	t = m.Seek(t)
+	t := m.Seek(arg.t)
 
 	if arg.isEnd {
 		if m.httpBuffer != nil {
@@ -71,8 +68,8 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 			defer m.w.SendHideSpinning()
 			m.httpBuffer.WaitQuit(1024*1024, m.quit)
 			select {
-			case arg := <-chSeekProgress:
-				return m.handleSeekProgress(ch, arg, chSeekProgress)
+			case arg := <-chSeek:
+				return m.handleSeekProgress(ch, arg, chSeek)
 			case <-m.quit:
 				return nil, 0
 			default:
@@ -94,26 +91,26 @@ func (m *Movie) handleSeekProgress(ch chan time.Duration, arg *seekArg, chSeekPr
 	return ch, t
 }
 func (m *Movie) startSeekRoutine() {
-	m.chSeekProgress = make(chan *seekArg)
-	chSeekProgress := make(chan *seekArg)
-	go recentPipe(m.chSeekProgress, chSeekProgress, m.quit)
+	m.chSeek = make(chan *seekArg)
+	chSeek := make(chan *seekArg)
+	go recentPipe(m.chSeek, chSeek, m.quit)
 
-	go func(chSeekProgress chan *seekArg) {
+	go func(chSeek chan *seekArg) {
 		var ch chan time.Duration
 		var t time.Duration
 		for {
 			select {
 			case <-m.quit:
 				return
-			case arg := <-chSeekProgress:
-				ch, t = m.handleSeekProgress(ch, arg, chSeekProgress)
+			case arg := <-chSeek:
+				ch, t = m.handleSeekProgress(ch, arg, chSeek)
 			case <-time.After(30 * time.Millisecond):
 				if ch != nil {
 					m.showProgressInner(t)
 				}
 			}
 		}
-	}(chSeekProgress)
+	}(chSeek)
 }
 
 func recentPipe(in chan *seekArg, out chan *seekArg, quit chan struct{}) {
@@ -138,7 +135,7 @@ func recentPipe(in chan *seekArg, out chan *seekArg, quit chan struct{}) {
 func (m *Movie) SeekAsync(t time.Duration) {
 	//log.Print("seek async:", t.String())
 	select {
-	case m.chSeekProgress <- &seekArg{t, false}:
+	case m.chSeek <- &seekArg{t, false}:
 	case <-m.quit:
 	}
 }
@@ -183,10 +180,8 @@ func (m *Movie) Seek(t time.Duration) time.Duration {
 }
 
 func (m *Movie) SeekEnd(t time.Duration) {
-	log.Print("begin SeekEnd:", t.String())
 	select {
+	case m.chSeek <- &seekArg{t, true}:
 	case <-m.quit:
-	case m.chSeekProgress <- &seekArg{t, true}:
 	}
-	log.Print("end SeekEnd:", t.String())
 }

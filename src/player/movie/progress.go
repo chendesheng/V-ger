@@ -40,7 +40,6 @@ func (m *Movie) showProgressPerSecond() {
 	t = m.c.GetTime()
 	lastTime = t
 
-	var speed float64
 	var lastSpeed float64
 
 	for {
@@ -51,7 +50,7 @@ func (m *Movie) showProgressPerSecond() {
 				m.p.LastPos = t
 				m.showProgressInner(t)
 			}
-		case speed = <-m.chSpeed:
+		case speed := <-m.chSpeed:
 			if speed != lastSpeed {
 				percent := m.httpBuffer.BufferPercent()
 				// log.Print("send show speed:", speed)

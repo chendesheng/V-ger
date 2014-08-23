@@ -39,12 +39,11 @@ type Movie struct {
 
 	httpBuffer *buffer
 
-	// chSeekEnd      chan time.Duration
-	chSeekProgress chan *seekArg
-	chPause        chan chan time.Duration
-	chProgress     chan time.Duration
-	chSpeed        chan float64
-	streaming      *download.Streaming
+	chSeek     chan *seekArg
+	chHold     chan chan time.Duration
+	chProgress chan time.Duration
+	chSpeed    chan float64
+	streaming  *download.Streaming
 
 	filename string
 }
@@ -116,9 +115,8 @@ func (m *Movie) Reset() {
 	m.s2 = nil
 	m.streaming = nil
 	m.subs = nil
-	m.audioStreams = nil
-	m.chSeekProgress = nil
-	m.chPause = nil
+	m.chSeek = nil
+	m.chHold = nil
 	m.chSpeed = nil
 }
 

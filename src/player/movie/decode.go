@@ -27,8 +27,8 @@ func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 	return false
 }
 
-func (m *Movie) Pause(flushBuffer bool) (ch chan time.Duration) {
-	if m.chPause == nil {
+func (m *Movie) Hold() (ch chan time.Duration) {
+	if m.chHold == nil {
 		return
 	}
 
@@ -36,11 +36,9 @@ func (m *Movie) Pause(flushBuffer bool) (ch chan time.Duration) {
 
 	ch = make(chan time.Duration)
 	select {
-	case m.chPause <- ch:
-		if flushBuffer {
-			m.a.FlushBuffer()
-			m.v.FlushBuffer()
-		}
+	case m.chHold <- ch:
+		m.a.FlushBuffer()
+		m.v.FlushBuffer()
 	case <-m.quit:
 	}
 
@@ -54,7 +52,7 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 		select {
 		case m.v.ChanDecoded <- &VideoFrame{pts, img}:
 			break
-		case ch := <-m.chPause:
+		case ch := <-m.chHold:
 			log.Print("pause movie")
 			select {
 			case t := <-ch:
@@ -141,7 +139,7 @@ func (m *Movie) playNextEpisode() bool {
 }
 
 func (m *Movie) decode(name string) {
-	m.chPause = make(chan chan time.Duration)
+	m.chHold = make(chan chan time.Duration)
 
 	defer func() {
 		if m.a != nil {
@@ -179,7 +177,7 @@ func (m *Movie) decode(name string) {
 	m.w.SendHideSpinning()
 	m.c.SetTime(start)
 	for {
-		// t := m.c.GetTime()
+		t := m.c.GetTime()
 		select {
 		case m.chProgress <- m.c.GetTime():
 		case <-m.quit:
@@ -191,7 +189,7 @@ func (m *Movie) decode(name string) {
 
 		resCode := ctx.ReadFrame(&packet)
 
-		// m.c.SetTime(t)
+		m.c.SetTime(t)
 
 		if resCode >= 0 {
 			if m.v.StreamIndex == packet.StreamIndex() {
@@ -250,7 +248,7 @@ func (m *Movie) decode(name string) {
 				// }
 			}
 			select {
-			case ch := <-m.chPause:
+			case ch := <-m.chHold:
 				log.Print("pause movie")
 				select {
 				case t := <-ch:
