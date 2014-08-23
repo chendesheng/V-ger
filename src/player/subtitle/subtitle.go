@@ -304,7 +304,7 @@ func compareLang(a1, a2, b1, b2 string) int {
 	}
 	return 1
 }
-func compareFormat(a, b string) int {
+func compareType(a, b string) int {
 	if a == b {
 		return 0
 	} else if a == "srt" {
@@ -330,7 +330,7 @@ func (s Subtitles) Less(i, j int) bool {
 	if c != 0 {
 		return c > 0
 	} else {
-		c = compareFormat(a.Type, b.Type)
+		c = compareType(a.Type, b.Type)
 		if c != 0 {
 			return c > 0
 		}
