@@ -3,9 +3,9 @@ package movie
 import (
 	"fmt"
 	"log"
-	. "player/audio"
 	. "player/gui"
 	. "player/libav"
+	. "player/movie/audio"
 	. "player/shared"
 	"strings"
 )
