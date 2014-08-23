@@ -295,7 +295,7 @@ void* newWindow(char* title, int width, int height) {
 
 
     StartupView* sv = [[StartupView alloc] initWithFrame:[v frame]];
-    [v addSubview:sv positioned:NSWindowAbove relativeTo:bv];
+    [v addSubview:sv positioned:NSWindowBelow relativeTo:bv];
     [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
     [v setStartupView:sv];

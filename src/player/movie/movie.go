@@ -10,6 +10,7 @@ import (
 	. "player/gui"
 	. "player/libav"
 	. "player/movie/audio"
+	. "player/movie/seeking"
 	. "player/movie/video"
 	. "player/shared"
 	. "player/subtitle"
@@ -40,12 +41,20 @@ type Movie struct {
 	httpBuffer *buffer
 
 	chSeek     chan *seekArg
-	chHold     chan chan time.Duration
+	chHold     chan time.Duration
 	chProgress chan time.Duration
 	chSpeed    chan float64
 	streaming  *download.Streaming
 
 	filename string
+	seeking  *Seeking
+
+	movieEvents
+}
+
+type movieEvents struct {
+	chCursor         chan struct{}
+	chCursorAutoHide chan struct{}
 }
 
 type movieSubs struct {
@@ -118,6 +127,7 @@ func (m *Movie) Reset() {
 	m.chSeek = nil
 	m.chHold = nil
 	m.chSpeed = nil
+	m.seeking = nil
 }
 
 func updateSubscribeDuration(movie string, duration time.Duration) {
@@ -234,6 +244,9 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 	if err != nil {
 		return
 	}
+
+	m.seeking = NewSeeking(m.v, m, m.quit)
+	m.uiProgressBarEvents()
 
 	go updateSubscribeDuration(m.p.Movie, m.p.Duration)
 	go checkDownloadSubtitle(m, file, filename)

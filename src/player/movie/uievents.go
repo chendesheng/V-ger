@@ -62,7 +62,7 @@ func (m *Movie) uievents() {
 			} else {
 				offset = -10 * time.Second
 			}
-			m.seekOffsetAsync(offset)
+			m.SeekOffset(offset)
 			break
 		case gui.KEY_RIGHT:
 			var offset time.Duration
@@ -80,13 +80,13 @@ func (m *Movie) uievents() {
 			} else {
 				offset = 10 * time.Second
 			}
-			m.seekOffsetAsync(offset)
+			m.SeekOffset(offset)
 			break
 		case gui.KEY_UP:
-			m.seekOffsetAsync(5 * time.Second)
+			m.SeekOffset(5 * time.Second)
 			break
 		case gui.KEY_DOWN:
-			m.seekOffsetAsync(-5 * time.Second)
+			m.SeekOffset(-5 * time.Second)
 			break
 		case gui.KEY_MINUS:
 			log.Print("key minus pressed")
@@ -160,44 +160,7 @@ func (m *Movie) uievents() {
 		return true
 	})
 
-	chCursor := make(chan struct{})
-	chCursorAutoHide := make(chan struct{})
 	chVolume := make(chan struct{})
-
-	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
-		if m.c == nil {
-			return
-		}
-
-		switch typ {
-		case 0:
-			select {
-			case chCursorAutoHide <- struct{}{}:
-			case <-m.quit:
-				return
-			}
-			fallthrough
-		case 1:
-			t := m.c.CalcTime(percent)
-			t = t / time.Second * time.Second
-			p := m.c.CalcPlayProgress(t)
-			m.w.ShowProgress(p)
-
-			m.SeekAsync(t)
-		case 2:
-			t := m.c.CalcTime(percent)
-			t = t / time.Second * time.Second
-
-			log.Print("release dragging:", t.String())
-
-			m.SeekEnd(t)
-			select {
-			case chCursorAutoHide <- struct{}{}:
-			case <-m.quit:
-				return
-			}
-		}
-	})
 
 	m.w.FuncOnFullscreenChanged = append(m.w.FuncOnFullscreenChanged, func(b bool) {
 		if m.c != nil {
@@ -342,15 +305,31 @@ func (m *Movie) uievents() {
 	go func() {
 		for {
 			select {
+			case <-time.After(time.Second):
+				m.w.SendSetVolumeDisplay(false)
+				<-chVolume //prevent call SendSetVolumeDisplay every second
+			case <-chVolume:
+			case <-m.quit:
+				return
+			}
+		}
+	}()
+
+	m.chCursor = make(chan struct{})
+	m.chCursorAutoHide = make(chan struct{})
+
+	go func() {
+		for {
+			select {
 			case <-time.After(2 * time.Second):
 				m.w.SendSetCursor(false)
-				<-chCursor //prevent call SendSetCursor every 2 seconds
+				<-m.chCursor //prevent call SendSetCursor every 2 seconds
 				break
-			case <-chCursor:
+			case <-m.chCursor:
 				break
-			case <-chCursorAutoHide:
+			case <-m.chCursorAutoHide:
 				select {
-				case <-chCursorAutoHide:
+				case <-m.chCursorAutoHide:
 				case <-m.quit:
 					return
 				}
@@ -361,29 +340,55 @@ func (m *Movie) uievents() {
 			}
 		}
 	}()
-	go func() {
-		for {
-			select {
-			case <-time.After(time.Second):
-				m.w.SendSetVolumeDisplay(false)
-				<-chVolume //prevent call SendSetVolumeDisplay every second
-			case <-chVolume:
-			case <-m.quit:
-				return
-			}
-		}
-	}()
 	m.w.FuncMouseMoved = append(m.w.FuncMouseMoved, func() {
 		go m.w.SendSetCursor(true)
 
 		select {
-		case chCursor <- struct{}{}:
+		case m.chCursor <- struct{}{}:
 			break
 		case <-time.After(50 * time.Millisecond):
 			log.Print("stop hide cursor timeout")
 			break
 		case <-m.quit:
 			break
+		}
+	})
+}
+
+func (m *Movie) uiProgressBarEvents() {
+
+	m.w.FuncOnProgressChanged = append(m.w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
+		if m.c == nil {
+			return
+		}
+
+		switch typ {
+		case 0:
+			select {
+			case m.chCursorAutoHide <- struct{}{}:
+			case <-m.quit:
+				return
+			}
+			fallthrough
+		case 1:
+			t := m.c.CalcTime(percent)
+			t = t / time.Second * time.Second
+			p := m.c.CalcPlayProgress(t)
+			m.w.ShowProgress(p)
+
+			m.seeking.SendSeek(t)
+		case 2:
+			t := m.c.CalcTime(percent)
+			t = t / time.Second * time.Second
+
+			log.Print("release dragging:", t.String())
+
+			m.seeking.SendEndSeek(t)
+			select {
+			case m.chCursorAutoHide <- struct{}{}:
+			case <-m.quit:
+				return
+			}
 		}
 	})
 }

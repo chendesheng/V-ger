@@ -27,22 +27,28 @@ func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 	return false
 }
 
-func (m *Movie) Hold() (ch chan time.Duration) {
+func (m *Movie) hold() {
 	if m.chHold == nil {
 		return
 	}
 
 	log.Print("send pause movie")
 
-	ch = make(chan time.Duration)
 	select {
-	case m.chHold <- ch:
-		m.a.FlushBuffer()
+	case m.chHold <- 0:
 		m.v.FlushBuffer()
+		m.a.FlushBuffer()
 	case <-m.quit:
 	}
 
 	return
+}
+
+func (m *Movie) unHold(t time.Duration) {
+	select {
+	case m.chHold <- t:
+	case <-m.quit:
+	}
 }
 
 func (m *Movie) decodeVideo(packet *AVPacket) {
@@ -52,10 +58,10 @@ func (m *Movie) decodeVideo(packet *AVPacket) {
 		select {
 		case m.v.ChanDecoded <- &VideoFrame{pts, img}:
 			break
-		case ch := <-m.chHold:
+		case <-m.chHold:
 			log.Print("pause movie")
 			select {
-			case t := <-ch:
+			case t := <-m.chHold:
 				log.Print("resume movie:", t.String())
 				m.c.SetTime(t)
 			case <-m.quit:
@@ -139,7 +145,7 @@ func (m *Movie) playNextEpisode() bool {
 }
 
 func (m *Movie) decode(name string) {
-	m.chHold = make(chan chan time.Duration)
+	m.chHold = make(chan time.Duration)
 
 	defer func() {
 		if m.a != nil {
@@ -169,7 +175,6 @@ func (m *Movie) decode(name string) {
 	}
 
 	m.w.SendSetSize(m.v.Width, m.v.Height)
-	m.startSeekRoutine()
 
 	packet := AVPacket{}
 	ctx := m.ctx
@@ -177,7 +182,6 @@ func (m *Movie) decode(name string) {
 	m.w.SendHideSpinning()
 	m.c.SetTime(start)
 	for {
-		t := m.c.GetTime()
 		select {
 		case m.chProgress <- m.c.GetTime():
 		case <-m.quit:
@@ -185,12 +189,8 @@ func (m *Movie) decode(name string) {
 		case <-time.After(50 * time.Millisecond):
 			log.Print("write m.chProgress timeout")
 		}
-		// log.Print(buffering)
 
 		resCode := ctx.ReadFrame(&packet)
-
-		m.c.SetTime(t)
-
 		if resCode >= 0 {
 			if m.v.StreamIndex == packet.StreamIndex() {
 				m.decodeVideo(&packet)
@@ -248,10 +248,10 @@ func (m *Movie) decode(name string) {
 				// }
 			}
 			select {
-			case ch := <-m.chHold:
+			case <-m.chHold:
 				log.Print("pause movie")
 				select {
-				case t := <-ch:
+				case t := <-m.chHold:
 					m.c.SetTime(t)
 				case <-m.quit:
 					return
