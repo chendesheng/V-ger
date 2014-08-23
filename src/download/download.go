@@ -51,7 +51,7 @@ func GetDownloadInfo(url string, readBody bool) (finalUrl string, name string, s
 }
 
 func GetDownloadInfoN(url string, header http.Header, retryTimes int, readBody bool, quit chan struct{}) (finalUrl string, name string, size int64, body []byte, err error) {
-	log.Printf("header: %v %s", header, url)
+	// log.Printf("header: %v %s", header, url)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
