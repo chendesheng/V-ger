@@ -182,6 +182,7 @@ func (m *Movie) decode(name string) {
 	m.w.SendHideSpinning()
 	m.c.SetTime(start)
 	for {
+		t := m.c.GetTime()
 		select {
 		case m.chProgress <- m.c.GetTime():
 		case <-m.quit:
@@ -191,6 +192,7 @@ func (m *Movie) decode(name string) {
 		}
 
 		resCode := ctx.ReadFrame(&packet)
+		m.c.SetTime(t)
 		if resCode >= 0 {
 			if m.v.StreamIndex == packet.StreamIndex() {
 				m.decodeVideo(&packet)

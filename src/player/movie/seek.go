@@ -7,15 +7,28 @@ import (
 	"time"
 )
 
-func (m *Movie) SeekOffset(offset time.Duration) {
-	go func() {
-		if m.httpBuffer != nil {
-			m.w.SendShowSpinning()
-			defer m.w.SendHideSpinning()
-		}
+var timerEndSeek *time.Timer
 
-		m.seekOffset(offset)
-	}()
+func (m *Movie) SeekOffset(offset time.Duration) {
+	if len(m.w.FuncMouseMoved) > 0 {
+		m.w.FuncMouseMoved[0]()
+	}
+
+	m.seeking.SendSeekOffset(offset)
+
+	if timerEndSeek == nil || !timerEndSeek.Reset(200*time.Millisecond) {
+		if timerEndSeek == nil {
+			timerEndSeek = time.NewTimer(200 * time.Millisecond)
+		}
+		go func() {
+			select {
+			case <-timerEndSeek.C:
+				m.seeking.SendEndSeekOffset()
+			case <-m.quit:
+				timerEndSeek.Stop()
+			}
+		}()
+	}
 }
 func (m *Movie) seekOffset(offset time.Duration) {
 	t := m.c.GetTime() + offset
@@ -25,13 +38,12 @@ func (m *Movie) seekOffset(offset time.Duration) {
 
 	m.OnSeekStarted()
 
-	t, img, err := m.v.SeekOffset(t)
+	t, img, err := m.v.Seek(t)
 	if err != nil {
 		log.Print(err)
 		return
 	}
 
-	m.showProgressInner(t)
 	m.OnSeek(t, img)
 
 	if len(m.w.FuncMouseMoved) > 0 {
@@ -39,10 +51,14 @@ func (m *Movie) seekOffset(offset time.Duration) {
 	}
 
 	m.OnSeekEnded(t)
+	m.showProgressInner(t)
 }
 
-func (m *Movie) OnSeekStarted() {
+func (m *Movie) OnSeekStarted() time.Duration {
+	t := m.c.GetTime()
 	m.hold()
+
+	return t / time.Second * time.Second
 }
 
 func (m *Movie) OnSeek(t time.Duration, img []byte) {
