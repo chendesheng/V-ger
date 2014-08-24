@@ -37,6 +37,8 @@ type Audio struct {
 	decodePktSize int
 
 	Offset time.Duration
+
+	chQuitDone chan struct{}
 }
 
 func NewAudio(c *Clock, volume float64) *Audio {
@@ -62,6 +64,7 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 	case packet, ok := <-a.PacketChan:
 		return packet, ok
 	case <-a.quit:
+		close(a.chQuitDone)
 		return nil, false
 	}
 }
@@ -201,9 +204,11 @@ func (a *Audio) Open(stream AVStream) error {
 func (a *Audio) Close() {
 	log.Print("close audio")
 
+	a.chQuitDone = make(chan struct{})
 	close(a.quit)
+	<-a.chQuitDone
 
-	a.FlushBuffer()
+	// a.FlushBuffer()
 	a.codecCtx.Close()
 	a.driver.Close()
 }

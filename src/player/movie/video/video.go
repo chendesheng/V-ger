@@ -33,6 +33,7 @@ type Video struct {
 	ChanDecoded chan *VideoFrame
 	flushQuit   chan struct{}
 	quit        chan struct{}
+	chQuitDone  chan struct{}
 	r           VideoRender
 
 	global_pts uint64 //for avframe only
@@ -159,22 +160,6 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 	return false, 0
 }
 
-//small seek
-func (v *Video) SeekOffset(t time.Duration) (time.Duration, []byte, error) {
-	flags := AVSEEK_FLAG_FRAME
-	if t < v.c.GetTime() {
-		flags |= AVSEEK_FLAG_BACKWARD
-	}
-
-	ctx := v.formatCtx
-	err := ctx.SeekFrame(v.stream, t, flags)
-	if err != nil {
-		return t, nil, err
-	}
-
-	return v.ReadOneFrame()
-}
-
 func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
 	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
 
@@ -246,6 +231,7 @@ func (v *Video) Play() {
 			}
 			break
 		case <-v.quit:
+			close(v.chQuitDone)
 			return
 		}
 	}
@@ -300,8 +286,9 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 func (v *Video) Close() {
 	log.Print("close video")
 
-	v.FlushBuffer()
+	v.chQuitDone = make(chan struct{})
 	close(v.quit)
+	<-v.chQuitDone
 
 	v.frame.Free()
 
