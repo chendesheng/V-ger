@@ -46,6 +46,8 @@ type Video struct {
 }
 
 func (v *Video) setupCodec(codec AVCodecContext) error {
+	log.Print("setupCodec")
+
 	v.codec = codec
 
 	decoder := codec.FindDecoder()
@@ -53,7 +55,6 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 		return errors.New("Unsupported codec!!")
 	}
 
-	log.Print("end of setupCodec1")
 	errCode := codec.Open(decoder)
 	if errCode < 0 {
 		return fmt.Errorf("open decoder error code %d", errCode)
@@ -61,8 +62,6 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 
 	v.lastPts = math.MinInt64
 	v.lastDts = math.MinInt64
-
-	log.Print("end of setupCodec")
 
 	return nil
 }
