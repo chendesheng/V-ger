@@ -95,7 +95,7 @@ func (a *Audio) sync(packet *AVPacket) bool {
 		return true
 	} else if pts > now && pts-now < 5*time.Second {
 		log.Print("wait audio:", (pts - now).String())
-		return !a.c.WaitUtilWithQuit(pts, a.quit)
+		return !a.c.WaitUntilWithQuit(pts, a.quit)
 	} else {
 		log.Print("skip audio packet:", (now - pts).String())
 		return false
@@ -169,7 +169,7 @@ func (a *Audio) Open(stream AVStream) error {
 	log.Print("open audio")
 	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(),
 		func(length int) []byte {
-			if a.c.WaitUtilRunning(a.quit) {
+			if a.c.WaitUntilRunning(a.quit) {
 				return a.getSilence(length)
 			}
 

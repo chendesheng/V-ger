@@ -219,13 +219,13 @@ func (v *Video) Play() {
 		case data := <-v.ChanDecoded:
 			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
 
-			if v.c.WaitUtilWithQuit(data.Pts, v.flushQuit) {
+			if v.c.WaitUntilWithQuit(data.Pts, v.flushQuit) {
 				continue
 			}
 
 			v.r.SendDrawImage(data.Img)
 
-			if v.c.WaitUtilRunning(v.quit) {
+			if v.c.WaitUntilRunning(v.quit) {
 				return
 			}
 			break

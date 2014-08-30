@@ -13,22 +13,13 @@ type Clock struct {
 
 	base       time.Time
 	pausedTime time.Duration
-	status     string
+	running    bool
 
 	wait chan struct{}
 
 	totalTime time.Duration
 
 	seeking bool
-}
-
-//will be blocked if clock is paused
-func (c *Clock) GetTime() time.Duration {
-	// c.waitUntilRunning()
-	t := c.getTime()
-	// log.Print("clock get time:", t.String())
-
-	return t
 }
 
 func (c *Clock) CalcTime(percent float64) time.Duration {
@@ -65,11 +56,11 @@ func (c *Clock) GetPercent() float64 {
 	return float64(c.GetTime()) / float64(c.totalTime)
 }
 
-func (c *Clock) getTime() time.Duration {
+func (c *Clock) GetTime() time.Duration {
 	c.Lock()
 	defer c.Unlock()
 
-	if c.status == "paused" {
+	if !c.running {
 		return c.pausedTime
 	} else {
 		t := time.Since(c.base)
@@ -81,12 +72,10 @@ func (c *Clock) getTime() time.Duration {
 }
 
 func (c *Clock) SetTime(t time.Duration) {
-	// log.log.Print("clock set time:", t.String())
-
 	c.Lock()
 	defer c.Unlock()
 
-	if c.status == "paused" {
+	if !c.running {
 		c.pausedTime = t
 	}
 
@@ -96,7 +85,6 @@ func (c *Clock) SetTime(t time.Duration) {
 func (c *Clock) AddTime(d time.Duration) {
 	c.Lock()
 	defer c.Unlock()
-	// log.Print("clock base:", c.base.String())
 	c.base = c.base.Add(-d)
 }
 
@@ -108,8 +96,8 @@ func (c *Clock) Pause() {
 }
 
 func (c *Clock) pause() {
-	if c.status != "paused" {
-		c.status = "paused"
+	if c.running {
+		c.running = false
 		c.pausedTime = time.Since(c.base)
 	}
 	// c.wait = make(chan struct{})
@@ -119,7 +107,7 @@ func (c *Clock) Toggle() {
 	c.Lock()
 	defer c.Unlock()
 
-	if c.status == "running" {
+	if c.running {
 		c.pause()
 	} else {
 		c.resume()
@@ -127,34 +115,17 @@ func (c *Clock) Toggle() {
 }
 
 func (c *Clock) Resume() {
-	log.Print("clock resume:", c.getTime().String())
-
 	c.Lock()
 	defer c.Unlock()
 
-	if c.status == "paused" {
+	if !c.running {
 		c.resume()
-	}
-}
-
-func (c *Clock) ResumeWithTime(t time.Duration) {
-	c.Lock()
-	defer c.Unlock()
-
-	if c.status == "paused" {
-		c.status = "running"
-		log.Print("clock running")
-		c.base = time.Now().Add(-t)
-
-		close(c.wait)
-		c.wait = make(chan struct{})
-		log.Print("close wait")
 	}
 }
 
 func (c *Clock) resume() {
 	c.base = time.Now().Add(-c.pausedTime)
-	c.status = "running"
+	c.running = true
 
 	close(c.wait)
 	c.wait = make(chan struct{})
@@ -166,20 +137,16 @@ func (c *Clock) Reset() {
 	// log.Print(c)
 	c.base = time.Now()
 	c.pausedTime = 0
-	c.status = "running"
+	c.running = false
 }
 
-func (c *Clock) waitUntilRunning(quit chan struct{}) bool {
+func (c *Clock) WaitUntilRunning(quit chan struct{}) bool {
 	var ch chan struct{}
-	var status string
-	// log.Print("clock:", c)
-	// log.Print("quit:", quit)
 	c.Lock()
 	ch = c.wait
-	status = c.status
 	c.Unlock()
 
-	if status == "paused" {
+	if !c.running {
 		select {
 		case <-ch:
 			log.Print("after paused")
@@ -192,72 +159,16 @@ func (c *Clock) waitUntilRunning(quit chan struct{}) bool {
 	return false
 }
 
-func (c *Clock) After(d time.Duration) {
-	// b := c.GetTime()
-	// c.waitUntilRunning()
-
-	if d > time.Second {
-		log.Print("clock wait long time:", d.String())
-	}
-	<-time.After(d) //time.After is not very accuracy which about one millisecond delay while wait one second
-
-	// c.waitUntilRunning()
-	// c.SetTime(b + d)
-}
-
-func (c *Clock) WaitUtilRunning(quit chan struct{}) bool {
-	return c.waitUntilRunning(quit)
-}
-
-type beforeWait func()
-
-func (c *Clock) WaitUtilRunning2(fn beforeWait) bool {
-	var ch chan struct{}
-	var status string
-	c.Lock()
-	ch = c.wait
-	status = c.status
-	c.Unlock()
-
-	if status == "paused" {
-		fn()
-		<-ch
-		log.Print("after paused")
-
-		return true
-	}
-
-	return false
-}
-
-func (c *Clock) WaitUtil(t time.Duration) {
-	now := c.getTime()
-
-	if t > now {
-		c.After(t - now)
-	}
-}
-
-func (c *Clock) AfterWithQuit(d time.Duration, quit chan struct{}) bool {
-	// c.waitUntilRunning()
-
-	select {
-	case <-time.After(d):
-		break
-	case <-quit:
-		return true
-	}
-
-	// c.waitUntilRunning()
-	return false
-}
-
-func (c *Clock) WaitUtilWithQuit(t time.Duration, quit chan struct{}) bool {
-	// log.Print("wait until", t.String())
-	now := c.getTime()
-
-	if t > now {
-		return c.AfterWithQuit(t-now, quit)
+func (c *Clock) WaitUntilWithQuit(t time.Duration, quit chan struct{}) bool {
+	now := c.GetTime()
+	d := t - now
+	if d > 0 {
+		select {
+		case <-time.After(d):
+			return false
+		case <-quit:
+			return true
+		}
 	}
 
 	return false
@@ -274,10 +185,9 @@ func NewClock(totalTime time.Duration) *Clock {
 	c := &Clock{
 		base:       now,
 		pausedTime: 0,
-		status:     "running",
+		running:    true,
 		totalTime:  totalTime,
 		wait:       make(chan struct{}),
 	}
-	c.Mutex = sync.Mutex{}
 	return c
 }

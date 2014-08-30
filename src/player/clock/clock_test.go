@@ -1,6 +1,8 @@
 package clock
 
 import (
+	"math"
+	"math/rand"
 	"testing"
 	"time"
 )
@@ -22,7 +24,7 @@ func absAndCheck(d time.Duration) bool {
 	return d > 10*time.Millisecond || d < -10*time.Millisecond
 }
 
-func TestClockPause(t *testing.T) {
+func TestPauseResume(t *testing.T) {
 	c := NewClock(time.Hour)
 	if c == nil {
 		t.Error("new clock fail")
@@ -32,27 +34,34 @@ func TestClockPause(t *testing.T) {
 	c.Pause()
 	<-time.After(time.Second)
 
-	diff := d - time.Second
+	diff := d - c.GetTime()
 	if absAndCheck(diff) {
 		t.Error("paused clock should not accumulate time, diff: ", diff.String())
 	}
-	go func() {
-		<-time.After(time.Second)
-		c.Resume()
-	}()
 
-	c.GetTime() //blocked
-
-	<-time.After(time.Second)
-	diff = c.GetTime() - 2*time.Second
+	c.Resume()
+	d = c.GetTime()
+	time.Sleep(time.Second)
+	diff = c.GetTime() - d - time.Second
 	if absAndCheck(diff) {
-		t.Error("diff should be 2s but ", diff.String())
+		t.Error("resume not working")
+	}
+}
+
+func TestCalcPos(t *testing.T) {
+	c := NewClock(time.Hour)
+	p := c.CalcPlayProgress(time.Minute)
+
+	if p.Left != "00:01:00" {
+		t.Error("p.Left should be 00:01:00 but %s", p.Left)
 	}
 
-	b := time.Now()
-	c.GetTime()
-	if time.Since(b) > time.Millisecond {
-		t.Error("should not longer than one millisecond.")
+	if p.Right != "-00:59:00" {
+		t.Error("p.Right should be -00:59:00 but %s", p.Right)
+	}
+
+	if math.Abs(p.Percent-1.0/60.0) > 1e-5 {
+		t.Errorf("p.Left should 0.016666667 but %f", p.Percent)
 	}
 }
 
@@ -71,5 +80,41 @@ func TestAddTime(t *testing.T) {
 	diff := c.GetTime() - 11*time.Second
 	if absAndCheck(diff) {
 		t.Error("wrong current time:", diff.String())
+	}
+}
+
+func TestWaitUntilRunning(t *testing.T) {
+	c := NewClock(time.Hour)
+	go func() {
+		if c.WaitUntilRunning(nil) {
+			t.Error("no quit")
+		}
+	}()
+
+	d := time.Duration(rand.Int63n(int64(time.Second))) + time.Second
+	c.Pause()
+	go func() {
+		ti := time.Now()
+		c.WaitUntilRunning(nil)
+		diff := time.Now().Sub(ti) - d
+		if absAndCheck(diff) {
+			t.Errorf("wrong diff time: %s", diff.String())
+		}
+	}()
+	<-time.After(d)
+	c.Resume()
+
+	<-time.After(time.Second)
+}
+
+func TestWaitUntil(t *testing.T) {
+	c := NewClock(time.Hour)
+	d := time.Duration(rand.Int63n(int64(time.Second))) + time.Second
+
+	ti := time.Now()
+	c.WaitUntilWithQuit(d, nil)
+	diff := time.Now().Sub(ti) - d
+	if absAndCheck(diff) {
+		t.Errorf("wrong diff time: %s", diff.String())
 	}
 }
