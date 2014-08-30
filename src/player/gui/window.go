@@ -38,7 +38,6 @@ type Window struct {
 	FuncAudioMenuClicked    []func(int)
 	FuncSubtitleMenuClicked []func(int)
 	FuncMouseWheelled       []func(float64)
-	FuncMouseMoved          []func()
 
 	ChanDraw     chan []byte
 	ChanShowText chan SubItemArg
@@ -72,6 +71,9 @@ type Window struct {
 	forceRatio float64
 
 	showMessageDeadline time.Time
+
+	chCursor         chan struct{}
+	chCursorAutoHide chan struct{}
 }
 
 // func (w *Window) Show() {
@@ -81,7 +83,15 @@ func (w *Window) SendDrawImage(img []byte) {
 	w.ChanDraw <- img
 }
 func (w *Window) SendSetCursor(b bool) {
-	w.ChanSetCursor <- b
+	go func() {
+		w.ChanSetCursor <- b
+	}()
+
+	if b {
+		w.chCursor <- struct{}{}
+	} else {
+		<-w.chCursor
+	}
 }
 
 // func (w *Window) FlushImageBuffer() {
@@ -217,6 +227,9 @@ func NewWindow(title string, width, height int) *Window {
 
 		originalWidth:  width,
 		originalHeight: height,
+
+		chCursor:         make(chan struct{}),
+		chCursorAutoHide: make(chan struct{}),
 	}
 
 	log.Print("NewWindow:", ptr)
@@ -227,7 +240,33 @@ func NewWindow(title string, width, height int) *Window {
 	C.makeWindowCurrentContext(ptr) //must make current context before do texture bind or we will get a all white window
 	gl.Init()
 	gl.ClearColor(0, 0, 0, 1)
+
+	w.initEvents()
+
 	return w
+}
+
+func (w *Window) initEvents() {
+	w.FuncOnProgressChanged = append(w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
+		if typ == 0 || typ == 2 {
+			w.chCursorAutoHide <- struct{}{}
+		}
+	})
+
+	go func() {
+		for {
+			select {
+			case <-time.After(2 * time.Second):
+				w.SendSetCursor(false)
+				break
+			case <-w.chCursor:
+				break
+			case <-w.chCursorAutoHide:
+				<-w.chCursorAutoHide
+				break
+			}
+		}
+	}()
 }
 
 func (w *Window) InitEvents() {
@@ -246,7 +285,6 @@ func (w *Window) ClearEvents() {
 	w.FuncAudioMenuClicked = nil
 	w.FuncSubtitleMenuClicked = nil
 	w.FuncMouseWheelled = nil
-	w.FuncMouseMoved = nil
 }
 
 func (w *Window) ToggleFullScreen() {
@@ -643,8 +681,5 @@ func goOnMouseWheel(ptr unsafe.Pointer, deltaY float64) {
 //export goOnMouseMove
 func goOnMouseMove(ptr unsafe.Pointer) {
 	w := windows[ptr]
-
-	for _, fn := range w.FuncMouseMoved {
-		fn()
-	}
+	w.SendSetCursor(true)
 }

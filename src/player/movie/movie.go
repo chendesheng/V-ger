@@ -48,13 +48,6 @@ type Movie struct {
 
 	filename string
 	seeking  *Seeking
-
-	movieEvents
-}
-
-type movieEvents struct {
-	chCursor         chan struct{}
-	chCursorAutoHide chan struct{}
 }
 
 type movieSubs struct {

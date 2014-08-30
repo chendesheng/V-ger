@@ -2,7 +2,7 @@ package movie
 
 import (
 	// . "player/libav"
-	"log"
+
 	. "player/shared"
 	"time"
 )
@@ -10,9 +10,7 @@ import (
 var timerEndSeek *time.Timer
 
 func (m *Movie) SeekOffset(offset time.Duration) {
-	if len(m.w.FuncMouseMoved) > 0 {
-		m.w.FuncMouseMoved[0]()
-	}
+	m.w.SendSetCursor(true)
 
 	m.seeking.SendSeekOffset(offset)
 
@@ -29,29 +27,6 @@ func (m *Movie) SeekOffset(offset time.Duration) {
 			}
 		}()
 	}
-}
-func (m *Movie) seekOffset(offset time.Duration) {
-	t := m.c.GetTime() + offset
-	if t < 0 {
-		t = 0
-	}
-
-	m.OnSeekStarted()
-
-	t, img, err := m.v.Seek(t)
-	if err != nil {
-		log.Print(err)
-		return
-	}
-
-	m.OnSeek(t, img)
-
-	if len(m.w.FuncMouseMoved) > 0 {
-		m.w.FuncMouseMoved[0]()
-	}
-
-	m.OnSeekEnded(t)
-	m.showProgressInner(t)
 }
 
 func (m *Movie) OnSeekStarted() time.Duration {

@@ -314,45 +314,6 @@ func (m *Movie) uievents() {
 			}
 		}
 	}()
-
-	m.chCursor = make(chan struct{})
-	m.chCursorAutoHide = make(chan struct{})
-
-	go func() {
-		for {
-			select {
-			case <-time.After(2 * time.Second):
-				m.w.SendSetCursor(false)
-				<-m.chCursor //prevent call SendSetCursor every 2 seconds
-				break
-			case <-m.chCursor:
-				break
-			case <-m.chCursorAutoHide:
-				select {
-				case <-m.chCursorAutoHide:
-				case <-m.quit:
-					return
-				}
-
-				break
-			case <-m.quit:
-				return
-			}
-		}
-	}()
-	m.w.FuncMouseMoved = append(m.w.FuncMouseMoved, func() {
-		go m.w.SendSetCursor(true)
-
-		select {
-		case m.chCursor <- struct{}{}:
-			break
-		case <-time.After(50 * time.Millisecond):
-			log.Print("stop hide cursor timeout")
-			break
-		case <-m.quit:
-			break
-		}
-	})
 }
 
 func (m *Movie) uiProgressBarEvents() {
@@ -364,11 +325,6 @@ func (m *Movie) uiProgressBarEvents() {
 
 		switch typ {
 		case 0:
-			select {
-			case m.chCursorAutoHide <- struct{}{}:
-			case <-m.quit:
-				return
-			}
 			fallthrough
 		case 1:
 			t := m.c.CalcTime(percent)
@@ -384,11 +340,6 @@ func (m *Movie) uiProgressBarEvents() {
 			log.Print("release dragging:", t.String())
 
 			m.seeking.SendEndSeek(t)
-			select {
-			case m.chCursorAutoHide <- struct{}{}:
-			case <-m.quit:
-				return
-			}
 		}
 	})
 }
