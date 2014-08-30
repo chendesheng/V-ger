@@ -33,35 +33,28 @@ type Streaming struct {
 	chArg chan int64
 }
 
-func (s *Streaming) run() {
-	for {
-		from := <-s.chArg
-		if from < 0 {
-			return
-		}
+func (s *Streaming) Start(from int64, quit chan struct{}) {
+	log.Print("Streaming Start:", from)
 
-		s.quit = make(chan struct{})
-
-		streaming(s.url, s.w, from, s.size, s.sm, s.quit)
-	}
-}
-func (s *Streaming) Restart() chan int64 {
 	if s.quit != nil {
 		close(s.quit)
-		s.quit = nil
 	}
-	return s.chArg
+	s.quit = make(chan struct{})
+
+	streaming(s.url, s.w, from, s.size, s.sm, s.quit)
+
+	select {
+	case <-quit:
+		if s.quit != nil {
+			close(s.quit)
+			s.quit = nil
+		}
+	case <-s.quit:
+	}
 }
 
-func (s *Streaming) Close() {
-	s.Restart() <- -1
-}
-
-func StartStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {
-	s := &Streaming{url, size, w, sm, nil, make(chan int64)}
-	go s.run()
-
-	return s
+func NewStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {
+	return &Streaming{url, size, w, sm, nil, make(chan int64)}
 }
 
 type writerWrap struct {

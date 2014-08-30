@@ -2,7 +2,6 @@ package movie
 
 import (
 	"download"
-	"fmt"
 	"log"
 	"os"
 
@@ -31,8 +30,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 	buf := AVObject{}
 	buf.Malloc(1024 * 64)
 
-	streaming := download.StartStreaming(url, size, m.httpBuffer, m)
-	m.streaming = streaming
+	streaming := download.NewStreaming(url, size, m.httpBuffer, m)
 
 	ioctx := NewAVIOContext(buf, func(buf AVObject) int {
 		if buf.Size() == 0 {
@@ -67,14 +65,10 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 					if time.Since(startWaitTime) > download.NetworkTimeout {
 						pos := m.httpBuffer.CurrentPos()
 
-						log.Print("Streamming timeout restart:", pos)
+						log.Print("Streaming timeout Start:", pos)
 
 						startWaitTime = time.Now()
-						select {
-						case streaming.Restart() <- pos:
-						case <-m.quit:
-							return AVERROR_INVALIDDATA
-						}
+						streaming.Start(pos, m.quit)
 					}
 				}
 			}
@@ -89,11 +83,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
 			m.w.SendShowSpinning()
-			select {
-			case streaming.Restart() <- start:
-			case <-m.quit:
-				return pos
-			}
+			go streaming.Start(start, m.quit)
 		}
 		return pos
 	})
@@ -102,11 +92,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 	ctx.SetPb(ioctx)
 
 	m.httpBuffer.Seek(0, os.SEEK_SET)
-	select {
-	case streaming.Restart() <- 0:
-	case <-m.quit:
-		return ctx, name, fmt.Errorf("quit")
-	}
+	go streaming.Start(0, m.quit)
 
 	if err := ctx.OpenInput(file); err != nil {
 		return ctx, name, err

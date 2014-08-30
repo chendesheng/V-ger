@@ -2,7 +2,6 @@ package movie
 
 import (
 	"block"
-	"download"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -44,7 +43,6 @@ type Movie struct {
 	chHold     chan time.Duration
 	chProgress chan time.Duration
 	chSpeed    chan float64
-	streaming  *download.Streaming
 
 	filename string
 	seeking  *Seeking
@@ -115,7 +113,6 @@ func (m *Movie) Reset() {
 	m.httpBuffer = nil
 	m.s1 = nil
 	m.s2 = nil
-	m.streaming = nil
 	m.subs = nil
 	m.chSeek = nil
 	m.chHold = nil
@@ -275,10 +272,6 @@ func (m *Movie) Close() {
 
 	if m.httpBuffer != nil {
 		m.httpBuffer.Close()
-	}
-
-	if m.streaming != nil {
-		m.streaming.Close()
 	}
 
 	<-m.finishClose
