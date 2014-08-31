@@ -154,6 +154,8 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
     [pool drain];
 }
 void setSubtitleMenuItem(int t1, int t2) {
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+
     NSMenuItem* menu = getTopMenuByTitle(@"Subtitle");
     for (NSMenuItem* item in [[menu submenu] itemArray]) {
         int tag = (int)[item tag];
@@ -163,6 +165,8 @@ void setSubtitleMenuItem(int t1, int t2) {
             [item setState:NSOffState];
         }
     }
+    
+    [pool drain];
 }
 
 void setWindowTitle(void* wptr, char* title) {
