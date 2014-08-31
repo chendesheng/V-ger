@@ -158,6 +158,6 @@ func TestSelectSorted2(t *testing.T) {
 	sort.Sort(Subtitles(subs))
 	a, b := Subtitles(subs).Select()
 	if a == nil || b == nil || a.Name != "2" || b.Name != "1" {
-		t.Errorf("Expect 2,3 but %s", a.Name, b.Name)
+		t.Errorf("Expect 2,3 but %s,%s", a.Name, b.Name)
 	}
 }

@@ -93,7 +93,7 @@ func TestPlaying(t *testing.T) {
 	}
 
 	if p.SoundStream != p1.SoundStream {
-		t.Errorf("p.SoundStream: expect %s, got %s", p.SoundStream, p1.SoundStream)
+		t.Errorf("p.SoundStream: expect %d, got %d", p.SoundStream, p1.SoundStream)
 	}
 
 	if p.Sub1 != p1.Sub1 {

@@ -105,7 +105,7 @@ func TestBufferReadBorder(t *testing.T) {
 	}
 
 	if b.currentPos != 1000 {
-		t.Error("expect currentPost 1000 but %d", b.currentPos)
+		t.Errorf("expect currentPost 1000 but %d", b.currentPos)
 	}
 }
 

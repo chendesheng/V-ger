@@ -312,8 +312,6 @@ func compareType(a, b string) int {
 	} else {
 		return -1
 	}
-
-	return 1
 }
 
 type Subtitles []*Subtitle
