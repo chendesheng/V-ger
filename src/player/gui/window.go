@@ -74,6 +74,8 @@ type Window struct {
 
 	chCursor         chan struct{}
 	chCursorAutoHide chan struct{}
+
+	chDelayShowSpinning chan int
 }
 
 // func (w *Window) Show() {
@@ -217,8 +219,9 @@ func NewWindow(title string, width, height int) *Window {
 		ChanShowMessage: make(chan SubItemArg),
 		ChanHideMessage: make(chan uintptr),
 
-		ChanSetCursor:    make(chan bool),
-		ChanShowSpinning: make(chan bool),
+		ChanSetCursor:       make(chan bool),
+		ChanShowSpinning:    make(chan bool),
+		chDelayShowSpinning: nil,
 
 		ChanSetVolume:        make(chan byte),
 		ChanSetVolumeDisplay: make(chan bool),
@@ -489,15 +492,39 @@ func (w *Window) ShowSpinning() {
 func (w *Window) HideSpinning() {
 	C.hideSpinning(w.ptr)
 }
+
 func (w *Window) SendShowSpinning() {
-	select {
-	case w.ChanShowSpinning <- true:
-	case <-time.After(50 * time.Millisecond):
+	// println(string(debug.Stack()))
+
+	if w.chDelayShowSpinning == nil {
+		w.chDelayShowSpinning = make(chan int)
+		go func() {
+			w.ChanShowSpinning <- true
+			i := 1
+			i += <-w.chDelayShowSpinning
+
+			for {
+				select {
+				case <-time.After(500 * time.Millisecond):
+					w.ChanShowSpinning <- (i > 0)
+					i += <-w.chDelayShowSpinning
+				case i1 := <-w.chDelayShowSpinning:
+					i += i1
+				}
+			}
+		}()
+	} else {
+		w.chDelayShowSpinning <- 1
 	}
 }
 func (w *Window) SendHideSpinning() {
-	w.ChanShowSpinning <- false
+	// println(string(debug.Stack()))
+
+	if w.chDelayShowSpinning != nil {
+		w.chDelayShowSpinning <- -1
+	}
 }
+
 func (w *Window) SetVolume(volume byte) {
 	// if volume < 0 {
 	// 	volume = 0

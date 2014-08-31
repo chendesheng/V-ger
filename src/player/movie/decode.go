@@ -164,12 +164,16 @@ func (m *Movie) decode(name string) {
 	var start time.Duration
 	if m.p.LastPos > time.Second && m.p.LastPos < m.p.Duration-50*time.Millisecond {
 		var img []byte
-		start, img, _ = m.v.Seek(m.p.LastPos)
+		var err error
+		start, img, err = m.v.Seek(m.p.LastPos)
+		if err != nil {
+			log.Print(err)
+		}
 
 		m.showProgressInner(start)
 		m.w.SendDrawImage(img)
 
-		if m.httpBuffer != nil && m.httpBuffer.WaitQuit(3*1024*1024, m.quit) {
+		if m.waitBuffer(3 * 1024 * 1024) {
 			return
 		}
 	}
@@ -179,7 +183,6 @@ func (m *Movie) decode(name string) {
 	packet := AVPacket{}
 	ctx := m.ctx
 
-	m.w.SendHideSpinning()
 	m.c.SetTime(start)
 	for {
 		select {
@@ -222,17 +225,11 @@ func (m *Movie) decode(name string) {
 					m.a.FlushBuffer()
 
 					t, _, err := m.v.Seek(m.c.GetTime())
-					m.w.SendHideSpinning()
 					if err == nil {
 						log.Print("seek success:", t.String())
 
-						if m.httpBuffer != nil {
-							m.w.SendShowSpinning()
-							if m.httpBuffer.WaitQuit(2*1024*1024, m.quit) {
-								m.w.SendHideSpinning()
-								return
-							}
-							m.w.SendHideSpinning()
+						if m.waitBuffer(2 * 1024 * 1024) {
+							return
 						}
 
 						m.c.SetTime(t)
@@ -242,10 +239,6 @@ func (m *Movie) decode(name string) {
 						log.Print("seek error:", err)
 					}
 				}
-
-				// log.Print("seek to unfinished:", m.c.GetTime().String())
-				// log.Print("get frame error:", resCode)
-				// }
 			}
 			select {
 			case <-m.chHold:

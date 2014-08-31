@@ -48,14 +48,12 @@ func (m *Movie) OnSeekPaused(t time.Duration) {
 	m.showProgressInner(t)
 }
 func (m *Movie) OnSeekEnded(t time.Duration) {
-	if m.httpBuffer != nil {
-		m.httpBuffer.WaitQuit(1024*1024, m.quit)
-		m.w.SendHideSpinning()
+	if m.waitBuffer(1024 * 1024) {
+		return
 	}
 
 	m.unHold(t)
 
 	m.p.LastPos = t
 	SavePlayingAsync(m.p)
-
 }

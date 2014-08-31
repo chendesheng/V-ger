@@ -4,14 +4,21 @@ import (
 	"download"
 	"log"
 	"os"
-
-	// "path/filepath"
 	. "player/libav"
 	"time"
-	// "task"
-	// "time"
 	"util"
 )
+
+func (m *Movie) waitBuffer(size int64) bool {
+	if m.httpBuffer != nil {
+		m.w.SendShowSpinning()
+		defer m.w.SendHideSpinning()
+
+		return m.httpBuffer.WaitQuit(size, m.quit)
+	}
+
+	return false
+}
 
 func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
@@ -51,6 +58,9 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 				defer m.c.SetTime(t)
 			}
 
+			m.w.SendShowSpinning()
+			defer m.w.SendHideSpinning()
+
 			for {
 				select {
 				case <-time.After(20 * time.Millisecond):
@@ -82,7 +92,6 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 
 		pos, start := m.httpBuffer.Seek(offset, whence)
 		if start >= 0 && start < size {
-			m.w.SendShowSpinning()
 			go streaming.Start(start, m.quit)
 		}
 		return pos

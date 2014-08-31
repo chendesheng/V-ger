@@ -173,6 +173,9 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 	if strings.HasPrefix(file, "http://") ||
 		strings.HasPrefix(file, "https://") {
 
+		m.w.SendShowSpinning()
+		defer m.w.SendHideSpinning()
+
 		ctx, filename, err = m.openHttp(file)
 		if err != nil {
 			return
@@ -240,10 +243,7 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 
 	go updateSubscribeDuration(m.p.Movie, m.p.Duration)
 	go checkDownloadSubtitle(m, file, filename)
-
-	w.SendSetTitle(filename)
-	w.SendSetCursor(false)
-
+	go w.SendSetTitle(filename)
 	return
 }
 
