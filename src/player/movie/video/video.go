@@ -181,7 +181,12 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 		return t, nil, err
 	}
 
-	return v.ReadOneFrame()
+	t1, img, err := v.ReadOneFrame()
+	if err != nil {
+		return t, nil, err
+	} else {
+		return t1, img, nil
+	}
 }
 
 func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
