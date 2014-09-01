@@ -283,7 +283,7 @@ func (w *Window) InitEvents() {
 
 func (w *Window) ClearEvents() {
 	w.FuncOnFullscreenChanged = nil
-	w.FuncOnProgressChanged = nil
+	w.FuncOnProgressChanged = w.FuncOnProgressChanged[:1]
 	w.FuncKeyDown = nil
 	w.FuncAudioMenuClicked = nil
 	w.FuncSubtitleMenuClicked = nil
