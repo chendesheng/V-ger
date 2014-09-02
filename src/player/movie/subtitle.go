@@ -165,9 +165,9 @@ func (m *Movie) getSubtitleSearch() (string, string) {
 }
 func (m *Movie) ToggleSearchSubtitle() {
 	if m.subQuit != nil {
-		close(m.subQuit)
+		q := m.subQuit
 		m.subQuit = nil
-		// m.w.SendHideMessage()
+		close(q)
 	} else {
 		m.SearchDownloadSubtitle()
 	}
@@ -186,8 +186,8 @@ func (m *Movie) SearchDownloadSubtitle() {
 	case <-quit:
 		w.SendHideMessage()
 	default:
-		close(quit)
 		m.subQuit = nil
+		close(quit)
 
 		subs := GetSubtitlesMap(m.p.Movie)
 		if len(subs) == 0 {
