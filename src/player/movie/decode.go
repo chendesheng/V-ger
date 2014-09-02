@@ -165,9 +165,21 @@ func (m *Movie) decode(name string) {
 	if m.p.LastPos > time.Second && m.p.LastPos < m.p.Duration-50*time.Millisecond {
 		var img []byte
 		var err error
+
 		start, img, err = m.v.Seek(m.p.LastPos)
+
 		if err != nil {
 			log.Print(err)
+
+			start, img, err = m.v.Seek(0)
+
+			m.p.LastPos = 0
+			shared.SavePlayingAsync(m.p)
+
+			if err != nil {
+				log.Print(err)
+				return
+			}
 		}
 
 		m.showProgressInner(start)

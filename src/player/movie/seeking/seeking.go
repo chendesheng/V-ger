@@ -28,7 +28,6 @@ type SeekHandler interface {
 
 type VideoSeeker interface {
 	Seek(time.Duration) (time.Duration, []byte, error)
-	FlushBuffer()
 }
 
 func NewSeeking(v VideoSeeker, h SeekHandler, chQuit chan struct{}) *Seeking {

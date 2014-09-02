@@ -173,9 +173,6 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 	if strings.HasPrefix(file, "http://") ||
 		strings.HasPrefix(file, "https://") {
 
-		m.w.SendShowSpinning()
-		defer m.w.SendHideSpinning()
-
 		ctx, filename, err = m.openHttp(file)
 		if err != nil {
 			return
@@ -202,6 +199,9 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 
 func (m *Movie) Open(w *Window, file string) (err error) {
 	w.ShowStartupView()
+
+	w.SendShowSpinning()
+	defer w.SendHideSpinning()
 
 	defer func() {
 		if err != nil {

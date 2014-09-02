@@ -503,13 +503,11 @@ func (w *Window) SendShowSpinning() {
 			i := 1
 			i += <-w.chDelayShowSpinning
 
-			timer := time.NewTimer(500 * time.Millisecond)
 			for {
 				select {
-				case <-timer.C:
+				case <-time.After(500 * time.Millisecond):
 					w.ChanShowSpinning <- (i > 0)
 					i += <-w.chDelayShowSpinning
-					timer.Reset(500 * time.Millisecond)
 				case i1 := <-w.chDelayShowSpinning:
 					i += i1
 				}

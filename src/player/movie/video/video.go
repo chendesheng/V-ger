@@ -12,6 +12,8 @@ import (
 
 type VideoRender interface {
 	SendDrawImage([]byte)
+	SendShowSpinning()
+	SendHideSpinning()
 }
 type VideoFrame struct {
 	Pts time.Duration
@@ -172,6 +174,9 @@ func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
 }
 
 func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
+	v.r.SendShowSpinning()
+	defer v.r.SendHideSpinning()
+
 	flags := AVSEEK_FLAG_FRAME
 
 	ctx := v.formatCtx
@@ -247,7 +252,13 @@ func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 	width, height := v.Width, v.Height
 	frame := v.frame
 
-	for ctx.ReadFrame(&packet) >= 0 {
+	errCode := 0
+	for {
+		errCode = ctx.ReadFrame(&packet)
+		if errCode < 0 {
+			break
+		}
+
 		if frameFinished, pts := v.Decode(&packet); frameFinished {
 			packet.Free()
 
@@ -260,7 +271,7 @@ func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 		}
 	}
 
-	return 0, nil, errors.New("drop frame error")
+	return 0, nil, fmt.Errorf("read frame error: %x", errCode)
 }
 func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 	packet := AVPacket{}
