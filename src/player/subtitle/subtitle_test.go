@@ -47,13 +47,13 @@ func TestCompareLangEqual(t *testing.T) {
 }
 
 func TestCompareFormat(t *testing.T) {
-	if compareFormat("ass", "srt") != -1 {
+	if compareType("ass", "srt") != -1 {
 		t.Error("should <")
 	}
-	if compareFormat("ass", "ass") != 0 {
+	if compareType("ass", "ass") != 0 {
 		t.Error("should =")
 	}
-	if compareFormat("srt", "srt") != 0 {
+	if compareType("srt", "srt") != 0 {
 		t.Error("should =")
 	}
 }
@@ -61,40 +61,40 @@ func TestCompareFormat(t *testing.T) {
 func TestSortSubtitle(t *testing.T) {
 	subs := make([]*Subtitle, 0, 10)
 	subs = append(subs, &Subtitle{
-		Name:   "1",
-		Lang1:  "en",
-		Lang2:  "",
-		Format: "ass",
+		Name:  "1",
+		Lang1: "en",
+		Lang2: "",
+		Type:  "ass",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "2",
-		Lang1:  "chs",
-		Lang2:  "",
-		Format: "ass",
+		Name:  "2",
+		Lang1: "chs",
+		Lang2: "",
+		Type:  "ass",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "3",
-		Lang1:  "cht",
-		Lang2:  "",
-		Format: "srt",
+		Name:  "3",
+		Lang1: "cht",
+		Lang2: "",
+		Type:  "srt",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "4",
-		Lang1:  "en",
-		Lang2:  "cht",
-		Format: "ass",
+		Name:  "4",
+		Lang1: "en",
+		Lang2: "cht",
+		Type:  "ass",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "5",
-		Lang1:  "en",
-		Lang2:  "cht",
-		Format: "srt",
+		Name:  "5",
+		Lang1: "en",
+		Lang2: "cht",
+		Type:  "srt",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "6",
-		Lang1:  "en",
-		Lang2:  "chs",
-		Format: "ass",
+		Name:  "6",
+		Lang1: "en",
+		Lang2: "chs",
+		Type:  "ass",
 	})
 
 	sort.Sort(Subtitles(subs))
@@ -110,22 +110,22 @@ func TestSortSubtitle(t *testing.T) {
 func TestSelectSorted(t *testing.T) {
 	subs := make([]*Subtitle, 0, 10)
 	subs = append(subs, &Subtitle{
-		Name:   "4",
-		Lang1:  "en",
-		Lang2:  "cht",
-		Format: "ass",
+		Name:  "4",
+		Lang1: "en",
+		Lang2: "cht",
+		Type:  "ass",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "5",
-		Lang1:  "en",
-		Lang2:  "cht",
-		Format: "srt",
+		Name:  "5",
+		Lang1: "en",
+		Lang2: "cht",
+		Type:  "srt",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "6",
-		Lang1:  "en",
-		Lang2:  "chs",
-		Format: "ass",
+		Name:  "6",
+		Lang1: "en",
+		Lang2: "chs",
+		Type:  "ass",
 	})
 
 	sort.Sort(Subtitles(subs))
@@ -137,22 +137,22 @@ func TestSelectSorted(t *testing.T) {
 func TestSelectSorted2(t *testing.T) {
 	subs := make([]*Subtitle, 0, 10)
 	subs = append(subs, &Subtitle{
-		Name:   "1",
-		Lang1:  "en",
-		Lang2:  "",
-		Format: "ass",
+		Name:  "1",
+		Lang1: "en",
+		Lang2: "",
+		Type:  "ass",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "2",
-		Lang1:  "chs",
-		Lang2:  "",
-		Format: "ass",
+		Name:  "2",
+		Lang1: "chs",
+		Lang2: "",
+		Type:  "ass",
 	})
 	subs = append(subs, &Subtitle{
-		Name:   "3",
-		Lang1:  "cht",
-		Lang2:  "",
-		Format: "srt",
+		Name:  "3",
+		Lang1: "cht",
+		Lang2: "",
+		Type:  "srt",
 	})
 
 	sort.Sort(Subtitles(subs))

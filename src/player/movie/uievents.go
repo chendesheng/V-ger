@@ -52,7 +52,7 @@ func (m *Movie) uievents() {
 			s1, _ := m.getPlayingSubs()
 			if s1 != nil {
 				t := m.c.GetTime()
-				subTime := s1.GetSubtime(t, -1)
+				subTime := s1.GetSubTime(t, -1)
 
 				if subTime == 0 {
 					offset = -10 * time.Second
@@ -69,7 +69,7 @@ func (m *Movie) uievents() {
 			s1, _ := m.getPlayingSubs()
 			if s1 != nil {
 				t := m.c.GetTime()
-				subTime := s1.GetSubtime(t, 1)
+				subTime := s1.GetSubTime(t, 1)
 				log.Print("subtime:", subTime)
 
 				if subTime == 0 {

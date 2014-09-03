@@ -282,7 +282,7 @@ func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 		m.subs = nil
 		width, height := m.v.Width, m.v.Height
 		for _, sub := range subs {
-			m.subs = append(m.subs, NewSubtitle(sub, m.w, m.c, float64(width), float64(height)))
+			m.subs = append(m.subs, NewSubtitle(sub, m.w, float64(width), float64(height)))
 		}
 
 		sort.Sort(Subtitles(m.subs))

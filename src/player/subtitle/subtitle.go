@@ -5,7 +5,6 @@ import (
 	// "io/ioutil"
 	// "cld"
 	"log"
-	. "player/clock"
 	"player/language"
 	. "player/shared"
 	"player/subtitle/ass"
@@ -28,34 +27,15 @@ type subTimeArg struct {
 type Subtitle struct {
 	sync.Mutex
 
-	r     SubRender
-	items *subItems
-
-	c *Clock
-
-	offset time.Duration
-	quit   chan bool
-
-	ChanSeek        chan time.Duration
-	ChanSeekRefersh chan time.Duration
-
-	ChanOffset chan durationArg
-
-	chanGetSubTime chan subTimeArg
-
-	chanStop chan bool
-
-	Name string
-
-	IsMainSub bool
-
-	Lang1 string //one subtitle file may has double languages
-	Lang2 string
-
-	Type string
-
-	chanRes chan SubItemExtra
-
+	r          SubRender
+	items      *subItems
+	offset     time.Duration
+	Name       string
+	IsMainSub  bool
+	Lang1      string //one subtitle file may has two languages
+	Lang2      string
+	Type       string
+	chanRes    chan SubItemExtra
 	displaying []*SubItem
 }
 
@@ -172,7 +152,7 @@ func simplized(si *subItems) {
 	})
 }
 
-func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtitle {
+func NewSubtitle(sub *Sub, r SubRender, width, height float64) *Subtitle {
 	if sub == nil {
 		return nil
 	}
@@ -184,13 +164,7 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 		return nil
 	}
 
-	s.c = c
 	s.offset = sub.Offset
-	s.ChanSeek = make(chan time.Duration)
-	s.ChanSeekRefersh = make(chan time.Duration)
-	s.ChanOffset = make(chan durationArg)
-	s.chanStop = make(chan bool)
-	s.chanGetSubTime = make(chan subTimeArg)
 	s.Name = sub.Name
 	s.IsMainSub = true
 	s.Lang1 = sub.Lang1
@@ -205,7 +179,6 @@ func NewSubtitle(sub *Sub, r SubRender, c *Clock, width, height float64) *Subtit
 
 	simplized(s.items)
 
-	s.quit = make(chan bool)
 	s.r = r
 
 	log.Printf("parse sub:%s, %s, %s; %d items", sub.Name, sub.Lang1, sub.Lang2, len(s.items.nooverlap))
@@ -240,13 +213,14 @@ func (s *Subtitle) AddOffset(d time.Duration) time.Duration {
 	return s.offset
 }
 
-func (s *Subtitle) GetSubtime(t time.Duration, offset int) time.Duration {
+func (s *Subtitle) GetSubTime(t time.Duration, offset int) time.Duration {
 	s.Lock()
 	defer s.Unlock()
 
 	t -= s.offset
 
 	pos, ok := s.items.findPos(t)
+
 	if ok || offset > 0 {
 		pos += offset
 	}
@@ -260,108 +234,4 @@ func (s *Subtitle) GetSubtime(t time.Duration, offset int) time.Duration {
 
 func (s *Subtitle) IsTwoLangs() bool {
 	return len(s.Lang1) > 0 && len(s.Lang2) > 0
-}
-
-func compareLang(a1, a2, b1, b2 string) int {
-	if a1 == b1 && a2 == b2 {
-		return 0
-	}
-	//multi lang > signle lang
-	if len(a2) > 0 && len(b2) == 0 {
-		return 1
-	}
-	if len(a2) == 0 && len(b2) > 0 {
-		return -1
-	}
-	//cn > en
-	if len(a2) == 0 && len(b2) == 0 {
-		if a1 == "chs" {
-			return 1
-		}
-		if b1 == "chs" {
-			return -1
-		}
-		if a1 == "cht" {
-			return 1
-		}
-		if b1 == "cht" {
-			return -1
-		}
-		return 1
-	}
-
-	if a2 == "chs" {
-		return 1
-	}
-	if b2 == "chs" {
-		return -1
-	}
-	if a2 == "cht" {
-		return 1
-	}
-	if b2 == "cht" {
-		return -1
-	}
-	return 1
-}
-func compareType(a, b string) int {
-	if a == b {
-		return 0
-	} else if a == "srt" {
-		return 1
-	} else {
-		return -1
-	}
-}
-
-type Subtitles []*Subtitle
-
-func (s Subtitles) Len() int {
-	return len([]*Subtitle(s))
-}
-
-func (s Subtitles) Less(i, j int) bool {
-	a := s[i]
-	b := s[j]
-
-	c := compareLang(a.Lang1, a.Lang2, b.Lang1, b.Lang2)
-	if c != 0 {
-		return c > 0
-	} else {
-		c = compareType(a.Type, b.Type)
-		if c != 0 {
-			return c > 0
-		}
-	}
-
-	return false
-}
-
-func (s Subtitles) Swap(i, j int) {
-	t := s[i]
-	s[i] = s[j]
-	s[j] = t
-}
-
-func (s Subtitles) Select() (a *Subtitle, b *Subtitle) {
-	subs := ([]*Subtitle)(s)
-	if len(subs) == 1 || subs[0].IsTwoLangs() {
-		a = subs[0]
-		b = nil
-	} else {
-		if subs[0].Lang1 == "en" {
-			a = subs[0]
-			b = nil
-		} else {
-			a = subs[0]
-			for _, c := range subs {
-				if c.Lang1 == "en" {
-					b = c
-					break
-				}
-			}
-		}
-	}
-
-	return
 }
