@@ -125,7 +125,7 @@ func main() {
 	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	transport := http.DefaultTransport.(*http.Transport)
 	transport.ResponseHeaderTimeout = networkTimeout
-	transport.MaxIdleConnsPerHost = 20
+	transport.MaxIdleConnsPerHost = 3
 
 	app := &appDelegate{}
 	Initialize(app)

@@ -53,5 +53,5 @@ func init() {
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
 	download.BaseDir = util.ReadConfig("dir")
-	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
+	download.NetworkTimeout = networkTimeout
 }
