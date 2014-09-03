@@ -170,7 +170,12 @@ func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
 		return t, nil, err
 	}
 
-	return v.DropFramesUtil(t)
+	t1, img, err := v.DropFramesUtil(t)
+	if err != nil {
+		return t, nil, err
+	} else {
+		return t1, img, nil
+	}
 }
 
 func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {

@@ -28,6 +28,7 @@ type SeekHandler interface {
 
 type VideoSeeker interface {
 	Seek(time.Duration) (time.Duration, []byte, error)
+	SeekAccurate(time.Duration) (time.Duration, []byte, error)
 }
 
 func NewSeeking(v VideoSeeker, h SeekHandler, chQuit chan struct{}) *Seeking {
@@ -48,6 +49,18 @@ func (s *Seeking) seek(t time.Duration) time.Duration {
 	s.h.OnSeek(t, img)
 	return t
 }
+func (s *Seeking) seekAccurate(t time.Duration) time.Duration {
+	var img []byte
+	var err error
+	t, img, err = s.v.SeekAccurate(t)
+	if err != nil {
+		log.Print(err)
+		return t
+	}
+
+	s.h.OnSeek(t, img)
+	return t
+}
 func (s *Seeking) handleSeek(t time.Duration, arg *seekArg) time.Duration {
 	if t < 0 {
 		t = s.h.OnSeekStarted()
@@ -55,7 +68,7 @@ func (s *Seeking) handleSeek(t time.Duration, arg *seekArg) time.Duration {
 	}
 	if arg.isOffset {
 		if arg.t != 0 {
-			t = s.seek(t + arg.t)
+			t = s.seekAccurate(t + arg.t)
 		}
 	} else {
 		t = s.seek(arg.t)
