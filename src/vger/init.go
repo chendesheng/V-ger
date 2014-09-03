@@ -42,7 +42,7 @@ func init() {
 	transport.MaxIdleConnsPerHost = 3
 
 	go func() {
-		err := thunder.Login()
+		err := thunder.Login(nil)
 		if err != nil {
 			log.Print(err)
 		}

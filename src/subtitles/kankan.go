@@ -3,6 +3,7 @@ package subtitles
 import (
 	"encoding/json"
 	"fmt"
+	"httpex"
 	"log"
 	"regexp"
 	"thunder"
@@ -16,6 +17,11 @@ type kankanSearch struct {
 func (k *kankanSearch) search(result chan Subtitle) error {
 	log.Print("kankan search:", k.url)
 
+	err := thunder.Login(k.quit)
+	if err != nil {
+		return err
+	}
+
 	regFid := regexp.MustCompile("[?].*fid=([^&]+)")
 	if matches := regFid.FindStringSubmatch(k.url); len(matches) > 0 {
 		fid := matches[1]
@@ -24,7 +30,7 @@ func (k *kankanSearch) search(result chan Subtitle) error {
 
 		sourceUrl := fmt.Sprintf("http://i.vod.xunlei.com/subtitle/list?gcid=%s&cid=%s&userid=%s", gcid, cid, userid)
 
-		content, err := sendGet(sourceUrl, nil, k.quit)
+		content, err := httpex.GetStringResp(sourceUrl, nil, k.quit)
 		if err != nil {
 			return err
 		}

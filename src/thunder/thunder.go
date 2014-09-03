@@ -2,6 +2,7 @@ package thunder
 
 import (
 	"bytes"
+	"httpex"
 	// "errors"
 	"fmt"
 	"io/ioutil"
@@ -19,7 +20,7 @@ import (
 )
 
 func NewTask(taskURL string, verifyCode string) ([]ThunderTask, error) {
-	err := Login()
+	err := Login(nil)
 	if err != nil {
 		return nil, err
 	} else {
@@ -112,7 +113,7 @@ func uploadTorrent(torrent []byte, userId string, verifycode string) error {
 	findex := strings.Join(selectionList, "_")
 	size := strings.Join(sizelist, "_")
 
-	res, err := sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
+	res, err := httpex.PostFormRespString("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
 		&url.Values{
 			"callback": {"jsonp"},
 			"t":        {time.Now().String()},
@@ -139,11 +140,11 @@ func uploadTorrent(torrent []byte, userId string, verifycode string) error {
 	return err
 }
 func taskCommit(userId string, taskURL string, taskType int, verifyCode string) error {
-	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_check",
+	text, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/interface/task_check",
 		&url.Values{
 			"callback": {"fun"},
 			"url":      {taskURL},
-		})
+		}, nil)
 	if err != nil {
 		return err
 	}
@@ -157,7 +158,7 @@ func taskCommit(userId string, taskURL string, taskType int, verifyCode string) 
 	// 	return fmt.Errorf("Commit task error, try again later")
 	// }
 
-	res, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/task_commit",
+	res, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/interface/task_commit",
 		&url.Values{
 			"callback":    {"ret_task"},
 			"uid":         {userId},
@@ -175,7 +176,7 @@ func taskCommit(userId string, taskURL string, taskType int, verifyCode string) 
 			"database":    {"undefined"},
 			"time":        {time.Now().String()},
 			"verify_code": {verifyCode},
-		})
+		}, nil)
 
 	if err == nil {
 		//-12 means need input validation code
@@ -202,10 +203,10 @@ func uploadTorrentFile(torrent []byte) (string, error) {
 }
 func btTaskCommit(userId string, taskURL string, verifycode string) error {
 
-	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/url_query", &url.Values{
+	text, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/interface/url_query", &url.Values{
 		"u":        {taskURL},
 		"callback": {"queryUrl"},
-	})
+	}, nil)
 	if err != nil {
 		return err
 	}
@@ -216,7 +217,7 @@ func btTaskCommit(userId string, taskURL string, verifycode string) error {
 	// 	return fmt.Errorf("Commit bt task error, try again later.")
 	// }
 
-	res, err := sendPost("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
+	res, err := httpex.PostFormRespString("http://dynamic.cloud.vip.xunlei.com/interface/bt_task_commit",
 		&url.Values{
 			"callback": {"jsonp"},
 			"t":        {time.Now().String()},
@@ -244,14 +245,14 @@ func btTaskCommit(userId string, taskURL string, verifycode string) error {
 	return err
 }
 func getNewlyCreateTask(userId string) ([]ThunderTask, error) {
-	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/showtask_unfresh",
+	text, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/interface/showtask_unfresh",
 		&url.Values{
 			"callback": {"jsonp1"},
 			"t":        {time.Now().String()},
 			"type_id":  {"4"},
 			"page":     {"1"},
 			"tasknum":  {"1"},
-		})
+		}, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +276,7 @@ func getNewlyCreateTask(userId string) ([]ThunderTask, error) {
 	return tks, err
 }
 func getBtTaskList(userId string, id string, cid string) ([]ThunderTask, error) {
-	text, err := sendGet("http://dynamic.cloud.vip.xunlei.com/interface/fill_bt_list",
+	text, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/interface/fill_bt_list",
 		&url.Values{
 			"uid":      {userId},
 			"callback": {"fill_bt_list"},
@@ -283,7 +284,7 @@ func getBtTaskList(userId string, id string, cid string) ([]ThunderTask, error) 
 			"tid":      {id},
 			"infoid":   {cid},
 			"p":        {"1"},
-		})
+		}, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -348,46 +349,6 @@ func getTaskType(url string) (int, []byte) {
 		}
 	}
 	return 0, nil
-}
-func sendPost(url string, params *url.Values, data *url.Values) (string, error) {
-	if params != nil {
-		url = url + "?" + params.Encode()
-	}
-	resp, err := http.PostForm(url, *data)
-	if err != nil {
-		return "", err
-	}
-
-	text := readBody(resp)
-	return text, nil
-}
-func sendGet(url string, params *url.Values) (string, error) {
-	if params != nil {
-		url = url + "?" + params.Encode()
-	}
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-
-	text := readBody(resp)
-
-	return text, nil
-}
-func readBody(resp *http.Response) string {
-	defer resp.Body.Close()
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// dumpBytes, _ := httputil.DumpResponse(resp, true)
-	// if len(dumpBytes) > 0 {
-	// 	log.Println(string(dumpBytes))
-	// }
-
-	text := string(bytes)
-	return text
 }
 
 func postFile(filename string, filebytes []byte, target_url string) (*http.Response, error) {

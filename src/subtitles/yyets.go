@@ -1,6 +1,7 @@
 package subtitles
 
 import (
+	"httpex"
 	"log"
 	"net/url"
 	"regexp"
@@ -37,7 +38,7 @@ type yyetsSearch struct {
 func (y *yyetsSearch) search(result chan Subtitle) error {
 	log.Printf("YYets search subtitle: %s %d", y.name, y.maxcnt)
 
-	resp, err := httpGet("http://www.yyets.com/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
+	resp, err := httpex.Get("http://www.yyets.com/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
 	if err != nil {
 		return err
 	}

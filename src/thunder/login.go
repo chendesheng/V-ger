@@ -3,6 +3,7 @@ package thunder
 import (
 	"crypto/md5"
 	"fmt"
+	"httpex"
 	"log"
 	"net/http"
 	"net/url"
@@ -26,29 +27,29 @@ var isLogined = false
 var UserName string
 var Password string
 
-func Login() error {
+func Login(quit chan struct{}) error {
 	config := util.ReadAllConfigs()
 	user := config["thunder-user"]
 	password := config["thunder-password"]
 
-	gdriveid, _, err := Login2(util.ReadConfig("gdriveid"), user, password)
+	gdriveid, _, err := Login2(util.ReadConfig("gdriveid"), user, password, quit)
 	if err == nil {
 		util.SaveConfig("gdriveid", gdriveid)
 	}
 	return err
 }
 
-func Login2(gdriveid string, user, password string) (string, string, error) {
+func Login2(gdriveid string, user, password string, quit chan struct{}) (string, string, error) {
 	setCookie("gdriveid", gdriveid)
 
 	if isLogined {
 		return gdriveid, getCookieValue("userid"), nil
 	}
 
-	_, err := sendGet("http://login.xunlei.com/check",
+	_, err := httpex.GetStringResp("http://login.xunlei.com/check",
 		&url.Values{
 			"u": {user},
-		})
+		}, quit)
 	if err != nil {
 		return "", "", err
 	}
@@ -65,7 +66,7 @@ func Login2(gdriveid string, user, password string) (string, string, error) {
 	verifyCode := args[1]
 	passwordMd5 := singleMd5(doubleMD5(password) + strings.ToUpper(verifyCode))
 
-	_, err = sendPost("http://login.xunlei.com/sec2login/", nil,
+	_, err = httpex.PostFormRespString("http://login.xunlei.com/sec2login/", nil,
 		&url.Values{
 			"login_enable": {"1"},
 			"login_hour":   {"720"},
@@ -78,17 +79,17 @@ func Login2(gdriveid string, user, password string) (string, string, error) {
 	}
 
 	//gdriveid
-	_, err = sendGet("http://dynamic.lixian.vip.xunlei.com/login?from=0", &url.Values{})
+	_, err = httpex.GetStringResp("http://dynamic.lixian.vip.xunlei.com/login?from=0", &url.Values{}, quit)
 	if err != nil {
 		return "", "", err
 	}
 
 	userid := getCookieValue("userid")
-	html, err := sendGet("http://dynamic.cloud.vip.xunlei.com/user_task",
+	html, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/user_task",
 		&url.Values{
 			"userid": {userid},
 			"st":     {"4"},
-		})
+		}, quit)
 	if err != nil {
 		return "", "", err
 	}

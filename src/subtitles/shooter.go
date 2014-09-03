@@ -2,6 +2,7 @@ package subtitles
 
 import (
 	"fmt"
+	"httpex"
 	"log"
 	"net/http"
 	"net/url"
@@ -78,7 +79,7 @@ func (sh *shooterSearch) search(result chan Subtitle) error {
 
 	loadmain = ""
 
-	resp, err := httpGet("http://www.shooter.cn/search/"+url.QueryEscape(sh.name), sh.quit)
+	resp, err := httpex.Get("http://www.shooter.cn/search/"+url.QueryEscape(sh.name), sh.quit)
 	if err != nil {
 		return err
 	}
@@ -245,7 +246,7 @@ func (sh shooterSearch) getDownloadUrl(webPageURL string) (string, error) {
 
 	getSubId(webPageURL)
 
-	pageHtml, err := sendGet(webPageURL, nil, sh.quit)
+	pageHtml, err := httpex.GetStringResp(webPageURL, nil, sh.quit)
 	if err != nil {
 		return "", err
 	}
@@ -253,7 +254,7 @@ func (sh shooterSearch) getDownloadUrl(webPageURL string) (string, error) {
 
 	if loadmain == "" {
 		var err error
-		loadmain, err = sendGet("http://www.shooter.cn/a/loadmain.js", nil, sh.quit)
+		loadmain, err = httpex.GetStringResp("http://www.shooter.cn/a/loadmain.js", nil, sh.quit)
 		if err != nil {
 			return "", err
 		}
@@ -261,7 +262,7 @@ func (sh shooterSearch) getDownloadUrl(webPageURL string) (string, error) {
 
 	hash := getHash(loadmain)
 
-	encryptedUrl, err := sendGet(fmt.Sprintf("http://www.shooter.cn/files/file3.php?hash=%s&fileid=%s", hash, fileId), nil, sh.quit)
+	encryptedUrl, err := httpex.GetStringResp(fmt.Sprintf("http://www.shooter.cn/files/file3.php?hash=%s&fileid=%s", hash, fileId), nil, sh.quit)
 	if err != nil {
 		return "", err
 	}

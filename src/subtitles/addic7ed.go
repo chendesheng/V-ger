@@ -1,6 +1,7 @@
 package subtitles
 
 import (
+	"httpex"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -24,10 +25,6 @@ type addic7ed struct {
 	quit chan struct{}
 }
 
-func cancelRequest(req *http.Request) {
-	http.DefaultTransport.(*http.Transport).CancelRequest(req)
-}
-
 func (a *addic7ed) search(result chan Subtitle) error {
 	log.Printf("Addic7ed search subtitle: %s", a.name)
 
@@ -44,7 +41,7 @@ func (a *addic7ed) search(result chan Subtitle) error {
 		"Submit": {"Search"},
 	}
 
-	resp, err := httpGet("http://www.addic7ed.com/search.php?"+params.Encode(), a.quit)
+	resp, err := httpex.Get("http://www.addic7ed.com/search.php?"+params.Encode(), a.quit)
 	if err != nil {
 		return nil
 	}

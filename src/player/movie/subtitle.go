@@ -15,7 +15,6 @@ import (
 	"sort"
 	"subtitles"
 	"task"
-	"thunder"
 	"time"
 	"toutf8"
 	"unicode/utf8"
@@ -131,15 +130,11 @@ func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
 }
 func downloadSubs(movieName string, url string, search string, quit chan struct{}) {
 	chSubs := make(chan subtitles.Subtitle)
-	err := thunder.Login()
-	if err != nil {
-		log.Print(err)
-	}
 
 	go subtitles.SearchSubtitles(search, url, chSubs, quit)
 
 	dir := path.Join(util.ReadConfig("dir"), "subs", movieName)
-	err, _ = util.MakeSurePathExists(dir)
+	err, _ := util.MakeSurePathExists(dir)
 	if err != nil {
 		log.Print(err)
 		return
