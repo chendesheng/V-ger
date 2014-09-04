@@ -229,6 +229,12 @@ func (v *Video) FlushBuffer() {
 }
 
 func (v *Video) Play() {
+	defer func() {
+		if v.chQuitDone != nil {
+			close(v.chQuitDone)
+		}
+	}()
+
 	for {
 		select {
 		case data := <-v.ChanDecoded:
@@ -245,7 +251,6 @@ func (v *Video) Play() {
 			}
 			break
 		case <-v.quit:
-			close(v.chQuitDone)
 			return
 		}
 	}

@@ -27,9 +27,13 @@ func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
 	return false
 }
 
-func (m *Movie) hold() {
+func (m *Movie) Hold() time.Duration {
 	if m.chHold == nil {
-		return
+		if m.c != nil {
+			return m.c.GetTime()
+		} else {
+			return -1
+		}
 	}
 
 	log.Print("send pause movie")
@@ -41,10 +45,14 @@ func (m *Movie) hold() {
 	case <-m.quit:
 	}
 
-	return
+	if m.c != nil {
+		return m.c.GetTime()
+	} else {
+		return -1
+	}
 }
 
-func (m *Movie) unHold(t time.Duration) {
+func (m *Movie) Unhold(t time.Duration) {
 	select {
 	case m.chHold <- t:
 	case <-m.quit:
@@ -191,6 +199,7 @@ func (m *Movie) decode(name string) {
 	}
 
 	m.w.SendSetSize(m.v.Width, m.v.Height)
+	m.w.SendSetCursor(true)
 
 	packet := AVPacket{}
 	ctx := m.ctx

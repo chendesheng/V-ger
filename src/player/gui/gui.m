@@ -188,6 +188,8 @@ void setWindowSize(void* wptr, int width, int height) {
     [w->glView setOriginalSize:NSMakeSize(width, height)];
 
     [w setFrame:frame display:YES animate:YES];
+
+    [w makeKeyAndOrderFront:nil];
 }
 
 void* newWindow(char* title, int width, int height) {

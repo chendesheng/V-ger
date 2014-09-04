@@ -11,24 +11,37 @@
 -(void)searchSubtitleMenuItemClick:(id)sender {
 	onSearchSubtitleMenuItemClick();
 }
+
+- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {
+     NSOpenPanel *panel  = [NSOpenPanel openPanel];
+     [panel setCanChooseDirectories:NO];
+     [panel setAllowsMultipleSelection:NO];
+
+     NSInteger type = [panel runModalForTypes:nil];
+     if(type == NSOKButton){
+          NSString* filename = [panel filename];
+          char* cfilename = (char*)[filename UTF8String];
+          onOpenFile(cfilename);
+     }
+     return NO;
+}
+
 -(void)openFileMenuItemClick:(id)sender {
-     // onOpenOpenPanel();
+     onOpenOpenPanel();
 
-     // NSOpenPanel *panel	= [NSOpenPanel openPanel];
-     // [panel setCanChooseDirectories:NO];
-     // [panel setAllowsMultipleSelection:NO];
+     NSOpenPanel *panel	= [NSOpenPanel openPanel];
+     [panel setCanChooseDirectories:NO];
+     [panel setAllowsMultipleSelection:NO];
 
-     // NSInteger type	= [panel runModalForTypes:nil];
-     // if(type == NSOKButton){
-     //      NSString* filename = [panel filename];
-     //      char* cfilename = (char*)[filename UTF8String];
-     //      onOpenFile(cfilename);
-
-     //      onCloseOpenPanel(cfilename);
-     // } else {
-     //      onCloseOpenPanel("");
-     // 	return;
-     // }
+     NSInteger type	= [panel runModalForTypes:nil];
+     if(type == NSOKButton){
+          NSString* filename = [panel filename];
+          char* cfilename = (char*)[filename UTF8String];
+          onCloseOpenPanel(cfilename);
+     } else {
+          onCloseOpenPanel("");
+     	return;
+     }
 }
 - (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
      NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];

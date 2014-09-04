@@ -24,10 +24,15 @@ type appDelegate struct {
 	sync.Mutex
 	w *Window
 	m *Movie
+	t time.Duration
 }
 
 func (app *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
+
+	if app.w == nil {
+		app.w = NewWindow("V'ger", 640, 360)
+	}
 
 	go func() {
 		app.Lock()
@@ -89,16 +94,16 @@ func (app *appDelegate) ToggleSearchSubtitle() {
 }
 func (app *appDelegate) OnOpenOpenPanel() {
 	if app.m != nil {
-		app.m.PauseClock()
+		app.t = app.m.Hold()
 	}
 }
 func (app *appDelegate) OnCloseOpenPanel(filename string) {
-	if app.m != nil {
-		app.m.ResumeClock()
-	}
-
 	if len(filename) > 0 {
 		app.OpenFile(filename)
+	} else {
+		if app.m != nil {
+			app.m.Unhold(app.t)
+		}
 	}
 }
 
@@ -129,7 +134,6 @@ func main() {
 
 	app := &appDelegate{}
 	Initialize(app)
-	app.w = NewWindow("V'ger", 640, 360)
 
 	PollEvents()
 	return
