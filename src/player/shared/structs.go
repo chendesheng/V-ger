@@ -1,6 +1,10 @@
 package shared
 
-import "time"
+import (
+	"sync/atomic"
+
+	"time"
+)
 
 type AttributedString struct {
 	Content string
@@ -47,13 +51,21 @@ type Sub struct {
 
 type Playing struct {
 	Movie       string
-	LastPos     time.Duration
+	LastPos     int64
 	SoundStream int
 	Sub1        string
 	Sub2        string
 	Duration    time.Duration
 	Volume      byte
 	Speed       float64 //online video downlad speed
+}
+
+func (p *Playing) GetLastPos() time.Duration {
+	return time.Duration(atomic.LoadInt64(&p.LastPos))
+}
+
+func (p *Playing) SetLastPos(t time.Duration) {
+	atomic.StoreInt64(&p.LastPos, int64(t))
 }
 
 func (item *SubItem) IsInDefaultPosition() bool {

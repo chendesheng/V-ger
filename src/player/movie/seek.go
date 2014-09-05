@@ -54,6 +54,6 @@ func (m *Movie) OnSeekEnded(t time.Duration) {
 
 	m.Unhold(t)
 
-	m.p.LastPos = t
+	m.p.SetLastPos(t)
 	SavePlayingAsync(m.p)
 }

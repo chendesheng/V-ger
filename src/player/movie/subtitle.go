@@ -131,9 +131,9 @@ func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
 func downloadSubs(movieName string, url string, search string, quit chan struct{}) {
 	chSubs := make(chan subtitles.Subtitle)
 
+	dir := path.Join(util.ReadConfig("dir"), "subs", movieName)
 	go subtitles.SearchSubtitles(search, url, chSubs, quit)
 
-	dir := path.Join(util.ReadConfig("dir"), "subs", movieName)
 	err, _ := util.MakeSurePathExists(dir)
 	if err != nil {
 		log.Print(err)

@@ -181,7 +181,7 @@ func scanPlaying(scanner dbHelper.RowScanner) (*Playing, error) {
 	var lastPos, duration int64
 	err := scanner.Scan(&p.Movie, &lastPos, &p.SoundStream, &p.Sub1, &p.Sub2, &duration, &p.Volume)
 	if err == nil {
-		p.LastPos = time.Duration(lastPos)
+		p.LastPos = lastPos
 		p.Duration = time.Duration(duration)
 		return &p, nil
 	} else {

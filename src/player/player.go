@@ -41,10 +41,10 @@ func (app *appDelegate) OpenFile(filename string) bool {
 		if app.m != nil {
 			app.m.SavePlaying()
 			app.m.Close()
-			app.m.Reset()
-		} else {
-			app.m = NewMovie()
+			// app.m.Reset()
 		}
+
+		app.m = NewMovie()
 
 		err := app.m.Open(app.w, filename)
 

@@ -47,7 +47,7 @@ func (m *Movie) showProgressPerSecond() {
 		case t = <-m.chProgress:
 			if t/time.Second != lastTime/time.Second {
 				lastTime = t
-				m.p.LastPos = t
+				m.p.SetLastPos(t)
 				m.showProgressInner(t)
 			}
 		case speed := <-m.chSpeed:

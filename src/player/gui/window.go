@@ -107,6 +107,8 @@ func (w *Window) DestoryRender() {
 }
 
 func (w *Window) SendDestoryRender() {
+	log.Print("SendDestoryRender")
+
 	w.ChanDestoryRender <- struct{}{}
 }
 
