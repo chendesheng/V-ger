@@ -78,14 +78,10 @@ type Window struct {
 	chDelayShowSpinning chan int
 }
 
-// func (w *Window) Show() {
-// 	C.showWindow(w.ptr)
-// }
 func (w *Window) SendDrawImage(img []byte) {
 	w.ChanDraw <- img
 }
 func (w *Window) SendSetCursor(b bool) {
-	log.Print("SendSetCursor:", b)
 	go func() {
 		w.ChanSetCursor <- b
 	}()
@@ -97,18 +93,6 @@ func (w *Window) SendSetCursor(b bool) {
 	}
 }
 
-// func (w *Window) FlushImageBuffer() {
-// 	for {
-// 		select {
-// 		case <-w.ChanDraw:
-// 			log.Print("window drop image")
-// 			break
-// 		default:
-// 			log.Print("window flush image buffer return")
-// 			return
-// 		}
-// 	}
-// }
 func (w *Window) RefreshContent(img []byte) {
 	w.img = img
 
@@ -481,12 +465,9 @@ func (w *Window) ShowSubList(sub Sub) {
 }
 
 func (w *Window) HideCursor() {
-	log.Print("hide cursor")
-
 	C.hideCursor(w.ptr)
 }
 func (w *Window) ShowCursor() {
-	log.Print("show cursor")
 	C.showCursor(w.ptr)
 }
 
@@ -711,8 +692,6 @@ func goOnMouseWheel(ptr unsafe.Pointer, deltaY float64) {
 
 //export goOnMouseMove
 func goOnMouseMove(ptr unsafe.Pointer) {
-	log.Print("goOnMouseMove")
-
 	w := windows[ptr]
 	w.SendSetCursor(true)
 }
