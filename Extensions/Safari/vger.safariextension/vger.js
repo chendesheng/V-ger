@@ -12,7 +12,7 @@ function handleContextMenu(event) {
 			}
 			currentElement = currentElement.parentNode;
 		}
-		if (currentElement.tagName == 'A') {
+		if (currentElement && currentElement.tagName == 'A') {
 			safari.self.tab.dispatchMessage("contextmenu", currentElement.href);
 		} else {
 			safari.self.tab.dispatchMessage("contextmenu", "");
