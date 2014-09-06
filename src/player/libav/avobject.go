@@ -67,7 +67,9 @@ func (obj *AVObject) Bytes() []byte {
 	header.Cap = header.Len
 	header.Data = uintptr(obj.ptr)
 
-	return bytes
+	ret := make([]byte, obj.size)
+	copy(ret, bytes)
+	return ret
 }
 
 //can only write once

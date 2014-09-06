@@ -18,7 +18,7 @@ type Audio struct {
 	frame       AVFrame
 
 	PacketChan  chan *AVPacket
-	audioBuffer safeSlice
+	audioBuffer *sampleBuffer
 
 	skipBytes int
 
@@ -32,9 +32,6 @@ type Audio struct {
 	diffCum       float64
 	diffCoef      float64
 	diffThreshold time.Duration
-
-	decodePkt     *AVPacket
-	decodePktSize int
 
 	Offset time.Duration
 
@@ -52,7 +49,7 @@ func NewAudio(c *Clock, volume float64) *Audio {
 	a.PacketChan = make(chan *AVPacket, 500)
 	a.c = c
 	a.driver = &portAudio{volume: volume}
-	a.audioBuffer = safeSlice{}
+	a.audioBuffer = &sampleBuffer{}
 	return a
 }
 func (a *Audio) StreamIndex() int {
@@ -77,42 +74,39 @@ func (a *Audio) GetOffset() time.Duration {
 	return time.Duration(atomic.LoadInt64((*int64)(&a.Offset)))
 }
 
-//drop packet if return false
-func (a *Audio) sync(packet *AVPacket) bool {
-	// println("sync audio")
-	var pts time.Duration
-	if packet.Pts() != AV_NOPTS_VALUE {
-		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
-	}
-	pts += a.GetOffset()
-
+func (a *Audio) sync(pts time.Duration) {
 	now := a.c.GetTime()
 
 	diff := pts - now
 	avgDiff := time.Duration(math.Abs(float64(diff)))
 
 	if avgDiff < a.diffThreshold {
-		return true
+		return
 	} else if pts > now && pts-now < 5*time.Second {
 		log.Print("wait audio:", (pts - now).String())
-		return !a.c.WaitUntilWithQuit(pts, a.quit)
+		a.c.WaitUntilWithQuit(pts, a.quit)
+		return
 	} else {
 		log.Print("skip audio packet:", (now - pts).String())
-		return false
+		a.audioBuffer.cutByTime(now - pts)
+		// log.Print("rest:", len(a.audioBuffer.buf))
+		return
 	}
 }
 
-func (a *Audio) getClock() time.Duration {
+func (a *Audio) getPts(packet *AVPacket) time.Duration {
 	var pts time.Duration
-	if a.decodePkt.Pts() != AV_NOPTS_VALUE {
-		pts = time.Duration(float64(a.decodePkt.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
+	if packet.Pts() != AV_NOPTS_VALUE {
+		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
 	}
-	return pts
+	return pts + a.GetOffset()
 }
 
 //decode one packet
-func (a *Audio) decode(packet *AVPacket, fn func([]byte)) {
+func (a *Audio) decode(packet *AVPacket) {
 	packetSize := packet.Size()
+	pts := a.getPts(packet)
+
 	//decode frame from this packet, there may be many frames in one packet
 	for packetSize > 0 { //continue decode until packet is empty
 		gotFrame, size := a.codecCtx.DecodeAudio(a.frame, packet)
@@ -121,8 +115,8 @@ func (a *Audio) decode(packet *AVPacket, fn func([]byte)) {
 			if gotFrame {
 				data := resampleFrame(a.resampleCtx, a.frame, a.codecCtx)
 				if !data.IsNil() {
-					defer data.Free()
-					fn(data.Bytes())
+					pts = a.audioBuffer.append(&samples{data.Bytes(), pts})
+					data.Free()
 				}
 			}
 		} else {
@@ -152,6 +146,7 @@ func (a *Audio) Open(stream AVStream) error {
 	a.stream = stream
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
+	a.audioBuffer.bytesPerSec = 2 * GetBytesPerSample(AV_SAMPLE_FMT_S16) * a.codecCtx.SampleRate()
 
 	a.diffThreshold = 50 * time.Millisecond
 
@@ -167,7 +162,7 @@ func (a *Audio) Open(stream AVStream) error {
 	}
 
 	log.Print("open audio")
-	return a.driver.Open(a.codecCtx.Channels(), a.codecCtx.SampleRate(),
+	return a.driver.Open(a.codecCtx.SampleRate(),
 		func(length int) []byte {
 			if a.c.WaitUntilRunning(a.quit) {
 				close(a.chQuitDone)
@@ -176,24 +171,19 @@ func (a *Audio) Open(stream AVStream) error {
 
 			for a.audioBuffer.empty() {
 				if packet, ok := a.receivePacket(); ok {
-					a.decode(packet, func(bytes []byte) {
-						if a.sync(packet) {
-							a.audioBuffer.append(bytes)
-						}
-					})
-
+					a.decode(packet)
 					packet.Free()
 				} else {
 					//can't receive more packets
 					// log.Print("No more audio packets.")
 					return a.getSilence(length)
 				}
+
+				a.sync(a.audioBuffer.pts())
 			}
 
-			// retLen := min2(len(a.audioBuffer), length)
-			// ret := a.audioBuffer[:retLen]
-			// a.audioBuffer = a.audioBuffer[retLen:]
-			return a.audioBuffer.cut(length)
+			ret := a.audioBuffer.cut(length)
+			return ret
 		})
 }
 

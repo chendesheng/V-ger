@@ -23,18 +23,9 @@ type portAudio struct {
 	stream *portaudio.Stream
 }
 
-func (a *portAudio) Open(channels int, sampleRate int, callback func(int) []byte) error {
-
-	h, err := portaudio.DefaultHostApi()
-	if err != nil {
-		return err
-	}
-	args := portaudio.HighLatencyParameters(nil, h.DefaultOutputDevice)
-	args.SampleRate = float64(sampleRate)
-	args.Output.Channels = 1
-
-	a.stream, err = portaudio.OpenStream(args, func(out []int32) {
-		// println(out)
+func (a *portAudio) Open(sampleRate int, callback func(int) []byte) error {
+	var err error
+	a.stream, err = portaudio.OpenDefaultStream(0, 1, float64(sampleRate), portaudio.FramesPerBufferUnspecified, func(out []int32) {
 		length := len(out)
 		for length > 0 {
 			p := callback(length * 4)

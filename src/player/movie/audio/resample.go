@@ -14,20 +14,24 @@ func channelLayout(cnt int) int64 {
 }
 
 func resampleFrame(resampleCtx AVAudioResampleContext, frame AVFrame, codecCtx *AVCodecContext) AVObject {
-	channelLayout := channelLayout(codecCtx.Channels())
+	inChannelLayout := int64(frame.ChannelLayout())
+	if inChannelLayout == 0 {
+		inChannelLayout = channelLayout(codecCtx.Channels())
+	}
 
-	// log.Print("resample in:", int64(frame.ChannelLayout()), int64(frame.Format()), int64(frame.SampleRate()))
-	// log.Print("resample out:", channelLayout, AV_SAMPLE_FMT_S16, int64(codecCtx.SampleRate()))
+	outChannelLayout := int64(AV_CH_LAYOUT_STEREO)
+	// log.Print("resample in:", int64(inChannelLayout), int64(frame.Format()), int64(frame.SampleRate()))
+	// log.Print("resample out:", outChannelLayout, AV_SAMPLE_FMT_S16, int64(codecCtx.SampleRate()))
 
 	resampleCtxObj := resampleCtx.Object()
-	resampleCtxObj.SetOptInt("in_channel_layout", int64(frame.ChannelLayout()), 0)
+	resampleCtxObj.SetOptInt("in_channel_layout", int64(inChannelLayout), 0)
 	resampleCtxObj.SetOptInt("in_sample_fmt", int64(frame.Format()), 0)
 	resampleCtxObj.SetOptInt("in_sample_rate", int64(frame.SampleRate()), 0)
-	resampleCtxObj.SetOptInt("out_channel_layout", channelLayout, 0)
+	resampleCtxObj.SetOptInt("out_channel_layout", outChannelLayout, 0)
 	resampleCtxObj.SetOptInt("out_sample_fmt", AV_SAMPLE_FMT_S16, 0)
 	resampleCtxObj.SetOptInt("out_sample_rate", int64(codecCtx.SampleRate()), 0)
 
-	outChannels := GetChannelLayoutNbChannels(uint64(channelLayout))
+	outChannels := 2 //GetChannelLayoutNbChannels(uint64(outChannelLayout))
 
 	if resampleCtx.Open() < 0 {
 		log.Print("error initializing libavresample")
