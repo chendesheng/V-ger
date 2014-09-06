@@ -41,7 +41,6 @@ func (app *appDelegate) OpenFile(filename string) bool {
 		if app.m != nil {
 			app.m.SavePlaying()
 			app.m.Close()
-			// app.m.Reset()
 		}
 
 		app.m = NewMovie()
@@ -61,29 +60,10 @@ func (app *appDelegate) OpenFile(filename string) bool {
 
 func (app *appDelegate) WillTerminate() {
 	m := app.m
-
-	if m == nil {
-		return
+	if m != nil {
+		m.SavePlaying()
+		app.w.DestoryRender()
 	}
-
-	m.SavePlaying()
-	app.w.DestoryRender()
-
-	// done := make(chan bool)
-	// go func() {
-	// 	if app.m != nil {
-
-	// 		app.m.Close()
-	// 	}
-	// 	done <- true
-	// }()
-	// select {
-	// case <-done:
-	// 	return
-	// case <-time.After(100 * time.Millisecond):
-	// 	log.Print("WillTerminate timeout")
-	// 	return
-	// }
 }
 func (app *appDelegate) ToggleSearchSubtitle() {
 	log.Print("ToggleSearchSubtitle")
