@@ -27,7 +27,9 @@ func (m *Movie) Hold() time.Duration {
 
 	select {
 	case m.chHold <- 0:
-		m.a.FlushBuffer()
+		if m.a != nil {
+			m.a.FlushBuffer()
+		}
 	case <-m.quit:
 	}
 
@@ -224,7 +226,9 @@ func (m *Movie) decode(name string) {
 					m.c.SetTime(t)
 				} else {
 					m.v.FlushBuffer()
-					m.a.FlushBuffer()
+					if m.a != nil {
+						m.a.FlushBuffer()
+					}
 
 					t, _, err := m.v.Seek(m.c.GetTime())
 					if err == nil {

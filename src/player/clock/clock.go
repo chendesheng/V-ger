@@ -202,7 +202,7 @@ func (c *Clock) TotalTime() time.Duration {
 }
 
 func NewClock(totalTime time.Duration) *Clock {
-	log.Print("NewClock")
+	log.Print("NewClock:", totalTime.String())
 
 	now := time.Now()
 	c := &Clock{
