@@ -111,6 +111,18 @@ func (m *Movie) playNextEpisode() bool {
 	return false
 }
 
+func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet *AVPacket) bool {
+	if index == packet.StreamIndex() {
+		select {
+		case ch <- packet:
+			return true
+		case <-m.quit:
+			return false
+		}
+	}
+	return false
+}
+
 func (m *Movie) decode(name string) {
 	m.chHold = make(chan time.Duration)
 
@@ -161,7 +173,6 @@ func (m *Movie) decode(name string) {
 	m.w.SendSetSize(m.v.Width, m.v.Height)
 	m.w.SendSetCursor(true)
 
-	packet := AVPacket{}
 	ctx := m.ctx
 
 	m.c.SetTime(start)
@@ -184,34 +195,17 @@ func (m *Movie) decode(name string) {
 			}
 		}
 
+		packet := AVPacket{}
 		resCode := ctx.ReadFrame(&packet)
 		if resCode >= 0 {
-			if m.v.StreamIndex == packet.StreamIndex() {
-				pkt := packet
-				pkt.Dup()
-
-				select {
-				case m.v.ChPackets <- &pkt:
-					m.seekPlayingSubs(m.c.GetTime(), false)
-					continue
-				case <-m.quit:
-					packet.Free()
-					return
-				}
+			if m.sendPacket(m.v.StreamIndex, m.v.ChPackets, &packet) {
+				m.seekPlayingSubs(m.c.GetTime(), false)
+				continue
 			}
 
 			if m.a != nil {
-				if m.a.StreamIndex() == packet.StreamIndex() {
-					pkt := packet
-					pkt.Dup()
-
-					select {
-					case m.a.ChPackets <- &pkt:
-						continue
-					case <-m.quit:
-						packet.Free()
-						return
-					}
+				if m.sendPacket(m.a.StreamIndex(), m.a.ChPackets, &packet) {
+					continue
 				}
 			}
 

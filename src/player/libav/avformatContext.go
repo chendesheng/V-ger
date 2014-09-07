@@ -110,9 +110,7 @@ func (ctx AVFormatContext) Stream(i int) AVStream {
 	return AVStream{ptr: streams[i]}
 }
 func (ctx *AVFormatContext) ReadFrame(packet *AVPacket) int {
-	// frameLock.Lock()
-	// defer frameLock.Unlock()
-	return int(C.av_read_frame(ctx.ptr, &packet.cAVPacket))
+	return int(C.av_read_frame(ctx.ptr, packet.pointer()))
 }
 func (ctx AVFormatContext) SeekFrame2(stream AVStream, t time.Duration, flags int) error {
 	var timeBase C.AVRational

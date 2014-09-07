@@ -8,31 +8,30 @@ package libav
 #include <stdlib.h>
 */
 import "C"
+import "unsafe"
 
-type AVPacket struct {
-	cAVPacket C.AVPacket
-}
+type AVPacket C.AVPacket
 
 func (packet *AVPacket) Size() int {
-	return int(packet.cAVPacket.size)
+	return int(packet.size)
 }
 
 func (packet *AVPacket) Free() {
-	C.av_free_packet(&packet.cAVPacket)
+	C.av_free_packet(packet.pointer())
 }
 
 func (packet *AVPacket) Dts() uint64 {
-	return uint64(packet.cAVPacket.dts)
+	return uint64(packet.dts)
 }
 
 func (packet *AVPacket) Pts() uint64 {
-	return uint64(packet.cAVPacket.pts)
+	return uint64(packet.pts)
 }
 
 func (packet *AVPacket) StreamIndex() int {
-	return int(packet.cAVPacket.stream_index)
+	return int(packet.stream_index)
 }
 
-func (packet *AVPacket) Dup() {
-	C.av_dup_packet(&packet.cAVPacket)
+func (packet *AVPacket) pointer() *C.AVPacket {
+	return (*C.AVPacket)(unsafe.Pointer(packet))
 }

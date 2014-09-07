@@ -89,7 +89,7 @@ func (ctx *AVCodecContext) Channels() int {
 
 func (ctx *AVCodecContext) DecodeAudio(frame AVFrame, packet *AVPacket) (bool, int) {
 	var gotFrame C.int
-	sz := int(C.avcodec_decode_audio4(ctx.ptr, frame.ptr, &gotFrame, &packet.cAVPacket))
+	sz := int(C.avcodec_decode_audio4(ctx.ptr, frame.ptr, &gotFrame, packet.pointer()))
 	return gotFrame != 0, sz
 }
 
@@ -108,7 +108,7 @@ func (ctx *AVCodecContext) DecodeVideo(frame AVFrame, packet *AVPacket) bool {
 	// println("decode video ", frame.ptr)
 	// println("decode video ", ctx.ptr)
 	var gotFrame C.int
-	C.avcodec_decode_video2(ctx.ptr, frame.ptr, &gotFrame, &packet.cAVPacket)
+	C.avcodec_decode_video2(ctx.ptr, frame.ptr, &gotFrame, packet.pointer())
 	return gotFrame != 0
 }
 
