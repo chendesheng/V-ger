@@ -4,6 +4,7 @@ package libav
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/avutil.h"
+#include "libavutil/frame.h"
 #include "libavutil/mathematics.h"
 #include <stdlib.h>
 */
@@ -27,7 +28,7 @@ func (frame *AVFrame) IsNil() bool {
 }
 
 func AllocFrame() AVFrame {
-	frame := AVFrame{ptr: C.avcodec_alloc_frame()}
+	frame := AVFrame{ptr: C.av_frame_alloc()}
 	return frame
 }
 
@@ -113,7 +114,7 @@ func (frame *AVFrame) Flip(height int) {
 }
 
 func (frame *AVFrame) Free() {
-	C.avcodec_free_frame(&frame.ptr)
+	C.av_frame_free(&frame.ptr)
 }
 
 func (frame *AVFrame) Dts() float64 {
