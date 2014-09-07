@@ -22,6 +22,13 @@ type Clock struct {
 	seeking bool
 }
 
+var chClosed chan struct{}
+
+func init() {
+	chClosed = make(chan struct{})
+	close(chClosed)
+}
+
 func (c *Clock) CalcTime(percent float64) time.Duration {
 	t := time.Duration(float64(c.totalTime) * percent)
 	return t
@@ -172,6 +179,22 @@ func (c *Clock) WaitUntilWithQuit(t time.Duration, quit chan struct{}) bool {
 	}
 
 	return false
+}
+
+func (c *Clock) WaitUntil(t time.Duration) <-chan time.Time {
+	return time.After(t - c.GetTime())
+}
+func (c *Clock) WaitRunning() chan struct{} {
+	var ch chan struct{}
+	c.Lock()
+	ch = c.wait
+	c.Unlock()
+
+	if !c.running {
+		return ch
+	} else {
+		return chClosed
+	}
 }
 
 func (c *Clock) TotalTime() time.Duration {

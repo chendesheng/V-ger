@@ -26,17 +26,19 @@ type Video struct {
 	codec       AVCodecContext
 
 	frame               AVFrame
-	pictureObjects      [40]*AVObject
+	pictureObjects      [5]*AVObject
 	currentPictureIndex int
 
 	Width, Height int
 	c             *Clock
 
-	ChanDecoded chan *VideoFrame
-	flushQuit   chan struct{}
-	quit        chan struct{}
-	chQuitDone  chan struct{}
-	r           VideoRender
+	// ChanDecoded chan *VideoFrame
+	ChPackets chan *AVPacket
+
+	flushQuit  chan struct{}
+	quit       chan struct{}
+	chQuitDone chan struct{}
+	r          VideoRender
 
 	global_pts uint64 //for avframe only
 
@@ -45,6 +47,8 @@ type Video struct {
 
 	lastPts float64
 	lastDts float64
+
+	chHold chan struct{}
 }
 
 func (v *Video) setupCodec(codec AVCodecContext) error {
@@ -128,9 +132,10 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 	v.frame = AllocFrame()
 	v.c = c
 
-	v.ChanDecoded = make(chan *VideoFrame, 20)
+	v.ChPackets = make(chan *AVPacket, 100)
 	v.flushQuit = make(chan struct{})
 	v.quit = make(chan struct{})
+	v.chHold = make(chan struct{})
 
 	log.Print("new video success")
 	return v, nil
@@ -218,7 +223,8 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 func (v *Video) FlushBuffer() {
 	for {
 		select {
-		case <-v.ChanDecoded:
+		case packet := <-v.ChPackets:
+			packet.Free()
 			break
 		default:
 			close(v.flushQuit)
@@ -237,21 +243,47 @@ func (v *Video) Play() {
 
 	for {
 		select {
-		case data := <-v.ChanDecoded:
-			// log.Printf("playing:%s,%s", data.Pts.String(), v.c.GetTime())
-
-			if v.c.WaitUntilWithQuit(data.Pts, v.flushQuit) {
-				continue
+		case packet := <-v.ChPackets:
+			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
+				packet.Free()
+				// log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
+				select {
+				case <-v.chHold:
+					select {
+					case <-v.chHold:
+					case <-v.quit:
+						return
+					}
+				case <-v.c.WaitRunning():
+					select {
+					case <-v.chHold:
+						select {
+						case <-v.chHold:
+						case <-v.quit:
+							return
+						}
+					case <-v.c.WaitUntil(pts):
+						v.r.SendDrawImage(img)
+					case <-v.flushQuit:
+						continue
+					}
+				case <-v.quit:
+					return
+				}
 			}
-
-			v.r.SendDrawImage(data.Img)
-
-			if v.c.WaitUntilRunning(v.quit) {
-				return
-			}
-			break
 		case <-v.quit:
 			return
+		}
+	}
+}
+
+func (v *Video) ToggleHold() {
+	select {
+	case v.chHold <- struct{}{}:
+		v.FlushBuffer()
+	case <-v.quit:
+		if v.chQuitDone != nil {
+			close(v.chQuitDone)
 		}
 	}
 }

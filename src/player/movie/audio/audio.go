@@ -17,7 +17,7 @@ type Audio struct {
 	stream      AVStream
 	frame       AVFrame
 
-	PacketChan  chan *AVPacket
+	ChPackets   chan *AVPacket
 	audioBuffer *sampleBuffer
 
 	skipBytes int
@@ -46,7 +46,7 @@ func NewAudio(c *Clock, volume float64) *Audio {
 
 	a.frame = AllocFrame()
 	a.resampleCtx = resampleCtx
-	a.PacketChan = make(chan *AVPacket, 500)
+	a.ChPackets = make(chan *AVPacket, 500)
 	a.c = c
 	a.driver = &portAudio{volume: volume}
 	a.audioBuffer = &sampleBuffer{}
@@ -58,7 +58,7 @@ func (a *Audio) StreamIndex() int {
 
 func (a *Audio) receivePacket() (*AVPacket, bool) {
 	select {
-	case packet, ok := <-a.PacketChan:
+	case packet, ok := <-a.ChPackets:
 		return packet, ok
 	case <-a.quit:
 		close(a.chQuitDone)
@@ -202,7 +202,7 @@ func (a *Audio) Close() {
 func (a *Audio) FlushBuffer() {
 	for {
 		select {
-		case p := <-a.PacketChan:
+		case p := <-a.ChPackets:
 			p.Free()
 			break
 		default:

@@ -5,27 +5,12 @@ import (
 	"os"
 	"path"
 	. "player/libav"
-	. "player/movie/video"
+	// . "player/movie/video"
 	"player/shared"
 	"task"
 	"time"
 	"util"
 )
-
-func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet AVPacket) bool {
-	if index == packet.StreamIndex() {
-		pkt := packet
-		pkt.Dup()
-
-		select {
-		case ch <- &pkt:
-			return true
-		case <-m.quit:
-			return false
-		}
-	}
-	return false
-}
 
 func (m *Movie) Hold() time.Duration {
 	if m.chHold == nil {
@@ -36,11 +21,12 @@ func (m *Movie) Hold() time.Duration {
 		}
 	}
 
+	m.v.ToggleHold()
+
 	log.Print("send pause movie")
 
 	select {
 	case m.chHold <- 0:
-		m.v.FlushBuffer()
 		m.a.FlushBuffer()
 	case <-m.quit:
 	}
@@ -56,33 +42,6 @@ func (m *Movie) Unhold(t time.Duration) {
 	select {
 	case m.chHold <- t:
 	case <-m.quit:
-	}
-}
-
-func (m *Movie) decodeVideo(packet *AVPacket) {
-	if frameFinished, pts, img := m.v.DecodeAndScale(packet); frameFinished {
-		//make sure seek operations not happens before one frame finish decode
-		//if not, segment fault & crash
-		select {
-		case m.v.ChanDecoded <- &VideoFrame{pts, img}:
-			break
-		case <-m.chHold:
-			log.Print("pause movie")
-			select {
-			case t := <-m.chHold:
-				log.Print("resume movie:", t.String())
-				m.c.SetTime(t)
-			case <-m.quit:
-				packet.Free()
-				return
-			}
-			break
-		case <-m.quit:
-			packet.Free()
-			return
-		}
-
-		m.seekPlayingSubs(m.c.GetTime(), false)
 	}
 }
 
@@ -213,19 +172,46 @@ func (m *Movie) decode(name string) {
 			return
 		case <-time.After(50 * time.Millisecond):
 			log.Print("write m.chProgress timeout")
+		case <-m.chHold:
+			log.Print("hold movie")
+			select {
+			case t := <-m.chHold:
+				log.Print("unhold movie:", t.String())
+				m.c.SetTime(t)
+				m.v.ToggleHold()
+			case <-m.quit:
+				return
+			}
 		}
 
 		resCode := ctx.ReadFrame(&packet)
 		if resCode >= 0 {
 			if m.v.StreamIndex == packet.StreamIndex() {
-				m.decodeVideo(&packet)
-				packet.Free()
-				continue
+				pkt := packet
+				pkt.Dup()
+
+				select {
+				case m.v.ChPackets <- &pkt:
+					m.seekPlayingSubs(m.c.GetTime(), false)
+					continue
+				case <-m.quit:
+					packet.Free()
+					return
+				}
 			}
 
 			if m.a != nil {
-				if m.sendPacket(m.a.StreamIndex(), m.a.PacketChan, packet) {
-					continue
+				if m.a.StreamIndex() == packet.StreamIndex() {
+					pkt := packet
+					pkt.Dup()
+
+					select {
+					case m.a.ChPackets <- &pkt:
+						continue
+					case <-m.quit:
+						packet.Free()
+						return
+					}
 				}
 			}
 
@@ -263,15 +249,6 @@ func (m *Movie) decode(name string) {
 				}
 			}
 			select {
-			case <-m.chHold:
-				log.Print("pause movie")
-				select {
-				case t := <-m.chHold:
-					m.c.SetTime(t)
-				case <-m.quit:
-					return
-				}
-				break
 			case <-time.After(100 * time.Millisecond):
 				break
 			case <-m.quit:
