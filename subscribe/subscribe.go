@@ -1,17 +1,13 @@
 package subscribe
 
 import (
-	// "database/sql"
-	"sync"
-	"time"
-	// "download"
 	"fmt"
 	"log"
+	"sync"
+	"time"
+	"vger/dbHelper"
+
 	_ "github.com/mattn/go-sqlite3"
-	// "task"
-	// "thunder"
-	// "time"
-	"dbHelper"
 )
 
 type Subscribe struct {

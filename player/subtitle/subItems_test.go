@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	. "player/shared"
-	"player/subtitle/srt"
 	"sort"
 	"testing"
 	"time"
+	. "vger/player/shared"
+	"vger/player/subtitle/srt"
 )
 
 type subItemsForTest struct {

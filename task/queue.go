@@ -3,7 +3,7 @@ package task
 import (
 	"fmt"
 	"time"
-	"util"
+	"vger/util"
 )
 
 func StartNewTask(name string, url string, size int64) error {

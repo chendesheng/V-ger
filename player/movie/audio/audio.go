@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"math"
-	. "player/clock"
-	. "player/libav"
 	"sync/atomic"
 	"time"
+	. "vger/player/clock"
+	. "vger/player/libav"
 )
 
 type Audio struct {

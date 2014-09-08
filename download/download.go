@@ -1,21 +1,13 @@
 package download
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
-	"toutf8"
-	// "bytes"
-	"fmt"
-	// "io"
-	// "log"
-	// "native"b
 	"net/http"
-	// "os"
-	// "path/filepath"
-	// "regexp"
-	// "runtime"
 	"strings"
 	"time"
+	"vger/toutf8"
 )
 
 var NetworkTimeout time.Duration

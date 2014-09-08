@@ -3,7 +3,7 @@ package download
 import (
 	"io"
 	"log"
-	"task"
+	"vger/task"
 )
 
 var play_quit chan struct{}

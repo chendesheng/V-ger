@@ -1,10 +1,9 @@
 package shared
 
 import (
-	// "database/sql"
-	"dbHelper"
 	"log"
 	"time"
+	"vger/dbHelper"
 
 	_ "github.com/mattn/go-sqlite3"
 )

@@ -1,11 +1,11 @@
 package download
 
 import (
-	"block"
 	"fmt"
 	"log"
-	"task"
 	"time"
+	"vger/block"
+	"vger/task"
 )
 
 type progressFilter struct {

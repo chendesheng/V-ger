@@ -2,13 +2,13 @@ package download
 
 import (
 	"log"
-	"native"
 	"net/http"
 	"path"
-	"subscribe"
-	"task"
 	"time"
-	"util"
+	"vger/native"
+	"vger/subscribe"
+	"vger/task"
+	"vger/util"
 )
 
 type taskControl struct {

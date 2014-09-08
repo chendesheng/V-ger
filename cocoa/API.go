@@ -1,25 +1,24 @@
 package cocoa
 
 import (
-	"github.com/mkrautz/objc"
-	. "github.com/mkrautz/objc/AppKit"
-	. "github.com/mkrautz/objc/Foundation"
-	"io"
-	"log"
-	"native"
-	"os"
-	// "os/exec"
 	"bytes"
 	"image"
 	"image/draw"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"io/ioutil"
+	"log"
+	"os"
 	"os/user"
 	"path"
 	"strings"
 	"time"
-	// "util"
+	"vger/native"
+
+	"github.com/mkrautz/objc"
+	. "github.com/mkrautz/objc/AppKit"
+	. "github.com/mkrautz/objc/Foundation"
 )
 
 type cocoaNativeAPI struct {

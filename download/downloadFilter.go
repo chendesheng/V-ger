@@ -1,7 +1,6 @@
 package download
 
 import (
-	"block"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"vger/block"
 )
 
 var errStopFetch = errors.New("stop fetch")

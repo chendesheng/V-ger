@@ -1,20 +1,19 @@
 package website
 
 import (
-
-	// "bufio"
 	"bytes"
-	"download"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
-	"subtitles"
-	"task"
 	"unicode/utf8"
-	"util"
+	"vger/download"
+	"vger/subtitles"
+	"vger/task"
+	"vger/util"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket" // "regexp"
 )

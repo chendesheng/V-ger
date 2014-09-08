@@ -1,24 +1,22 @@
 package cocoa
 
 import (
-	"download"
 	"fmt"
 	"log"
-	"native"
 	"os/exec"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
-	"thunder"
+	"vger/download"
+	"vger/native"
+	"vger/task"
+	"vger/thunder"
+	"vger/util"
+
 	"github.com/mkrautz/objc"
 	. "github.com/mkrautz/objc/AppKit"
 	. "github.com/mkrautz/objc/Foundation"
-	// "path"
-	// "runtime"
-	// "sync"
-	"task"
-	"util"
 )
 
 // type statusItemData struct {

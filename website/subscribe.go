@@ -1,17 +1,17 @@
 package website
 
 import (
-	"download"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"native"
 	"net/http"
 	"runtime/debug"
-	"subscribe"
-	"task"
-	"thunder"
 	"time"
+	"vger/download"
+	"vger/native"
+	"vger/subscribe"
+	"vger/task"
+	"vger/thunder"
 
 	"github.com/gorilla/mux"
 )

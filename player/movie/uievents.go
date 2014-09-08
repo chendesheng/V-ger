@@ -2,14 +2,11 @@ package movie
 
 import (
 	"fmt"
-	. "player/shared"
-	. "player/subtitle"
-	// "log"
-	"player/gui"
-	// . "player/video"
-	// . "player/libav"
 	"log"
 	"time"
+	"vger/player/gui"
+	. "vger/player/shared"
+	. "vger/player/subtitle"
 )
 
 func (m *Movie) uievents() {

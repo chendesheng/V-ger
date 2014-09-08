@@ -1,7 +1,6 @@
 package website
 
 import (
-	"download"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,26 +9,25 @@ import (
 	"io/ioutil"
 	"log"
 	"mime"
-	"native"
 	"net/http"
 	_ "net/http/pprof"
 	"os/exec"
 	"path"
 	"path/filepath"
-	"player/shared"
 	"runtime/debug"
 	"strconv"
 	"strings"
-	"subscribe"
-	"github.com/gorilla/mux"
-	// "code.google.com/p/go.net/websocket"
-
-	"github.com/gorilla/websocket"
-	// "subtitles"
-	"task"
-	"thunder"
 	"time"
-	"util"
+	"vger/download"
+	"vger/native"
+	"vger/player/shared"
+	"vger/subscribe"
+	"vger/task"
+	"vger/thunder"
+	"vger/util"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{

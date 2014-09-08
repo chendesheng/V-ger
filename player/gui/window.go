@@ -8,9 +8,9 @@ import "C"
 import (
 	"log"
 	"math"
-	. "player/shared"
 	"time"
 	"unsafe"
+	. "vger/player/shared"
 	"github.com/go-gl/gl"
 )
 

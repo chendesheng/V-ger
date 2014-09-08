@@ -3,8 +3,8 @@ package movie
 import (
 	// . "player/libav"
 
-	. "player/shared"
 	"time"
+	. "vger/player/shared"
 )
 
 var timerEndSeek *time.Timer

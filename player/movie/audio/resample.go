@@ -2,7 +2,7 @@ package audio
 
 import (
 	"log"
-	. "player/libav"
+	. "vger/player/libav"
 )
 
 func channelLayout(cnt int) int64 {

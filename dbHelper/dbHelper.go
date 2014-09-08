@@ -2,10 +2,10 @@ package dbHelper
 
 import (
 	"database/sql"
-	"filelock"
 	"log"
 	"sync"
 	"time"
+	"vger/filelock"
 )
 
 type connContext struct {

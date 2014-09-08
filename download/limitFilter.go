@@ -1,10 +1,9 @@
 package download
 
 import (
-	"block"
-	// "fmt"
 	"log"
 	"time"
+	"vger/block"
 )
 
 type limitFilter struct {

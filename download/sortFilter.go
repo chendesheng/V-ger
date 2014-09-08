@@ -1,9 +1,8 @@
 package download
 
 import (
-	"block"
-
 	"fmt"
+	"vger/block"
 )
 
 type sortFilter struct {

@@ -1,11 +1,11 @@
 package subtitles
 
 import (
-	"httpex"
 	"log"
 	"net/url"
 	"regexp"
 	"strings"
+	"vger/httpex"
 
 	"github.com/peterbourgon/html"
 )

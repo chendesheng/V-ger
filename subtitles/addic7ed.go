@@ -1,14 +1,13 @@
 package subtitles
 
 import (
-	"httpex"
 	"log"
 	"net/http"
-	"runtime/debug"
-	"github.com/peterbourgon/html"
-	// "net/http/cookiejar"
-	// "net/http/httputil"
 	"net/url"
+	"runtime/debug"
+	"vger/httpex"
+
+	"github.com/peterbourgon/html"
 )
 
 // func Addic7edSubtitle(keywords string, quit chan struct{}) (name string, content string) {

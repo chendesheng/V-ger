@@ -1,14 +1,14 @@
 package download
 
 import (
-	"block"
 	"io"
 	"log"
 	"runtime/debug"
 	"sync"
-	"task"
 	"time"
-	"util"
+	"vger/block"
+	"vger/task"
+	"vger/util"
 )
 
 type filter interface {

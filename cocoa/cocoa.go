@@ -7,9 +7,9 @@ import (
 	. "github.com/mkrautz/objc/Foundation"
 	// "log"
 	"runtime"
-	"task"
 	"time"
-	"util"
+	"vger/task"
+	"vger/util"
 )
 
 func NewSpeedMenuItem(speed int, target objc.Object) NSMenuItem {

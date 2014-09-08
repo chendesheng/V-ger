@@ -1,13 +1,13 @@
 package main
 
 import (
-	"cocoa"
-	"download"
 	"flag"
 	"os/exec"
-	"util"
+	"vger/cocoa"
+	"vger/download"
+	"vger/util"
 	// "subscribe"
-	"website"
+	"vger/website"
 )
 
 var debug *bool = flag.Bool("debug", false, "debug")

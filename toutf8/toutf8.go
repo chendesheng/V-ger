@@ -7,15 +7,12 @@ package toutf8
 import "C"
 import (
 	"fmt"
-	"github.com/qiniu/iconv"
-	// "io"
 	"io"
 	"io/ioutil"
 	"log"
-	// "os"
 	"strings"
-	// "os/exec"
 	"unsafe"
+	"github.com/qiniu/iconv"
 )
 
 type CharsetDetect struct {

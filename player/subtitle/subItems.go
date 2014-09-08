@@ -1,8 +1,8 @@
 package subtitle
 
 import (
-	. "player/shared"
 	"time"
+	. "vger/player/shared"
 )
 
 type subItems struct {

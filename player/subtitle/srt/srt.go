@@ -1,22 +1,20 @@
 package srt
 
 import (
+	"bytes"
 	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
-	// "fmt"
-	// "log"
-	"bytes"
 	"regexp"
 	"runtime/debug"
-	"sort" // "io/ioutil"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 	"github.com/peterbourgon/html"
 
-	. "player/shared"
+	. "vger/player/shared"
 )
 
 var regAn = regexp.MustCompile(`^\{\\an?([1-9])\}`)

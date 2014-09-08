@@ -1,23 +1,19 @@
 package main
 
 import (
-	"dbHelper"
-	"filelock"
-	"net/http"
-	"sync"
-
-	_ "net/http/pprof"
-	// . "player/shared"
-	"time"
-
-	// "fmt"
 	"log"
-	"logger"
+	"net/http"
+	_ "net/http/pprof"
 	"path"
-	. "player/gui"
-	. "player/movie"
 	"runtime"
-	"util"
+	"sync"
+	"time"
+	"vger/dbHelper"
+	"vger/filelock"
+	"vger/logger"
+	. "vger/player/gui"
+	. "vger/player/movie"
+	"vger/util"
 )
 
 type appDelegate struct {

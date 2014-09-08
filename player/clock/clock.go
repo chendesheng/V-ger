@@ -3,9 +3,9 @@ package clock
 import (
 	"fmt"
 	"log"
-	. "player/shared"
 	"sync"
 	"time"
+	. "vger/player/shared"
 )
 
 type Clock struct {

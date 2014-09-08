@@ -3,8 +3,8 @@ package movie
 import (
 	"fmt"
 	"log"
-	. "player/shared"
 	"time"
+	. "vger/player/shared"
 )
 
 func (m *Movie) showProgressInner(t time.Duration) {

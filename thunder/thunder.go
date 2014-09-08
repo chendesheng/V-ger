@@ -2,21 +2,17 @@ package thunder
 
 import (
 	"bytes"
-	"httpex"
-	// "errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
-	// "encoding/json"
-	"io"
-	"regexp"
-	// "os"
-	// "util"
+	"vger/httpex"
 )
 
 func NewTask(taskURL string, verifyCode string) ([]ThunderTask, error) {

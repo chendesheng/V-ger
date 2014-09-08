@@ -3,14 +3,14 @@ package thunder
 import (
 	"crypto/md5"
 	"fmt"
-	"httpex"
 	"log"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
-	"util"
+	"vger/httpex"
+	"vger/util"
 )
 
 func singleMd5(s string) string {

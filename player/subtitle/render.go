@@ -1,7 +1,7 @@
 package subtitle
 
 import (
-	. "player/shared"
+	. "vger/player/shared"
 )
 
 type SubRender interface {

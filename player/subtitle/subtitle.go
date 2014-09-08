@@ -1,17 +1,14 @@
 package subtitle
 
 import (
-	"sync"
-	// "io/ioutil"
-	// "cld"
 	"log"
-	"player/language"
-	. "player/shared"
-	"player/subtitle/ass"
-	"player/subtitle/srt"
 	"strings"
-	// "runtime"
+	"sync"
 	"time"
+	"vger/player/language"
+	. "vger/player/shared"
+	"vger/player/subtitle/ass"
+	"vger/player/subtitle/srt"
 )
 
 type durationArg struct {

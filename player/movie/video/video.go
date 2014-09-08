@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"math"
-	. "player/clock"
-	. "player/libav"
 	"time"
+	. "vger/player/clock"
+	. "vger/player/libav"
 )
 
 type VideoRender interface {

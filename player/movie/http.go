@@ -1,12 +1,12 @@
 package movie
 
 import (
-	"download"
 	"log"
 	"os"
-	. "player/libav"
 	"time"
-	"util"
+	"vger/download"
+	. "vger/player/libav"
+	"vger/util"
 )
 
 func (m *Movie) waitBuffer(size int64) bool {

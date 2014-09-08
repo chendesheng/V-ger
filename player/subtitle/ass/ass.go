@@ -1,19 +1,18 @@
 package ass
 
 import (
-	"log"
-	"runtime/debug"
-	// "bytes"
 	"bufio"
 	"fmt"
 	"io"
-	. "player/shared"
+	"log"
 	"regexp"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
+	. "vger/player/shared"
 )
 
 var regAn = regexp.MustCompile(`^an([0-9])`)

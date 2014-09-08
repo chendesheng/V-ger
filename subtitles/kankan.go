@@ -3,10 +3,10 @@ package subtitles
 import (
 	"encoding/json"
 	"fmt"
-	"httpex"
 	"log"
 	"regexp"
-	"thunder"
+	"vger/httpex"
+	"vger/thunder"
 )
 
 type kankanSearch struct {

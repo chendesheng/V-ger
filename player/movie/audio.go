@@ -3,11 +3,11 @@ package movie
 import (
 	"fmt"
 	"log"
-	. "player/gui"
-	. "player/libav"
-	. "player/movie/audio"
-	. "player/shared"
 	"strings"
+	. "vger/player/gui"
+	. "vger/player/libav"
+	. "vger/player/movie/audio"
+	. "vger/player/shared"
 )
 
 func getStream(streams []AVStream, index int) AVStream {

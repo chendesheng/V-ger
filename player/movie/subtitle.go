@@ -2,23 +2,23 @@ package movie
 
 import (
 	"bytes"
-	"download"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
-	. "player/gui"
-	. "player/shared"
-	. "player/subtitle"
 	"sort"
-	"subtitles"
-	"task"
 	"time"
-	"toutf8"
 	"unicode/utf8"
-	"util"
+	"vger/download"
+	. "vger/player/gui"
+	. "vger/player/shared"
+	. "vger/player/subtitle"
+	"vger/subtitles"
+	"vger/task"
+	"vger/toutf8"
+	"vger/util"
 )
 
 func extract(subFile string) {

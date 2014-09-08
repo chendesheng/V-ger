@@ -3,20 +3,19 @@ package main
 import (
 
 	// "cocoa/cookiejar"
-	"dbHelper"
-	"download"
-	"filelock"
-	"logger"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"os"
-	// "os"
-	"log"
 	"path"
 	"runtime"
-	"thunder"
 	"time"
-	"util"
+	"vger/dbHelper"
+	"vger/download"
+	"vger/filelock"
+	"vger/logger"
+	"vger/thunder"
+	"vger/util"
 )
 
 func init() {

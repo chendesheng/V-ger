@@ -2,7 +2,6 @@ package subtitles
 
 import (
 	"fmt"
-	"httpex"
 	"log"
 	"net/http"
 	"net/url"
@@ -10,6 +9,7 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+	"vger/httpex"
 
 	"github.com/peterbourgon/html"
 )

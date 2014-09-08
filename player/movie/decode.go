@@ -4,12 +4,11 @@ import (
 	"log"
 	"os"
 	"path"
-	. "player/libav"
-	// . "player/movie/video"
-	"player/shared"
-	"task"
 	"time"
-	"util"
+	. "vger/player/libav"
+	"vger/player/shared"
+	"vger/task"
+	"vger/util"
 )
 
 func (m *Movie) Hold() time.Duration {

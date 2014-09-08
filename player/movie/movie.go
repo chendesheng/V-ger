@@ -1,23 +1,23 @@
 package movie
 
 import (
-	"block"
 	"fmt"
 	"log"
 	"path/filepath"
-	. "player/clock"
-	. "player/gui"
-	. "player/libav"
-	. "player/movie/audio"
-	. "player/movie/seeking"
-	. "player/movie/video"
-	. "player/shared"
-	. "player/subtitle"
 	"strings"
-	"subscribe"
 	"sync"
-	"task"
 	"time"
+	"vger/block"
+	. "vger/player/clock"
+	. "vger/player/gui"
+	. "vger/player/libav"
+	. "vger/player/movie/audio"
+	. "vger/player/movie/seeking"
+	. "vger/player/movie/video"
+	. "vger/player/shared"
+	. "vger/player/subtitle"
+	"vger/subscribe"
+	"vger/task"
 )
 
 type Movie struct {

@@ -1,14 +1,14 @@
 package download
 
 import (
-	"block"
 	"fmt"
 	"io"
 	"log"
-	"native"
 	"os"
 	"path/filepath"
 	"time"
+	"vger/block"
+	"vger/native"
 )
 
 type writeFilter struct {
