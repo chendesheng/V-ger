@@ -167,8 +167,8 @@ func (w *Window) SetSize(width, height int) {
 	sw, sh := GetScreenSize()
 	if width > int(0.9*float64(sw)) || height > int(0.9*float64(sh)) {
 		ratio := float64(height) / float64(width)
-		width = int(float64(sw) * 0.85)
-		height = int(float64(sw) * 0.85 * ratio)
+		width = int(float64(sw) * 0.9)
+		height = int(float64(sw) * 0.9 * ratio)
 
 		C.setWindowSize(w.ptr, C.int(width), C.int(height))
 	} else {

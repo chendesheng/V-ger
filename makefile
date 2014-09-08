@@ -1,5 +1,5 @@
 CC=clang
-BIN=bin
+BIN=../bin
 APP=vgerapp
 exe:
 	go install vger

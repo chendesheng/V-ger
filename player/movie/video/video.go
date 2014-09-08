@@ -266,6 +266,8 @@ func (v *Video) Play() {
 						v.r.SendDrawImage(img)
 					case <-v.flushQuit:
 						continue
+					case <-v.quit:
+						return
 					}
 				case <-v.quit:
 					return
