@@ -182,7 +182,7 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 
 		ctx = NewAVFormatContext()
 		if err = ctx.OpenInput(file); err != nil {
-			ctx.Close()
+			log.Fatal(err)
 			return
 		}
 	}
