@@ -19,7 +19,7 @@ func InitLog(prefix string, file string) {
 
 	log.SetOutput(f)
 
-	println("\n\n==============================================================================")
+	log.Print("\n\n==============================================================================")
 }
 
 func crashLog(file string) {
