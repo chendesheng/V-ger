@@ -1,7 +1,7 @@
 package srt
 
 import (
-	"player/shared"
+	"vger/player/shared"
 	// "fmt"
 	// "io/ioutil"
 	"os"
@@ -455,6 +455,25 @@ Jesus.`
 	items, _ := Parse(strings.NewReader(text), 384, 303)
 	if len(items) != 2 {
 		t.Errorf("expect 2 items but %d", len(items))
+	}
+}
+
+func TestParseAnPos(t *testing.T) {
+	text := `13
+00:25:07,800 --> 00:25:12,320
+{fad(530,1030)\an8\bord0\shad0\b1\pos(192,185)\fn方正细圆_GBK\fs19\c&HFFFFFF&}17  小  时  前`
+	items, _ := Parse(strings.NewReader(text), 384, 303)
+	if items[0].Content[0].Content != "17  小  时  前" {
+		t.Errorf("expect content be \"17  小  时  前\" but %s", items[0].Content[0].Content)
+	}
+	if items[0].PositionType != 8 {
+		t.Errorf("expect position type be 8 but %d", items[0].PositionType)
+	}
+	if !floatEqual(items[0].Position.X, 192) {
+		t.Errorf("expect pos x be 192 but %f", items[0].Position.X)
+	}
+	if !floatEqual(items[0].Position.Y, 185) {
+		t.Errorf("expect pos y be 185 but %f", items[0].Position.Y)
 	}
 }
 

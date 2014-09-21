@@ -17,9 +17,9 @@ import (
 	. "vger/player/shared"
 )
 
-var regAn = regexp.MustCompile(`^\{\\an?([1-9])\}`)
+var regAn = regexp.MustCompile(`^\{[^{}]*\\an?([1-9])[^{}]*\}`)
 var regSvg = regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
-var regPos = regexp.MustCompile(`\{\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)\}`)
+var regPos = regexp.MustCompile(`\{[^{}]*\\pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)[^{}]*\}`)
 var regBreak = regexp.MustCompile("(?i)\\\\n")
 var regSubItem = regexp.MustCompile(`[0-9]+(?:\r\n|\r|\n)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3}).*-->.*([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})[.,]([0-9]{1,3})(?:\r\n|\r|\n)((?:.*(?:\r\n|\r|\n))*?)\s*(?:\r\n|\r|\n)`)
 
@@ -79,7 +79,7 @@ func toColor(c string) uint {
 	}
 }
 func removePositionInfo(text string) string {
-	regPos := regexp.MustCompile(`\{\\[^}]+\}`)
+	regPos := regexp.MustCompile(`\{[^{}]*\\[^{}]*\}`)
 	return regPos.ReplaceAllString(text, "")
 }
 
