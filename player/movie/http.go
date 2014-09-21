@@ -12,7 +12,7 @@ import (
 func (m *Movie) waitBuffer(size int64) bool {
 	if m.httpBuffer != nil {
 		m.w.SendShowSpinning()
-		defer m.w.SendHideSpinning()
+		defer m.w.SendHideSpinning(false)
 
 		return m.httpBuffer.WaitQuit(size, m.quit)
 	}
@@ -58,8 +58,8 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 				defer m.c.SetTime(t)
 			}
 
-			m.w.SendShowSpinning()
-			defer m.w.SendHideSpinning()
+			// m.w.SendShowSpinning()
+			// defer m.w.SendHideSpinning()
 
 			for {
 				select {

@@ -13,7 +13,7 @@ import (
 type VideoRender interface {
 	SendDrawImage([]byte)
 	SendShowSpinning()
-	SendHideSpinning()
+	SendHideSpinning(bool)
 }
 type VideoFrame struct {
 	Pts time.Duration
@@ -185,7 +185,7 @@ func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
 
 func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 	v.r.SendShowSpinning()
-	defer v.r.SendHideSpinning()
+	defer v.r.SendHideSpinning(false)
 
 	flags := AVSEEK_FLAG_FRAME
 
@@ -242,8 +242,12 @@ func (v *Video) Play() {
 	}()
 
 	for {
+		v.r.SendShowSpinning()
+
 		select {
 		case packet := <-v.ChPackets:
+			v.r.SendHideSpinning(true)
+
 			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
 				packet.Free()
 				// log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
@@ -274,6 +278,7 @@ func (v *Video) Play() {
 				}
 			}
 		case <-v.quit:
+			v.r.SendHideSpinning(true)
 			return
 		}
 	}

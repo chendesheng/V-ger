@@ -201,7 +201,7 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 	w.ShowStartupView()
 
 	w.SendShowSpinning()
-	defer w.SendHideSpinning()
+	defer w.SendHideSpinning(false)
 
 	defer func() {
 		if err != nil {

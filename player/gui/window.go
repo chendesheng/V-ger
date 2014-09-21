@@ -485,7 +485,7 @@ func (w *Window) HideSpinning() {
 }
 
 func (w *Window) SendShowSpinning() {
-	// println(string(debug.Stack()))
+	// log.Print(string(debug.Stack()))
 
 	if w.chDelayShowSpinning == nil {
 		w.chDelayShowSpinning = make(chan int)
@@ -495,6 +495,7 @@ func (w *Window) SendShowSpinning() {
 			i += <-w.chDelayShowSpinning
 
 			for {
+				log.Print(i)
 				select {
 				case <-time.After(500 * time.Millisecond):
 					w.ChanShowSpinning <- (i > 0)
@@ -508,11 +509,14 @@ func (w *Window) SendShowSpinning() {
 		w.chDelayShowSpinning <- 1
 	}
 }
-func (w *Window) SendHideSpinning() {
-	// println(string(debug.Stack()))
+func (w *Window) SendHideSpinning(forceHide bool) {
+	// log.Print(string(debug.Stack()))
 
 	if w.chDelayShowSpinning != nil {
 		w.chDelayShowSpinning <- -1
+	}
+	if forceHide {
+		w.ChanShowSpinning <- false
 	}
 }
 
