@@ -495,7 +495,7 @@ func (w *Window) SendShowSpinning() {
 			i += <-w.chDelayShowSpinning
 
 			for {
-				log.Print(i)
+				// log.Print(i)
 				select {
 				case <-time.After(500 * time.Millisecond):
 					w.ChanShowSpinning <- (i > 0)

@@ -4,7 +4,6 @@
 		{
 			"file_regex": "^[ 	]*([./\\w].*?/[^\n]*?):([0-9]*):?([0-9]*)",
 			"name": "V'ger",
-			"path": "$project_path/bin",
 			"selector": "source.go",
 			"shell_cmd": "go install",
 			"variants":
