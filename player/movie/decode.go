@@ -177,6 +177,9 @@ func (m *Movie) decode(name string) {
 	ctx := m.ctx
 
 	m.c.SetTime(start)
+
+	go m.v.Play()
+
 	for {
 		select {
 		case m.chProgress <- m.c.GetTime():

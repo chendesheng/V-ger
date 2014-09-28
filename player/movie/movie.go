@@ -282,9 +282,8 @@ func (m *Movie) Close() {
 func (m *Movie) PlayAsync() {
 	log.Print("movie play async")
 
-	go m.v.Play()
-	go m.showProgressPerSecond()
 	go m.decode(m.p.Movie)
+	go m.showProgressPerSecond()
 }
 
 func (m *Movie) setupVideo() error {

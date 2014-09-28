@@ -243,14 +243,20 @@ func (v *Video) Play() {
 
 	for {
 		v.r.SendShowSpinning()
+		t := v.c.GetTime()
+		now := time.Now()
 
 		select {
 		case packet := <-v.ChPackets:
-			v.r.SendHideSpinning(true)
+			if time.Since(now) > 20*time.Microsecond {
+				v.c.SetTime(t)
+			}
+
+			v.r.SendHideSpinning(false)
 
 			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
 				packet.Free()
-				// log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
+				log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
 				select {
 				case <-v.chHold:
 					select {
@@ -259,18 +265,23 @@ func (v *Video) Play() {
 						return
 					}
 				case <-v.c.WaitRunning():
+					v.r.SendShowSpinning()
 					select {
 					case <-v.chHold:
+						v.r.SendHideSpinning(false)
 						select {
 						case <-v.chHold:
 						case <-v.quit:
 							return
 						}
 					case <-v.c.WaitUntil(pts):
+						v.r.SendHideSpinning(true)
 						v.r.SendDrawImage(img)
 					case <-v.flushQuit:
+						v.r.SendHideSpinning(false)
 						continue
 					case <-v.quit:
+						v.r.SendHideSpinning(false)
 						return
 					}
 				case <-v.quit:
@@ -278,7 +289,7 @@ func (v *Video) Play() {
 				}
 			}
 		case <-v.quit:
-			v.r.SendHideSpinning(true)
+			v.r.SendHideSpinning(false)
 			return
 		}
 	}

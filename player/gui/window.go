@@ -492,16 +492,30 @@ func (w *Window) SendShowSpinning() {
 		go func() {
 			w.ChanShowSpinning <- true
 			i := 1
-			i += <-w.chDelayShowSpinning
+			delta := <-w.chDelayShowSpinning
+			if delta == 0 {
+				i = 0
+			} else {
+				i += delta
+			}
 
 			for {
 				// log.Print(i)
 				select {
 				case <-time.After(500 * time.Millisecond):
 					w.ChanShowSpinning <- (i > 0)
-					i += <-w.chDelayShowSpinning
-				case i1 := <-w.chDelayShowSpinning:
-					i += i1
+					delta := <-w.chDelayShowSpinning
+					if delta == 0 {
+						i = 0
+					} else {
+						i += delta
+					}
+				case delta := <-w.chDelayShowSpinning:
+					if delta == 0 {
+						i = 0
+					} else {
+						i += delta
+					}
 				}
 			}
 		}()
@@ -512,11 +526,15 @@ func (w *Window) SendShowSpinning() {
 func (w *Window) SendHideSpinning(forceHide bool) {
 	// log.Print(string(debug.Stack()))
 
-	if w.chDelayShowSpinning != nil {
-		w.chDelayShowSpinning <- -1
-	}
 	if forceHide {
 		w.ChanShowSpinning <- false
+		if w.chDelayShowSpinning != nil {
+			w.chDelayShowSpinning <- 0
+		}
+	} else {
+		if w.chDelayShowSpinning != nil {
+			w.chDelayShowSpinning <- -1
+		}
 	}
 }
 

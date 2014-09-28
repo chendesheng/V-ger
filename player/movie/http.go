@@ -53,14 +53,6 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 		if got < require && !m.httpBuffer.IsFinish() {
 			startWaitTime := time.Now()
 
-			if m.c != nil {
-				t := m.c.GetTime()
-				defer m.c.SetTime(t)
-			}
-
-			// m.w.SendShowSpinning()
-			// defer m.w.SendHideSpinning()
-
 			for {
 				select {
 				case <-time.After(20 * time.Millisecond):
