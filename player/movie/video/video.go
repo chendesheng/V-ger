@@ -243,20 +243,20 @@ func (v *Video) Play() {
 
 	for {
 		v.r.SendShowSpinning()
-		t := v.c.GetTime()
-		now := time.Now()
 
+		t := time.Now()
 		select {
 		case packet := <-v.ChPackets:
-			if time.Since(now) > 20*time.Microsecond {
-				v.c.SetTime(t)
+			d := time.Since(t)
+			if d > 20*time.Microsecond {
+				v.c.AddTime(-d)
 			}
 
 			v.r.SendHideSpinning(false)
 
 			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
 				packet.Free()
-				log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
+				// log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
 				select {
 				case <-v.chHold:
 					select {
@@ -295,10 +295,21 @@ func (v *Video) Play() {
 	}
 }
 
-func (v *Video) ToggleHold() {
+func (v *Video) Hold() {
 	select {
 	case v.chHold <- struct{}{}:
 		v.FlushBuffer()
+	case <-v.quit:
+		if v.chQuitDone != nil {
+			close(v.chQuitDone)
+		}
+	}
+}
+
+func (v *Video) Unhold() {
+	v.FlushBuffer()
+	select {
+	case v.chHold <- struct{}{}:
 	case <-v.quit:
 		if v.chQuitDone != nil {
 			close(v.chQuitDone)

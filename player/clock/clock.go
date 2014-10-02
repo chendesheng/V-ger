@@ -88,11 +88,20 @@ func (c *Clock) SetTime(t time.Duration) {
 
 	c.base = time.Now().Add(-t)
 }
-
 func (c *Clock) AddTime(d time.Duration) {
 	c.Lock()
 	defer c.Unlock()
-	c.base = c.base.Add(-d)
+
+	if !c.running {
+		c.pausedTime += d
+	}
+
+	base := c.base.Add(-d)
+	if base.After(time.Now()) {
+		base = time.Now()
+	}
+
+	c.base = base
 }
 
 func (c *Clock) Pause() {

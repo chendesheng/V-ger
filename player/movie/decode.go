@@ -20,7 +20,7 @@ func (m *Movie) Hold() time.Duration {
 		}
 	}
 
-	m.v.ToggleHold()
+	m.v.Hold()
 
 	log.Print("send pause movie")
 
@@ -40,6 +40,8 @@ func (m *Movie) Hold() time.Duration {
 }
 
 func (m *Movie) Unhold(t time.Duration) {
+	m.v.Unhold()
+
 	select {
 	case m.chHold <- t:
 	case <-m.quit:
@@ -117,6 +119,15 @@ func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet *AVPacket) bool 
 		select {
 		case ch <- packet:
 			return true
+		case <-m.chHold:
+			log.Print("hold movie2")
+			select {
+			case t := <-m.chHold:
+				log.Print("unhold movie2:", t.String())
+				m.c.SetTime(t)
+			case <-m.quit:
+				return false
+			}
 		case <-m.quit:
 			return false
 		}
@@ -193,7 +204,6 @@ func (m *Movie) decode(name string) {
 			case t := <-m.chHold:
 				log.Print("unhold movie:", t.String())
 				m.c.SetTime(t)
-				m.v.ToggleHold()
 			case <-m.quit:
 				return
 			}
