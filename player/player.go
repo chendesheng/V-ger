@@ -41,13 +41,21 @@ func (app *appDelegate) OpenFile(filename string) bool {
 
 		app.m = NewMovie()
 
-		err := app.m.Open(app.w, filename)
+		for i := 0; i < 3; i++ {
+			err := app.m.Open(app.w, filename)
 
-		if err == nil {
-			app.m.PlayAsync()
-		} else {
-			app.m = nil
-			log.Print(err)
+			if err == nil {
+				app.m.PlayAsync()
+				break
+			} else {
+				app.m = nil
+
+				if i < 2 {
+					log.Print(err)
+				} else {
+					log.Fatal(err)
+				}
+			}
 		}
 	}()
 
