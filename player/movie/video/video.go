@@ -247,15 +247,18 @@ func (v *Video) Play() {
 		t := time.Now()
 		select {
 		case packet := <-v.ChPackets:
-			d := time.Since(t)
-			if d > 20*time.Microsecond {
-				v.c.AddTime(-d)
-			}
-
 			v.r.SendHideSpinning(false)
 
 			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
+
+				d := time.Since(t)
+				if d > 30*time.Millisecond {
+					log.Print("long decode time:", d.String())
+					v.c.AddTime(-d)
+				}
+
 				packet.Free()
+
 				// log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
 				select {
 				case <-v.chHold:
@@ -288,6 +291,7 @@ func (v *Video) Play() {
 					return
 				}
 			}
+
 		case <-v.quit:
 			v.r.SendHideSpinning(false)
 			return
