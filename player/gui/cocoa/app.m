@@ -9,7 +9,7 @@
 }
 
 -(void)searchSubtitleMenuItemClick:(id)sender {
-	onSearchSubtitleMenuItemClick();
+	onMenuClicked(MENU_SEARCH_SUBTITLE, 0);
 }
 
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {

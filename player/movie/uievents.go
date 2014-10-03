@@ -293,7 +293,7 @@ func (m *Movie) uievents() {
 					t2 = i
 				}
 			}
-			gui.SetSubtitleMenuItem(t1, t2)
+			m.w.SetSubtitleMenuItem(t1, t2)
 
 			SavePlayingAsync(m.p)
 		}()
@@ -327,7 +327,7 @@ func (m *Movie) uiProgressBarEvents() {
 			t := m.c.CalcTime(percent)
 			t = t / time.Second * time.Second
 			p := m.c.CalcPlayProgress(t)
-			m.w.ShowProgress(p)
+			m.w.ShowProgress(p.Left, p.Right, p.Percent)
 
 			m.seeking.SendSeek(t)
 		case 2:

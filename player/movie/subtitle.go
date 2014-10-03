@@ -12,7 +12,6 @@ import (
 	"time"
 	"unicode/utf8"
 	"vger/download"
-	. "vger/player/gui"
 	. "vger/player/shared"
 	. "vger/player/subtitle"
 	"vger/subtitles"
@@ -233,7 +232,7 @@ func (m *Movie) setupDefaultSubtitles() {
 func (m *Movie) setupSubtitlesMenu() {
 	log.Print("setupSubtitlesMenu")
 
-	HideSubtitleMenu()
+	m.w.HideSubtitleMenu()
 
 	tags := make([]int32, 0)
 	names := make([]string, 0)

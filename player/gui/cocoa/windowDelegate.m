@@ -28,7 +28,7 @@
     Window* w = (Window*)[notification object];
     // [w->glView hideProgress];
 
-    onFullscreenChanged((void*)[notification object], 1);
+    onFullscreenChanged(1);
 
     // [w->glView->titleView setFrame:NSMakeRect(0, 0, 0, 0)];
 }
@@ -52,7 +52,7 @@
 
     w->customAspectRatio = self->savedAspectRatio;
 
-    onFullscreenChanged((void*)[notification object], 0);
+    onFullscreenChanged(0);
 
     // [w->glView->titleView setFrame:NSMakeRect(0, w.frame.size.height-22, w.frame.size.width, 0)];
 }
@@ -79,7 +79,7 @@
     // CGFloat h = w->glView->blurView.frame.size.height;
     // [w->glView->blurView setFrame:NSMakeRect(0, w.frame.size.height-h, w.frame.size.width, h)];
     
-    onFullscreenChanged((void*)[notification object], 0);
+    onFullscreenChanged(0);
 }
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)newFrame {
     // NSLog(@"windowWillUseStandardFrame:%lf,%lf,%lf,%lf", newFrame.origin.x, newFrame.origin.y, newFrame.size.width, newFrame.size.height);

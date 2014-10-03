@@ -95,7 +95,7 @@ func (m *Movie) playNextEpisode() bool {
 		log.Print("playNextEpisode:", file)
 
 		go func() {
-			m.w.SendShowProgress(&shared.PlayProgressInfo{})
+			m.w.SendShowProgress("", "", 0)
 
 			m.SavePlaying()
 			m.Close()

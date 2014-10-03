@@ -11,14 +11,14 @@ import (
 	"vger/dbHelper"
 	"vger/filelock"
 	"vger/logger"
-	. "vger/player/gui"
+	"vger/player/gui"
 	. "vger/player/movie"
 	"vger/util"
 )
 
 type appDelegate struct {
 	sync.Mutex
-	w *Window
+	w *gui.Window
 	m *Movie
 	t time.Duration
 }
@@ -27,7 +27,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 
 	if app.w == nil {
-		app.w = NewWindow("V'ger", 640, 360)
+		app.w = gui.NewWindow("V'ger", 640, 360)
 	}
 
 	go func() {
@@ -117,8 +117,6 @@ func main() {
 	transport.MaxIdleConnsPerHost = 3
 
 	app := &appDelegate{}
-	Initialize(app)
-
-	PollEvents()
+	gui.Run(app)
 	return
 }

@@ -11,7 +11,7 @@ func (m *Movie) showProgressInner(t time.Duration) {
 	p := m.c.CalcPlayProgress(t)
 
 	// log.Print("showProgressInner", p.Left, p.Percent, p.Right)
-	m.w.SendShowProgress(p)
+	m.w.SendShowProgress(p.Left, p.Right, p.Percent)
 }
 
 //SpeedMonitor interface

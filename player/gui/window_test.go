@@ -12,12 +12,14 @@ import (
 func TestShowWindow(t *testing.T) {
 	w := NewWindow("hello", 1280, 720)
 
-	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		w.SetSize(500, 500)
 		w.SetTitle("test")
+
+		return true
 	})
 
-	PollEvents()
+	run()
 }
 func TestFitToWindowLarger(t *testing.T) {
 	w := NewWindow("title", 1280, 720)
@@ -44,7 +46,7 @@ func TestFitToWindowSmaller(t *testing.T) {
 }
 
 func TestGetScreenSize(t *testing.T) {
-	w, h := GetScreenSize()
+	w, h := getScreenSize()
 	if w != 1920 || h != 1080 {
 		t.Errorf("Expect 1920x1080 but %dx%d", w, h)
 	}
@@ -67,21 +69,22 @@ func TestIsFullScreen(t *testing.T) {
 		}
 	})
 
-	PollEvents()
+	run()
 }
 
 func TestStartupView(t *testing.T) {
 	w := NewWindow("hello", 1280, 720)
 
-	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
-			w.hideStartupView()
+			w.HideStartupView()
 		} else if key == KEY_B {
 			w.ShowStartupView()
 		}
+		return true
 	})
 
-	PollEvents()
+	run()
 }
 
 func TestShowMessage(t *testing.T) {
@@ -100,16 +103,16 @@ func TestShowMessage(t *testing.T) {
 		// }
 		w.SendDrawImage(black)
 	}()
-	PollEvents()
+	run()
 }
 
 func TestMenu(t *testing.T) {
 	w := NewWindow("hello", 1280, 720)
 
-	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
-			HideSubtitleMenu()
-			HideAudioMenu()
+			w.HideSubtitleMenu()
+			w.HideAudioMenu()
 		} else if key == KEY_B {
 			names := make([]string, 0)
 			names = append(names, "sub1")
@@ -124,9 +127,11 @@ func TestMenu(t *testing.T) {
 
 			w.InitAudioMenu(names, tags, selected1)
 		}
+
+		return true
 	})
 
-	PollEvents()
+	run()
 }
 func readPPMFile(file string) (int, int, []byte) {
 	data, err := ioutil.ReadFile(file)
@@ -168,7 +173,7 @@ func readPPMFile(file string) (int, int, []byte) {
 // 	program.Link()
 // 	program.Use()
 
-// 	PollEvents()
+// 	run()
 // }
 
 func TestYUV2RGBShader(t *testing.T) {
@@ -178,35 +183,39 @@ func TestYUV2RGBShader(t *testing.T) {
 	w := NewWindow("GLSL", width, height)
 	w.SetSize(width, height)
 
-	w.RefreshContent(img)
+	w.Refresh(img)
 
-	PollEvents()
+	run()
 }
 
 func TestSpinningView(t *testing.T) {
 	w := NewWindow("hello", 1280, 720)
 
-	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
 			w.ShowSpinning()
 		} else if key == KEY_B {
 			w.HideSpinning()
 		}
+
+		return true
 	})
 
-	PollEvents()
+	run()
 }
 
 func TestVolumeView(t *testing.T) {
 	w := NewWindow("hello", 1280, 720)
 
-	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) {
+	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
 			w.SetVolumeDisplay(true)
 		} else if key == KEY_B {
 			w.SetVolumeDisplay(false)
 		}
+
+		return true
 	})
 
-	PollEvents()
+	run()
 }

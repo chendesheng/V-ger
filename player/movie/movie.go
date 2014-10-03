@@ -267,8 +267,8 @@ func (m *Movie) Close() {
 
 	m.stopPlayingSubs()
 
-	HideSubtitleMenu()
-	HideAudioMenu()
+	m.w.HideSubtitleMenu()
+	m.w.HideAudioMenu()
 
 	if m.httpBuffer != nil {
 		m.httpBuffer.Close()

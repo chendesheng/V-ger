@@ -1,36 +1,17 @@
 package gui
 
-/*
-#include "gui.h"
-#include <stdlib.h>
-*/
-import "C"
 import (
 	"log"
 	"math"
 	"time"
-	"unsafe"
 	. "vger/player/shared"
+
 	"github.com/go-gl/gl"
 )
 
-var windows map[unsafe.Pointer]*Window
+var w *Window // current window
 
-func init() {
-	windows = make(map[unsafe.Pointer]*Window)
-}
-
-type imageRender interface {
-	draw(img []byte, width, height int)
-	delete()
-}
-type argSize struct {
-	width, height int
-}
-
-type Window struct {
-	ptr unsafe.Pointer
-
+type window struct {
 	FuncTimerTick           []func()
 	FuncKeyDown             []func(int) bool
 	FuncOnFullscreenChanged []func(bool)
@@ -49,8 +30,12 @@ type Window struct {
 
 	ChanDestoryRender chan struct{}
 
-	ChanShowProgress chan *PlayProgressInfo
-	ChanShowSpeed    chan *BufferInfo
+	ChanShowProgress chan *struct {
+		left    string
+		right   string
+		percent float64
+	}
+	ChanShowSpeed chan *BufferInfo
 
 	ChanSetCursor        chan bool
 	ChanSetVolume        chan byte
@@ -78,6 +63,14 @@ type Window struct {
 	chDelayShowSpinning chan int
 }
 
+type imageRender interface {
+	draw(img []byte, width, height int)
+	delete()
+}
+type argSize struct {
+	width, height int
+}
+
 func (w *Window) SendDrawImage(img []byte) {
 	w.ChanDraw <- img
 }
@@ -93,12 +86,6 @@ func (w *Window) SendSetCursor(b bool) {
 	}
 }
 
-func (w *Window) RefreshContent(img []byte) {
-	w.img = img
-
-	C.refreshWindowContent(w.ptr)
-}
-
 func (w *Window) DestoryRender() {
 	if w.render != nil {
 		w.render.delete()
@@ -112,29 +99,18 @@ func (w *Window) SendDestoryRender() {
 	w.ChanDestoryRender <- struct{}{}
 }
 
-func (w *Window) GetWindowSize() (int, int) {
-	return int(C.getWindowWidth(w.ptr)), int(C.getWindowHeight(w.ptr))
-}
-
 func (w *Window) IsFullScreen() bool {
-	width, height := w.GetWindowSize()
-	swidth, sheight := GetScreenSize()
+	width, height := w.GetSize()
+	swidth, sheight := getScreenSize()
 
 	return width == swidth && height == sheight
-}
-
-func (w *Window) SetTitle(title string) {
-	ctitle := C.CString(title)
-	defer C.free(unsafe.Pointer(ctitle))
-
-	C.setWindowTitle(w.ptr, ctitle)
 }
 
 func fequal(a, b float64) bool {
 	return math.Abs(a-b) < 1e-5
 }
 func (w *Window) ToggleForceScreenRatio() {
-	sw, sh := GetScreenSize()
+	sw, sh := getScreenSize()
 	if fequal(float64(w.originalWidth)/float64(w.originalHeight), float64(sw)/float64(sh)) {
 		return
 	}
@@ -164,15 +140,15 @@ func (w *Window) SetSize(width, height int) {
 		return
 	}
 
-	sw, sh := GetScreenSize()
+	sw, sh := getScreenSize()
 	if width > int(0.9*float64(sw)) || height > int(0.9*float64(sh)) {
 		ratio := float64(height) / float64(width)
 		width = int(float64(sw) * 0.9)
 		height = int(float64(sw) * 0.9 * ratio)
 
-		C.setWindowSize(w.ptr, C.int(width), C.int(height))
+		w.NativeWindow.SetSize(width, height)
 	} else {
-		C.setWindowSize(w.ptr, C.int(width), C.int(height))
+		w.NativeWindow.SetSize(width, height)
 	}
 }
 
@@ -181,57 +157,56 @@ func (w *Window) SetForceRatio(forceRatio float64) {
 	w.forceRatio = forceRatio
 
 	if forceRatio > 0 {
-		C.setWindowSize(w.ptr, C.int(float64(height)*forceRatio+0.5), C.int(height))
+		w.NativeWindow.SetSize(int(float64(height)*forceRatio+0.5), height)
 	} else {
-		sw, sh := GetScreenSize()
+		sw, sh := getScreenSize()
 		if width > int(0.8*float64(sw)) || height > int(0.8*float64(sh)) {
-			C.setWindowSize(w.ptr, C.int(0.8*float64(width)), C.int(0.8*float64(height)))
+			w.NativeWindow.SetSize(int(0.8*float64(width)), int(0.8*float64(height)))
 		} else {
-			C.setWindowSize(w.ptr, C.int(width), C.int(height))
+			w.NativeWindow.SetSize(width, height)
 		}
 	}
 }
 
 func NewWindow(title string, width, height int) *Window {
-	ctitle := C.CString(title)
-	defer C.free(unsafe.Pointer(ctitle))
-	ptr := unsafe.Pointer(C.newWindow(ctitle, C.int(width), C.int(height)))
+	w = &Window{
+		newWindow(title, width, height),
+		window{
+			ChanDraw: make(chan []byte),
+			ChanShowProgress: make(chan *struct {
+				left    string
+				right   string
+				percent float64
+			}),
+			ChanShowSpeed: make(chan *BufferInfo),
+			ChanShowText:  make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
+			ChanSetSize:   make(chan argSize),
+			ChanSetTitle:  make(chan string),
 
-	w := &Window{
-		ptr: ptr,
+			ChanShowMessage: make(chan SubItemArg),
+			ChanHideMessage: make(chan uintptr),
 
-		ChanDraw:         make(chan []byte),
-		ChanShowProgress: make(chan *PlayProgressInfo),
-		ChanShowSpeed:    make(chan *BufferInfo),
-		ChanShowText:     make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
-		ChanSetSize:      make(chan argSize),
-		ChanSetTitle:     make(chan string),
+			ChanSetCursor:       make(chan bool),
+			ChanShowSpinning:    make(chan bool),
+			chDelayShowSpinning: nil,
 
-		ChanShowMessage: make(chan SubItemArg),
-		ChanHideMessage: make(chan uintptr),
+			ChanSetVolume:        make(chan byte),
+			ChanSetVolumeDisplay: make(chan bool),
 
-		ChanSetCursor:       make(chan bool),
-		ChanShowSpinning:    make(chan bool),
-		chDelayShowSpinning: nil,
+			ChanDestoryRender: make(chan struct{}),
 
-		ChanSetVolume:        make(chan byte),
-		ChanSetVolumeDisplay: make(chan bool),
+			originalWidth:  width,
+			originalHeight: height,
 
-		ChanDestoryRender: make(chan struct{}),
-
-		originalWidth:  width,
-		originalHeight: height,
-
-		chCursor:         make(chan struct{}),
-		chCursorAutoHide: make(chan struct{}),
+			chCursor:         make(chan struct{}),
+			chCursorAutoHide: make(chan struct{}),
+		},
 	}
 
-	log.Print("NewWindow:", ptr)
+	log.Print("NewWindow:", w.NativeWindow)
 
-	windows[ptr] = w
-
-	C.showWindow(ptr)
-	C.makeWindowCurrentContext(ptr) //must make current context before do texture bind or we will get a all white window
+	w.Show()
+	w.MakeCurrentContext() //must make current context before do texture bind or we will get a all white window
 	gl.Init()
 	gl.ClearColor(0, 0, 0, 1)
 
@@ -281,12 +256,8 @@ func (w *Window) ClearEvents() {
 	w.FuncMouseWheelled = nil
 }
 
-func (w *Window) ToggleFullScreen() {
-	C.windowToggleFullScreen(w.ptr)
-}
-
 func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
-	width, height := w.GetWindowSize()
+	width, height := w.GetSize()
 
 	if w.forceRatio > 0 {
 		return 0, 0, width, height
@@ -350,36 +321,24 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	gl.Vertex2d(-1, 1)
 	gl.End()
 
-	w.hideStartupView()
+	w.HideStartupView()
 }
 
-func (w *Window) hideStartupView() {
-	C.windowHideStartupView(w.ptr)
-}
-func (w *Window) ShowStartupView() {
-	C.windowShowStartupView(w.ptr)
-}
-func (w *Window) SendShowProgress(p *PlayProgressInfo) {
-	w.ChanShowProgress <- p
+func (w *Window) SendShowProgress(left string, right string, percent float64) {
+	w.ChanShowProgress <- &struct {
+		left    string
+		right   string
+		percent float64
+	}{left, right, percent}
 }
 func (w *Window) SendShowBufferInfo(info *BufferInfo) {
 	w.ChanShowSpeed <- info
 }
-func (w *Window) ShowProgress(p *PlayProgressInfo) {
-	cleft := C.CString(p.Left)
-	defer C.free(unsafe.Pointer(cleft))
 
-	cright := C.CString(p.Right)
-	defer C.free(unsafe.Pointer(cright))
+// func (w *Window) ShowProgress(p *PlayProgressInfo) {
+// 	w.ShowWindowProgress(w.ptr, p.Right, p.Left, p.Percent)
+// }
 
-	C.showWindowProgress(w.ptr, cleft, cright, C.double(p.Percent))
-}
-func (w *Window) ShowBufferInfo(speed string, percent float64) {
-	cspeed := C.CString(speed)
-	defer C.free(unsafe.Pointer(cspeed))
-
-	C.showWindowBufferInfo(w.ptr, cspeed, C.double(percent))
-}
 func (w *Window) SendShowText(s SubItemArg) {
 	// res := make(chan SubItemExtra)
 	w.ChanShowText <- s
@@ -443,45 +402,23 @@ func (w *Window) SendSetTitle(title string) {
 
 func (w *Window) ShowText(s *SubItem) uintptr {
 	strs := s.Content
-	items := make([]C.SubItem, 0)
-	for _, str := range strs {
-		cstr := C.CString(str.Content)
-		defer C.free(unsafe.Pointer(cstr))
+	items := make([]struct {
+		Content string
+		Style   int
+		Color   uint
+	}, len(strs))
 
-		// println("content:", str.Content)
-		// println("color:", str.Color)
-		items = append(items, C.SubItem{cstr, C.int(str.Style), C.uint(str.Color)})
+	for i, str := range strs {
+		items[i].Content = str.Content
+		items[i].Style = str.Style
+		items[i].Color = str.Color
 	}
 
-	var p *C.SubItem
-	if len(strs) > 0 {
-		p = (*C.SubItem)(unsafe.Pointer(&items[0]))
-	}
-
-	return uintptr(C.showText(w.ptr, p, C.int(len(items)), C.int(s.PositionType), C.double(s.X), C.double(s.Y)))
+	return w.NativeWindow.ShowText(items, s.PositionType, s.X, s.Y)
 }
+
 func (w *Window) SendHideText(arg SubItemArg) {
 	w.ChanShowText <- arg
-}
-func (w *Window) HideText(ptr uintptr) {
-	C.hideText(w.ptr, unsafe.Pointer(ptr))
-}
-func (w *Window) ShowSubList(sub Sub) {
-	// C.showSubList()
-}
-
-func (w *Window) HideCursor() {
-	C.hideCursor(w.ptr)
-}
-func (w *Window) ShowCursor() {
-	C.showCursor(w.ptr)
-}
-
-func (w *Window) ShowSpinning() {
-	C.showSpinning(w.ptr)
-}
-func (w *Window) HideSpinning() {
-	C.hideSpinning(w.ptr)
 }
 
 func (w *Window) SendShowSpinning() {
@@ -538,25 +475,6 @@ func (w *Window) SendHideSpinning(forceHide bool) {
 	}
 }
 
-func (w *Window) SetVolume(volume byte) {
-	// if volume < 0 {
-	// 	volume = 0
-	// }
-
-	// if volume > 160 {
-	// 	volume = 160
-	// }
-	C.setVolume(w.ptr, C.int(volume))
-}
-
-func (w *Window) SetVolumeDisplay(b bool) {
-	if b {
-		C.setVolumeDisplay(w.ptr, 1)
-	} else {
-		C.setVolumeDisplay(w.ptr, 0)
-	}
-}
-
 func (w *Window) SendSetVolume(volume byte) {
 	w.ChanSetVolume <- volume
 }
@@ -565,161 +483,144 @@ func (w *Window) SendSetVolumeDisplay(b bool) {
 	w.ChanSetVolumeDisplay <- b
 }
 
-//export goOnDraw
-func goOnDraw(ptr unsafe.Pointer) {
-	w := windows[ptr]
-	w.draw(w.img, w.originalWidth, w.originalHeight)
+func (w *Window) Refresh(img []byte) {
+	w.img = img
+	w.RefreshContent()
 }
 
-//export goOnTimerTick
-func goOnTimerTick(ptr unsafe.Pointer) {
-	w := windows[ptr]
-
-	select {
-	case img, ok := <-w.ChanDraw:
-		if ok {
-			w.RefreshContent(img)
-		}
-	case <-w.ChanDestoryRender:
-		w.DestoryRender()
-	default:
+func onDraw() {
+	if w != nil {
+		w.draw(w.img, w.originalWidth, w.originalHeight)
 	}
+}
 
-	select {
-	case b := <-w.ChanShowSpinning:
-		if b {
-			w.ShowSpinning()
-		} else {
-			w.HideSpinning()
+func onTimerTick() {
+	if w != nil {
+		select {
+		case img, ok := <-w.ChanDraw:
+			if ok {
+				w.Refresh(img)
+			}
+		case <-w.ChanDestoryRender:
+			w.DestoryRender()
+		default:
 		}
-	case p := <-w.ChanShowProgress:
-		w.ShowProgress(p)
-	case info := <-w.ChanShowSpeed:
-		w.ShowBufferInfo(info.Speed, info.BufferPercent)
-	default:
-	}
 
-	select {
-	case b := <-w.ChanSetCursor:
-		if b {
-			w.ShowCursor()
-		} else {
-			w.HideCursor()
-		}
-		break
-	case volume := <-w.ChanSetVolume:
-		w.SetVolume(volume)
-	case b := <-w.ChanSetVolumeDisplay:
-		w.SetVolumeDisplay(b)
-	case arg := <-w.ChanSetSize:
-		w.SetSize(arg.width, arg.height)
-		break
-	case title := <-w.ChanSetTitle:
-		w.SetTitle(title)
-		break
-	case arg := <-w.ChanShowText:
-	skip:
-		for {
-			if arg.Handle == 0 || arg.Handle == 1 {
-				arg.Result <- SubItemExtra{arg.Id, w.ShowText(&arg.SubItem)}
+		select {
+		case b := <-w.ChanShowSpinning:
+			if b {
+				w.ShowSpinning()
 			} else {
-				w.HideText(arg.Handle)
+				w.HideSpinning()
 			}
-			select {
-			case arg = <-w.ChanShowText:
-			default:
-				break skip
-			}
+		case p := <-w.ChanShowProgress:
+			w.ShowProgress(p.left, p.right, p.percent)
+		case info := <-w.ChanShowSpeed:
+			w.ShowBufferInfo(info.Speed, info.BufferPercent)
+		default:
 		}
-		break
-	case arg := <-w.ChanShowMessage:
-		w.showMessage(&arg.SubItem, arg.AutoHide)
-	case <-w.ChanHideMessage:
-		w.HideMessage()
-	default:
-		if w.currentMessagePtr != 0 && time.Now().After(w.showMessageDeadline) {
+
+		select {
+		case b := <-w.ChanSetCursor:
+			if b {
+				w.ShowCursor()
+			} else {
+				w.HideCursor()
+			}
+			break
+		case volume := <-w.ChanSetVolume:
+			w.SetVolume(volume)
+		case b := <-w.ChanSetVolumeDisplay:
+			w.SetVolumeDisplay(b)
+		case arg := <-w.ChanSetSize:
+			w.SetSize(arg.width, arg.height)
+			break
+		case title := <-w.ChanSetTitle:
+			w.SetTitle(title)
+			break
+		case arg := <-w.ChanShowText:
+		skip:
+			for {
+				if arg.Handle == 0 || arg.Handle == 1 {
+					arg.Result <- SubItemExtra{arg.Id, w.ShowText(&arg.SubItem)}
+				} else {
+					w.HideText(arg.Handle)
+				}
+				select {
+				case arg = <-w.ChanShowText:
+				default:
+					break skip
+				}
+			}
+			break
+		case arg := <-w.ChanShowMessage:
+			w.showMessage(&arg.SubItem, arg.AutoHide)
+		case <-w.ChanHideMessage:
 			w.HideMessage()
+		default:
+			if w.currentMessagePtr != 0 && time.Now().After(w.showMessageDeadline) {
+				w.HideMessage()
+			}
 		}
 	}
 }
 
-//export goOnKeyDown
-func goOnKeyDown(ptr unsafe.Pointer, keycode int) C.int { //true if already handled
-	w := windows[ptr]
-
+func onKeyDown(keycode int) bool {
 	ret := false
-	for _, fn := range w.FuncKeyDown {
-		b := fn(keycode)
-		if b {
-			ret = true
+	if w != nil {
+		for _, fn := range w.FuncKeyDown {
+			b := fn(keycode)
+			if b {
+				ret = true
+			}
 		}
 	}
+	return ret
+}
 
-	if ret {
-		return 1
-	} else {
-		return 0
+func onProgressChanged(typ int, position float64) {
+	if w != nil {
+		for _, fn := range w.FuncOnProgressChanged {
+			fn(typ, position)
+		}
 	}
 }
 
-//export goOnProgressChanged
-func goOnProgressChanged(ptr unsafe.Pointer, typ int, position float64) {
-	w := windows[ptr]
-
-	for _, fn := range w.FuncOnProgressChanged {
-		fn(typ, position)
+func onFullscreenChanged(b bool) {
+	if w != nil {
+		for _, fn := range w.FuncOnFullscreenChanged {
+			fn(b)
+		}
 	}
 }
 
-//export goOnFullscreenChanged
-func goOnFullscreenChanged(ptr unsafe.Pointer, b int) {
-	w := windows[ptr]
-
-	for _, fn := range w.FuncOnFullscreenChanged {
-		fn(b != 0)
+func onMenuClicked(typ int, tag int) {
+	if w != nil {
+		switch typ {
+		case 0:
+			for _, fn := range w.FuncAudioMenuClicked {
+				fn(tag)
+			}
+		case 1:
+			for _, fn := range w.FuncSubtitleMenuClicked {
+				fn(tag)
+			}
+		case 2:
+			onSearchSubtitleMenuItemClick()
+		}
 	}
 }
 
-// //export goOnAudioStreamChanged
-// func goOnAudioStreamChanged(cname *C.char) {
-// 	name := C.GoString(cname)
-// 	println(name)
-// }
-
-// //export goOnSubtitleChanged
-// func goOnSubtitleChanged(name1 *C.char, name2 *C.char) {
-
-// }
-
-//export goOnAudioMenuClicked
-func goOnAudioMenuClicked(ptr unsafe.Pointer, tag int) {
-	w := windows[ptr]
-
-	for _, fn := range w.FuncAudioMenuClicked {
-		fn(tag)
+func onMouseWheel(deltaX float64, deltaY float64) {
+	if w != nil {
+		for _, fn := range w.FuncMouseWheelled {
+			fn(deltaY)
+		}
 	}
 }
 
-//export goOnSubtitleMenuClicked
-func goOnSubtitleMenuClicked(ptr unsafe.Pointer, tag int) {
-	w := windows[ptr]
-
-	for _, fn := range w.FuncSubtitleMenuClicked {
-		fn(tag)
+func onMouseMove(x, y int) {
+	if w != nil {
+		w.SendSetCursor(true)
 	}
-}
-
-//export goOnMouseWheel
-func goOnMouseWheel(ptr unsafe.Pointer, deltaY float64) {
-	w := windows[ptr]
-
-	for _, fn := range w.FuncMouseWheelled {
-		fn(deltaY)
-	}
-}
-
-//export goOnMouseMove
-func goOnMouseMove(ptr unsafe.Pointer) {
-	w := windows[ptr]
-	w.SendSetCursor(true)
 }

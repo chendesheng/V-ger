@@ -80,8 +80,8 @@
         // }
         [self setNeedsDisplay:YES];
         
-        onProgressChanged((void*)[self window], 0, self->percent);
-        onProgressChanged((void*)[self window], 1, self->percent);
+        onProgressChanged(0, self->percent);
+        onProgressChanged(1, self->percent);
         double lastPercent = self->percent;
             
         bool keepOn = YES;
@@ -97,7 +97,7 @@
                     if (lastPercent != self->percent) {
                         lastPercent = self->percent;
                         [self setNeedsDisplay:YES];
-                        onProgressChanged((void*)[self window], 1, self->percent);
+                        onProgressChanged(1, self->percent);
                     }
                     break;
                 case NSLeftMouseUp:
@@ -106,7 +106,7 @@
                     if (lastPercent != self->percent) {
                         [self setNeedsDisplay:YES];
                     }
-                    onProgressChanged((void*)[self window], 2, self->percent);
+                    onProgressChanged(2, self->percent);
                     keepOn = NO;
                     break;
                 default:

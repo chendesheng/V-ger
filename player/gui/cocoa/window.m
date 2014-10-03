@@ -59,7 +59,7 @@
     }
 
     [audioMenuItem setState:NSOnState];
-    onAudioMenuClicked(self, [audioMenuItem tag]);
+    onMenuClicked(MENU_AUDIO, [audioMenuItem tag]);
 }
 - (void)subtitleMenuItemClick:(id)sender {
     // NSLog(@"subtitleMenuItemClick");
@@ -86,9 +86,9 @@
     // }
     NSMenuItem* subtitleMenuItem = (NSMenuItem*)sender;
     if ([subtitleMenuItem state] == NSOnState)
-        onSubtitleMenuClicked(self, [subtitleMenuItem tag]);
+        onMenuClicked(MENU_SUBTITLE, [subtitleMenuItem tag]);
     else
-        onSubtitleMenuClicked(self, [subtitleMenuItem tag]);
+        onMenuClicked(MENU_SUBTITLE, [subtitleMenuItem tag]);
 }
 - (void)updateRoundCorner {
     NSView* rv = [[self contentView] superview];

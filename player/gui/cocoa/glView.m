@@ -110,7 +110,7 @@
 - (void)mouseMoved:(NSEvent *)event {
      NSPoint mouse = [NSEvent mouseLocation];
     if ([NSWindow windowNumberAtPoint:mouse belowWindowWithWindowNumber:0] == [self window].windowNumber) {
-        onMouseMove([self window]);
+        onMouseMove();
     }
 }
 
@@ -135,7 +135,7 @@
 }
 
 - (void)keyDown:(NSEvent *)event {
-    if (!onKeyDown([self window], [event keyCode])) {
+    if (!onKeyDown([event keyCode])) {
         [super keyDown:event];
     }
 }
@@ -460,7 +460,7 @@
 }
 - (void)scrollWheel:(NSEvent *)event
 {
-    onMouseWheel(self->win, [event deltaY]);
+    onMouseWheel([event deltaY]);
 }
 - (void)setOriginalSize:(NSSize)size {
     self->originalSize = size;

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	. "vger/player/gui"
 	. "vger/player/libav"
 	. "vger/player/movie/audio"
 	. "vger/player/shared"
@@ -42,7 +41,8 @@ func getDefaultAudioStream(streams []AVStream, lastSelected int) AVStream {
 	return selectedStream
 }
 func (m *Movie) setupAudioMenu(selected int) {
-	HideAudioMenu()
+	m.w.HideAudioMenu()
+
 	audioStreams := m.audioStreams
 	audioStreamNames := make([]string, 0)
 	audioStreamIndexes := make([]int32, 0)

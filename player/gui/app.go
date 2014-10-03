@@ -1,56 +1,35 @@
 package gui
 
-//#include "gui.h"
-import "C"
-import (
-	"log"
-	"unsafe"
-)
+import "log"
 
-func PollEvents() {
-	C.pollEvents()
-}
-
-//export goOnOpenFile
-func goOnOpenFile(cfilename unsafe.Pointer) C.int {
-	filename := C.GoString((*C.char)(cfilename))
-
+func onOpenFile(filename string) bool {
 	if appDelegate != nil {
-		if appDelegate.OpenFile(filename) {
-			return 1
-		} else {
-			return 0
-		}
+		return appDelegate.OpenFile(filename)
 	} else {
-		return 0
+		return false
 	}
 }
 
-//export goOnWillTerminate
-func goOnWillTerminate() {
+func onWillTerminate() {
 	if appDelegate != nil {
 		appDelegate.WillTerminate()
 	}
 }
 
-//export goOnSearchSubtitleMenuItemClick
-func goOnSearchSubtitleMenuItemClick() {
+func onSearchSubtitleMenuItemClick() {
 	if appDelegate != nil {
 		appDelegate.ToggleSearchSubtitle()
 	}
 }
 
-//export goOnOpenOpenPanel
-func goOnOpenOpenPanel() {
+func onOpenOpenPanel() {
 	if appDelegate != nil {
 		appDelegate.OnOpenOpenPanel()
 	}
 }
 
-//export goOnCloseOpenPanel
-func goOnCloseOpenPanel(filename *_Ctype_char) {
+func onCloseOpenPanel(name string) {
 	if appDelegate != nil {
-		name := C.GoString(filename)
 		appDelegate.OnCloseOpenPanel(name)
 	}
 }
@@ -65,14 +44,9 @@ type AppDelegate interface {
 
 var appDelegate AppDelegate
 
-func Initialize(d AppDelegate) {
+func Run(d AppDelegate) {
 	appDelegate = d
 
-	C.initialize()
+	run()
 	log.Println("gui initialized")
-}
-
-func GetScreenSize() (int, int) {
-	sz := C.getScreenSize()
-	return int(sz.width), int(sz.height)
 }
