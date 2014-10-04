@@ -1,12 +1,13 @@
 #import "glView.h"
 #import <OpenGL/gl.h>
+#import <objc/runtime.h>
 
 @implementation GLView : NSOpenGLView
 
 - (id)initWithFrame2:(NSRect)frame {
     self = [super init];
     if (self) {
-        self->originalSize = frame.size;
+        originalSize = frame.size;
         // Initialization code here.
         trackingArea = nil;
 
@@ -30,9 +31,15 @@
         [self setWantsLayer:YES];
 
         NSImage* data = [[NSImage alloc] initWithSize:NSMakeSize(1, 1)];
-        self->noneCursor = [[NSCursor alloc] initWithImage:data
+        noneCursor = [[NSCursor alloc] initWithImage:data
                                                   hotSpot:NSZeroPoint];
         [data release];
+
+        textView = [[TextView alloc] init];
+        [self addSubview:textView];
+
+        textView2 = [[TextView alloc] init];
+        [self addSubview:textView2];
 
         [self updateTrackingAreas];
     }
@@ -48,6 +55,8 @@
 
 -(void)dealloc {
     [trackingArea release];
+    [textView release];
+    [textView2 release];
     [super dealloc];
 }
 
@@ -65,7 +74,7 @@
 
 - (void)mouseDown:(NSEvent *)event {
     if (event.clickCount == 2) {
-        [self->win toggleFullScreen:nil];
+        [win toggleFullScreen:nil];
         // return;
     }
 
@@ -77,31 +86,28 @@
     return YES;
 }
 -(void)hideCursor {
-    self->currentCursor = self->noneCursor;
+    currentCursor = noneCursor;
 }
 -(void)showCursor {
-    self->currentCursor = [NSCursor arrowCursor];
+    currentCursor = [NSCursor arrowCursor];
 }
 -(void)hideProgress {
-    // [self->titleTextView setHidden:NO];
-    [self->titleView setHidden:YES];
-    [self->progressView setHidden:YES];
+    [titleView setHidden:YES];
+    [progressView setHidden:YES];
 
     NSView* target = [self superview];
-
-    for (NSView* v in [self->frameView subviews]) {
+    for (NSView* v in [frameView subviews]) {
         if (v != target) {
             [v setHidden:YES];
         }
     }
 }
 -(void)showProgress {
-    [self->progressView setHidden:NO];
-    // [self->titleTextView setHidden:YES];
-    [self->titleView setHidden:NO];
+    [progressView setHidden:NO];
+    [titleView setHidden:NO];
 
     NSView* target = [self superview];
-    for (NSView* v in [self->frameView subviews]) {
+    for (NSView* v in [frameView subviews]) {
         if (v != target) {
             [v setHidden:NO];
         }
@@ -144,7 +150,7 @@
 }
 
 -(void)showProgress:(char*)left right:(char*)right percent:(double)percent {
-    ProgressView* pv = self->progressView;
+    ProgressView* pv = progressView;
     
     [pv->leftString autorelease];
 
@@ -167,7 +173,7 @@
     [pv setNeedsDisplay:YES];
 }
 -(void)showBufferInfo:(char*)speed bufferPercent:(double)percent {
-    ProgressView* pv = self->progressView;
+    ProgressView* pv = progressView;
 
     [pv->speedString autorelease];
     pv->speedString = [[NSString stringWithUTF8String:speed] retain];
@@ -176,262 +182,95 @@
     [pv setNeedsDisplay:YES];
 }
 -(void)setProgressView:(ProgressView*)pv {
-    self->progressView = pv;
+    progressView = pv;
 }
--(void)setTextView:(TextView*)tv {
-    self->textView = tv;
-}
--(void)setTextView2:(TextView*)tv {
-    self->textView2 = tv;
-}
--(TextView*)showText:(SubItem*)items length:(int)length position:(int)position x:(double)x y:(double)y {
-    double padding = 30;
 
-    double spacing = 5;
+-(TextView*)showText:(SubItem*)item {
+    int align = item->align;
 
-    if (x < 0 && y < 0) {
-        if (position == 10) {
-            // NSLog(@"position 10");
-
-            TextView* tv = self->textView;
-            TextView* tv2 = self->textView2;
-
-            [tv2 setText:items length:length];
-
-            double w = [self frame].size.width;
-            NSSize sz = [tv2 sizeForWidth:w height:FLT_MAX];
-
-            double h = [tv frame].size.height;
-            double y = padding;
-            if (h > 0) {
-                y += h + spacing;
-            }
-            [tv2 setFrame:NSMakeRect(0, y, w, sz.height)];
-
-            return tv2;        
-        } else if (position < 1 || position == 2 || position > 10) {
-            TextView* tv = self->textView;
-            TextView* tv2 = self->textView2;
-
-            [tv setText:items length:length];
-
-            double w = [self frame].size.width;
-            NSSize sz = [tv sizeForWidth:w height:FLT_MAX];
-            [tv setFrame:NSMakeRect(0, padding, w, sz.height)];
-
-            double h2 = [tv2 frame].size.height;
-            [tv2 setFrame:NSMakeRect(0, padding+sz.height+spacing, w, h2)];
-            return tv;
-        } else if (position == 1) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            [tv setFrame:NSMakeRect(padding, padding, sz.width, sz.height)];
-
-            return tv;
-        } else if (position == 3) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize wsz = [self frame].size;
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            double x = wsz.width - sz.width - padding;
-            [tv setFrame:NSMakeRect(x, padding, sz.width, sz.height)];
-            return tv;
-        } else if (position == 4) {   
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize wsz = [self frame].size;
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            double y = (wsz.height - sz.height)/2;
-            [tv setFrame:NSMakeRect(padding, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 5) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize wsz = [self frame].size;
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            double x = (wsz.width - sz.width)/2;
-            double y = (wsz.height - sz.height)/2;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 6) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize wsz = [self frame].size;
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            double x = wsz.width - sz.width - padding;
-            double y = (wsz.height - sz.height)/2;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 7) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize wsz = [self frame].size;
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            double x = padding;
-            double y = wsz.height - sz.height - padding;
-            // NSLog(@"%lf, %lf", x, y);
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 8) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize wsz = [self frame].size;
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            double x = (wsz.width - sz.width)/2;
-            double y = wsz.height - sz.height - padding;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 9) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize wsz = [self frame].size;
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            double x = wsz.width - sz.width - padding;
-            double y = wsz.height - sz.height - padding;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        }
-    } else {
-        NSSize wsz = [self frame].size;
-
-        x = x/self->originalSize.width * wsz.width;
-        y = wsz.height - y/self->originalSize.height * wsz.height;
-
-        if (position == 1) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];       
-            return tv;
-        } else if(position<1||position == 2||position>10) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            x -= sz.width/2;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 3) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            x -= sz.width;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 4) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            y -= sz.height/2;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 5) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            y -= sz.height/2;
-            x -= sz.width/2;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position == 6) {
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            y -= sz.height/2;
-            x -= sz.width;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position==7) {        
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            y -= sz.height;
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position==8) {        
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            x -= sz.width/2;
-            y -= sz.height;
-
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];
-            return tv;
-        } else if (position==9) {        
-            TextView* tv = [[TextView alloc] init];
-            [self addSubview:tv positioned:NSWindowBelow relativeTo:self->progressView];
-            [tv setText:items length:length];
-
-            NSSize sz = [tv sizeForWidth:FLT_MAX height:FLT_MAX];
-
-            x -= sz.width;
-            y -= sz.height;
-
-            [tv setFrame:NSMakeRect(x, y, sz.width, sz.height)];  
-            return tv;
+    TextView* tv = nil;
+    if (item->x < 0 && item->y < 0) {
+        if (align == 2) {
+            tv = textView;
+        } else if (align == 10) {
+            tv = textView2;
         }
     }
 
-    return nil;
+    if (tv == nil) {
+        tv = [[TextView alloc] init];
+        [self addSubview:tv positioned:NSWindowBelow relativeTo:progressView];
+    }
+
+    [tv setText:item->texts length:item->length];
+    tv->x = item->x;
+    tv->y = item->y;
+    tv->align = item->align;
+    [self updateTextViewPosition:tv];
+    [tv setHidden:NO];
+    return tv;
+}
+-(void)updateTextViewPosition:(TextView*)tv {
+    int align = tv->align;
+
+    BOOL secondSub = NO;
+    if (align == 10) {
+        NSLog(@"second sub");
+        align = 2;
+        secondSub = YES;
+    }
+
+    int xalign = (align-1)%3;   //0-left, 1-center, 2-right
+    int yalign = (align-1)/3;   //0-bottom, 1-middle, 2-top
+
+    NSSize wsz = [[self window] frame].size;
+        
+    CGFloat PADDING = 30;
+    CGFloat GAP = 5.0;  //5 pixes gap between first subtitle and second subtitle
+
+    CGFloat x;
+    CGFloat y;
+
+    NSSize sz = [tv sizeForWidth:(wsz.width-2*PADDING) height:FLT_MAX];
+
+    if (tv->x >= 0 && tv->x >= 0) {
+        x = tv->x;
+        y = tv->y;
+        // get x y from subtitle file, need scale to current view
+        x = x/originalSize.width * wsz.width;
+        y = wsz.height - y/originalSize.height * wsz.height;
+    } else {
+        //no x y, set position by align
+        x = 0.5*xalign*wsz.width + (1-xalign)*PADDING;
+        y = 0.5*yalign*wsz.height + (1-yalign)*PADDING;
+
+        //handle default position
+        if (align == 2) {
+            if (secondSub && [textView isHidden] == NO) {
+                //current is second sub and first sub is visible
+                NSSize sz1 = [textView sizeForWidth:(wsz.width-2*PADDING) height:FLT_MAX];
+                if (sz1.height > 0) {
+                    y += sz1.height + GAP;
+                }
+            } else if ([textView2 isHidden] == NO && sz.height > 0) {
+                //current is first sub and second sub is visible
+                NSRect rt = [textView2 frame];
+                rt.origin.y += sz.height + GAP;
+                [textView2 setFrame:rt];
+            }
+        }
+    }
+
+    //NSLog(@"%f %f %f %f %f %f", x, y, sz.width, sz.height, x-0.5*xalign*sz.width, y-0.5*yalign*sz.height);
+    [tv setFrame:NSMakeRect(x-0.5*xalign*sz.width, y-0.5*yalign*sz.height, sz.width, sz.height)];
 }
 -(void)hideText:(TextView*)tv {
-    if (tv == self->textView) {
+    if (tv == textView) {
         [tv setText:NULL length:0];
-        // double w = [self frame].size.width;
-        // [tv setFrame:NSMakeRect(0, 0, w, 0)];
-
-        // TextView* tv2 = self->textView2;
-        // [tv2 setFrame:NSMakeRect(0, 35, w, [tv2 frame].size.height)];
-    } else if (tv == self->textView2) {
+        [tv setHidden:YES];
+    } else if (tv == textView2) {
         [tv setText:NULL length:0];
+        [tv setHidden:YES];
     } else {
         [tv removeFromSuperview];
         [tv release];
@@ -439,7 +278,7 @@
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
-    NSCursor* cur = self->currentCursor;
+    NSCursor* cur = currentCursor;
     [cur set];
 }
 
@@ -448,13 +287,13 @@
     [[self openGLContext] flushBuffer];
 }
 -(void)setStartupView:(StartupView*)sv {
-    self->startupView = sv;
+    startupView = sv;
 }
 -(void)hideStartupView {
-    [self->startupView setHidden:YES];
+    [startupView setHidden:YES];
 }
 -(void)showStartupView {
-    [self->startupView setHidden:NO];
+    [startupView setHidden:NO];
 
     [self setNeedsDisplay:YES];
 }
@@ -463,6 +302,24 @@
     onMouseWheel([event deltaY]);
 }
 - (void)setOriginalSize:(NSSize)size {
-    self->originalSize = size;
+    originalSize = size;
 }
+- (void)showAllTexts {
+    for (NSView* v in [self subviews]) {
+        if ([v isKindOfClass:[textView class]] && [v isHidden]==NO) {
+        // NSLog(@"begin update %d", [(TextView*)v getSubItem]->align);
+        [self updateTextViewPosition:(TextView*)v];
+        // NSLog(@"end update %d", [(TextView*)v getSubItem]->align);
+
+            // [v setHidden:NO];
+        }
+    }
+}
+// - (void)hideAllTexts {
+//     for (NSView* v in [self subviews]) {
+//         if ([v isKindOfClass:[TextView class]]) {
+//             [v setHidden:YES];
+//         }
+//     }
+// }
 @end

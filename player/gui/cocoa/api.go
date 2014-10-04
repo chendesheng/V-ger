@@ -138,15 +138,17 @@ func (w NativeWindow) ShowText(items []struct {
 		return 0
 	}
 
-	citems := make([]C.SubItem, 0)
+	ctexts := make([]C.AttributedString, 0)
 	for _, str := range items {
 		cstr := C.CString(str.Content)
 		defer C.free(unsafe.Pointer(cstr))
 
-		citems = append(citems, C.SubItem{cstr, C.int(str.Style), C.uint(str.Color)})
+		ctexts = append(ctexts, C.AttributedString{cstr, C.int(str.Style), C.uint(str.Color)})
 	}
 
-	return uintptr(C.showText(unsafe.Pointer(w), &citems[0], C.int(len(items)), C.int(posType), C.double(x), C.double(y)))
+	citem := &C.SubItem{&ctexts[0], C.int(len(ctexts)), C.int(posType), C.double(x), C.double(y)}
+
+	return uintptr(C.showText(unsafe.Pointer(w), citem))
 }
 
 func (w NativeWindow) HideText(ptr uintptr) {

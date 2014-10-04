@@ -3,10 +3,12 @@ package gui
 import (
 	"bytes"
 	"io/ioutil"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+	. "vger/player/shared"
 )
 
 func TestShowWindow(t *testing.T) {
@@ -59,15 +61,15 @@ func TestIsFullScreen(t *testing.T) {
 		t.Errorf("should not full screen")
 	}
 
-	w.FuncOnFullscreenChanged = append(w.FuncOnFullscreenChanged, func(b bool) {
-		if b {
-			if !w.IsFullScreen() {
-				t.Errorf("should full screen")
-			} else {
-				println("full screen")
-			}
-		}
-	})
+	// w.FuncOnFullscreenChanged = append(w.FuncOnFullscreenChanged, func(b int) {
+	// 	if b != 0 {
+	// 		if !w.IsFullScreen() {
+	// 			t.Errorf("should full screen")
+	// 		} else {
+	// 			println("full screen")
+	// 		}
+	// 	}
+	// })
 
 	run()
 }
@@ -214,6 +216,54 @@ func TestVolumeView(t *testing.T) {
 			w.SetVolumeDisplay(false)
 		}
 
+		return true
+	})
+
+	run()
+}
+
+func TestTextView(t *testing.T) {
+	runtime.LockOSThread()
+
+	w := NewWindow("title", 1280, 720)
+	for i := 1; i < 2; i++ {
+		w.ShowText(&SubItem{
+			Content:      []AttributedString{AttributedString{"Test subtitle", 0, 0}},
+			Position:     Position{-1, -1},
+			PositionType: i,
+		})
+	}
+
+	w.HideStartupView()
+
+	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) bool {
+		if keycode == KEY_ESCAPE {
+			w.ToggleFullScreen()
+		}
+		return true
+	})
+
+	run()
+}
+
+func TestTextView2(t *testing.T) {
+	runtime.LockOSThread()
+
+	w := NewWindow("title", 1280, 720)
+	for i := 1; i < 10; i++ {
+		w.ShowText(&SubItem{
+			Content:      []AttributedString{AttributedString{"Test subtitle", 0, 0}},
+			Position:     Position{300, 300},
+			PositionType: i,
+		})
+	}
+
+	w.HideStartupView()
+
+	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) bool {
+		if keycode == KEY_ESCAPE {
+			w.ToggleFullScreen()
+		}
 		return true
 	})
 

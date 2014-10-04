@@ -2,10 +2,18 @@
 #define GUI_H
 #include <stdint.h>
 
-typedef struct SubItem {
+typedef struct AttributedString {
 	char* str;
 	int style;
 	unsigned int color;
+} AttributedString;
+
+typedef struct SubItem {
+	AttributedString* texts;
+	int length;
+	int align;
+	double x;
+	double y;
 } SubItem;
 
 typedef struct CSize {
@@ -33,7 +41,7 @@ void windowToggleFullScreen(void*);
 void showWindowProgress(void*,char*,char*,double);
 void showWindowBufferInfo(void*, char*, double);
 
-void* showText(void*,SubItem*,int,int,double,double);
+void* showText(void*,SubItem*);
 void hideText(void*, void*);
 
 void initAudioMenu(void*, char**, int32_t*, int, int);

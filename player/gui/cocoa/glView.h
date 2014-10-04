@@ -32,18 +32,20 @@
 -(void)showProgress:(char*)left right:(char*)right percent:(double)percent;
 -(void)setProgressView:(ProgressView*)pv;
 
--(TextView*)showText:(SubItem*)items length:(int)length position:(int)position x:(double)x y:(double)y;
+-(TextView*)showText:(SubItem*)item;
 -(void)hideText:(TextView*)tv;
+-(void)showAllTexts;
+// -(void)hideAllTexts;
 
--(void)setTextView:(TextView*)tv;
--(void)setTextView2:(TextView*)tv;
 -(void)setStartupView:(StartupView*)sv;
 -(void)hideStartupView;
 -(void)showStartupView;
+
 -(void)showProgress;
+-(void)hideProgress;
 -(void)showBufferInfo:(char*)speed bufferPercent:(double)percent;
 -(void)showCursor;
--(void)hideProgress;
 -(void)hideCursor;
+
 -(void)setOriginalSize:(NSSize)size;
 @end

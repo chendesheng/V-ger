@@ -1,4 +1,7 @@
 #import "textView.h"
+#include <stdlib.h>
+#include <string.h>
+
 @implementation TextView
 
 int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
@@ -25,6 +28,8 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 				height:(float)height {
 	NSSize answer = NSZeroSize ;
     if ([self.textStorage length] > 0) {
+        [self updateFontSize];
+
 		// Checking for empty string is necessary since Layout Manager will give the nominal
 		// height of one line if length is 0.  Our API specifies 0.0 for an empty string.
 		NSSize size = NSMakeSize(width, height) ;
@@ -70,10 +75,38 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
     return s;
 }
 
-- (void)setText:(SubItem*)items length:(int)len {
+- (void)updateFontSize {
+    if ([self.textStorage length] == 0) {
+        return;
+    }
+
+    NSFontManager* fontManager = [NSFontManager sharedFontManager];
+    NSTextStorage* textStorage = [self textStorage];
+    [textStorage beginEditing];
+    [textStorage enumerateAttribute:NSFontAttributeName
+                            inRange:NSMakeRange(0, [textStorage length])
+                            options:0
+                         usingBlock:^(id value,
+                                    NSRange range,
+                                    BOOL * stop) {
+        NSFont * font = value;
+        font = [fontManager convertFont:font
+                                toSize:[self CalcFontsize]];
+        if (font != nil) {
+            [textStorage removeAttribute:NSFontAttributeName
+                                   range:range];
+            [textStorage addAttribute:NSFontAttributeName
+                                value:font
+                                range:range];
+        }
+    }];
+    [textStorage endEditing];
+}
+
+- (void)setText:(AttributedString*)items length:(int)len {
     NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] init];
     for (int i=0; i < len; i++) {
-        SubItem item = items[i];
+        AttributedString item = items[i];
 //        NSFont *font = [NSFont fontWithName:@"Georgia" size:25.0];
         NSFontTraitMask mask = 0;
         if ((item.style & 1) > 0) {
@@ -102,42 +135,11 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
               NSBackgroundColorAttributeName:[NSColor clearColor],
               NSForegroundColorAttributeName:color,
                        NSShadowAttributeName:shadow}];
-//        ,
-//    NSStrokeWidthAttributeName:@-4.0,
-//    NSStrokeColorAttributeName:[NSColor blackColor]
         
         [attrStr appendAttributedString:str];
     }
     
     [self.textStorage setAttributedString:attrStr];
-    
-    // CGFloat width = self.frame.size.width;
-    // NSSize sz = [self sizeForWidth:FLT_MAX height:FLT_MAX];
-//
-//    NSLog(@"height:%lf", height);
-    // NSPoint pt = [self frame].origin;
-    // [self setFrame:NSMakeRect(pt.x,pt.y,sz.width, sz.height)];
-}
-
-- (void)mouseDown:(NSEvent *)event {
-    if (self.superview != NULL) {
-        [self.superview mouseDown:event];
-    }
-}
-
-- (void)mouseDragged:(NSEvent *)event {
-    if (self.superview != NULL)
-        [self.superview mouseDragged:event];
-}
-
-- (void)mouseUp:(NSEvent *)event {
-    if (self.superview != NULL)
-        [self.superview mouseUp:event];
-}
-
-- (void)mouseMoved:(NSEvent *)event {
-    if (self.superview != NULL)
-        [self.superview mouseMoved:event];
 }
 
 - (BOOL)canBecomeKeyView {

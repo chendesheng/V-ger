@@ -12,8 +12,6 @@ import (
 func (m *Movie) uievents() {
 	log.Print("movie uievents")
 
-	m.w.InitEvents()
-
 	m.w.FuncAudioMenuClicked = append(m.w.FuncAudioMenuClicked, func(i int) {
 		go func() {
 			log.Printf("Audio menu click:%d", i)
@@ -158,12 +156,6 @@ func (m *Movie) uievents() {
 	})
 
 	chVolume := make(chan struct{})
-
-	m.w.FuncOnFullscreenChanged = append(m.w.FuncOnFullscreenChanged, func(b bool) {
-		if m.c != nil {
-			m.seekPlayingSubs(m.c.GetTime(), true)
-		}
-	})
 
 	m.w.FuncMouseWheelled = append(m.w.FuncMouseWheelled, func(deltaY float64) {
 		if deltaY == 0 {

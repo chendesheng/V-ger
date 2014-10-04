@@ -22,14 +22,18 @@
     // NSLog(@"windowWillEnterFullScreen");
     [w->glView hideCursor];
     [w->glView hideProgress];
+
+    // onFullscreenChanged(0);
+    // [w->glView hideAllTexts];
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
     Window* w = (Window*)[notification object];
     // [w->glView hideProgress];
 
-    onFullscreenChanged(1);
-
+    // onFullscreenChanged(1);
+    [w updateRoundCorner];
+    [w->glView showAllTexts];
     // [w->glView->titleView setFrame:NSMakeRect(0, 0, 0, 0)];
 }
 // - (void)windowWillExitFullScreen:(NSNotification *)notification
@@ -41,20 +45,22 @@
 {
     Window* w = (Window*)[notification object];
 
-    // [w->glView hideCursor];
-    // [w->glView hideProgress];
+    // [w->glView hideAllTexts];
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
     Window* w = (Window*)[notification object];
-
     [w updateRoundCorner];
 
     w->customAspectRatio = self->savedAspectRatio;
 
-    onFullscreenChanged(0);
+    [w->glView showAllTexts];
+}
+- (void)windowDidResize:(NSNotification *)notification {
+    Window* w = (Window*)[notification object];
+    [w updateRoundCorner];
 
-    // [w->glView->titleView setFrame:NSMakeRect(0, w.frame.size.height-22, w.frame.size.width, 0)];
+    [w->glView showAllTexts];
 }
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
     // NSLog(@"windowWillResize");
@@ -69,17 +75,21 @@
 	// r = [w frameRectForContentRect:r];
 
     // [w->glView->blurView setHidden:YES];
-
+    // [w->glView hideAllTexts];
 	return r.size;
+}
+
+-(void)windowWillStartLiveResize:(NSNotification *)notification {
+    Window* w = (Window*)[notification object];
+    [w updateRoundCorner];
+    
+    // [w->glView hideAllTexts];
 }
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
     [w updateRoundCorner];
 
-    // CGFloat h = w->glView->blurView.frame.size.height;
-    // [w->glView->blurView setFrame:NSMakeRect(0, w.frame.size.height-h, w.frame.size.width, h)];
-    
-    onFullscreenChanged(0);
+    [w->glView showAllTexts];
 }
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)newFrame {
     // NSLog(@"windowWillUseStandardFrame:%lf,%lf,%lf,%lf", newFrame.origin.x, newFrame.origin.y, newFrame.size.width, newFrame.size.height);

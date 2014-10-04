@@ -14,7 +14,7 @@ var (
 	OnTimerTick         func()
 	OnKeyDown           func(int) bool
 	OnProgressChanged   func(int, float64)
-	OnFullscreenChanged func(bool)
+	OnFullscreenChanged func(int)
 	OnWillTerminate     func()
 	OnOpenOpenPanel     func()
 	OnCloseOpenPanel    func(string)
@@ -79,9 +79,9 @@ func goOnProgressChanged(typ int, position float64) {
 }
 
 //export goOnFullscreenChanged
-func goOnFullscreenChanged(b int) {
+func goOnFullscreenChanged(typ int) {
 	if OnFullscreenChanged != nil {
-		OnFullscreenChanged(b != 0)
+		OnFullscreenChanged(typ)
 	}
 }
 

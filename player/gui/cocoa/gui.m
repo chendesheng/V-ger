@@ -234,18 +234,6 @@ void* newWindow(char* title, int width, int height) {
     rv.layer.cornerRadius=4.1;
     rv.layer.masksToBounds=YES;
 
-
-
-    TextView* tv = [[TextView alloc] initWithFrame:NSMakeRect(0, 30, width, 0)];
-    [v addSubview:tv];
-    [tv setAutoresizingMask:NSViewWidthSizable];
-    [v setTextView:tv];
-
-    TextView* tv2 = [[TextView alloc] initWithFrame:NSMakeRect(0, 30, width, 0)];
-    [v addSubview:tv2];
-    [tv2 setAutoresizingMask:NSViewWidthSizable];
-    [v setTextView2:tv2];
-
     BlurView* bv = [[BlurView alloc] initWithFrame:NSMakeRect(0,0,width,22)];
     // bv.tintColor = [NSColor whiteColor];
     [bv setAutoresizingMask:NSViewWidthSizable|NSViewMaxYMargin];
@@ -377,9 +365,9 @@ void showWindowBufferInfo(void* ptr, char* speed, double percent) {
     Window* w = (Window*)ptr;
     [w->glView showBufferInfo:speed bufferPercent:percent];
 }
-void* showText(void* ptr, SubItem* items, int length, int position, double x, double y) {
+void* showText(void* ptr, SubItem* item) {
     Window* w = (Window*)ptr;
-    return [w->glView showText:items length:length position:position x:x y:y];
+    return [w->glView showText:item];
 }
 void hideText(void* ptrWin, void* ptrText) {
     Window* w = (Window*)ptrWin;

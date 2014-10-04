@@ -14,7 +14,6 @@ var w *Window // current window
 type window struct {
 	FuncTimerTick           []func()
 	FuncKeyDown             []func(int) bool
-	FuncOnFullscreenChanged []func(bool)
 	FuncOnProgressChanged   []func(int, float64)
 	FuncAudioMenuClicked    []func(int)
 	FuncSubtitleMenuClicked []func(int)
@@ -238,17 +237,7 @@ func (w *Window) initEvents() {
 	}()
 }
 
-func (w *Window) InitEvents() {
-	w.FuncOnFullscreenChanged = append(w.FuncOnFullscreenChanged, func(b bool) {
-		if w.currentMessagePtr != 0 {
-			w.HideText(w.currentMessagePtr)
-			w.currentMessagePtr = w.ShowText(w.currentMessage)
-		}
-	})
-}
-
 func (w *Window) ClearEvents() {
-	w.FuncOnFullscreenChanged = nil
 	w.FuncOnProgressChanged = w.FuncOnProgressChanged[:1]
 	w.FuncKeyDown = nil
 	w.FuncAudioMenuClicked = nil
@@ -386,6 +375,7 @@ func (w *Window) HideMessage() {
 		w.currentMessage = nil
 		w.currentMessagePtr = 0
 	}
+	w.currentMessage = nil
 }
 
 func (w *Window) SendHideMessage() {
@@ -586,12 +576,7 @@ func onProgressChanged(typ int, position float64) {
 	}
 }
 
-func onFullscreenChanged(b bool) {
-	if w != nil {
-		for _, fn := range w.FuncOnFullscreenChanged {
-			fn(b)
-		}
-	}
+func onFullscreenChanged(typ int) {
 }
 
 func onMenuClicked(typ int, tag int) {
