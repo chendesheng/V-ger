@@ -91,7 +91,7 @@ func getNextEpisode(filename string) (bool, string) {
 
 func (m *Movie) playNextEpisode() bool {
 
-	if ok, file := getNextEpisode(m.filename); ok {
+	if ok, file := getNextEpisode(m.Filename); ok {
 		log.Print("playNextEpisode:", file)
 
 		go func() {

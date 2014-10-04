@@ -19,6 +19,8 @@ type window struct {
 	FuncSubtitleMenuClicked []func(int)
 	FuncMouseWheelled       []func(float64)
 
+	chAlert chan string
+
 	ChanDraw     chan []byte
 	ChanShowText chan SubItemArg
 	ChanSetSize  chan argSize
@@ -199,6 +201,7 @@ func NewWindow(title string, width, height int) *Window {
 
 			chCursor:         make(chan struct{}),
 			chCursorAutoHide: make(chan struct{}),
+			chAlert:          make(chan string),
 		},
 	}
 
@@ -493,6 +496,8 @@ func onTimerTick() {
 			}
 		case <-w.ChanDestoryRender:
 			w.DestoryRender()
+		case str := <-w.chAlert:
+			w.Alert(str)
 		default:
 		}
 
@@ -608,4 +613,9 @@ func onMouseMove(x, y int) {
 	if w != nil {
 		w.SendSetCursor(true)
 	}
+}
+
+func (w *Window) SendAlert(str string) {
+	w.chCursorAutoHide <- struct{}{}
+	w.chAlert <- str
 }

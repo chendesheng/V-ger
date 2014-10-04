@@ -32,7 +32,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 		return AVFormatContext{}, "", err
 	}
 
-	m.httpBuffer = NewBuffer(size)
+	m.httpBuffer = newBuffer(size)
 
 	buf := AVObject{}
 	buf.Malloc(1024 * 64)

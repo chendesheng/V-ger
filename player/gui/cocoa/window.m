@@ -38,7 +38,9 @@
 	[self->glView setNeedsDisplay:b];
 }
 - (void)timerTick:(NSEvent *)event {
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	onTimerTick((void*)self);
+    [pool drain];
 }
 - (void)makeCurrentContext {
     [NSOpenGLContext clearCurrentContext];
@@ -96,4 +98,8 @@
     rv.layer.masksToBounds=YES;
 }
 
+-(void)close {
+    [super close];
+    [NSApp terminate:nil];
+}
 @end

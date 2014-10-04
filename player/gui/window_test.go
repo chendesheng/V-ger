@@ -269,3 +269,11 @@ func TestTextView2(t *testing.T) {
 
 	run()
 }
+
+func TestAlert(t *testing.T) {
+	runtime.LockOSThread()
+
+	w := NewWindow("title", 390, 120)
+	go w.SendAlert("test")
+	run()
+}

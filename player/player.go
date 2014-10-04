@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -12,14 +13,14 @@ import (
 	"vger/filelock"
 	"vger/logger"
 	"vger/player/gui"
-	. "vger/player/movie"
+	"vger/player/movie"
 	"vger/util"
 )
 
 type appDelegate struct {
 	sync.Mutex
 	w *gui.Window
-	m *Movie
+	m *movie.Movie
 	t time.Duration
 }
 
@@ -27,7 +28,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 
 	if app.w == nil {
-		app.w = gui.NewWindow("V'ger", 640, 360)
+		app.w = gui.NewWindow("V'ger", 390, 120) // default window size copy from QuickTime player
 	}
 
 	go func() {
@@ -39,7 +40,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 			app.m.Close()
 		}
 
-		app.m = NewMovie()
+		app.m = movie.New()
 
 		for i := 0; i < 3; i++ {
 			err := app.m.Open(app.w, filename)
@@ -48,12 +49,15 @@ func (app *appDelegate) OpenFile(filename string) bool {
 				app.m.PlayAsync()
 				break
 			} else {
-				app.m = nil
+				app.m.Reset()
 
-				if i < 2 {
+				if i >= 2 {
 					log.Print(err)
-				} else {
-					log.Fatal(err)
+					if len(app.m.Filename) > 0 {
+						filename = app.m.Filename
+					}
+					app.w.SendAlert(fmt.Sprintf("Coundn't open \"%s\".", filename))
+					break
 				}
 			}
 		}

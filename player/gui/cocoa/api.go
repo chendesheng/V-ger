@@ -18,6 +18,13 @@ func GetScreenSize() (int, int) {
 	return int(sz.width), int(sz.height)
 }
 
+func (w NativeWindow) Alert(str string) {
+	cstr := C.CString(str)
+	defer C.free(unsafe.Pointer(cstr))
+
+	C.alert(unsafe.Pointer(w), cstr)
+}
+
 type NativeWindow uintptr
 
 func (NativeWindow) HideSubtitleMenu() {
@@ -179,4 +186,8 @@ func (w NativeWindow) SetVolumeDisplay(b bool) {
 	} else {
 		C.setVolumeDisplay(unsafe.Pointer(w), 0)
 	}
+}
+
+func (w NativeWindow) Close() {
+	C.closeWindow(unsafe.Pointer(w))
 }

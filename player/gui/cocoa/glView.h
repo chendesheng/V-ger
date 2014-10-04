@@ -42,6 +42,7 @@
 -(void)showStartupView;
 
 -(void)showProgress;
+-(void)showTitle;
 -(void)hideProgress;
 -(void)showBufferInfo:(char*)speed bufferPercent:(double)percent;
 -(void)showCursor;

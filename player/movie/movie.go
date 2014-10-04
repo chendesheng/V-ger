@@ -44,7 +44,7 @@ type Movie struct {
 	chProgress chan time.Duration
 	chSpeed    chan float64
 
-	filename string
+	Filename string
 	seeking  *Seeking
 }
 
@@ -93,7 +93,7 @@ type seekArg struct {
 	isEnd bool
 }
 
-func NewMovie() *Movie {
+func New() *Movie {
 	log.Print("New movie")
 
 	m := &Movie{}
@@ -105,7 +105,7 @@ func (m *Movie) Reset() {
 	m.quit = make(chan struct{})
 	m.chProgress = make(chan time.Duration)
 	m.finishClose = make(chan bool)
-	m.filename = ""
+	m.Filename = ""
 	m.a = nil
 	m.v = nil
 	m.p = nil
@@ -168,6 +168,8 @@ func setBufferCapacity(buf *buffer, duration time.Duration) {
 }
 
 func (m *Movie) setupContext(file string) (filename string, duration time.Duration, err error) {
+	log.Print("setupContext")
+
 	var ctx AVFormatContext
 
 	if strings.HasPrefix(file, "http://") ||
@@ -182,7 +184,6 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 
 		ctx = NewAVFormatContext()
 		if err = ctx.OpenInput(file); err != nil {
-			log.Fatal(err)
 			return
 		}
 	}
@@ -217,7 +218,7 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 	if err != nil {
 		return
 	}
-	m.filename = filename
+	m.Filename = filename
 
 	if m.httpBuffer != nil {
 		setBufferCapacity(m.httpBuffer, duration)

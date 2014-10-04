@@ -290,7 +290,7 @@ void* newWindow(char* title, int width, int height) {
 
 
     StartupView* sv = [[StartupView alloc] initWithFrame:[v frame]];
-    [v addSubview:sv positioned:NSWindowBelow relativeTo:bv];
+    [v addSubview:sv positioned:NSWindowAbove relativeTo:bv];
     [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
     [v setStartupView:sv];
@@ -455,4 +455,21 @@ void setVolumeDisplay(void* wptr, int show) {
     } else {
         [bv2 setHidden:YES];
     }
+}
+
+void alert(void* wptr, char* str) {
+    Window* w = (Window*)wptr;
+    [w setDelegate:nil];  //remove delegate prevent hide title bar
+    [w->glView showTitle];
+
+    NSAlert* alert = [[NSAlert alloc] init];
+    [alert setMessageText:[NSString stringWithUTF8String:str]];
+    [alert setAlertStyle:NSCriticalAlertStyle];
+
+    [alert beginSheetModalForWindow:w modalDelegate:w didEndSelector:@selector(close) contextInfo:nil];
+}
+
+void closeWindow(void* wptr) {
+    Window* w = (Window*)wptr;
+    [w close];
 }

@@ -3,9 +3,14 @@
 
 @implementation Application
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
+     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
      NSLog(@"application openFile: %@",filename);
 	const char *cfilename = [filename UTF8String];
-	return onOpenFile(cfilename) == 1;
+	BOOL b = onOpenFile(cfilename) == 1;
+
+     [pool drain];
+     return b;
 }
 
 -(void)searchSubtitleMenuItemClick:(id)sender {
@@ -49,5 +54,8 @@
      if (onOpenFile(cstr) != 1) {
           //
      }
+}
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app {
+     return YES;
 }
 @end

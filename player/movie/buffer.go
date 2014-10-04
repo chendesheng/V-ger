@@ -35,7 +35,7 @@ func min(a, b int64) int64 {
 		return b
 	}
 }
-func NewBuffer(size int64) *buffer {
+func newBuffer(size int64) *buffer {
 	log.Print("NewBuffer:", size)
 
 	b := &buffer{}

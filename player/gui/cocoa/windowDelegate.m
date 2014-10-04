@@ -4,11 +4,6 @@
 @implementation WindowDelegate
 
 
-- (void)windowWillClose:(id)sender
-{
-    [NSApp terminate:nil];
-}
-
 - (void)windowWillEnterFullScreen:(NSNotification *)notification
 {
     NSScreen *mainScreen = [NSScreen mainScreen];

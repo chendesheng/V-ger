@@ -104,6 +104,10 @@
 }
 -(void)showProgress {
     [progressView setHidden:NO];
+    [self showTitle];
+}
+
+-(void)showTitle {
     [titleView setHidden:NO];
 
     NSView* target = [self superview];
@@ -111,7 +115,7 @@
         if (v != target) {
             [v setHidden:NO];
         }
-    }
+    }    
 }
 - (void)mouseMoved:(NSEvent *)event {
      NSPoint mouse = [NSEvent mouseLocation];
@@ -215,7 +219,6 @@
 
     BOOL secondSub = NO;
     if (align == 10) {
-        NSLog(@"second sub");
         align = 2;
         secondSub = YES;
     }

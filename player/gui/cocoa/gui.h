@@ -21,10 +21,10 @@ typedef struct CSize {
 	int height;
 } CSize;
 CSize getScreenSize();
+void alert(void*, char*);
 
 void initialize();
 void pollEvents();
-
 void* newWindow(char*, int, int);
 void showWindow(void*);
 int getWindowWidth(void*);
@@ -37,6 +37,7 @@ void makeWindowCurrentContext(void*);
 void windowHideStartupView(void*);
 void windowShowStartupView(void*);
 void windowToggleFullScreen(void*);
+void closeWindow(void*);
 
 void showWindowProgress(void*,char*,char*,double);
 void showWindowBufferInfo(void*, char*, double);
