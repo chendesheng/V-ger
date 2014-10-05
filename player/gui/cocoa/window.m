@@ -5,14 +5,12 @@
 	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask 
 		| NSMiniaturizableWindowMask | NSResizableWindowMask;
 
-    // NSRect rt = [super contentRectForFrameRect:NSMakeRect(0,0,w,h)];
     self = [super initWithContentRect:NSMakeRect(0,0,w,h-22)
     	styleMask:styleMask
     	backing:NSBackingStoreBuffered
       	defer:YES];
 
     [self setTitle:title];
-    // [self setContentAspectRatio:NSMakeSize(w, h)];
     self->customAspectRatio = NSMakeSize(w, h);
     [self setHasShadow:YES];
     [self setContentMinSize:NSMakeSize(500, 500*h/w)];
@@ -20,7 +18,6 @@
 	[self setRestorable:NO];
     [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 
-    // [self setBackgroundColor:[NSColor clearColor]];
     [self setOpaque:YES];
 
     [self center];
@@ -61,36 +58,14 @@
     }
 
     [audioMenuItem setState:NSOnState];
-    onMenuClicked(MENU_AUDIO, [audioMenuItem tag]);
+    onMenuClicked(MENU_AUDIO, (int)[audioMenuItem tag]);
 }
 - (void)subtitleMenuItemClick:(id)sender {
-    // NSLog(@"subtitleMenuItemClick");
-    // NSMenuItem* subtitleMenuItem = (NSMenuItem*)sender;
-    // if ([subtitleMenuItem state] == NSOnState) {
-    //     [subtitleMenuItem setState:NSOffState];
-    //     onSubtitleMenuClicked(self, [subtitleMenuItem tag], 0);
-    //     return;
-    // }
-
-    // NSMenu *menu = [[subtitleMenuItem parentItem] submenu];
-    // int cnt = 0;
-    // for (int i = 0; i < [menu numberOfItems]; i++) {
-    //     NSMenuItem *item = [menu itemAtIndex:i];
-    //     if ([item state] == NSOnState) {
-    //         cnt++;
-    //     }
-    // }
-    // if (cnt == 2) {
-    //     return;
-    // } else {
-    //     [subtitleMenuItem setState:NSOnState];
-    //     onSubtitleMenuClicked(self, [subtitleMenuItem tag], 1);
-    // }
     NSMenuItem* subtitleMenuItem = (NSMenuItem*)sender;
     if ([subtitleMenuItem state] == NSOnState)
-        onMenuClicked(MENU_SUBTITLE, [subtitleMenuItem tag]);
+        onMenuClicked(MENU_SUBTITLE, (int)[subtitleMenuItem tag]);
     else
-        onMenuClicked(MENU_SUBTITLE, [subtitleMenuItem tag]);
+        onMenuClicked(MENU_SUBTITLE, (int)[subtitleMenuItem tag]);
 }
 - (void)updateRoundCorner {
     NSView* rv = [[self contentView] superview];

@@ -15,4 +15,6 @@
 - (void)timerTick:(NSEvent *)event;
 - (void)makeCurrentContext;
 - (void)updateRoundCorner;
+- (void)audioMenuItemClick:(id)sender;
+- (void)subtitleMenuItemClick:(id)sender;
 @end

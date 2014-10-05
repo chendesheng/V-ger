@@ -38,7 +38,7 @@
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification
 {
-    Window* w = (Window*)[notification object];
+//    Window* w = (Window*)[notification object];
 
     // [w->glView hideAllTexts];
 }

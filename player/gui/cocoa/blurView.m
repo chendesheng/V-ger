@@ -78,7 +78,8 @@
     
     // It's important to set the layer to mask to its bounds, otherwise the whole parent view might get blurred
     [self.layer setMasksToBounds:YES];
-    
+
+#ifdef __MAC_10_9
     // To apply CIFilters on OS X 10.9, we need to set the property accordingly:
     if ([self respondsToSelector:@selector(setLayerUsesCoreImageFilters:)]) {
         BOOL flag = YES;
@@ -87,7 +88,8 @@
         [inv setArgument:&flag atIndex:2];
         [inv invokeWithTarget:self];
     }
-    
+#endif
+
     // Set the layer to redraw itself once it's size is changed
     [self.layer setNeedsDisplayOnBoundsChange:YES];
     
