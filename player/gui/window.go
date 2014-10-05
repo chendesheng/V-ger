@@ -573,7 +573,7 @@ func onKeyDown(keycode int) bool {
 	return ret
 }
 
-func onProgressChanged(typ int, position float64) {
+func onProgressChange(typ int, position float64) {
 	if w != nil {
 		for _, fn := range w.FuncOnProgressChanged {
 			fn(typ, position)
@@ -581,10 +581,7 @@ func onProgressChanged(typ int, position float64) {
 	}
 }
 
-func onFullscreenChanged(typ int) {
-}
-
-func onMenuClicked(typ int, tag int) {
+func onMenuClick(typ int, tag int) {
 	if w != nil {
 		switch typ {
 		case 0:

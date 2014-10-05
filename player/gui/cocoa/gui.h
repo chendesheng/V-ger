@@ -59,15 +59,14 @@ void setVolumeDisplay(void*, int);
 
 //callbacks
 void onMouseMove();
-void onMenuClicked(int, int);
+void onMenuClick(int, int);
 void onOpenOpenPanel();
 void onCloseOpenPanel(char*);
 void onDraw();
 void onTimerTick();
 int onKeyDown(int);
 void onMouseWheel(double);
-void onProgressChanged(int, double);
-void onFullscreenChanged(int);
+void onProgressChange(int, double);
 int onOpenFile(const char*);
 void onWillTerminate();
 

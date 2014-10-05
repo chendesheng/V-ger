@@ -58,4 +58,11 @@
 
     [super drawRect:dirtyRect];
 }
+
+
+-(void)setVolume:(int)volume {
+    _volume = volume;
+    [self setNeedsDisplay:YES];
+    return;
+}
 @end

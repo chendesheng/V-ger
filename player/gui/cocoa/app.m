@@ -3,18 +3,16 @@
 
 @implementation Application
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
-     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-
-     NSLog(@"application openFile: %@",filename);
-	const char *cfilename = [filename UTF8String];
-	BOOL b = onOpenFile(cfilename) == 1;
-
-     [pool drain];
-     return b;
+     @autoreleasepool {
+         NSLog(@"application openFile: %@",filename);
+         const char *cfilename = [filename UTF8String];
+         BOOL b = onOpenFile(cfilename) == 1;
+         return b;
+     }
 }
 
 -(void)searchSubtitleMenuItemClick:(id)sender {
-	onMenuClicked(MENU_SEARCH_SUBTITLE, 0);
+	onMenuClick(MENU_SEARCH_SUBTITLE, 0);
 }
 
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {
@@ -57,5 +55,11 @@
 }
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app {
      return YES;
+}
+
+- (void)timerTick:(NSEvent *)event {
+    @autoreleasepool {
+     	onTimerTick((void*)self);
+     }
 }
 @end

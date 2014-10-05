@@ -2,23 +2,19 @@
 
 #ifndef COCOA_TEST
 	#include "_cgo_export.h"
-	inline void onDraw(void* wptr) {
-		goOnDraw(wptr);
+	inline void onDraw() {
+		goOnDraw();
 	}
-	inline void onTimerTick(void* wptr) {
-		goOnTimerTick(wptr);
+	inline void onTimerTick() {
+		goOnTimerTick();
 	}
 
 	inline int onKeyDown(int key) {
 		return goOnKeyDown(key);
 	}
 
-	inline void onProgressChanged(int typ, double position) {
-		goOnProgressChanged(typ, position);
-	}
-
-	inline void onFullscreenChanged(int b) {
-		goOnFullscreenChanged(b);
+	inline void onProgressChange(int typ, double position) {
+		goOnProgressChange(typ, position);
 	}
 
 	inline int onOpenFile(const char* file) {
@@ -44,28 +40,29 @@
 	inline void onMouseMove() {
 		goOnMouseMove();
 	}
-	inline void onMenuClicked(int type, int tag) {
-		goOnMenuClicked(type, tag);
+	inline void onMenuClick(int type, int tag) {
+		goOnMenuClick(type, tag);
 	}
 #else
-	inline void onDraw(void* wptr) {
+#include <stdio.h>
+    inline void onDraw() {
 	//	goOnDraw(wptr);
 	}
-	inline void onTimerTick(void* wptr) {
-	//	goOnTimerTick(wptr);
+	inline void onTimerTick() {
+//        printf("onTimerTick");
 	}
 
 	inline int onKeyDown(int key) {
-	//	return goOnKeyDown(key);
+//        printf("onKeyDown:%x\n", key);
+//        windowHideStartupView(w);
+//        setVolumeDisplay(w, 1);
 	    return 0;
 	}
 
-	inline void onProgressChanged(int typ, double position) {
-	//	goOnProgressChanged(typ, position);
+	inline void onProgressChange(int typ, double position) {
 	}
 
 	inline void onFullscreenChanged(int b) {
-	//	goOnFullscreenChanged(b);
 	}
 
 	inline int onOpenFile(const char* file) {
@@ -89,10 +86,10 @@
 	//	goOnMouseWheel(deltaY);
 	}
 
-	inline void onMouseMove() {
-	//	goOnMouseMove();
+	inline void onMouseMove(void* w) {
+        showCursor(w);
 	}
-	inline void onMenuClicked(int type, int tag) {
-	//	goOnMenuClicked(type, tag);
+	inline void onMenuClick(int type, int tag) {
+        printf("onMenuClick: %d %d\n", type, tag);
 	}
 #endif

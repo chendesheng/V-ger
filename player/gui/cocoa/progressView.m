@@ -4,13 +4,13 @@
 - (id)initWithFrame:(NSRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self->leftString = @"00:00:00";
-        self->rightString = @"00:00:00";
-        self->percent = 0;
-        self->percent2 = 0;
-        self->speedString = @"";
-        self->paddingLeft = 0;
-        self->titleString = @"";
+        _leftString = @"00:00:00";
+        _rightString = @"00:00:00";
+        _percent = 0;
+        _percent2 = 0;
+        _speedString = @"";
+        _paddingLeft = 0;
+        _titleString = @"";
     }
     
     return self;
@@ -35,54 +35,54 @@
 
     CGFloat stringWidth = 60;
 
-    if ([self->speedString length] > 0) {
-        self->paddingLeft = 50;
+    if ([_speedString length] > 0) {
+        _paddingLeft = 50;
     } else {
-        self->paddingLeft = 0;
+        _paddingLeft = 0;
     }
 
-    CGFloat position = (dirtyRect.size.width-2*stringWidth-self->paddingLeft)*(self->percent);
-    CGFloat position2 = (dirtyRect.size.width-2*stringWidth-self->paddingLeft)*(self->percent2);
+    CGFloat position = (dirtyRect.size.width-2*stringWidth-_paddingLeft)*(_percent);
+    CGFloat position2 = (dirtyRect.size.width-2*stringWidth-_paddingLeft)*(_percent2);
     
-    NSSize textSize = [self->leftString sizeWithAttributes:attr];
+    NSSize textSize = [_leftString sizeWithAttributes:attr];
     CGFloat textY = (progressHeight-13)/2;
-    [self->leftString drawAtPoint:NSMakePoint(stringWidth-4-textSize.width+self->paddingLeft,textY) withAttributes:attr];
-    [self->rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-stringWidth+4, textY) withAttributes:attr];
+    [_leftString drawAtPoint:NSMakePoint(stringWidth-4-textSize.width+_paddingLeft,textY) withAttributes:attr];
+    [_rightString drawAtPoint:NSMakePoint(dirtyRect.size.width-stringWidth+4, textY) withAttributes:attr];
 
-    NSSize titlesz = [self->titleString sizeWithAttributes:attrLarge];
-    [self->titleString drawAtPoint:NSMakePoint((dirtyRect.size.width-titlesz.width)/2, textY+knotHeight+3) withAttributes:attrLarge];
+    NSSize titlesz = [_titleString sizeWithAttributes:attrLarge];
+    [_titleString drawAtPoint:NSMakePoint((dirtyRect.size.width-titlesz.width)/2, textY+knotHeight+3) withAttributes:attrLarge];
 
-    if (self->paddingLeft > 0) {
-        NSSize sz = [self->speedString sizeWithAttributes:attr];
-        [self->speedString drawAtPoint:NSMakePoint(self->paddingLeft+stringWidth-4-textSize.width-sz.width-10, textY) withAttributes:attr];
+    if (_paddingLeft > 0) {
+        NSSize sz = [_speedString sizeWithAttributes:attr];
+        [_speedString drawAtPoint:NSMakePoint(_paddingLeft+stringWidth-4-textSize.width-sz.width-10, textY) withAttributes:attr];
     }
     
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
-    [self drawRoundedRect:NSMakeRect(stringWidth+self->paddingLeft, (progressHeight-barHeight)/2, dirtyRect.size.width-2*stringWidth-self->paddingLeft, barHeight) radius:2];
-    [self drawRoundedRect:NSMakeRect(stringWidth+self->paddingLeft, (progressHeight-barHeight)/2, position2, barHeight) radius:2];
+    [self drawRoundedRect:NSMakeRect(stringWidth+_paddingLeft, (progressHeight-barHeight)/2, dirtyRect.size.width-2*stringWidth-_paddingLeft, barHeight) radius:2];
+    [self drawRoundedRect:NSMakeRect(stringWidth+_paddingLeft, (progressHeight-barHeight)/2, position2, barHeight) radius:2];
 
     
     [[NSColor whiteColor] setFill];    
-    [self drawRoundedRect:NSMakeRect(stringWidth+self->paddingLeft, (progressHeight-barHeight)/2, position, barHeight) radius:2];
-    [self drawRoundedRect:NSMakeRect(position-knotWidth/2+stringWidth+self->paddingLeft, (progressHeight-knotHeight)/2, knotWidth, knotHeight) radius:5];
+    [self drawRoundedRect:NSMakeRect(stringWidth+_paddingLeft, (progressHeight-barHeight)/2, position, barHeight) radius:2];
+    [self drawRoundedRect:NSMakeRect(position-knotWidth/2+stringWidth+_paddingLeft, (progressHeight-knotHeight)/2, knotWidth, knotHeight) radius:5];
     
     [super drawRect:dirtyRect];
 }
 - (void)mouseDown:(NSEvent *)event {
     CGFloat stringWidth = 60;
     NSPoint pt = [self convertPoint:[event locationInWindow] fromView:nil];
-    NSRect bound = NSMakeRect(stringWidth+self->paddingLeft, 4, self.frame.size.width-2*stringWidth-self->paddingLeft, 22-8);
+    NSRect bound = NSMakeRect(stringWidth+_paddingLeft, 4, self.frame.size.width-2*stringWidth-_paddingLeft, 22-8);
     
     if (NSPointInRect(pt, bound)) {
-        self->percent = (pt.x-bound.origin.x)/bound.size.width;            
-        // if ((self->percent2>0) && (self->percent > self->percent2)) {
-        //     self->percent = self->percent2;
+        _percent = (pt.x-bound.origin.x)/bound.size.width;            
+        // if ((percent2>0) && (percent > percent2)) {
+        //     percent = percent2;
         // }
         [self setNeedsDisplay:YES];
         
-        onProgressChanged(0, self->percent);
-        onProgressChanged(1, self->percent);
-        double lastPercent = self->percent;
+        onProgressChange(0, _percent);
+        onProgressChange(1, _percent);
+        double lastPercent = _percent;
             
         bool keepOn = YES;
             
@@ -92,21 +92,21 @@
                 
             switch ([event type]) {
                 case NSLeftMouseDragged:
-                    self->percent = [self getPercent:event bound:bound];
+                    _percent = [self getPercent:event bound:bound];
 
-                    if (lastPercent != self->percent) {
-                        lastPercent = self->percent;
+                    if (lastPercent != _percent) {
+                        lastPercent = _percent;
                         [self setNeedsDisplay:YES];
-                        onProgressChanged(1, self->percent);
+                        onProgressChange(1, _percent);
                     }
                     break;
                 case NSLeftMouseUp:
-                    self->percent = [self getPercent:event bound:bound];
+                    _percent = [self getPercent:event bound:bound];
 
-                    if (lastPercent != self->percent) {
+                    if (lastPercent != _percent) {
                         [self setNeedsDisplay:YES];
                     }
-                    onProgressChanged(2, self->percent);
+                    onProgressChange(2, _percent);
                     keepOn = NO;
                     break;
                 default:
@@ -132,4 +132,15 @@
 - (void)mouseDragged:(NSEvent *)event{}
 - (void)mouseUp:(NSEvent *)event{}
 - (void)mouseMoved:(NSEvent *)event{}
+- (void)updatePorgressInfo:(NSString*)leftString rightString:(NSString*)rightString percent:(CGFloat)percent {
+    _leftString = leftString;
+    _rightString = rightString;
+    _percent = percent;
+    [self setNeedsDisplay:YES];
+}
+-(void)updateBufferInfo:(NSString*)speed bufferPercent:(CGFloat)percent {
+    _speedString = speed;
+    _percent2 = percent;
+    [self setNeedsDisplay:YES];
+}
 @end

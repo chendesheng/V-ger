@@ -64,22 +64,12 @@ NSMenuItem* getTopMenuByTitle(NSString* title) {
     return nil;
 }
 void hideMenuNSString(NSString* title) {
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    // NSMenu* menubar = [NSApp mainMenu];
-    // NSArray* menus = [menubar itemArray];
-    NSMenuItem* item = getTopMenuByTitle(title);
-    if (item != nil) {
-        [[NSApp mainMenu] removeItem:item];
+    @autoreleasepool {
+        NSMenuItem* item = getTopMenuByTitle(title);
+        if (item != nil) {
+            [[NSApp mainMenu] removeItem:item];
+        }
     }
-    // for (NSMenuItem* menu in menus) {
-    //     NSLog(@"compare %@ to %@", [menu title], title);
-    //     if ([menu title] == title) {
-    //         NSLog(@"remove menu item");
-    //         [menubar removeItem:menu];
-    //         break;
-    //     }
-    // }
-    [pool drain];
 }
 void hideSubtitleMenu() {
     hideMenuNSString(@"Subtitle");
@@ -90,88 +80,86 @@ void hideAudioMenu() {
 void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
     hideAudioMenu();
 
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    if (len > 0) {
-        NSWindow* w = (NSWindow*)wptr;
+    @autoreleasepool {
+        if (len > 0) {
+            NSWindow* w = (NSWindow*)wptr;
 
-        NSMenu *menubar = [NSApp mainMenu];
-        NSMenuItem* audioMenuItem = [[NSMenuItem new] autorelease];
-        [audioMenuItem setTitle:@"Audio"];
-        [menubar addItem:audioMenuItem];
-        NSMenu* audioMenu = [[NSMenu alloc] initWithTitle:@"Audio"];
+            NSMenu *menubar = [NSApp mainMenu];
+            NSMenuItem* audioMenuItem = [[NSMenuItem new] autorelease];
+            [audioMenuItem setTitle:@"Audio"];
+            [menubar addItem:audioMenuItem];
+            NSMenu* audioMenu = [[NSMenu alloc] initWithTitle:@"Audio"];
 
-        for (int i = 0; i < len; i++) {
-            char* name = names[i];
-            int tag = tags[i];
-            NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
-                action:@selector(audioMenuItemClick:) keyEquivalent:@""];
-            [item setTarget: w];
-            [item setTag: tag];
-            [audioMenu addItem:item];
+            for (int i = 0; i < len; i++) {
+                char* name = names[i];
+                int tag = tags[i];
+                NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
+                    action:@selector(audioMenuItemClick:) keyEquivalent:@""];
+                [item setTarget: w];
+                [item setTag: tag];
+                [audioMenu addItem:item];
 
-            if (tag == selected) {
-                [item setState: NSOnState];
+                if (tag == selected) {
+                    [item setState: NSOnState];
+                }
             }
+            [audioMenuItem setSubmenu:audioMenu];
         }
-        [audioMenuItem setSubmenu:audioMenu];
     }
-    [pool drain];
 }
 
 void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t selected1, int32_t selected2) {
     hideSubtitleMenu();
     
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    if (len > 0) {
-        NSWindow* w = (NSWindow*)wptr;
+    @autoreleasepool {
+        if (len > 0) {
+            NSWindow* w = (NSWindow*)wptr;
 
-        NSMenu* menubar = [NSApp mainMenu];
-        NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
-        [subtitleMenuItem setTitle:@"Subtitle"];
-        [menubar addItem:subtitleMenuItem];
-        NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
+            NSMenu* menubar = [NSApp mainMenu];
+            NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
+            [subtitleMenuItem setTitle:@"Subtitle"];
+            [menubar addItem:subtitleMenuItem];
+            NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
 
-        for (int i = 0; i < len; i++) {
-            char* name = names[i];
-            int tag = tags[i];
-            NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
-                action:@selector(subtitleMenuItemClick:) keyEquivalent:@""];
-            [item autorelease];
-            [item setTarget: w];
-            [item setTag: tag];
-            [subtitleMenu addItem:item];
+            for (int i = 0; i < len; i++) {
+                char* name = names[i];
+                int tag = tags[i];
+                NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
+                    action:@selector(subtitleMenuItemClick:) keyEquivalent:@""];
+                [item autorelease];
+                [item setTarget: w];
+                [item setTag: tag];
+                [subtitleMenu addItem:item];
 
-            if (tag == selected1 || tag == selected2) {
-                [item setState: NSOnState];
+                if (tag == selected1 || tag == selected2) {
+                    [item setState: NSOnState];
+                }
             }
+
+            [subtitleMenuItem setSubmenu:subtitleMenu];
         }
-
-        [subtitleMenuItem setSubmenu:subtitleMenu];
     }
-
-    [pool drain];
 }
 void setSubtitleMenuItem(int t1, int t2) {
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-
-    NSMenuItem* menu = getTopMenuByTitle(@"Subtitle");
-    for (NSMenuItem* item in [[menu submenu] itemArray]) {
-        int tag = (int)[item tag];
-        if (tag == t1 || tag == t2) {
-            [item setState:NSOnState];
-        } else {
-            [item setState:NSOffState];
+    @autoreleasepool {
+        NSMenuItem* menu = getTopMenuByTitle(@"Subtitle");
+        for (NSMenuItem* item in [[menu submenu] itemArray]) {
+            int tag = (int)[item tag];
+            if (tag == t1 || tag == t2) {
+                [item setState:NSOnState];
+            } else {
+                [item setState:NSOffState];
+            }
         }
-    }
     
-    [pool drain];
+    }
 }
 
 void setWindowTitle(void* wptr, char* title) {
     Window* w = (Window*)wptr;
 
     NSString* str = [NSString stringWithUTF8String:title];
-    w->glView->titleTextView.title = str;
+    [w setTitle:str];
 }
 
 void setWindowSize(void* wptr, int width, int height) {
@@ -191,126 +179,31 @@ void setWindowSize(void* wptr, int width, int height) {
 }
 
 void* newWindow(char* title, int width, int height) {
-	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+   	@autoreleasepool {
 
-	initialize();
+    	initialize();
 
-	Window* w = [[Window alloc] initWithTitle:[NSString stringWithUTF8String:title]
-		width:width height:height];
-	
-    WindowDelegate* wd = (WindowDelegate*)[[WindowDelegate alloc] init];
-	[w setDelegate:(id)wd];
+    	Window* w = [[Window alloc] initWithWidth:width height:height];
+        setWindowTitle(w, title);
+        
+        WindowDelegate* wd = (WindowDelegate*)[[WindowDelegate alloc] init];
+    	[w setDelegate:(id)wd];
 
-	GLView* v = [[GLView alloc] initWithFrame2:NSMakeRect(0,0,width,height)];
-    w->glView = v;
-	// [w setContentView:v];
-    // BlurView* topbv = [[BlurView alloc] initWithFrame:NSMakeRect(0, height-30,width,30)];
-    // w->titlebarView = topbv;
+        [w makeFirstResponder:w->glView];
 
-    NSView* rv = [[w contentView] superview];
+        NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/100.0 
+                                target:[NSApp delegate]
+                              selector:@selector(timerTick:)
+                              userInfo:nil
+                               repeats:YES];
 
-    v->frameView = rv;
+        [[NSRunLoop currentRunLoop] addTimer:renderTimer
+                                    forMode:NSDefaultRunLoopMode];
+        [[NSRunLoop currentRunLoop] addTimer:renderTimer
+                                    forMode:NSEventTrackingRunLoopMode]; //Ensure timer fires during resize
 
-    NSView* roundView = [[NSView alloc] initWithFrame:NSMakeRect(0,0,width,height)];
-    roundView.wantsLayer = YES;
-    roundView.layer.masksToBounds = YES;
-    roundView.layer.cornerRadius = 4.1;
-    [roundView addSubview:v];
-
-    [rv addSubview:roundView positioned:NSWindowBelow relativeTo:nil];
-
-    // [rv addSubview:topbv];
-
-
-    [roundView setFrame:NSMakeRect(0, 0, width, height)];
-    [roundView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-    [v setFrame:NSMakeRect(0,0,width,height)];
-    [v setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-
-
-    [rv setWantsLayer:YES];
-    rv.layer.cornerRadius=4.1;
-    rv.layer.masksToBounds=YES;
-
-    BlurView* bv = [[BlurView alloc] initWithFrame:NSMakeRect(0,0,width,22)];
-    // bv.tintColor = [NSColor whiteColor];
-    [bv setAutoresizingMask:NSViewWidthSizable|NSViewMaxYMargin];
-    ProgressView* pv = [[ProgressView alloc] initWithFrame:NSMakeRect(0,0,width,bv.frame.size.height)];
-    [bv addSubview:pv positioned:NSWindowBelow relativeTo:nil];
-    [pv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-    [v addSubview:bv positioned:NSWindowAbove relativeTo:nil];
-    [v setProgressView:pv];
-    v->blurView = bv;
-
-    BlurView* tiv = [[BlurView alloc] initWithFrame:NSMakeRect(0,height-22,width,22)];
-    [tiv setAutoresizingMask:NSViewWidthSizable|NSViewMinYMargin];
-    // tiv.tintColor = [NSColor whiteColor];
-    // [tiv setAutoresizingMask:NSViewMinXMargin | NSViewMaxXMargin | NSViewMinYMargin];
-    TitleTextView* ttv = [[TitleTextView alloc] initWithFrame:NSMakeRect(0,0,width,22)];
-    [tiv addSubview:ttv positioned:NSWindowBelow relativeTo:nil];
-    [ttv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-    // [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
-    // [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
-    [v addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
-    ttv.title = @"V'ger";
-    v->titleTextView = ttv;
-    v->titleView = tiv;
-
-    SpinningView* spv = [[SpinningView alloc] initWithFrame:NSMakeRect((width-50)/2, (height-50)/2, 50, 50)];
-    [spv setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];
-    [v addSubview:spv positioned:NSWindowAbove relativeTo:nil];
-    v->spinningView = spv;
-    [spv setHidden:YES];
-
-    BlurView* bv2 = [[BlurView alloc] initWithFrame:NSMakeRect((width-120)/2, (height-120)/2, 120, 120)];
-    [bv2 setBlurRadius:30.0];
-    [bv2 setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];    
-    bv2.wantsLayer = YES;
-    bv2.layer.masksToBounds = YES;
-    bv2.layer.cornerRadius = 4.1;
-    VolumeView* vv = [[VolumeView alloc] initWithFrame:NSMakeRect(0, 0, 120, 120)];
-    [vv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-    [v addSubview:bv2 positioned:NSWindowAbove relativeTo:spv];
-    [bv2 addSubview:vv];
-    v->volumeView = vv;
-    v->volumeView2 = bv2;
-    [bv2 setHidden:YES];
-
-    [w makeFirstResponder:v];
-    v->win = w;
-
-    // [v addSubview:bvPopup];
-    // [bvPopup setAutoresizingMask:NSViewWidthSizable];
-
-    // PopupView* ppv = [[PopupView alloc] initWithFrame:NSMakeRect(0,0,400,500)];
-    // [bvPopup addSubview:ppv];
-    // [ppv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-
-
-    StartupView* sv = [[StartupView alloc] initWithFrame:[v frame]];
-    [v addSubview:sv positioned:NSWindowAbove relativeTo:bv];
-    [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-
-    [v setStartupView:sv];
-    // [sv setNeedsDisplay:NO];
-
-    [w setTitle:@""];
-
-    NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/100.0 
-                            target:w
-                          selector:@selector(timerTick:)
-                          userInfo:nil
-                           repeats:YES];
-
-    [[NSRunLoop currentRunLoop] addTimer:renderTimer
-                                forMode:NSDefaultRunLoopMode];
-    [[NSRunLoop currentRunLoop] addTimer:renderTimer
-                                forMode:NSEventTrackingRunLoopMode]; //Ensure timer fires during resize
-
-
-	[pool drain];
-
-	return w;
+    	return w;
+    }
 }
 
 void showWindow(void* ptr) {
@@ -324,27 +217,11 @@ void makeWindowCurrentContext(void*ptr) {
     [w makeCurrentContext];
 }
 void pollEvents() {
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    [NSApp finishLaunching];
-
-    while(YES) {
-	    [pool drain];
-		pool = [[NSAutoreleasePool alloc] init];
-
-	    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-	                                        untilDate:[NSDate distantFuture]
-	                                        inMode:NSDefaultRunLoopMode
-	                                        dequeue:YES];
-	    [NSApp sendEvent:event];
-	}
-	// [NSApp activateIgnoringOtherApps:YES];
-    //[NSApp run];
-
-    [pool drain];
+    [NSApp run];
 }
 void refreshWindowContent(void*wptr) {
 	Window* w = (Window*)wptr;
-	[w setContentViewNeedsDisplay:YES];
+    [w->glView setNeedsDisplay:YES];
 }
 
 int getWindowWidth(void* ptr) {
@@ -357,11 +234,30 @@ int getWindowHeight(void* ptr) {
 }
 void showWindowProgress(void* ptr, char* left, char* right, double percent) {
     Window* w = (Window*)ptr;
-    [w->glView showProgress:left right:right percent:percent];
+    
+    NSString* leftStr;
+    if (strlen(left) == 0) {
+        leftStr = @"00:00:00";
+    } else {
+        leftStr = [[NSString stringWithUTF8String:left] retain];
+    }
+    NSString* rightStr;
+    if (strlen(left) == 0) {
+        rightStr = @"00:00:00";
+    } else {
+        rightStr = [[NSString stringWithUTF8String:left] retain];
+    }
+    [w->glView updatePorgressInfo:leftStr rightString:rightStr percent:percent];
 }
 void showWindowBufferInfo(void* ptr, char* speed, double percent) {
     Window* w = (Window*)ptr;
-    [w->glView showBufferInfo:speed bufferPercent:percent];
+    NSString* str;
+    if (strlen(speed) == 0) {
+        str = @"";
+    } else {
+        str = [[NSString stringWithUTF8String:speed] retain];
+    }
+    [w->glView updateBufferInfo:str bufferPercent:percent];
 }
 void* showText(void* ptr, SubItem* item) {
     Window* w = (Window*)ptr;
@@ -381,11 +277,11 @@ void windowShowStartupView(void* ptr) {
 }
 void showSpinning(void* ptr) {
     Window* w = (Window*)ptr;
-    [w->glView->spinningView setHidden:NO];
+    [w->glView setSpinningHidden:NO];
 }
 void hideSpinning(void* ptr) {
     Window* w = (Window*)ptr;
-    [w->glView->spinningView setHidden:YES];
+    [w->glView setSpinningHidden:YES];
 }
 void windowToggleFullScreen(void* ptr) {
     Window* w = (Window*)ptr;
@@ -396,12 +292,14 @@ void hideCursor(void* ptr) {
     Window* w = (Window*)ptr;
     [w->glView hideCursor];
     [w->glView hideProgress];
+    [w setTitleHidden:YES];
 }
 
 void showCursor(void* ptr) {
     Window* w = (Window*)ptr;
     [w->glView showCursor];
     [w->glView showProgress];
+    [w setTitleHidden:NO];
 }
 
 CSize getScreenSize() {
@@ -414,29 +312,18 @@ CSize getScreenSize() {
 
 void setVolume(void* wptr, int volume) {
     Window* w = (Window*)wptr;
-
-    w->glView->volumeView->_volume = volume;
-    [w->glView->volumeView setNeedsDisplay:YES];
+    [w->glView setVolume:volume];
 }
 
 void setVolumeDisplay(void* wptr, int show) {
     Window* w = (Window*)wptr;
-    BlurView* bv2 = w->glView->volumeView2;
-
-    if (show != 0) {
-        [bv2 setHidden:NO];
-        NSSize sz = w.frame.size;
-        [bv2 setFrame:NSMakeRect((sz.width-120)/2, (sz.height-120)/2, 120, 120)];
-        [w->glView->volumeView setNeedsDisplay:YES];
-    } else {
-        [bv2 setHidden:YES];
-    }
+    [w->glView setVolumeHidden:(show==0)];
 }
 
 void alert(void* wptr, char* str) {
     Window* w = (Window*)wptr;
     [w setDelegate:nil];  //remove delegate prevent hide title bar
-    [w->glView showTitle];
+    [w->glView showProgress];
 
     NSAlert* alert = [[NSAlert alloc] init];
     [alert setMessageText:[NSString stringWithUTF8String:str]];

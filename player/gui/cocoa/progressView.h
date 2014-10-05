@@ -1,13 +1,14 @@
 #import <Cocoa/Cocoa.h>
 #import "gui.h"
 @interface ProgressView : NSView {
-@public
-	NSString *titleString;
-    NSString *leftString;
-    NSString *rightString;
-    CGFloat percent;
-    CGFloat percent2;
-    NSString *speedString;
-    CGFloat paddingLeft;
+	NSString *_titleString;
+    NSString *_leftString;
+    NSString *_rightString;
+    CGFloat _percent;
+    CGFloat _percent2;
+    NSString *_speedString;
+    CGFloat _paddingLeft;
 }
+-(void)updatePorgressInfo:(NSString*)leftStr rightString:(NSString*)rightStr percent:(CGFloat)p;
+-(void)updateBufferInfo:(NSString*)speed bufferPercent:(CGFloat)p;
 @end

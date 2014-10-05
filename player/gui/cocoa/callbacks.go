@@ -6,25 +6,24 @@ import "C"
 import "unsafe"
 
 var (
-	OnMouseMove         func(int, int)
-	OnMenuClicked       func(int, int)
-	OnMouseWheel        func(float64, float64)
-	OnDrop              func(string)
-	OnDraw              func()
-	OnTimerTick         func()
-	OnKeyDown           func(int) bool
-	OnProgressChanged   func(int, float64)
-	OnFullscreenChanged func(int)
-	OnWillTerminate     func()
-	OnOpenOpenPanel     func()
-	OnCloseOpenPanel    func(string)
-	OnOpenFile          func(string) bool
+	OnMouseMove      func(int, int)
+	OnMenuClick      func(int, int)
+	OnMouseWheel     func(float64, float64)
+	OnDrop           func(string)
+	OnDraw           func()
+	OnTimerTick      func()
+	OnKeyDown        func(int) bool
+	OnProgressChange func(int, float64)
+	OnWillTerminate  func()
+	OnOpenOpenPanel  func()
+	OnCloseOpenPanel func(string)
+	OnOpenFile       func(string) bool
 )
 
-//export goOnMenuClicked
-func goOnMenuClicked(typ int, tag int) {
-	if OnMenuClicked != nil {
-		OnMenuClicked(typ, tag)
+//export goOnMenuClick
+func goOnMenuClick(typ int, tag int) {
+	if OnMenuClick != nil {
+		OnMenuClick(typ, tag)
 	}
 }
 
@@ -71,17 +70,10 @@ func goOnKeyDown(keycode int) C.int { //true if already handled
 	}
 }
 
-//export goOnProgressChanged
-func goOnProgressChanged(typ int, position float64) {
-	if OnProgressChanged != nil {
-		OnProgressChanged(typ, position)
-	}
-}
-
-//export goOnFullscreenChanged
-func goOnFullscreenChanged(typ int) {
-	if OnFullscreenChanged != nil {
-		OnFullscreenChanged(typ)
+//export goOnProgressChange
+func goOnProgressChange(typ int, position float64) {
+	if OnProgressChange != nil {
+		OnProgressChange(typ, position)
 	}
 }
 

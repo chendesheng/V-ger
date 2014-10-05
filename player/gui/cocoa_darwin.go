@@ -8,14 +8,13 @@ import "vger/player/gui/cocoa"
 func init() {
 	cocoa.OnMouseMove = onMouseMove
 	cocoa.OnDraw = onDraw
-	cocoa.OnFullscreenChanged = onFullscreenChanged
 	cocoa.OnKeyDown = onKeyDown
-	cocoa.OnMenuClicked = onMenuClicked
+	cocoa.OnMenuClick = onMenuClick
 	cocoa.OnMouseWheel = onMouseWheel
 	cocoa.OnOpenFile = onOpenFile
 	cocoa.OnOpenOpenPanel = onOpenOpenPanel
 	cocoa.OnCloseOpenPanel = onCloseOpenPanel
-	cocoa.OnProgressChanged = onProgressChanged
+	cocoa.OnProgressChange = onProgressChange
 	cocoa.OnTimerTick = onTimerTick
 }
 

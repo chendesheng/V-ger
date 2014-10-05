@@ -8,9 +8,8 @@
     self = [super init];
     if (self) {
         originalSize = frame.size;
-        // Initialization code here.
-        trackingArea = nil;
 
+        trackingArea = nil;
 
         NSOpenGLPixelFormatAttribute attrs[] = {
      
@@ -42,13 +41,39 @@
         [self addSubview:textView2];
 
         [self updateTrackingAreas];
+        
+        CGFloat width = frame.size.width;
+        CGFloat height = frame.size.height;
+        
+        progressView = [[ProgressView alloc] init];
+        bvProgressView = [[BlurView alloc] initWithView:progressView frame:NSMakeRect(0,0,width,22)];
+        [bvProgressView setAutoresizingMask:NSViewWidthSizable|NSViewMaxYMargin];
+        [self addSubview:bvProgressView positioned:NSWindowAbove relativeTo:nil];
+        
+        spinningView = [[SpinningView alloc] initWithFrame:NSMakeRect((width-50)/2, (height-50)/2, 50, 50)];
+        [spinningView setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];
+        [self addSubview:spinningView positioned:NSWindowAbove relativeTo:nil];
+        [spinningView setHidden:YES];
+        
+        volumeView = [[VolumeView alloc] init];
+        bvVolumeView = [[BlurView alloc] initWithView:volumeView frame:NSMakeRect((width-120)/2, (height-120)/2, 120, 120)];
+        [bvVolumeView setBlurRadius:30.0];
+        [bvVolumeView setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];
+        bvVolumeView.wantsLayer = YES;
+        bvVolumeView.layer.masksToBounds = YES;
+        bvVolumeView.layer.cornerRadius = 4.1;
+        [self addSubview:bvVolumeView positioned:NSWindowAbove relativeTo:spinningView];
+        [bvVolumeView setHidden:YES];
+        
+        startupView = [[StartupView alloc] initWithFrame:self.frame];
+        [self addSubview:startupView positioned:NSWindowAbove relativeTo:bvProgressView];
+        [startupView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
     }
     
     return self;
 }
 
 - (void)prepareOpenGL{
-    // [[self openGLContext] makeCurrentContext];
     GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 }
@@ -74,12 +99,10 @@
 
 - (void)mouseDown:(NSEvent *)event {
     if (event.clickCount == 2) {
-        [win toggleFullScreen:nil];
-        // return;
+        [self.window toggleFullScreen:nil];
     }
 
-    [self hideCursor];
-    [self hideProgress];
+    hideCursor(self.window);
 }
 
 -(BOOL)mouseDownCanMoveWindow {
@@ -92,31 +115,13 @@
     currentCursor = [NSCursor arrowCursor];
 }
 -(void)hideProgress {
-    [titleView setHidden:YES];
     [progressView setHidden:YES];
-
-    NSView* target = [self superview];
-    for (NSView* v in [frameView subviews]) {
-        if (v != target) {
-            [v setHidden:YES];
-        }
-    }
 }
+
 -(void)showProgress {
     [progressView setHidden:NO];
-    [self showTitle];
 }
 
--(void)showTitle {
-    [titleView setHidden:NO];
-
-    NSView* target = [self superview];
-    for (NSView* v in [frameView subviews]) {
-        if (v != target) {
-            [v setHidden:NO];
-        }
-    }    
-}
 - (void)mouseMoved:(NSEvent *)event {
      NSPoint mouse = [NSEvent mouseLocation];
     if ([NSWindow windowNumberAtPoint:mouse belowWindowWithWindowNumber:0] == [self window].windowNumber) {
@@ -150,43 +155,11 @@
     }
 }
 
-- (void)keyUp:(NSEvent *)event {
+- (void)updatePorgressInfo:(NSString*)leftString rightString:(NSString*)rightString percent:(CGFloat)percent {
+    [progressView updatePorgressInfo:leftString rightString:rightString percent:percent];
 }
-
--(void)showProgress:(char*)left right:(char*)right percent:(double)percent {
-    ProgressView* pv = progressView;
-    
-    [pv->leftString autorelease];
-
-    if (strlen(left) == 0) {
-        pv->leftString = @"00:00:00";
-    } else {
-        pv->leftString = [[NSString stringWithUTF8String:left] retain];
-    }
-
-    [pv->rightString autorelease];
-
-    if (strlen(right) == 0) {
-        pv->rightString = @"00:00:00";
-    } else {
-        pv->rightString = [[NSString stringWithUTF8String:right] retain];
-    }
-
-    pv->percent = percent;
-    
-    [pv setNeedsDisplay:YES];
-}
--(void)showBufferInfo:(char*)speed bufferPercent:(double)percent {
-    ProgressView* pv = progressView;
-
-    [pv->speedString autorelease];
-    pv->speedString = [[NSString stringWithUTF8String:speed] retain];
-    pv->percent2 = percent;
-
-    [pv setNeedsDisplay:YES];
-}
--(void)setProgressView:(ProgressView*)pv {
-    progressView = pv;
+-(void)updateBufferInfo:(NSString*)speed bufferPercent:(CGFloat)percent {
+    [progressView updateBufferInfo:speed bufferPercent:percent];
 }
 
 -(TextView*)showText:(SubItem*)item {
@@ -286,7 +259,7 @@
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-    onDraw((void*)[self window]);
+    onDraw();
     [[self openGLContext] flushBuffer];
 }
 -(void)setStartupView:(StartupView*)sv {
@@ -318,11 +291,32 @@
         }
     }
 }
-// - (void)hideAllTexts {
-//     for (NSView* v in [self subviews]) {
-//         if ([v isKindOfClass:[TextView class]]) {
-//             [v setHidden:YES];
-//         }
-//     }
-// }
+- (void)setSpinningHidden:(BOOL)b {
+    [spinningView setHidden:b];
+}
+- (void)setVolume:(int)volume {
+    [volumeView setVolume:volume];
+}
+- (void)setVolumeHidden:(BOOL)b {
+    BlurView* bv = bvVolumeView;
+    [bv setHidden:b];
+    if (!b) {
+        NSSize sz = self.frame.size;
+        [bv setFrame:NSMakeRect((sz.width-120)/2, (sz.height-120)/2, 120, 120)];
+        [volumeView setNeedsDisplay:YES];
+    }
+}
 @end
+
+
+
+
+
+
+
+
+
+
+
+
+

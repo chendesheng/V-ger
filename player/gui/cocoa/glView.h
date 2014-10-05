@@ -10,27 +10,29 @@
 
 @interface GLView : NSOpenGLView {
     NSTrackingArea* trackingArea;
+    
     NSCursor* noneCursor;
+    NSCursor* currentCursor;
+    
     TextView* textView;
     TextView* textView2;
-    NSCursor* currentCursor;
+    
     StartupView* startupView;
+    
     NSSize originalSize;
-@public
-    BlurView* blurView;
+
     ProgressView* progressView;
-    BlurView* titleView;
-    TitleTextView* titleTextView;
-    NSView* frameView;
-    NSWindow* win;
+    BlurView* bvProgressView;
+    
     SpinningView* spinningView;
+    
     VolumeView* volumeView;
-    BlurView* volumeView2;
+    BlurView* bvVolumeView;
 }
 
 -(id)initWithFrame2:(NSRect)frame;
--(void)showProgress:(char*)left right:(char*)right percent:(double)percent;
--(void)setProgressView:(ProgressView*)pv;
+-(void)updatePorgressInfo:(NSString*)leftStr rightString:(NSString*)rightStr percent:(CGFloat)p;
+-(void)updateBufferInfo:(NSString*)speed bufferPercent:(CGFloat)p;
 
 -(TextView*)showText:(SubItem*)item;
 -(void)hideText:(TextView*)tv;
@@ -42,11 +44,12 @@
 -(void)showStartupView;
 
 -(void)showProgress;
--(void)showTitle;
 -(void)hideProgress;
--(void)showBufferInfo:(char*)speed bufferPercent:(double)percent;
 -(void)showCursor;
 -(void)hideCursor;
 
 -(void)setOriginalSize:(NSSize)size;
+- (void)setSpinningHidden:(BOOL)b;
+- (void)setVolume:(int)volume;
+- (void)setVolumeHidden:(BOOL)b;
 @end

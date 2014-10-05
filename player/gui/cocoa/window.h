@@ -2,19 +2,20 @@
 #import "windowDelegate.h"
 #import "gui.h"
 #import "glView.h"
-
+#import "blurView.h"
+#import "titleTextView.h"
 @interface Window : NSWindow {
+    BlurView* bvTitleTextView;
+    TitleTextView* titleTextView;
 @public
 	NSSize customAspectRatio;
 	GLView* glView;
-	NSView* titlebarView;
 }
 
-- (id)initWithTitle:(NSString*)title width:(int)w height:(int)h;
-- (void)setContentViewNeedsDisplay:(BOOL)b;
-- (void)timerTick:(NSEvent *)event;
+- (id)initWithWidth:(int)w height:(int)h;
 - (void)makeCurrentContext;
 - (void)updateRoundCorner;
 - (void)audioMenuItemClick:(id)sender;
 - (void)subtitleMenuItemClick:(id)sender;
+-(void)setTitleHidden:(BOOL)b;
 @end

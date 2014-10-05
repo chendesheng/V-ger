@@ -1,7 +1,7 @@
 #import "blurView.h"
 
 @interface VolumeView : NSView {
-@public
         int _volume;
 }
+-(void)setVolume:(int)volume;
 @end
