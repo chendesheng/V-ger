@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>8E9BAECA-317F-4357-A72B-EE4A49A7FAF4</string>
+	<key>IDESourceControlProjectName</key>
+	<string>lib</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>F4B513DF-2087-4C93-967E-BBBEAE1E4F73</key>
+		<string>ssh://github.com/ichendesheng/V-ger.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>player/gui/cocoa/lib.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>F4B513DF-2087-4C93-967E-BBBEAE1E4F73</key>
+		<string>../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/ichendesheng/V-ger.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>F4B513DF-2087-4C93-967E-BBBEAE1E4F73</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>F4B513DF-2087-4C93-967E-BBBEAE1E4F73</string>
+			<key>IDESourceControlWCCName</key>
+			<string>vger</string>
+		</dict>
+	</array>
+</dict>
+</plist>
