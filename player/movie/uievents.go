@@ -177,7 +177,7 @@ func (m *Movie) uievents() {
 		SavePlayingAsync(m.p)
 		// m.w.ShowMessage(fmt.Sprintf("Volume: %d%%", volume), true)
 		m.w.SetVolume(volume)
-		m.w.SetVolumeDisplay(true)
+		m.w.SetVolumeVisible(true)
 
 		select {
 		case chVolume <- struct{}{}:
@@ -285,7 +285,7 @@ func (m *Movie) uievents() {
 					t2 = i
 				}
 			}
-			m.w.SetSubtitleMenuItem(t1, t2)
+			m.w.SelectSubtitleMenu(t1, t2)
 
 			SavePlayingAsync(m.p)
 		}()
@@ -319,7 +319,7 @@ func (m *Movie) uiProgressBarEvents() {
 			t := m.c.CalcTime(percent)
 			t = t / time.Second * time.Second
 			p := m.c.CalcPlayProgress(t)
-			m.w.ShowProgress(p.Left, p.Right, p.Percent)
+			m.w.UpdatePlaybackInfo(p.Left, p.Right, p.Percent)
 
 			m.seeking.SendSeek(t)
 		case 2:

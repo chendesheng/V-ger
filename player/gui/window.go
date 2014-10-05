@@ -123,7 +123,7 @@ func (w *Window) ToggleForceScreenRatio() {
 	}
 }
 func (w *Window) SetSize(width, height int) {
-	w.ShowStartupView()
+	w.SetStartupViewVisible(true)
 
 	log.Printf("set window size:%d %d", width, height)
 
@@ -313,7 +313,7 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	gl.Vertex2d(-1, 1)
 	gl.End()
 
-	w.HideStartupView()
+	w.SetStartupViewVisible(false)
 }
 
 func (w *Window) SendShowProgress(left string, right string, percent float64) {
@@ -359,10 +359,10 @@ func (w *Window) ShowMessage(msg string, autoHide bool) {
 
 func (w *Window) showMessage(s *SubItem, autoHide bool) {
 	if w.currentMessagePtr != 0 {
-		w.HideText(w.currentMessagePtr)
+		w.HideSubtitle(w.currentMessagePtr)
 	}
 
-	w.currentMessagePtr = w.ShowText(s)
+	w.currentMessagePtr = w.ShowSubtitle(s)
 	w.currentMessage = s
 
 	if autoHide {
@@ -374,7 +374,7 @@ func (w *Window) showMessage(s *SubItem, autoHide bool) {
 
 func (w *Window) HideMessage() {
 	if w.currentMessagePtr != 0 {
-		w.HideText(w.currentMessagePtr)
+		w.HideSubtitle(w.currentMessagePtr)
 		w.currentMessage = nil
 		w.currentMessagePtr = 0
 	}
@@ -393,7 +393,7 @@ func (w *Window) SendSetTitle(title string) {
 	w.ChanSetTitle <- title
 }
 
-func (w *Window) ShowText(s *SubItem) uintptr {
+func (w *Window) ShowSubtitle(s *SubItem) uintptr {
 	strs := s.Content
 	items := make([]struct {
 		Content string
@@ -407,7 +407,7 @@ func (w *Window) ShowText(s *SubItem) uintptr {
 		items[i].Color = str.Color
 	}
 
-	return w.NativeWindow.ShowText(items, s.PositionType, s.X, s.Y)
+	return w.NativeWindow.ShowSubtitle(items, s.PositionType, s.X, s.Y)
 }
 
 func (w *Window) SendHideText(arg SubItemArg) {
@@ -503,30 +503,22 @@ func onTimerTick() {
 
 		select {
 		case b := <-w.ChanShowSpinning:
-			if b {
-				w.ShowSpinning()
-			} else {
-				w.HideSpinning()
-			}
+			w.SetSpinningVisible(b)
 		case p := <-w.ChanShowProgress:
-			w.ShowProgress(p.left, p.right, p.percent)
+			w.UpdatePlaybackInfo(p.left, p.right, p.percent)
 		case info := <-w.ChanShowSpeed:
-			w.ShowBufferInfo(info.Speed, info.BufferPercent)
+			w.UpdateBufferInfo(info.Speed, info.BufferPercent)
 		default:
 		}
 
 		select {
 		case b := <-w.ChanSetCursor:
-			if b {
-				w.ShowCursor()
-			} else {
-				w.HideCursor()
-			}
+			w.SetControlsVisible(b)
 			break
 		case volume := <-w.ChanSetVolume:
 			w.SetVolume(volume)
 		case b := <-w.ChanSetVolumeDisplay:
-			w.SetVolumeDisplay(b)
+			w.SetVolumeVisible(b)
 		case arg := <-w.ChanSetSize:
 			w.SetSize(arg.width, arg.height)
 			break
@@ -537,9 +529,9 @@ func onTimerTick() {
 		skip:
 			for {
 				if arg.Handle == 0 || arg.Handle == 1 {
-					arg.Result <- SubItemExtra{arg.Id, w.ShowText(&arg.SubItem)}
+					arg.Result <- SubItemExtra{arg.Id, w.ShowSubtitle(&arg.SubItem)}
 				} else {
-					w.HideText(arg.Handle)
+					w.HideSubtitle(arg.Handle)
 				}
 				select {
 				case arg = <-w.ChanShowText:

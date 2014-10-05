@@ -70,8 +70,8 @@ func goOnKeyDown(keycode int) C.int { //true if already handled
 	}
 }
 
-//export goOnProgressChange
-func goOnProgressChange(typ int, position float64) {
+//export goOnPlaybackChange
+func goOnPlaybackChange(typ int, position float64) {
 	if OnProgressChange != nil {
 		OnProgressChange(typ, position)
 	}

@@ -34,20 +34,14 @@
 -(void)updatePorgressInfo:(NSString*)leftStr rightString:(NSString*)rightStr percent:(CGFloat)p;
 -(void)updateBufferInfo:(NSString*)speed bufferPercent:(CGFloat)p;
 
--(TextView*)showText:(SubItem*)item;
--(void)hideText:(TextView*)tv;
+-(TextView*)showSubtitle:(SubItem*)item;
+-(void)hideSubtitle:(TextView*)tv;
 -(void)showAllTexts;
 // -(void)hideAllTexts;
 
--(void)setStartupView:(StartupView*)sv;
--(void)hideStartupView;
--(void)showStartupView;
-
--(void)showProgress;
--(void)hideProgress;
--(void)showCursor;
--(void)hideCursor;
-
+-(void)setStartupViewHidden:(BOOL)b;
+-(void)setPlaybackViewHidden:(BOOL)b;
+-(void)setCursorHidden:(BOOL)b;
 -(void)setOriginalSize:(NSSize)size;
 - (void)setSpinningHidden:(BOOL)b;
 - (void)setVolume:(int)volume;

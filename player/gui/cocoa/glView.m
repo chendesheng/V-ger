@@ -99,27 +99,24 @@
 
 - (void)mouseDown:(NSEvent *)event {
     if (event.clickCount == 2) {
-        [self.window toggleFullScreen:nil];
+        toggleFullScreen(self.window);
     }
 
-    hideCursor(self.window);
+    setControlsVisible(self.window, 0);
 }
 
 -(BOOL)mouseDownCanMoveWindow {
     return YES;
 }
--(void)hideCursor {
-    currentCursor = noneCursor;
+-(void)setCursorHidden:(BOOL)b {
+    if (b) {
+        currentCursor = noneCursor;
+    } else {
+        currentCursor = [NSCursor arrowCursor];
+    }
 }
--(void)showCursor {
-    currentCursor = [NSCursor arrowCursor];
-}
--(void)hideProgress {
-    [progressView setHidden:YES];
-}
-
--(void)showProgress {
-    [progressView setHidden:NO];
+-(void)setPlaybackViewHidden:(BOOL)b {
+    [progressView setHidden:b];
 }
 
 - (void)mouseMoved:(NSEvent *)event {
@@ -162,7 +159,7 @@
     [progressView updateBufferInfo:speed bufferPercent:percent];
 }
 
--(TextView*)showText:(SubItem*)item {
+-(TextView*)showSubtitle:(SubItem*)item {
     int align = item->align;
 
     TextView* tv = nil;
@@ -240,7 +237,7 @@
     //NSLog(@"%f %f %f %f %f %f", x, y, sz.width, sz.height, x-0.5*xalign*sz.width, y-0.5*yalign*sz.height);
     [tv setFrame:NSMakeRect(x-0.5*xalign*sz.width, y-0.5*yalign*sz.height, sz.width, sz.height)];
 }
--(void)hideText:(TextView*)tv {
+-(void)hideSubtitle:(TextView*)tv {
     if (tv == textView) {
         [tv setText:NULL length:0];
         [tv setHidden:YES];
@@ -262,15 +259,8 @@
     onDraw();
     [[self openGLContext] flushBuffer];
 }
--(void)setStartupView:(StartupView*)sv {
-    startupView = sv;
-}
--(void)hideStartupView {
-    [startupView setHidden:YES];
-}
--(void)showStartupView {
-    [startupView setHidden:NO];
-
+-(void)setStartupViewHidden:(BOOL)b {
+    [startupView setHidden:b];
     [self setNeedsDisplay:YES];
 }
 - (void)scrollWheel:(NSEvent *)event

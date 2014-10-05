@@ -13,8 +13,8 @@
 		return goOnKeyDown(key);
 	}
 
-	inline void onProgressChange(int typ, double position) {
-		goOnProgressChange(typ, position);
+	inline void onPlaybackChange(int typ, double position) {
+		goOnPlaybackChange(typ, position);
 	}
 
 	inline int onOpenFile(const char* file) {
@@ -59,10 +59,7 @@
 	    return 0;
 	}
 
-	inline void onProgressChange(int typ, double position) {
-	}
-
-	inline void onFullscreenChanged(int b) {
+	inline void onPlaybackChange(int typ, double position) {
 	}
 
 	inline int onOpenFile(const char* file) {
@@ -86,8 +83,8 @@
 	//	goOnMouseWheel(deltaY);
 	}
 
-	inline void onMouseMove(void* w) {
-        showCursor(w);
+	inline void onMouseMove() {
+        //showCursor(w);
 	}
 	inline void onMenuClick(int type, int tag) {
         printf("onMenuClick: %d %d\n", type, tag);

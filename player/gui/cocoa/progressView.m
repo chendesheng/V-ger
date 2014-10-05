@@ -80,8 +80,8 @@
         // }
         [self setNeedsDisplay:YES];
         
-        onProgressChange(0, _percent);
-        onProgressChange(1, _percent);
+        onPlaybackChange(0, _percent);
+        onPlaybackChange(1, _percent);
         double lastPercent = _percent;
             
         bool keepOn = YES;
@@ -97,7 +97,7 @@
                     if (lastPercent != _percent) {
                         lastPercent = _percent;
                         [self setNeedsDisplay:YES];
-                        onProgressChange(1, _percent);
+                        onPlaybackChange(1, _percent);
                     }
                     break;
                 case NSLeftMouseUp:
@@ -106,7 +106,7 @@
                     if (lastPercent != _percent) {
                         [self setNeedsDisplay:YES];
                     }
-                    onProgressChange(2, _percent);
+                    onPlaybackChange(2, _percent);
                     keepOn = NO;
                     break;
                 default:

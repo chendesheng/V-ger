@@ -13,8 +13,7 @@
     self->savedAspectRatio = w->customAspectRatio;
     w->customAspectRatio = frame.size;
 
-    [w->glView hideCursor];
-    [w->glView hideProgress];
+    setControlsVisible(w, 0);
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
@@ -64,6 +63,6 @@
 //lost focus
 -(void)windowDidResignKey:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
-    hideCursor(w);
+    setControlsVisible(w, 0);
 }
 @end

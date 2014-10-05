@@ -27,35 +27,34 @@ void initialize();
 void pollEvents();
 void* newWindow(char*, int, int);
 void showWindow(void*);
-int getWindowWidth(void*);
-int getWindowHeight(void*);
+CSize getWindowSize(void*);
 void setWindowSize(void*, int, int);
 void setWindowTitle(void*, char* title);
 
 void refreshWindowContent(void*);
-void makeWindowCurrentContext(void*);
-void windowHideStartupView(void*);
-void windowShowStartupView(void*);
-void windowToggleFullScreen(void*);
+void initWindowCurrentContext(void*);
+void setStartupViewVisible(void*, int);
+void toggleFullScreen(void*);
 void closeWindow(void*);
 
-void showWindowProgress(void*,char*,char*,double);
-void showWindowBufferInfo(void*, char*, double);
+void updatePlaybackInfo(void*,char*,char*,double);
+void updateBufferInfo(void*, char*, double);
 
-void* showText(void*,SubItem*);
-void hideText(void*, void*);
+void* showSubtitle(void*, SubItem*);
+void hideSubtitle(void*, void*);
 
 void initAudioMenu(void*, char**, int32_t*, int, int);
 void hideAudioMenu();
 void initSubtitleMenu(void*, char**, int32_t*, int, int32_t, int32_t);
 void hideSubtitleMenu();
-void setSubtitleMenuItem(int,int);
-void hideCursor(void*);
-void showCursor(void*);
-void showSpinning(void*);
-void hideSpinning(void*);
+void selectSubtitleMenu(int,int);
+
+//including playback panel, window title, cursor
+void setControlsVisible(void*, int);
+void setSpinningVisible(void*, int);
+
 void setVolume(void*, int);
-void setVolumeDisplay(void*, int);
+void setVolumeVisible(void*, int);
 
 //callbacks
 void onMouseMove();
@@ -66,7 +65,7 @@ void onDraw();
 void onTimerTick();
 int onKeyDown(int);
 void onMouseWheel(double);
-void onProgressChange(int, double);
+void onPlaybackChange(int, double);
 int onOpenFile(const char*);
 void onWillTerminate();
 

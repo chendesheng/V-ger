@@ -12,7 +12,7 @@
 
     self->customAspectRatio = NSMakeSize(w, h);
     [self setHasShadow:YES];
-    [self setContentMinSize:NSMakeSize(100, 100*h/w)];
+    [self setContentMinSize:NSMakeSize(200, 200*h/w)];
     [self setAcceptsMouseMovedEvents:YES];
 	[self setRestorable:NO];
     [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];

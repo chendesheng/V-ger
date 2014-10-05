@@ -35,8 +35,8 @@ func (NativeWindow) HideAudioMenu() {
 	C.hideAudioMenu()
 }
 
-func (NativeWindow) SetSubtitleMenuItem(t1, t2 int) {
-	C.setSubtitleMenuItem(C.int(t1), C.int(t2))
+func (NativeWindow) SelectSubtitleMenu(t1, t2 int) {
+	C.selectSubtitleMenu(C.int(t1), C.int(t2))
 }
 
 func (w NativeWindow) InitAudioMenu(names []string, tags []int32, selected int) {
@@ -80,7 +80,8 @@ func (w NativeWindow) RefreshContent() {
 }
 
 func (w NativeWindow) GetSize() (int, int) {
-	return int(C.getWindowWidth(unsafe.Pointer(w))), int(C.getWindowHeight(unsafe.Pointer(w)))
+	sz := C.getWindowSize(unsafe.Pointer(w))
+	return int(sz.width), int(sz.height)
 }
 
 func (w NativeWindow) SetTitle(title string) {
@@ -106,36 +107,39 @@ func (w NativeWindow) Show() {
 }
 
 func (w NativeWindow) MakeCurrentContext() {
-	C.makeWindowCurrentContext(unsafe.Pointer(w))
+	C.initWindowCurrentContext(unsafe.Pointer(w))
 }
 
 func (w NativeWindow) ToggleFullScreen() {
-	C.windowToggleFullScreen(unsafe.Pointer(w))
+	C.toggleFullScreen(unsafe.Pointer(w))
 }
 
-func (w NativeWindow) HideStartupView() {
-	C.windowHideStartupView(unsafe.Pointer(w))
+func (w NativeWindow) SetStartupViewVisible(b bool) {
+	var i C.int
+	if b {
+		i = 1
+	} else {
+		i = 0
+	}
+	C.setStartupViewVisible(unsafe.Pointer(w), i)
 }
-func (w NativeWindow) ShowStartupView() {
-	C.windowShowStartupView(unsafe.Pointer(w))
-}
-func (w NativeWindow) ShowProgress(left, right string, percent float64) {
+func (w NativeWindow) UpdatePlaybackInfo(left, right string, percent float64) {
 	cleft := C.CString(left)
 	defer C.free(unsafe.Pointer(cleft))
 
 	cright := C.CString(right)
 	defer C.free(unsafe.Pointer(cright))
 
-	C.showWindowProgress(unsafe.Pointer(w), cleft, cright, C.double(percent))
+	C.updatePlaybackInfo(unsafe.Pointer(w), cleft, cright, C.double(percent))
 }
-func (w NativeWindow) ShowBufferInfo(speed string, percent float64) {
+func (w NativeWindow) UpdateBufferInfo(speed string, percent float64) {
 	cspeed := C.CString(speed)
 	defer C.free(unsafe.Pointer(cspeed))
 
-	C.showWindowBufferInfo(unsafe.Pointer(w), cspeed, C.double(percent))
+	C.updateBufferInfo(unsafe.Pointer(w), cspeed, C.double(percent))
 }
 
-func (w NativeWindow) ShowText(items []struct {
+func (w NativeWindow) ShowSubtitle(items []struct {
 	Content string
 	Style   int //0 -normal, 1 -italic, 2 -bold, 3 italic and bold
 	Color   uint
@@ -155,37 +159,48 @@ func (w NativeWindow) ShowText(items []struct {
 
 	citem := &C.SubItem{&ctexts[0], C.int(len(ctexts)), C.int(posType), C.double(x), C.double(y)}
 
-	return uintptr(C.showText(unsafe.Pointer(w), citem))
+	return uintptr(C.showSubtitle(unsafe.Pointer(w), citem))
 }
 
-func (w NativeWindow) HideText(ptr uintptr) {
-	C.hideText(unsafe.Pointer(w), unsafe.Pointer(ptr))
+func (w NativeWindow) HideSubtitle(ptr uintptr) {
+	C.hideSubtitle(unsafe.Pointer(w), unsafe.Pointer(ptr))
 }
 
-func (w NativeWindow) HideCursor() {
-	C.hideCursor(unsafe.Pointer(w))
-}
-func (w NativeWindow) ShowCursor() {
-	C.showCursor(unsafe.Pointer(w))
+func (w NativeWindow) SetControlsVisible(b bool) {
+	var i C.int
+	if b {
+		i = 1
+	} else {
+		i = 0
+	}
+
+	C.setControlsVisible(unsafe.Pointer(w), i)
 }
 
-func (w NativeWindow) ShowSpinning() {
-	C.showSpinning(unsafe.Pointer(w))
-}
-func (w NativeWindow) HideSpinning() {
-	C.hideSpinning(unsafe.Pointer(w))
+func (w NativeWindow) SetSpinningVisible(b bool) {
+	var i C.int
+	if b {
+		i = 1
+	} else {
+		i = 0
+	}
+
+	C.setSpinningVisible(unsafe.Pointer(w), i)
 }
 
 func (w NativeWindow) SetVolume(volume byte) {
 	C.setVolume(unsafe.Pointer(w), C.int(volume))
 }
 
-func (w NativeWindow) SetVolumeDisplay(b bool) {
+func (w NativeWindow) SetVolumeVisible(b bool) {
+	var i C.int
 	if b {
-		C.setVolumeDisplay(unsafe.Pointer(w), 1)
+		i = 1
 	} else {
-		C.setVolumeDisplay(unsafe.Pointer(w), 0)
+		i = 0
 	}
+
+	C.setVolumeVisible(unsafe.Pointer(w), i)
 }
 
 func (w NativeWindow) Close() {

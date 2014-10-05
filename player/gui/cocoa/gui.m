@@ -140,7 +140,7 @@ void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t 
         }
     }
 }
-void setSubtitleMenuItem(int t1, int t2) {
+void selectSubtitleMenu(int t1, int t2) {
     @autoreleasepool {
         NSMenuItem* menu = getTopMenuByTitle(@"Subtitle");
         for (NSMenuItem* item in [[menu submenu] itemArray]) {
@@ -212,7 +212,7 @@ void showWindow(void* ptr) {
 	Window* w = (Window*)ptr;
 	[w makeKeyAndOrderFront:nil];
 }
-void makeWindowCurrentContext(void*ptr) {
+void initWindowCurrentContext(void*ptr) {
     Window* w = (Window*)ptr;
     [w makeCurrentContext];
 }
@@ -224,15 +224,15 @@ void refreshWindowContent(void*wptr) {
     [w->glView setNeedsDisplay:YES];
 }
 
-int getWindowWidth(void* ptr) {
+CSize getWindowSize(void* ptr) {
     Window* w = (Window*)ptr;
-    return (int)([w->glView frame].size.width);
+    CSize sz;
+    sz.width = (int)([w->glView frame].size.width);
+    sz.height = (int)([w->glView frame].size.height);
+    return sz;
 }
-int getWindowHeight(void* ptr) {
-    Window* w = (Window*)ptr;
-    return (int)([w->glView frame].size.height);
-}
-void showWindowProgress(void* ptr, char* left, char* right, double percent) {
+
+void updatePlaybackInfo(void* ptr, char* left, char* right, double percent) {
     Window* w = (Window*)ptr;
     
     NSString* leftStr;
@@ -249,7 +249,7 @@ void showWindowProgress(void* ptr, char* left, char* right, double percent) {
     }
     [w->glView updatePorgressInfo:leftStr rightString:rightStr percent:percent];
 }
-void showWindowBufferInfo(void* ptr, char* speed, double percent) {
+void updateBufferInfo(void* ptr, char* speed, double percent) {
     Window* w = (Window*)ptr;
     NSString* str;
     if (strlen(speed) == 0) {
@@ -259,47 +259,34 @@ void showWindowBufferInfo(void* ptr, char* speed, double percent) {
     }
     [w->glView updateBufferInfo:str bufferPercent:percent];
 }
-void* showText(void* ptr, SubItem* item) {
+void* showSubtitle(void* ptr, SubItem* item) {
     Window* w = (Window*)ptr;
-    return [w->glView showText:item];
+    return [w->glView showSubtitle:item];
 }
-void hideText(void* ptrWin, void* ptrText) {
+void hideSubtitle(void* ptrWin, void* ptrText) {
     Window* w = (Window*)ptrWin;
-    [w->glView hideText:ptrText];
+    [w->glView hideSubtitle:ptrText];
 }
-void windowHideStartupView(void* ptr) {
+void setStartupViewVisible(void* ptr, int b) {
     Window* w = (Window*)ptr;
-    [w->glView hideStartupView];
+    [w->glView setStartupViewHidden:(b==0)];
 }
-void windowShowStartupView(void* ptr) {
+void setSpinningVisible(void* ptr, int b) {
     Window* w = (Window*)ptr;
-    [w->glView showStartupView];
+    [w->glView setSpinningHidden:(b==0)];
 }
-void showSpinning(void* ptr) {
-    Window* w = (Window*)ptr;
-    [w->glView setSpinningHidden:NO];
-}
-void hideSpinning(void* ptr) {
-    Window* w = (Window*)ptr;
-    [w->glView setSpinningHidden:YES];
-}
-void windowToggleFullScreen(void* ptr) {
+void toggleFullScreen(void* ptr) {
     Window* w = (Window*)ptr;
     [w toggleFullScreen:nil];
 }
 
-void hideCursor(void* ptr) {
+void setControlsVisible(void* ptr, int b) {
     Window* w = (Window*)ptr;
-    [w->glView hideCursor];
-    [w->glView hideProgress];
-    [w setTitleHidden:YES];
-}
 
-void showCursor(void* ptr) {
-    Window* w = (Window*)ptr;
-    [w->glView showCursor];
-    [w->glView showProgress];
-    [w setTitleHidden:NO];
+    BOOL hidden = (b==0);
+    [w->glView setCursorHidden:hidden];
+    [w->glView setPlaybackViewHidden:hidden];
+    [w setTitleHidden:hidden];
 }
 
 CSize getScreenSize() {
@@ -315,15 +302,15 @@ void setVolume(void* wptr, int volume) {
     [w->glView setVolume:volume];
 }
 
-void setVolumeDisplay(void* wptr, int show) {
+void setVolumeVisible(void* wptr, int b) {
     Window* w = (Window*)wptr;
-    [w->glView setVolumeHidden:(show==0)];
+    [w->glView setVolumeHidden:(b==0)];
 }
 
 void alert(void* wptr, char* str) {
     Window* w = (Window*)wptr;
     [w setDelegate:nil];  //remove delegate prevent hide title bar
-    [w->glView showProgress];
+    [w->glView setPlaybackViewHidden:NO];
 
     NSAlert* alert = [[NSAlert alloc] init];
     [alert setMessageText:[NSString stringWithUTF8String:str]];
