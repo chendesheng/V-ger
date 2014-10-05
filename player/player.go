@@ -47,6 +47,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 
 			if err == nil {
 				app.m.PlayAsync()
+				// gui.add
 				break
 			} else {
 				app.m.Reset()
@@ -92,6 +93,12 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 		if app.m != nil {
 			app.m.Unhold(app.t)
 		}
+	}
+}
+
+func (app *appDelegate) OnMenuClick(cmd int) {
+	if cmd == 3 {
+		app.m.PauseClock()
 	}
 }
 

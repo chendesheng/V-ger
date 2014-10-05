@@ -24,32 +24,37 @@ void initialize() {
     [NSApp setDelegate:appDelegate];
 
 	//create memu bar
-	id menubar = [[NSMenu new] autorelease];
-    id appMenuItem = [[NSMenuItem new] autorelease];
-    [menubar addItem:appMenuItem];
-    [NSApp setMainMenu:menubar];
-    id appMenu = [[NSMenu new] autorelease];
-
-    NSMenuItem *searchSubtitleMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Search Subtitle"
-        action:@selector(searchSubtitleMenuItemClick:) keyEquivalent:@"s"] autorelease];
-    [searchSubtitleMenuItem setKeyEquivalentModifierMask:0];
-    [searchSubtitleMenuItem setTarget: appDelegate];
-    [appMenu addItem:searchSubtitleMenuItem];
-
-    NSMenuItem *openFileMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Open..."
-        action:@selector(openFileMenuItemClick:) keyEquivalent:@"o"] autorelease];
-    [openFileMenuItem setTarget: appDelegate];
-    [appMenu addItem:openFileMenuItem];
-
-    id appName = [[NSProcessInfo processInfo] processName];
-    id quitTitle = [@"Quit " stringByAppendingString:appName];
-    id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
-        action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
-    [appMenu addItem:quitMenuItem];
-
-
-    [appMenuItem setSubmenu:appMenu];
-
+//	id menubar = [[NSMenu new] autorelease];
+//    id appMenuItem = [[NSMenuItem new] autorelease];
+//    [menubar addItem:appMenuItem];
+//    [NSApp setMainMenu:menubar];
+//    id appMenu = [[NSMenu new] autorelease];
+//
+//    NSMenuItem *searchSubtitleMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Search Subtitle"
+//        action:@selector(searchSubtitleMenuItemClick:) keyEquivalent:@"s"] autorelease];
+//    [searchSubtitleMenuItem setKeyEquivalentModifierMask:0];
+//    [searchSubtitleMenuItem setTarget: appDelegate];
+//    [appMenu addItem:searchSubtitleMenuItem];
+//
+//    NSMenuItem *openFileMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Open..."
+//        action:@selector(openFileMenuItemClick:) keyEquivalent:@"o"] autorelease];
+//    [openFileMenuItem setTarget: appDelegate];
+//    [appMenu addItem:openFileMenuItem];
+//
+//    id appName = [[NSProcessInfo processInfo] processName];
+//    id quitTitle = [@"Quit " stringByAppendingString:appName];
+//    id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
+//        action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
+//    [appMenu addItem:quitMenuItem];
+//
+//
+//    [appMenuItem setSubmenu:appMenu];
+    //[[NSMenu alloc] initWithWindowNibName:@"MainMenu"];
+    // NSArray* objects;
+    [[NSBundle mainBundle] loadNibNamed:@"MainMenu" owner:NSApp topLevelObjects:nil];
+    
+//    [NSBundleobjects loadNibNamed:@"MainMenu" owner:NSApp];
+    
     [[NSAppleEventManager sharedAppleEventManager] setEventHandler:appDelegate andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 NSMenuItem* getTopMenuByTitle(NSString* title) {
@@ -218,6 +223,7 @@ void initWindowCurrentContext(void*ptr) {
 }
 void pollEvents() {
     [NSApp run];
+    // NSApplicationMain(0, NULL);
 }
 void refreshWindowContent(void*wptr) {
 	Window* w = (Window*)wptr;

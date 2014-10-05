@@ -18,4 +18,5 @@
 - (void)audioMenuItemClick:(id)sender;
 - (void)subtitleMenuItemClick:(id)sender;
 -(void)setTitleHidden:(BOOL)b;
+-(void)play:(id)sender;
 @end

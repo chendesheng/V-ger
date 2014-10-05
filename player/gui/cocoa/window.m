@@ -117,6 +117,10 @@
 -(void)setTitle:(NSString *)title {
     titleTextView.title = title;
 }
+
+-(void)play:(id)sender {
+    onMenuClick(MENU_PLAY, 0);
+}
 @end
 
 

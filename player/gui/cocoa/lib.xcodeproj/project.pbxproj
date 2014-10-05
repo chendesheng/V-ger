@@ -11,30 +11,19 @@
 		B0986A2A19E12A7B00B23D57 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0986A2919E12A7B00B23D57 /* OpenGL.framework */; };
 		B0986A3219E12C4500B23D57 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0986A3119E12C4500B23D57 /* QuartzCore.framework */; };
 		B0E6C52219E131690029DA97 /* windowDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50219E131690029DA97 /* windowDelegate.m */; };
-		B0E6C52319E131690029DA97 /* windowDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C50319E131690029DA97 /* windowDelegate.h */; };
 		B0E6C52419E131690029DA97 /* window.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50419E131690029DA97 /* window.m */; };
-		B0E6C52519E131690029DA97 /* window.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C50519E131690029DA97 /* window.h */; };
 		B0E6C52619E131690029DA97 /* volumeView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50619E131690029DA97 /* volumeView.m */; };
-		B0E6C52719E131690029DA97 /* volumeView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C50719E131690029DA97 /* volumeView.h */; };
 		B0E6C52819E131690029DA97 /* titleTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50819E131690029DA97 /* titleTextView.m */; };
-		B0E6C52919E131690029DA97 /* titleTextView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C50919E131690029DA97 /* titleTextView.h */; };
 		B0E6C52A19E131690029DA97 /* textView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50A19E131690029DA97 /* textView.m */; };
-		B0E6C52B19E131690029DA97 /* textView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C50B19E131690029DA97 /* textView.h */; };
 		B0E6C52C19E131690029DA97 /* startupView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50C19E131690029DA97 /* startupView.m */; };
-		B0E6C52D19E131690029DA97 /* startupView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C50D19E131690029DA97 /* startupView.h */; };
 		B0E6C52E19E131690029DA97 /* spinningView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50E19E131690029DA97 /* spinningView.m */; };
-		B0E6C52F19E131690029DA97 /* spinningView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C50F19E131690029DA97 /* spinningView.h */; };
 		B0E6C53019E131690029DA97 /* progressView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C51019E131690029DA97 /* progressView.m */; };
-		B0E6C53119E131690029DA97 /* progressView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C51119E131690029DA97 /* progressView.h */; };
 		B0E6C53419E131690029DA97 /* gui.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C51919E131690029DA97 /* gui.m */; };
 		B0E6C53519E131690029DA97 /* gui.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C51A19E131690029DA97 /* gui.h */; };
 		B0E6C53619E131690029DA97 /* glView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C51B19E131690029DA97 /* glView.m */; };
-		B0E6C53719E131690029DA97 /* glView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C51C19E131690029DA97 /* glView.h */; };
 		B0E6C53819E131690029DA97 /* callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C51D19E131690029DA97 /* callbacks.c */; };
 		B0E6C53919E131690029DA97 /* blurView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C51E19E131690029DA97 /* blurView.m */; };
-		B0E6C53A19E131690029DA97 /* blurView.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C51F19E131690029DA97 /* blurView.h */; };
 		B0E6C53B19E131690029DA97 /* app.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C52019E131690029DA97 /* app.m */; };
-		B0E6C53C19E131690029DA97 /* app.h in Headers */ = {isa = PBXBuildFile; fileRef = B0E6C52119E131690029DA97 /* app.h */; };
 		B0E6C54219E134CC0029DA97 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B098695419E1207000B23D57 /* XCTest.framework */; };
 		B0E6C54819E134CC0029DA97 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B0E6C54619E134CC0029DA97 /* InfoPlist.strings */; };
 		B0E6C54A19E134CC0029DA97 /* lib_Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C54919E134CC0029DA97 /* lib_Tests.m */; };
@@ -54,6 +43,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B09234B819E1AF3B001AE3B7 /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		B098694019E1207000B23D57 /* liblib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B098694319E1207000B23D57 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		B098694619E1207000B23D57 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -123,6 +113,7 @@
 		B098693719E1207000B23D57 = {
 			isa = PBXGroup;
 			children = (
+				B09234B819E1AF3B001AE3B7 /* MainMenu.xib */,
 				B0E6C50219E131690029DA97 /* windowDelegate.m */,
 				B0E6C50319E131690029DA97 /* windowDelegate.h */,
 				B0E6C50419E131690029DA97 /* window.m */,
@@ -228,18 +219,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0E6C53A19E131690029DA97 /* blurView.h in Headers */,
 				B0E6C53519E131690029DA97 /* gui.h in Headers */,
-				B0E6C52519E131690029DA97 /* window.h in Headers */,
-				B0E6C52319E131690029DA97 /* windowDelegate.h in Headers */,
-				B0E6C53C19E131690029DA97 /* app.h in Headers */,
-				B0E6C52719E131690029DA97 /* volumeView.h in Headers */,
-				B0E6C52D19E131690029DA97 /* startupView.h in Headers */,
-				B0E6C53119E131690029DA97 /* progressView.h in Headers */,
-				B0E6C52B19E131690029DA97 /* textView.h in Headers */,
-				B0E6C52919E131690029DA97 /* titleTextView.h in Headers */,
-				B0E6C52F19E131690029DA97 /* spinningView.h in Headers */,
-				B0E6C53719E131690029DA97 /* glView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +506,7 @@
 				B0E6C55019E134CC0029DA97 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

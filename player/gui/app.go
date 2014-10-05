@@ -40,6 +40,7 @@ type AppDelegate interface {
 	OnCloseOpenPanel(filename string)
 	WillTerminate()
 	ToggleSearchSubtitle()
+	OnMenuClick(int)
 }
 
 var appDelegate AppDelegate

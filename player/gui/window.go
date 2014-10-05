@@ -586,6 +586,10 @@ func onMenuClick(typ int, tag int) {
 			}
 		case 2:
 			onSearchSubtitleMenuItemClick()
+		case 3:
+			if appDelegate != nil {
+				appDelegate.OnMenuClick(3)
+			}
 		}
 	}
 }

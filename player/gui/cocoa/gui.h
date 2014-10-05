@@ -73,5 +73,6 @@ void onWillTerminate();
 #define MENU_AUDIO 0
 #define	MENU_SUBTITLE 1
 #define MENU_SEARCH_SUBTITLE 2
+#define MENU_PLAY 3
 
 #endif

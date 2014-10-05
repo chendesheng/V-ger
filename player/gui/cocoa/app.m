@@ -4,14 +4,19 @@
 @implementation Application
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
      @autoreleasepool {
-         NSLog(@"application openFile: %@",filename);
-         const char *cfilename = [filename UTF8String];
-         BOOL b = onOpenFile(cfilename) == 1;
+          NSLog(@"application openFile: %@",filename);
+
+          NSLog(@"note recent file: %@", filename);
+          [[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
+
+          const char *cfilename = [filename UTF8String];
+          BOOL b = onOpenFile(cfilename) == 1;
+ 
          return b;
      }
 }
 
--(void)searchSubtitleMenuItemClick:(id)sender {
+-(void)searchSubtitle:(id)sender {
 	onMenuClick(MENU_SEARCH_SUBTITLE, 0);
 }
 
@@ -29,7 +34,7 @@
      return NO;
 }
 
--(void)openFileMenuItemClick:(id)sender {
+-(void)open:(id)sender {
      onOpenOpenPanel();
 
      NSOpenPanel *panel	= [NSOpenPanel openPanel];
