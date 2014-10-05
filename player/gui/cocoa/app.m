@@ -22,9 +22,9 @@
      [panel setCanChooseDirectories:NO];
      [panel setAllowsMultipleSelection:NO];
 
-     NSInteger type = [panel runModalForTypes:nil];
+     NSInteger type = [panel runModal];
      if(type == NSOKButton){
-          NSString* filename = [panel filename];
+          NSString* filename = [[panel URL] path];
           char* cfilename = (char*)[filename UTF8String];
           onOpenFile(cfilename);
      }
@@ -38,9 +38,9 @@
      [panel setCanChooseDirectories:NO];
      [panel setAllowsMultipleSelection:NO];
 
-     NSInteger type	= [panel runModalForTypes:nil];
+     NSInteger type	= [panel runModal];
      if(type == NSOKButton){
-          NSString* filename = [panel filename];
+          NSString* filename = [[panel URL] path];
           char* cfilename = (char*)[filename UTF8String];
           onCloseOpenPanel(cfilename);
      } else {

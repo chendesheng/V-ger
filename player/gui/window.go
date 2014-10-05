@@ -210,7 +210,7 @@ func NewWindow(title string, width, height int) *Window {
 	w.Show()
 	w.MakeCurrentContext() //must make current context before do texture bind or we will get a all white window
 	gl.Init()
-	gl.ClearColor(0, 0, 0, 1)
+	// gl.ClearColor(0, 0, 0, 1)
 
 	w.initEvents()
 
@@ -295,7 +295,7 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	x, y, width, height := w.fitToWindow(imgWidth, imgHeight)
 	gl.Viewport(x, y, width, height)
 
-	gl.Clear(gl.COLOR_BUFFER_BIT)
+	// gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 

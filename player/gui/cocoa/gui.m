@@ -7,8 +7,6 @@
 #import "textView.h"
 #import "blurView.h"
 #import "progressView.h"
-#import "popupView.h"
-#import "subtitleView.h"
 #import "startupView.h"
 #import "volumeView.h"
 // #import "titleTextView.h"
@@ -404,28 +402,6 @@ void showCursor(void* ptr) {
     Window* w = (Window*)ptr;
     [w->glView showCursor];
     [w->glView showProgress];
-}
-
-void *newDialog(char* title, int width, int height) {
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-
-    NSPanel *dialog = [[NSPanel alloc] initWithContentRect:NSMakeRect(200.0, 200.0, 300, 200)
-        styleMask:NSHUDWindowMask | NSClosableWindowMask | NSTitledWindowMask | NSUtilityWindowMask | NSResizableWindowMask
-          backing:NSBackingStoreBuffered
-            defer:YES];
-
-    [dialog makeKeyAndOrderFront:nil];
-
-    [dialog setTitle:[NSString stringWithUTF8String:title]];
-    
-    SubtitleView* sv = [[SubtitleView alloc] initWithFrame:NSMakeRect(0,0,dialog.frame.size.width,dialog.frame.size.height)];
-    [dialog setContentView:sv];
-    [sv setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-
-
-    [pool drain];
-
-    return dialog;
 }
 
 CSize getScreenSize() {
