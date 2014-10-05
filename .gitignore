@@ -32,3 +32,9 @@ src/gopkg.in/check.v1/
 src/honnef.co/go/importer/
 
 util/unar
+
+*.xccheckout
+
+*.xcbkptlist
+
+*.xccheckout
