@@ -135,6 +135,44 @@
     onMenuClick(MENU_AUDIO, (int)item.tag);
 }
 
+-(void)seekBackwardBySubtitle:(id)sender {
+    onMenuClick(MENU_SEEK, 0);
+}
+-(void)seekForwardBySubtitle:(id)sender {
+    onMenuClick(MENU_SEEK, 1);
+}
+
+-(void)seekBackwardByTime:(id)sender {
+    onMenuClick(MENU_SEEK, 2);
+}
+-(void)seekForwardByTime:(id)sender {
+    onMenuClick(MENU_SEEK, 3);
+}
+-(void)increaseVolume:(id)sender {
+    onMenuClick(MENU_VOLUME, 1);
+}
+-(void)decreaseVolume:(id)sender {
+    onMenuClick(MENU_VOLUME, -1);
+}
+-(void)pullMainSubtitle:(id)sender {
+    onMenuClick(MENU_SYNC_SUBTITLE, 0);
+}
+-(void)pushMainSubtitle:(id)sender {
+    onMenuClick(MENU_SYNC_SUBTITLE, 1);
+}
+-(void)pullSecondSubtitle:(id)sender {
+    onMenuClick(MENU_SYNC_SUBTITLE, 2);
+}
+-(void)pushSecondSubtitle:(id)sender {
+    onMenuClick(MENU_SYNC_SUBTITLE, 3);
+}
+-(void)pullAudio:(id)sender {
+    onMenuClick(MENU_SYNC_AUDIO, -1);
+}
+-(void)pushAudio:(id)sender {
+    onMenuClick(MENU_SYNC_AUDIO, 1);
+}
+
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     if ([item action] == @selector(playPause:)) {
         if (isPlaying()) {
@@ -149,9 +187,10 @@
         char** names;
         int length;
         int firstSub, secondSub;
-        getSubtitles((void***)&names, &length, &firstSub, &secondSub);
+        getAllSubtitleNames((void***)&names, &length);  //read subtitles very time open the menu
+        getPlayingSubtitles(&firstSub, &secondSub);
         if (length == 0) {
-            [menu addItemWithTitle:@"(None)" action:nil keyEquivalent:@""];
+            [menu addItemWithTitle:@"None" action:nil keyEquivalent:@""];
         } else {
             for (int i = 0; i < length; i++) {
                 NSMenuItem * submenuItem = [menu addItemWithTitle:[NSString stringWithUTF8String:names[i]] action:@selector(selectSubtitleItem:) keyEquivalent:@""];
@@ -170,10 +209,12 @@
 
         char** names;
         int length;
-        int selected;
-        getAudioes((void***)&names, &length, &selected);
+        getAllAudioTracks((void***)&names, &length);
+
+        int selected = getPlayingAudioTrack();
+
         if (length == 0) {
-            [menu addItemWithTitle:@"(None)" action:nil keyEquivalent:@""];
+            [menu addItemWithTitle:@"None" action:nil keyEquivalent:@""];
         } else {
             for (int i = 0; i < length; i++) {
                 NSMenuItem * submenuItem = [menu addItemWithTitle:[NSString stringWithUTF8String:names[i]] action:@selector(selectAudioItem:) keyEquivalent:@""];
@@ -185,6 +226,29 @@
                 }
                 free(names[i]);
             }
+        }
+    } else if ([item action] == @selector(seekForwardBySubtitle:) || 
+        [item action] == @selector(seekBackwardBySubtitle:) ||
+        [item action] == @selector(pullMainSubtitle:) ||
+        [item action] == @selector(pushMainSubtitle:)) {
+        int firstSub, secondSub;
+        getPlayingSubtitles(&firstSub, &secondSub);
+        if (firstSub == -1) {
+            return NO;
+        }
+    } else if ([item action] == @selector(pullSecondSubtitle:) ||
+        [item action] == @selector(pushSecondSubtitle:)) {
+        int firstSub, secondSub;
+        getPlayingSubtitles(&firstSub, &secondSub);
+        if (secondSub == -1) {
+            return NO;
+        }
+    } else if ([item action] == @selector(increaseVolume:) || 
+        [item action] == @selector(decreaseVolume:) ||
+        [item action] == @selector(pullAudio:) ||
+        [item action] == @selector(pushAudio:)) {
+        if (getPlayingAudioTrack() == -1) {
+            return NO;
         }
     }
     return YES;

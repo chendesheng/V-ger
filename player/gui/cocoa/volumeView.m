@@ -50,7 +50,7 @@
 
     [[NSColor whiteColor] set];
     // self->_volume = 15;
-    int blocks = self->_volume/10;
+    int blocks = self->_volume;
     for (int i = 0; i < blocks;  i++) {
         NSRectFill(NSMakeRect(x+blockWidth*i+1, y+1, blockWidth-1, blockWidth-2));
     }

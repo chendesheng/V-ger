@@ -46,11 +46,17 @@
 	inline int isPlaying() {
 		return goIsPlaying();
 	}
-	inline void getSubtitles(void*** names, int* length, int* firstSub, int* secondSub) {
-		goGetSubtitles(names, length, firstSub, secondSub);   
+	inline void getAllSubtitleNames(void*** names, int* length) {
+		goGetSubtitles(names, length);   
 	}
-	void getAudioes(void*** names, int* length, int* selected) {
-		goGetAudioes(names, length, selected);
+	inline void getPlayingSubtitles(int* firstSub, int* secondSub) {
+		goGetPlayingSubtitles(firstSub, secondSub);
+	}
+	inline void getAllAudioTracks(void*** names, int* length) {
+		goGetAllAudioTracks(names, length);
+	}
+	inline int getPlayingAudioTrack() {
+		return goGetPlayingAudioTrack();
 	}
 
 #else
@@ -103,10 +109,8 @@
     inline int isPlaying() {
         return 0;
     }
-inline void getSubtitles(void*** names, int* length, int* firstSub, int* secondSub) {
-    
-}
-void getAudioes(void** names, int* length, int* selected) {
-
-}
+inline void getAllSubtitleNames(void*** names, int* length) {}
+inline void getPlayingSubtitles(int* firstSub, int* secondSub) {}
+inline int getPlayingAudioTrack(){return -1;}
+inline void getAllAudioTracks(void*** names, int* length) {}
 #endif

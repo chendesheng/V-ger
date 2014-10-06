@@ -38,7 +38,7 @@ type Audio struct {
 	chQuitDone chan struct{}
 }
 
-func NewAudio(c *Clock, volume float64) *Audio {
+func NewAudio(c *Clock, volume int) *Audio {
 	a := &Audio{}
 
 	resampleCtx := AVAudioResampleContext{}
@@ -66,8 +66,8 @@ func (a *Audio) receivePacket() (*AVPacket, bool) {
 	}
 }
 
-func (a *Audio) AddOffset(dur time.Duration) {
-	atomic.AddInt64((*int64)(&a.Offset), int64(dur))
+func (a *Audio) AddOffset(dur time.Duration) time.Duration {
+	return time.Duration(atomic.AddInt64((*int64)(&a.Offset), int64(dur)))
 }
 
 func (a *Audio) GetOffset() time.Duration {
@@ -212,9 +212,9 @@ func (a *Audio) FlushBuffer() {
 	}
 }
 
-func (a *Audio) IncreaseVolume() float64 {
+func (a *Audio) IncreaseVolume() int {
 	return a.driver.IncreaseVolume()
 }
-func (a *Audio) DecreaseVolume() float64 {
+func (a *Audio) DecreaseVolume() int {
 	return a.driver.DecreaseVolume()
 }

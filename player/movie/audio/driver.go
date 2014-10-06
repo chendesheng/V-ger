@@ -19,7 +19,7 @@ type audioDriver interface{}
 
 type portAudio struct {
 	sync.Mutex
-	volume float64
+	volume int
 	stream *portaudio.Stream
 }
 
@@ -56,22 +56,22 @@ func (a *portAudio) Close() {
 	}
 }
 
-func (a *portAudio) IncreaseVolume() float64 {
+func (a *portAudio) IncreaseVolume() int {
 	a.Lock()
 	defer a.Unlock()
 
-	a.volume += 0.04
+	a.volume += 1
 
-	if a.volume > 1.6 {
-		a.volume = 1.6
+	if a.volume > 16 {
+		a.volume = 16
 	}
 	return a.volume
 }
-func (a *portAudio) DecreaseVolume() float64 {
+func (a *portAudio) DecreaseVolume() int {
 	a.Lock()
 	defer a.Unlock()
 
-	a.volume -= 0.04
+	a.volume -= 1
 
 	if a.volume < 0 {
 		a.volume = 0
@@ -84,6 +84,7 @@ func (a *portAudio) getVolume() float64 {
 
 	//linear volume
 	//check this: http://www.dr-lex.be/info-stuff/volumecontrols.html
-	v2 := a.volume * a.volume
+	v := float64(a.volume) / 10
+	v2 := v * v
 	return v2 * 1.2
 }

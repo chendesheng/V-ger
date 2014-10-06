@@ -309,15 +309,23 @@ func (m *Movie) IsPlaying() bool {
 	}
 }
 
-func (m *Movie) GetSubtitleNames() (names []string, firstSub int, secondSub int) {
+func (m *Movie) GetSubtitleNames() (names []string) {
+	if len(m.subs) > 0 {
+		names = make([]string, len(m.subs))
+		for i, sub := range m.subs {
+			names[i] = sub.Name
+		}
+	}
+
+	return
+}
+func (m *Movie) GetPlayingSubtitles() (firstSub int, secondSub int) {
 	firstSub = -1
 	secondSub = -1
 
 	if len(m.subs) > 0 {
 		s1, s2 := m.getPlayingSubs()
-		names = make([]string, len(m.subs))
 		for i, sub := range m.subs {
-			names[i] = sub.Name
 			if s1 == sub {
 				firstSub = i
 			} else if s2 == sub {
@@ -335,15 +343,10 @@ func (m *Movie) TogglePlay() {
 	}
 }
 
-func (m *Movie) GetAudioNames() (names []string, selected int) {
-	selected = -1
+func (m *Movie) GetAllAudioTracks() (names []string) {
 	if len(m.audioStreams) > 0 {
 		names = make([]string, len(m.audioStreams))
 		for i, stream := range m.audioStreams {
-			if m.a.StreamIndex() == stream.Index() {
-				selected = i
-			}
-
 			dic := stream.MetaData()
 			mp := dic.Map()
 			title := mp["title"]
@@ -353,4 +356,185 @@ func (m *Movie) GetAudioNames() (names []string, selected int) {
 		}
 	}
 	return
+}
+
+func (m *Movie) GetPlayingAudioTrack() int {
+	for i, stream := range m.audioStreams {
+		if m.a.StreamIndex() == stream.Index() {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func (m *Movie) SeekBySubtitle(forward bool) {
+	var offset time.Duration
+	s1, _ := m.getPlayingSubs()
+	var r int
+	if forward {
+		r = 1
+	} else {
+		r = -1
+	}
+
+	if s1 != nil {
+		t := m.c.GetTime()
+		subTime := s1.GetSubTime(t, r)
+		log.Print("subtime:", subTime)
+
+		if subTime == 0 {
+			offset = time.Duration(r) * 10 * time.Second
+		} else {
+			offset = subTime - t
+		}
+	} else {
+		offset = time.Duration(r) * 10 * time.Second
+	}
+	m.SeekOffset(offset)
+}
+
+func (m *Movie) AddVolume(d int) {
+	if m.a == nil {
+		return
+	}
+
+	var volume int
+	if d < 0 {
+		volume = m.a.DecreaseVolume()
+	} else {
+		volume = m.a.IncreaseVolume()
+	}
+
+	m.p.Volume = volume
+	SavePlayingAsync(m.p)
+
+	m.w.SetVolume(volume)
+	m.w.SetVolumeVisible(true)
+
+	select {
+	case chVolume <- struct{}{}:
+	case <-m.quit:
+	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+func (m *Movie) SyncMainSubtitle(d time.Duration) {
+	go func() {
+		s1, _ := m.getPlayingSubs()
+		if s1 != nil {
+			offset := s1.AddOffset(d)
+			m.w.SendShowMessage(fmt.Sprint("Main Subtitle offset ", offset.String()), true)
+
+			UpdateSubtitleOffsetAsync(s1.Name, offset)
+		}
+	}()
+}
+
+func (m *Movie) SyncSecondSubtitle(d time.Duration) {
+	go func() {
+		_, s2 := m.getPlayingSubs()
+		if s2 != nil {
+			offset := s2.AddOffset(d)
+			m.w.SendShowMessage(fmt.Sprint("Second Subtitle offset ", offset.String()), true)
+
+			UpdateSubtitleOffsetAsync(s2.Name, offset)
+		}
+	}()
+}
+
+func (m *Movie) SyncAudio(d time.Duration) {
+	go func() {
+		offset := m.a.AddOffset(d)
+		m.w.SendShowMessage(fmt.Sprint("Audio offset ", offset.String()), true)
+	}()
+}
+
+func (m *Movie) ToggleSubtitle(index int) {
+	log.Print("toggle subtitle:", index)
+
+	subs := m.subs
+	clicked := subs[index]
+
+	var s1, s2 *Subtitle
+	ps1, ps2 := m.getPlayingSubs()
+
+	if ps1 == nil && ps2 == nil {
+		//add playing s1
+		s1 = clicked
+		// go s1.Play()
+
+		m.p.Sub1 = s1.Name
+		m.p.Sub2 = ""
+
+	} else if ps1 == clicked {
+		//remove playing s1
+		ps1.Stop()
+		if ps2 != nil {
+			s1 = ps2
+			s1.IsMainSub = true
+
+			m.p.Sub1 = s1.Name
+			m.p.Sub2 = ""
+		}
+	} else if ps2 == clicked {
+		//remove playing s2
+		ps2.Stop()
+		s1 = ps1
+
+		m.p.Sub1 = s1.Name
+		m.p.Sub2 = ""
+	} else {
+		//replace playing subtitle
+		if clicked.IsTwoLangs() {
+			s1 = clicked
+			s2 = nil
+		} else if ps1.IsTwoLangs() {
+			s1 = clicked
+			s2 = nil
+		} else if isLangEqual(ps1.Lang1, clicked.Lang1) {
+			s1 = clicked
+			s2 = ps2
+		} else if ps2 == nil {
+			s1 = ps1
+			s2 = clicked
+		} else if isLangEqual(ps2.Lang1, clicked.Lang1) {
+			s1 = ps1
+			s2 = clicked
+		} else { //third language which is impossible for now
+			s1 = ps1
+			s2 = clicked
+		}
+
+		if s1 != ps1 {
+			ps1.Stop()
+
+			s1.IsMainSub = true
+			// go s1.Play()
+
+			m.p.Sub1 = s1.Name
+		}
+
+		if s2 != nil {
+			if s2 != ps2 {
+				if ps2 != nil {
+					ps2.Stop()
+				}
+
+				s2.IsMainSub = false
+				// go s2.Play()
+
+				m.p.Sub2 = s2.Name
+			}
+		} else {
+			if ps2 != nil {
+				ps2.Stop()
+			}
+
+			m.p.Sub2 = ""
+		}
+	}
+
+	m.setPlayingSubs(s1, s2)
+	SavePlayingAsync(m.p)
 }

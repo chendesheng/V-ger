@@ -56,7 +56,7 @@ type Playing struct {
 	Sub1        string
 	Sub2        string
 	Duration    time.Duration
-	Volume      byte
+	Volume      int
 	Speed       float64 //online video downlad speed
 }
 

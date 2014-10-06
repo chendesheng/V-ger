@@ -1,13 +1,14 @@
 package movie
 
 import (
-	"fmt"
 	"log"
 	"time"
 	"vger/player/gui"
 	. "vger/player/shared"
-	. "vger/player/subtitle"
+	// . "vger/player/subtitle"
 )
+
+var chVolume = make(chan struct{})
 
 func (m *Movie) uievents() {
 	log.Print("movie uievents")
@@ -40,109 +41,68 @@ func (m *Movie) uievents() {
 				m.w.ToggleForceScreenRatio()
 			}
 			break
-		case gui.KEY_LEFT:
-			var offset time.Duration
-			s1, _ := m.getPlayingSubs()
-			if s1 != nil {
-				t := m.c.GetTime()
-				subTime := s1.GetSubTime(t, -1)
+		// case gui.KEY_MINUS:
+		// 	log.Print("key minus pressed")
+		// 	go func() {
+		// 		s1, _ := m.getPlayingSubs()
+		// 		if s1 != nil {
+		// 			offset := s1.AddOffset(-200 * time.Millisecond)
+		// 			m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
-				if subTime == 0 {
-					offset = -10 * time.Second
-				} else {
-					offset = subTime - t
-				}
-			} else {
-				offset = -10 * time.Second
-			}
-			m.SeekOffset(offset)
-			break
-		case gui.KEY_RIGHT:
-			var offset time.Duration
-			s1, _ := m.getPlayingSubs()
-			if s1 != nil {
-				t := m.c.GetTime()
-				subTime := s1.GetSubTime(t, 1)
-				log.Print("subtime:", subTime)
+		// 			UpdateSubtitleOffsetAsync(s1.Name, offset)
+		// 		}
+		// 	}()
+		// 	break
+		// case gui.KEY_EQUAL:
+		// 	log.Print("key equal pressed")
+		// 	go func() {
+		// 		s1, _ := m.getPlayingSubs()
+		// 		if s1 != nil {
+		// 			offset := s1.AddOffset(200 * time.Millisecond)
+		// 			m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
 
-				if subTime == 0 {
-					offset = 10 * time.Second
-				} else {
-					offset = subTime - t
-				}
-			} else {
-				offset = 10 * time.Second
-			}
-			m.SeekOffset(offset)
-			break
-		case gui.KEY_UP:
-			m.SeekOffset(5 * time.Second)
-			break
-		case gui.KEY_DOWN:
-			m.SeekOffset(-5 * time.Second)
-			break
-		case gui.KEY_MINUS:
-			log.Print("key minus pressed")
-			go func() {
-				s1, _ := m.getPlayingSubs()
-				if s1 != nil {
-					offset := s1.AddOffset(-200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
+		// 			UpdateSubtitleOffsetAsync(s1.Name, offset)
+		// 		}
+		// 	}()
+		// 	break
+		// case gui.KEY_LEFT_BRACKET:
+		// 	log.Print("left bracket pressed")
+		// 	go func() {
+		// 		// if m.s != nil {
+		// 		// 	offset := m.s.AddOffset(-1000 * time.Millisecond)
+		// 		// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
+		// 		// }
+		// 		_, s2 := m.getPlayingSubs()
+		// 		if s2 != nil {
+		// 			offset := s2.AddOffset(-200 * time.Millisecond)
+		// 			m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
-					UpdateSubtitleOffsetAsync(s1.Name, offset)
-				}
-			}()
-			break
-		case gui.KEY_EQUAL:
-			log.Print("key equal pressed")
-			go func() {
-				s1, _ := m.getPlayingSubs()
-				if s1 != nil {
-					offset := s1.AddOffset(200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
+		// 			UpdateSubtitleOffsetAsync(s2.Name, offset)
+		// 		}
+		// 	}()
+		// 	break
+		// case gui.KEY_RIGHT_BRACKET:
+		// 	log.Print("right bracket pressed")
+		// 	go func() {
+		// 		// if m.s != nil {
+		// 		// 	offset := m.s.AddOffset(1000 * time.Millisecond)
+		// 		// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
+		// 		// }
+		// 		_, s2 := m.getPlayingSubs()
+		// 		if s2 != nil {
+		// 			offset := s2.AddOffset(200 * time.Millisecond)
+		// 			m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
 
-					UpdateSubtitleOffsetAsync(s1.Name, offset)
-				}
-			}()
-			break
-		case gui.KEY_LEFT_BRACKET:
-			log.Print("left bracket pressed")
-			go func() {
-				// if m.s != nil {
-				// 	offset := m.s.AddOffset(-1000 * time.Millisecond)
-				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
-				// }
-				_, s2 := m.getPlayingSubs()
-				if s2 != nil {
-					offset := s2.AddOffset(-200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
-
-					UpdateSubtitleOffsetAsync(s2.Name, offset)
-				}
-			}()
-			break
-		case gui.KEY_RIGHT_BRACKET:
-			log.Print("right bracket pressed")
-			go func() {
-				// if m.s != nil {
-				// 	offset := m.s.AddOffset(1000 * time.Millisecond)
-				// 	m.w.SendShowMessage(fmt.Sprint("Subtitle offset ", offset.String()), true)
-				// }
-				_, s2 := m.getPlayingSubs()
-				if s2 != nil {
-					offset := s2.AddOffset(200 * time.Millisecond)
-					m.w.SendShowMessage(fmt.Sprint("Subtitle 2 offset ", offset.String()), true)
-
-					UpdateSubtitleOffsetAsync(s2.Name, offset)
-				}
-			}()
-			break
-		case gui.KEY_COMMA:
-			m.a.AddOffset(-100 * time.Millisecond)
-			break
-		case gui.KEY_PERIOD:
-			m.a.AddOffset(100 * time.Millisecond)
-			break
+		// 			UpdateSubtitleOffsetAsync(s2.Name, offset)
+		// 		}
+		// 	}()
+		// 	break
+		// case gui.KEY_COMMA:
+		// 	m.a.AddOffset(-100 * time.Millisecond)
+		// 	break
+		// case gui.KEY_PERIOD:
+		// 	m.a.AddOffset(100 * time.Millisecond)
+		// 	break
 		default:
 			return false
 		}
@@ -150,127 +110,102 @@ func (m *Movie) uievents() {
 		return true
 	})
 
-	chVolume := make(chan struct{})
-
 	m.w.FuncMouseWheelled = append(m.w.FuncMouseWheelled, func(deltaY float64) {
 		if deltaY == 0 {
 			return
 		}
-
-		if m.a == nil {
-			return
-		}
-
-		var volume byte
-		if deltaY > 0 {
-			volume = byte(m.a.DecreaseVolume() * 100)
-		} else {
-			volume = byte(m.a.IncreaseVolume() * 100)
-		}
-
-		m.p.Volume = volume
-		SavePlayingAsync(m.p)
-		// m.w.ShowMessage(fmt.Sprintf("Volume: %d%%", volume), true)
-		m.w.SetVolume(volume)
-		m.w.SetVolumeVisible(true)
-
-		select {
-		case chVolume <- struct{}{}:
-		case <-m.quit:
-			return
-		case <-time.After(100 * time.Millisecond):
-		}
+		m.AddVolume(int(deltaY * -10))
 
 	})
 
-	m.w.FuncSubtitleMenuClick = func(index int) {
-		log.Print("toggle subtitle:", index)
+	// m.w.FuncSubtitleMenuClick = func(index int) {
+	// 	log.Print("toggle subtitle:", index)
 
-		subs := m.subs
-		clicked := subs[index]
+	// 	subs := m.subs
+	// 	clicked := subs[index]
 
-		var s1, s2 *Subtitle
-		ps1, ps2 := m.getPlayingSubs()
+	// 	var s1, s2 *Subtitle
+	// 	ps1, ps2 := m.getPlayingSubs()
 
-		if ps1 == nil && ps2 == nil {
-			//add playing s1
-			s1 = clicked
-			// go s1.Play()
+	// 	if ps1 == nil && ps2 == nil {
+	// 		//add playing s1
+	// 		s1 = clicked
+	// 		// go s1.Play()
 
-			m.p.Sub1 = s1.Name
-			m.p.Sub2 = ""
+	// 		m.p.Sub1 = s1.Name
+	// 		m.p.Sub2 = ""
 
-		} else if ps1 == clicked {
-			//remove playing s1
-			ps1.Stop()
-			if ps2 != nil {
-				s1 = ps2
-				s1.IsMainSub = true
+	// 	} else if ps1 == clicked {
+	// 		//remove playing s1
+	// 		ps1.Stop()
+	// 		if ps2 != nil {
+	// 			s1 = ps2
+	// 			s1.IsMainSub = true
 
-				m.p.Sub1 = s1.Name
-				m.p.Sub2 = ""
-			}
-		} else if ps2 == clicked {
-			//remove playing s2
-			ps2.Stop()
-			s1 = ps1
+	// 			m.p.Sub1 = s1.Name
+	// 			m.p.Sub2 = ""
+	// 		}
+	// 	} else if ps2 == clicked {
+	// 		//remove playing s2
+	// 		ps2.Stop()
+	// 		s1 = ps1
 
-			m.p.Sub1 = s1.Name
-			m.p.Sub2 = ""
-		} else {
-			//replace playing subtitle
-			if clicked.IsTwoLangs() {
-				s1 = clicked
-				s2 = nil
-			} else if ps1.IsTwoLangs() {
-				s1 = clicked
-				s2 = nil
-			} else if isLangEqual(ps1.Lang1, clicked.Lang1) {
-				s1 = clicked
-				s2 = ps2
-			} else if ps2 == nil {
-				s1 = ps1
-				s2 = clicked
-			} else if isLangEqual(ps2.Lang1, clicked.Lang1) {
-				s1 = ps1
-				s2 = clicked
-			} else { //third language which is impossible for now
-				s1 = ps1
-				s2 = clicked
-			}
+	// 		m.p.Sub1 = s1.Name
+	// 		m.p.Sub2 = ""
+	// 	} else {
+	// 		//replace playing subtitle
+	// 		if clicked.IsTwoLangs() {
+	// 			s1 = clicked
+	// 			s2 = nil
+	// 		} else if ps1.IsTwoLangs() {
+	// 			s1 = clicked
+	// 			s2 = nil
+	// 		} else if isLangEqual(ps1.Lang1, clicked.Lang1) {
+	// 			s1 = clicked
+	// 			s2 = ps2
+	// 		} else if ps2 == nil {
+	// 			s1 = ps1
+	// 			s2 = clicked
+	// 		} else if isLangEqual(ps2.Lang1, clicked.Lang1) {
+	// 			s1 = ps1
+	// 			s2 = clicked
+	// 		} else { //third language which is impossible for now
+	// 			s1 = ps1
+	// 			s2 = clicked
+	// 		}
 
-			if s1 != ps1 {
-				ps1.Stop()
+	// 		if s1 != ps1 {
+	// 			ps1.Stop()
 
-				s1.IsMainSub = true
-				// go s1.Play()
+	// 			s1.IsMainSub = true
+	// 			// go s1.Play()
 
-				m.p.Sub1 = s1.Name
-			}
+	// 			m.p.Sub1 = s1.Name
+	// 		}
 
-			if s2 != nil {
-				if s2 != ps2 {
-					if ps2 != nil {
-						ps2.Stop()
-					}
+	// 		if s2 != nil {
+	// 			if s2 != ps2 {
+	// 				if ps2 != nil {
+	// 					ps2.Stop()
+	// 				}
 
-					s2.IsMainSub = false
-					// go s2.Play()
+	// 				s2.IsMainSub = false
+	// 				// go s2.Play()
 
-					m.p.Sub2 = s2.Name
-				}
-			} else {
-				if ps2 != nil {
-					ps2.Stop()
-				}
+	// 				m.p.Sub2 = s2.Name
+	// 			}
+	// 		} else {
+	// 			if ps2 != nil {
+	// 				ps2.Stop()
+	// 			}
 
-				m.p.Sub2 = ""
-			}
-		}
+	// 			m.p.Sub2 = ""
+	// 		}
+	// 	}
 
-		m.setPlayingSubs(s1, s2)
-		SavePlayingAsync(m.p)
-	}
+	// 	m.setPlayingSubs(s1, s2)
+	// 	SavePlayingAsync(m.p)
+	// }
 
 	go func() {
 		for {

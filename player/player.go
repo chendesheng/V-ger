@@ -99,11 +99,51 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 }
 
 func (app *appDelegate) OnMenuClick(typ int, tag int) int {
-	if typ == 3 {
+	switch typ {
+	case 1:
+		app.m.ToggleSubtitle(tag)
+	case 3:
 		app.m.TogglePlay()
+	case 4:
+		app.onSeekMenuClick(tag)
+	case 5:
+		app.m.AddVolume(tag)
+	case 6:
+		app.onSyncSubtitleClick(tag)
+	case 7:
+		app.onSyncAudioClick(tag)
 	}
-
 	return 0
+}
+
+func (app *appDelegate) onSeekMenuClick(typ int) {
+	switch typ {
+	case 0:
+		app.m.SeekBySubtitle(false) //backward
+	case 1:
+		app.m.SeekBySubtitle(true) //forward
+	case 2:
+		app.m.SeekOffset(-10 * time.Second)
+	case 3:
+		app.m.SeekOffset(10 * time.Second)
+	}
+}
+
+func (app *appDelegate) onSyncSubtitleClick(typ int) {
+	switch typ {
+	case 0:
+		app.m.SyncMainSubtitle(-200 * time.Millisecond)
+	case 1:
+		app.m.SyncMainSubtitle(200 * time.Millisecond)
+	case 2:
+		app.m.SyncSecondSubtitle(-200 * time.Millisecond)
+	case 3:
+		app.m.SyncSecondSubtitle(200 * time.Millisecond)
+	}
+}
+
+func (app *appDelegate) onSyncAudioClick(tag int) {
+	app.m.SyncAudio(time.Duration(tag) * 100 * time.Millisecond)
 }
 
 func main() {

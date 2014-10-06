@@ -65,12 +65,19 @@ void onPlaybackChange(int, double);
 int onOpenFile(const char*);
 void onWillTerminate();
 int isPlaying();
-void getSubtitles(void***, int*, int*, int*);
-void getAudioes(void***, int*, int*);
+void getAllSubtitleNames(void***, int*);
+void getPlayingSubtitles(int*, int*);
+
+void getAllAudioTracks(void***, int*);
+int getPlayingAudioTrack();
 
 #define MENU_AUDIO 0
 #define	MENU_SUBTITLE 1
 #define MENU_SEARCH_SUBTITLE 2
 #define MENU_PLAY 3
+#define MENU_SEEK 4
+#define MENU_VOLUME 5
+#define MENU_SYNC_SUBTITLE 6
+#define MENU_SYNC_AUDIO 7
 
 #endif

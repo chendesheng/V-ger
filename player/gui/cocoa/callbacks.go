@@ -27,8 +27,10 @@ var (
 
 type Player interface {
 	IsPlaying() bool
-	GetSubtitleNames() ([]string, int, int)
-	GetAudioNames() ([]string, int)
+	GetSubtitleNames() []string
+	GetPlayingSubtitles() (int, int)
+	GetAllAudioTracks() []string
+	GetPlayingAudioTrack() int
 }
 
 //export goOnMenuClick
@@ -127,8 +129,8 @@ func goIsPlaying() C.int {
 }
 
 //export goGetSubtitles
-func goGetSubtitles(names **unsafe.Pointer, length *C.int, firstSub, secondSub *C.int) {
-	strs, s1, s2 := P.GetSubtitleNames()
+func goGetSubtitles(names **unsafe.Pointer, length *C.int) {
+	strs := P.GetSubtitleNames()
 	if len(strs) == 0 {
 		return
 	}
@@ -141,13 +143,18 @@ func goGetSubtitles(names **unsafe.Pointer, length *C.int, firstSub, secondSub *
 	}
 
 	*names = &arr[0]
+}
+
+//export goGetPlayingSubtitles
+func goGetPlayingSubtitles(firstSub, secondSub *C.int) {
+	s1, s2 := P.GetPlayingSubtitles()
 	*firstSub = C.int(s1)
 	*secondSub = C.int(s2)
 }
 
-//export goGetAudioes
-func goGetAudioes(names **unsafe.Pointer, length *C.int, selected *C.int) {
-	strs, a := P.GetAudioNames()
+//export goGetAllAudioTracks
+func goGetAllAudioTracks(names **unsafe.Pointer, length *C.int) {
+	strs := P.GetAllAudioTracks()
 	log.Print("audio:", len(strs))
 	if len(strs) == 0 {
 		return
@@ -161,7 +168,11 @@ func goGetAudioes(names **unsafe.Pointer, length *C.int, selected *C.int) {
 	}
 
 	*names = &arr[0]
-	*selected = C.int(a)
+}
+
+//export goGetPlayingAudioTrack
+func goGetPlayingAudioTrack() C.int {
+	return C.int(P.GetPlayingAudioTrack())
 }
 
 func b2i(b bool) C.int {

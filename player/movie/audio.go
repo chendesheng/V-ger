@@ -54,7 +54,7 @@ func (m *Movie) setupAudio() error {
 		SavePlayingAsync(m.p)
 
 		var err error
-		m.a = NewAudio(m.c, float64(m.p.Volume)/100)
+		m.a = NewAudio(m.c, m.p.Volume)
 
 		err = m.a.Open(selectedStream)
 		if err != nil {

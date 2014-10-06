@@ -16,7 +16,6 @@ type window struct {
 	FuncKeyDown           []func(int) bool
 	FuncOnProgressChanged []func(int, float64)
 	FuncAudioMenuClick    []func(int)
-	FuncSubtitleMenuClick func(int)
 	FuncMouseWheelled     []func(float64)
 
 	chAlert               chan string
@@ -39,9 +38,9 @@ type window struct {
 	}
 	ChanShowSpeed chan *BufferInfo
 
-	ChanSetCursor        chan bool
-	ChanSetVolume        chan byte
-	ChanSetVolumeDisplay chan bool
+	ChanSetCursor      chan bool
+	chSetVolume        chan int
+	chSetVolumeVisible chan bool
 
 	ChanShowSpinning chan bool
 
@@ -192,8 +191,8 @@ func NewWindow(title string, width, height int) *Window {
 			ChanShowSpinning:    make(chan bool),
 			chDelayShowSpinning: nil,
 
-			ChanSetVolume:        make(chan byte),
-			ChanSetVolumeDisplay: make(chan bool),
+			chSetVolume:        make(chan int),
+			chSetVolumeVisible: make(chan bool),
 
 			ChanDestoryRender: make(chan struct{}),
 
@@ -246,7 +245,6 @@ func (w *Window) ClearEvents() {
 	w.FuncOnProgressChanged = w.FuncOnProgressChanged[:1]
 	w.FuncKeyDown = nil
 	w.FuncAudioMenuClick = nil
-	w.FuncSubtitleMenuClick = nil
 	w.FuncMouseWheelled = nil
 }
 
@@ -470,12 +468,12 @@ func (w *Window) SendHideSpinning(forceHide bool) {
 	}
 }
 
-func (w *Window) SendSetVolume(volume byte) {
-	w.ChanSetVolume <- volume
+func (w *Window) SendSetVolume(volume int) {
+	w.chSetVolume <- volume
 }
 
 func (w *Window) SendSetVolumeDisplay(b bool) {
-	w.ChanSetVolumeDisplay <- b
+	w.chSetVolumeVisible <- b
 }
 
 func (w *Window) Refresh(img []byte) {
@@ -517,9 +515,9 @@ func onTimerTick() {
 		case b := <-w.ChanSetCursor:
 			w.SetControlsVisible(b)
 			break
-		case volume := <-w.ChanSetVolume:
+		case volume := <-w.chSetVolume:
 			w.SetVolume(volume)
-		case b := <-w.ChanSetVolumeDisplay:
+		case b := <-w.chSetVolumeVisible:
 			w.SetVolumeVisible(b)
 		case arg := <-w.ChanSetSize:
 			w.SetSize(arg.width, arg.height)
@@ -584,10 +582,11 @@ func onMenuClick(typ int, tag int) int {
 			for _, fn := range w.FuncAudioMenuClick {
 				fn(tag)
 			}
-		case 1:
-			if w.FuncSubtitleMenuClick != nil {
-				w.FuncSubtitleMenuClick(tag)
-			}
+		// case 1:
+		// if w.FuncSubtitleMenuClick != nil {
+		// 	w.FuncSubtitleMenuClick(tag)
+		// }
+
 		case 2:
 			onSearchSubtitleMenuItemClick()
 

@@ -144,7 +144,7 @@ func (w NativeWindow) SetSpinningVisible(b bool) {
 	C.setSpinningVisible(unsafe.Pointer(w), i)
 }
 
-func (w NativeWindow) SetVolume(volume byte) {
+func (w NativeWindow) SetVolume(volume int) {
 	C.setVolume(unsafe.Pointer(w), C.int(volume))
 }
 

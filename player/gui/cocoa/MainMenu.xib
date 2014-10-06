@@ -140,18 +140,30 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="weX-61-NVk"/>
-                            <menuItem title="Backward 5 Seconds" keyEquivalent="" id="USN-lw-NFD">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                            <menuItem title="Backwrad Subtitle" keyEquivalent="" id="USN-lw-NFD">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="seekBackwardBySubtitle:" target="-1" id="HeM-pB-9zy"/>
+                                </connections>
                             </menuItem>
-                            <menuItem title="Forward 5 Seconds" keyEquivalent="" id="qu4-9Q-seR">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                            <menuItem title="Forward Subtitle" keyEquivalent="" id="qu4-9Q-seR">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="seekForwardBySubtitle:" target="-1" id="hRf-Cf-3bu"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="ZNv-0l-KPm"/>
-                            <menuItem title="Backward Subtitle" keyEquivalent="" id="C5y-gd-Ix0">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Backward 10 sec." keyEquivalent="" id="C5y-gd-Ix0">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                <connections>
+                                    <action selector="seekBackwardByTime:" target="-1" id="Blu-7d-oQy"/>
+                                </connections>
                             </menuItem>
-                            <menuItem title="Forward Subtitle" keyEquivalent="" id="XbB-vd-Va8">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Forward 10 sec." keyEquivalent="" id="XbB-vd-Va8">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                <connections>
+                                    <action selector="seekForwardByTime:" target="-1" id="edH-rv-lgT"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>
@@ -186,16 +198,28 @@
                             <menuItem isSeparatorItem="YES" id="U7B-65-Mmm"/>
                             <menuItem title="Volume Up" keyEquivalent="" id="fG2-5c-Gcm">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="increaseVolume:" target="-1" id="c0d-VT-et9"/>
+                                </connections>
                             </menuItem>
                             <menuItem title="Volume Down" keyEquivalent="" id="xod-EJ-19k">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="decreaseVolume:" target="-1" id="Y5r-1c-iVt"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="WmU-yY-7xO"/>
                             <menuItem title="0.1 sec. Pull" keyEquivalent="," id="b5e-qo-FaP">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="pullAudio:" target="-1" id="Kl7-nd-qet"/>
+                                </connections>
                             </menuItem>
                             <menuItem title="0.1 sec. Push" keyEquivalent="." id="ySW-Pc-PI3">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="pushAudio:" target="-1" id="UAm-r9-kas"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>
@@ -223,9 +247,15 @@
                             </menuItem>
                             <menuItem title="0.2 sec. Pull" keyEquivalent="-" id="Qar-Jo-2Ye">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="pullMainSubtitle:" target="-1" id="TfV-eY-Wrw"/>
+                                </connections>
                             </menuItem>
                             <menuItem title="0.2 sec. Push" keyEquivalent="=" id="iCf-3E-h0q">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="pushMainSubtitle:" target="-1" id="nR1-xj-xCJ"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="D0C-9H-3O2"/>
                             <menuItem title="Second Subtitle" id="fAk-cP-wHY">
@@ -233,9 +263,15 @@
                             </menuItem>
                             <menuItem title="0.2 sec. Pull" keyEquivalent="[" id="EYE-xn-fgZ">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="pullSecondSubtitle:" target="-1" id="InC-tr-uRJ"/>
+                                </connections>
                             </menuItem>
                             <menuItem title="0.2 sec. Push" keyEquivalent="]" id="AES-ge-xGh">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="pushSecondSubtitle:" target="-1" id="tvM-96-XNV"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>
