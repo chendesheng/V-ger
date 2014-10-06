@@ -6,13 +6,10 @@
      @autoreleasepool {
           NSLog(@"application openFile: %@",filename);
 
-          NSLog(@"note recent file: %@", filename);
-          [[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
-
           const char *cfilename = [filename UTF8String];
           BOOL b = onOpenFile(cfilename) == 1;
  
-         return b;
+          return b;
      }
 }
 
@@ -64,7 +61,7 @@
 
 - (void)timerTick:(NSEvent *)event {
     @autoreleasepool {
-     	onTimerTick((void*)self);
+     	onTimerTick();
      }
 }
 @end

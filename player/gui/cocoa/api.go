@@ -18,6 +18,13 @@ func GetScreenSize() (int, int) {
 	return int(sz.width), int(sz.height)
 }
 
+func AddRecentOpenedFile(str string) {
+	cstr := C.CString(str)
+	defer C.free(unsafe.Pointer(cstr))
+
+	C.addRecentOpenedFile(cstr)
+}
+
 func (w NativeWindow) Alert(str string) {
 	cstr := C.CString(str)
 	defer C.free(unsafe.Pointer(cstr))

@@ -47,7 +47,8 @@ func (app *appDelegate) OpenFile(filename string) bool {
 
 			if err == nil {
 				app.m.PlayAsync()
-				// gui.add
+
+				gui.SendAddRecentOpenedFile(filename)
 				break
 			} else {
 				app.m.Reset()

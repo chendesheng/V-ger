@@ -34,3 +34,7 @@ func run() {
 func getScreenSize() (int, int) {
 	return cocoa.GetScreenSize()
 }
+
+func AddRecentOpenedFile(filename string) {
+	cocoa.AddRecentOpenedFile(filename)
+}

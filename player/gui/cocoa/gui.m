@@ -329,3 +329,8 @@ void closeWindow(void* wptr) {
     Window* w = (Window*)wptr;
     [w close];
 }
+
+void addRecentOpenedFile(char* str) {
+    NSString* filename = [NSString stringWithUTF8String:str];
+    [[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
+}

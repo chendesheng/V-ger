@@ -56,6 +56,8 @@ void setSpinningVisible(void*, int);
 void setVolume(void*, int);
 void setVolumeVisible(void*, int);
 
+void addRecentOpenedFile(char*);
+
 //callbacks
 void onMouseMove();
 void onMenuClick(int, int);

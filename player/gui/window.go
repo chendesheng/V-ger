@@ -19,7 +19,8 @@ type window struct {
 	FuncSubtitleMenuClicked []func(int)
 	FuncMouseWheelled       []func(float64)
 
-	chAlert chan string
+	chAlert               chan string
+	chAddRecentOpenedFile chan string
 
 	ChanDraw     chan []byte
 	ChanShowText chan SubItemArg
@@ -199,9 +200,10 @@ func NewWindow(title string, width, height int) *Window {
 			originalWidth:  width,
 			originalHeight: height,
 
-			chCursor:         make(chan struct{}),
-			chCursorAutoHide: make(chan struct{}),
-			chAlert:          make(chan string),
+			chCursor:              make(chan struct{}),
+			chCursorAutoHide:      make(chan struct{}),
+			chAlert:               make(chan string),
+			chAddRecentOpenedFile: make(chan string),
 		},
 	}
 
@@ -544,6 +546,8 @@ func onTimerTick() {
 			w.showMessage(&arg.SubItem, arg.AutoHide)
 		case <-w.ChanHideMessage:
 			w.HideMessage()
+		case filename := <-w.chAddRecentOpenedFile:
+			AddRecentOpenedFile(filename)
 		default:
 			if w.currentMessagePtr != 0 && time.Now().After(w.showMessageDeadline) {
 				w.HideMessage()
@@ -611,4 +615,8 @@ func onMouseMove(x, y int) {
 func (w *Window) SendAlert(str string) {
 	w.chCursorAutoHide <- struct{}{}
 	w.chAlert <- str
+}
+
+func SendAddRecentOpenedFile(filename string) {
+	w.chAddRecentOpenedFile <- filename
 }
