@@ -116,10 +116,10 @@ void updatePlaybackInfo(void* ptr, char* left, char* right, double percent) {
         leftStr = [[NSString stringWithUTF8String:left] retain];
     }
     NSString* rightStr;
-    if (strlen(left) == 0) {
+    if (strlen(right) == 0) {
         rightStr = @"00:00:00";
     } else {
-        rightStr = [[NSString stringWithUTF8String:left] retain];
+        rightStr = [[NSString stringWithUTF8String:right] retain];
     }
     [w->glView updatePorgressInfo:leftStr rightString:rightStr percent:percent];
 }
