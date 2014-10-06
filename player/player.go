@@ -41,6 +41,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 		}
 
 		app.m = movie.New()
+		gui.SetPlayer(app.m)
 
 		for i := 0; i < 3; i++ {
 			err := app.m.Open(app.w, filename)
@@ -97,10 +98,12 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	}
 }
 
-func (app *appDelegate) OnMenuClick(cmd int) {
-	if cmd == 3 {
-		app.m.PauseClock()
+func (app *appDelegate) OnMenuClick(typ int, tag int) int {
+	if typ == 3 {
+		app.m.TogglePlay()
 	}
+
+	return 0
 }
 
 func main() {

@@ -304,10 +304,16 @@ func (m *Movie) setupVideo() error {
 	return nil
 }
 
-func (m *Movie) ResumeClock() {
-	m.c.Resume()
+func (m *Movie) IsPlaying() bool {
+	if m.c == nil {
+		return false
+	} else {
+		return m.c.IsRunning()
+	}
 }
 
-func (m *Movie) PauseClock() {
-	m.c.Pause()
+func (m *Movie) TogglePlay() {
+	if m.c != nil {
+		m.c.Toggle()
+	}
 }

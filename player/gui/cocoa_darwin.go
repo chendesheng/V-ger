@@ -38,3 +38,7 @@ func getScreenSize() (int, int) {
 func AddRecentOpenedFile(filename string) {
 	cocoa.AddRecentOpenedFile(filename)
 }
+
+func SetPlayer(p cocoa.Player) {
+	cocoa.P = p
+}

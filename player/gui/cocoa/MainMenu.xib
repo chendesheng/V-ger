@@ -136,7 +136,7 @@
                             <menuItem title="Play" keyEquivalent=" " id="pmd-S8-Xgv">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="play:" target="-1" id="Ofd-cY-gWh"/>
+                                    <action selector="playPause:" target="-1" id="AOb-ui-zJo"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="weX-61-NVk"/>

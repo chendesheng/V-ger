@@ -44,6 +44,7 @@
 
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
+    [w updateRoundCorner];
     [w->glView showAllTexts];
 }
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)newFrame {

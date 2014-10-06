@@ -111,6 +111,13 @@ func (c *Clock) Pause() {
 	c.pause()
 }
 
+func (c *Clock) IsRunning() bool {
+	c.Lock()
+	defer c.Unlock()
+
+	return c.running
+}
+
 func (c *Clock) pause() {
 	if c.running {
 		c.running = false

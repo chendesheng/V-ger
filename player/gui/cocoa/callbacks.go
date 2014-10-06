@@ -7,7 +7,7 @@ import "unsafe"
 
 var (
 	OnMouseMove      func(int, int)
-	OnMenuClick      func(int, int)
+	OnMenuClick      func(int, int) int
 	OnMouseWheel     func(float64, float64)
 	OnDrop           func(string)
 	OnDraw           func()
@@ -18,12 +18,20 @@ var (
 	OnOpenOpenPanel  func()
 	OnCloseOpenPanel func(string)
 	OnOpenFile       func(string) bool
+
+	P Player
 )
 
+type Player interface {
+	IsPlaying() bool
+}
+
 //export goOnMenuClick
-func goOnMenuClick(typ int, tag int) {
+func goOnMenuClick(typ int, tag int) C.int {
 	if OnMenuClick != nil {
-		OnMenuClick(typ, tag)
+		return C.int(OnMenuClick(typ, tag))
+	} else {
+		return 0
 	}
 }
 
@@ -58,13 +66,7 @@ func goOnTimerTick() {
 //export goOnKeyDown
 func goOnKeyDown(keycode int) C.int { //true if already handled
 	if OnKeyDown != nil {
-		ret := OnKeyDown(keycode)
-
-		if ret {
-			return 1
-		} else {
-			return 0
-		}
+		return b2i(OnKeyDown(keycode))
 	} else {
 		return 0
 	}
@@ -104,11 +106,24 @@ func goOnOpenFile(cfilename unsafe.Pointer) C.int {
 	filename := C.GoString((*C.char)(cfilename))
 
 	if OnOpenFile != nil {
-		if OnOpenFile(filename) {
-			return 1
-		} else {
-			return 0
-		}
+		return b2i(OnOpenFile(filename))
+	} else {
+		return 0
+	}
+}
+
+//export goIsPlaying
+func goIsPlaying() C.int {
+	if P != nil {
+		return b2i(P.IsPlaying())
+	} else {
+		return 0
+	}
+}
+
+func b2i(b bool) C.int {
+	if b {
+		return 1
 	} else {
 		return 0
 	}

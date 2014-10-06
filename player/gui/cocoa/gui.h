@@ -60,7 +60,7 @@ void addRecentOpenedFile(char*);
 
 //callbacks
 void onMouseMove();
-void onMenuClick(int, int);
+int onMenuClick(int, int);
 void onOpenOpenPanel();
 void onCloseOpenPanel(char*);
 void onDraw();
@@ -70,6 +70,8 @@ void onMouseWheel(double);
 void onPlaybackChange(int, double);
 int onOpenFile(const char*);
 void onWillTerminate();
+
+int isPlaying();
 
 
 #define MENU_AUDIO 0

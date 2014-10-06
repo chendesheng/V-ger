@@ -12,7 +12,7 @@ import (
 func (m *Movie) uievents() {
 	log.Print("movie uievents")
 
-	m.w.FuncAudioMenuClicked = append(m.w.FuncAudioMenuClicked, func(i int) {
+	m.w.FuncAudioMenuClick = append(m.w.FuncAudioMenuClick, func(i int) {
 		go func() {
 			log.Printf("Audio menu click:%d", i)
 
@@ -34,9 +34,6 @@ func (m *Movie) uievents() {
 		SavePlayingAsync(m.p)
 
 		switch keycode {
-		case gui.KEY_SPACE:
-			m.c.Toggle()
-			break
 		case gui.KEY_R:
 			if !m.w.IsFullScreen() {
 				m.w.ToggleForceScreenRatio()
@@ -188,7 +185,7 @@ func (m *Movie) uievents() {
 
 	})
 
-	m.w.FuncSubtitleMenuClicked = append(m.w.FuncSubtitleMenuClicked, func(index int) {
+	m.w.FuncSubtitleMenuClick = append(m.w.FuncSubtitleMenuClick, func(index int) {
 		go func() {
 			log.Print("toggle subtitle:", index)
 

@@ -12,12 +12,12 @@ import (
 var w *Window // current window
 
 type window struct {
-	FuncTimerTick           []func()
-	FuncKeyDown             []func(int) bool
-	FuncOnProgressChanged   []func(int, float64)
-	FuncAudioMenuClicked    []func(int)
-	FuncSubtitleMenuClicked []func(int)
-	FuncMouseWheelled       []func(float64)
+	FuncTimerTick         []func()
+	FuncKeyDown           []func(int) bool
+	FuncOnProgressChanged []func(int, float64)
+	FuncAudioMenuClick    []func(int)
+	FuncSubtitleMenuClick []func(int)
+	FuncMouseWheelled     []func(float64)
 
 	chAlert               chan string
 	chAddRecentOpenedFile chan string
@@ -245,8 +245,8 @@ func (w *Window) initEvents() {
 func (w *Window) ClearEvents() {
 	w.FuncOnProgressChanged = w.FuncOnProgressChanged[:1]
 	w.FuncKeyDown = nil
-	w.FuncAudioMenuClicked = nil
-	w.FuncSubtitleMenuClicked = nil
+	w.FuncAudioMenuClick = nil
+	w.FuncSubtitleMenuClick = nil
 	w.FuncMouseWheelled = nil
 }
 
@@ -577,25 +577,27 @@ func onProgressChange(typ int, position float64) {
 	}
 }
 
-func onMenuClick(typ int, tag int) {
+func onMenuClick(typ int, tag int) int {
 	if w != nil {
 		switch typ {
 		case 0:
-			for _, fn := range w.FuncAudioMenuClicked {
+			for _, fn := range w.FuncAudioMenuClick {
 				fn(tag)
 			}
 		case 1:
-			for _, fn := range w.FuncSubtitleMenuClicked {
+			for _, fn := range w.FuncSubtitleMenuClick {
 				fn(tag)
 			}
 		case 2:
 			onSearchSubtitleMenuItemClick()
-		case 3:
+		default:
 			if appDelegate != nil {
-				appDelegate.OnMenuClick(3)
+				return appDelegate.OnMenuClick(typ, tag)
 			}
 		}
 	}
+
+	return 0
 }
 
 func onMouseWheel(deltaX float64, deltaY float64) {

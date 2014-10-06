@@ -118,8 +118,20 @@
     titleTextView.title = title;
 }
 
--(void)play:(id)sender {
+-(void)playPause:(id)sender {
     onMenuClick(MENU_PLAY, 0);
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+    if ([item action] == @selector(playPause:)) {
+        if (isPlaying()) {
+            item.title = @"Pause";
+        } else {
+            item.title = @"Play";
+        }
+        return YES;
+    }
+    return YES;
 }
 @end
 

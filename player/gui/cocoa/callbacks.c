@@ -40,8 +40,11 @@
 	inline void onMouseMove() {
 		goOnMouseMove();
 	}
-	inline void onMenuClick(int type, int tag) {
-		goOnMenuClick(type, tag);
+	inline int onMenuClick(int type, int tag) {
+		return goOnMenuClick(type, tag);
+	}
+	inline int isPlaying() {
+		return goIsPlaying();
 	}
 #else
 #include <stdio.h>
@@ -86,7 +89,11 @@
 	inline void onMouseMove() {
         //showCursor(w);
 	}
-	inline void onMenuClick(int type, int tag) {
+	inline int onMenuClick(int type, int tag) {
         printf("onMenuClick: %d %d\n", type, tag);
+        return 0;
 	}
+    inline int isPlaying() {
+        return 0;
+    }
 #endif
