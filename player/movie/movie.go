@@ -267,9 +267,6 @@ func (m *Movie) Close() {
 
 	m.stopPlayingSubs()
 
-	m.w.HideSubtitleMenu()
-	m.w.HideAudioMenu()
-
 	if m.httpBuffer != nil {
 		m.httpBuffer.Close()
 	}
@@ -310,6 +307,24 @@ func (m *Movie) IsPlaying() bool {
 	} else {
 		return m.c.IsRunning()
 	}
+}
+
+func (m *Movie) GetSubtitleNames() (names []string, firstSub int, secondSub int) {
+	names = make([]string, len(m.subs))
+	s1, s2 := m.getPlayingSubs()
+
+	firstSub = -1
+	secondSub = -1
+	for i, sub := range m.subs {
+		names[i] = sub.Name
+		if s1 == sub {
+			firstSub = i
+		} else if s2 == sub {
+			secondSub = i
+		}
+	}
+
+	return
 }
 
 func (m *Movie) TogglePlay() {

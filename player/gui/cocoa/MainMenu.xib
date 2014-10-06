@@ -215,13 +215,10 @@
                             </menuItem>
                             <menuItem title="Select" id="MEM-U2-fEf">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Select" id="VvN-dx-19m">
-                                    <items>
-                                        <menuItem title="(None)" id="6R8-V7-ScC">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                        </menuItem>
-                                    </items>
-                                </menu>
+                                <menu key="submenu" title="Select" id="VvN-dx-19m"/>
+                                <connections>
+                                    <action selector="selectSubtitle:" target="-1" id="NBU-LD-CSP"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="rF3-du-kVx"/>
                             <menuItem title="Main Subtitle" id="fqN-oF-RXj">

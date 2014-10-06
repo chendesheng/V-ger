@@ -136,9 +136,6 @@ func (m *Movie) uievents() {
 				}
 			}()
 			break
-		case gui.KEY_ESCAPE:
-			m.w.ToggleFullScreen()
-			break
 		case gui.KEY_COMMA:
 			m.a.AddOffset(-100 * time.Millisecond)
 			break
@@ -185,108 +182,94 @@ func (m *Movie) uievents() {
 
 	})
 
-	m.w.FuncSubtitleMenuClick = append(m.w.FuncSubtitleMenuClick, func(index int) {
-		go func() {
-			log.Print("toggle subtitle:", index)
+	m.w.FuncSubtitleMenuClick = func(index int) {
+		log.Print("toggle subtitle:", index)
 
-			subs := m.subs
-			clicked := subs[index]
+		subs := m.subs
+		clicked := subs[index]
 
-			var s1, s2 *Subtitle
-			ps1, ps2 := m.getPlayingSubs()
+		var s1, s2 *Subtitle
+		ps1, ps2 := m.getPlayingSubs()
 
-			if ps1 == nil && ps2 == nil {
-				//add playing s1
+		if ps1 == nil && ps2 == nil {
+			//add playing s1
+			s1 = clicked
+			// go s1.Play()
+
+			m.p.Sub1 = s1.Name
+			m.p.Sub2 = ""
+
+		} else if ps1 == clicked {
+			//remove playing s1
+			ps1.Stop()
+			if ps2 != nil {
+				s1 = ps2
+				s1.IsMainSub = true
+
+				m.p.Sub1 = s1.Name
+				m.p.Sub2 = ""
+			}
+		} else if ps2 == clicked {
+			//remove playing s2
+			ps2.Stop()
+			s1 = ps1
+
+			m.p.Sub1 = s1.Name
+			m.p.Sub2 = ""
+		} else {
+			//replace playing subtitle
+			if clicked.IsTwoLangs() {
 				s1 = clicked
+				s2 = nil
+			} else if ps1.IsTwoLangs() {
+				s1 = clicked
+				s2 = nil
+			} else if isLangEqual(ps1.Lang1, clicked.Lang1) {
+				s1 = clicked
+				s2 = ps2
+			} else if ps2 == nil {
+				s1 = ps1
+				s2 = clicked
+			} else if isLangEqual(ps2.Lang1, clicked.Lang1) {
+				s1 = ps1
+				s2 = clicked
+			} else { //third language which is impossible for now
+				s1 = ps1
+				s2 = clicked
+			}
+
+			if s1 != ps1 {
+				ps1.Stop()
+
+				s1.IsMainSub = true
 				// go s1.Play()
 
 				m.p.Sub1 = s1.Name
-				m.p.Sub2 = ""
+			}
 
-			} else if ps1 == clicked {
-				//remove playing s1
-				ps1.Stop()
-				if ps2 != nil {
-					s1 = ps2
-					s1.IsMainSub = true
-
-					m.p.Sub1 = s1.Name
-					m.p.Sub2 = ""
-				}
-			} else if ps2 == clicked {
-				//remove playing s2
-				ps2.Stop()
-				s1 = ps1
-
-				m.p.Sub1 = s1.Name
-				m.p.Sub2 = ""
-			} else {
-				//replace playing subtitle
-				if clicked.IsTwoLangs() {
-					s1 = clicked
-					s2 = nil
-				} else if ps1.IsTwoLangs() {
-					s1 = clicked
-					s2 = nil
-				} else if isLangEqual(ps1.Lang1, clicked.Lang1) {
-					s1 = clicked
-					s2 = ps2
-				} else if ps2 == nil {
-					s1 = ps1
-					s2 = clicked
-				} else if isLangEqual(ps2.Lang1, clicked.Lang1) {
-					s1 = ps1
-					s2 = clicked
-				} else { //third language which is impossible for now
-					s1 = ps1
-					s2 = clicked
-				}
-
-				if s1 != ps1 {
-					ps1.Stop()
-
-					s1.IsMainSub = true
-					// go s1.Play()
-
-					m.p.Sub1 = s1.Name
-				}
-
-				if s2 != nil {
-					if s2 != ps2 {
-						if ps2 != nil {
-							ps2.Stop()
-						}
-
-						s2.IsMainSub = false
-						// go s2.Play()
-
-						m.p.Sub2 = s2.Name
-					}
-				} else {
+			if s2 != nil {
+				if s2 != ps2 {
 					if ps2 != nil {
 						ps2.Stop()
 					}
 
-					m.p.Sub2 = ""
+					s2.IsMainSub = false
+					// go s2.Play()
+
+					m.p.Sub2 = s2.Name
 				}
+			} else {
+				if ps2 != nil {
+					ps2.Stop()
+				}
+
+				m.p.Sub2 = ""
 			}
+		}
 
-			m.setPlayingSubs(s1, s2)
-
-			t1, t2 := -1, -1
-			for i, s := range m.subs {
-				if s1 == s {
-					t1 = i
-				}
-				if s2 == s {
-					t2 = i
-				}
-			}
-			m.w.SelectSubtitleMenu(t1, t2)
-
-			SavePlayingAsync(m.p)
-		}()
-	})
+		m.setPlayingSubs(s1, s2)
+		SavePlayingAsync(m.p)
+	}
 
 	go func() {
 		for {

@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"path/filepath"
 	"sort"
 	"time"
 	"unicode/utf8"
@@ -229,47 +228,6 @@ func (m *Movie) setupDefaultSubtitles() {
 
 	SavePlayingAsync(m.p)
 }
-func (m *Movie) setupSubtitlesMenu() {
-	log.Print("setupSubtitlesMenu")
-
-	m.w.HideSubtitleMenu()
-
-	tags := make([]int32, 0)
-	names := make([]string, 0)
-
-	selected1 := -1
-	selected2 := -1
-
-	s1, s2 := m.getPlayingSubs()
-	for i, sub := range m.subs {
-		tags = append(tags, int32(i))
-		names = append(names, filepath.Base(sub.Name))
-
-		if s1 != nil && sub.Name == s1.Name {
-			selected1 = i
-		}
-
-		if s2 != nil && sub.Name == s2.Name {
-			selected2 = i
-		}
-	}
-
-	if selected1 == -1 && selected2 == -1 {
-		selected1 = 0
-	}
-
-	if len(names) > 0 {
-		m.w.InitSubtitleMenu(names, tags, selected1, selected2)
-	}
-}
-func getSubValues(subs map[string]*Sub) []*Sub {
-	var values []*Sub
-	for _, s := range subs {
-		values = append(values, s)
-	}
-
-	return values
-}
 
 func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 	if len(subs) > 0 {
@@ -282,6 +240,5 @@ func (m *Movie) setupSubtitles(subs map[string]*Sub) {
 		sort.Sort(Subtitles(m.subs))
 
 		m.setupDefaultSubtitles()
-		m.setupSubtitlesMenu()
 	}
 }

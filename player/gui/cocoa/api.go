@@ -3,10 +3,7 @@ package cocoa
 // #include "gui.h"
 // #include <stdlib.h>
 import "C"
-import (
-	"log"
-	"unsafe"
-)
+import "unsafe"
 
 func Run() {
 	C.initialize()
@@ -34,16 +31,8 @@ func (w NativeWindow) Alert(str string) {
 
 type NativeWindow uintptr
 
-func (NativeWindow) HideSubtitleMenu() {
-	C.hideSubtitleMenu()
-}
-
 func (NativeWindow) HideAudioMenu() {
 	C.hideAudioMenu()
-}
-
-func (NativeWindow) SelectSubtitleMenu(t1, t2 int) {
-	C.selectSubtitleMenu(C.int(t1), C.int(t2))
 }
 
 func (w NativeWindow) InitAudioMenu(names []string, tags []int32, selected int) {
@@ -57,25 +46,6 @@ func (w NativeWindow) InitAudioMenu(names []string, tags []int32, selected int) 
 	}
 
 	C.initAudioMenu(unsafe.Pointer(w), (**C.char)(&cnames[0]), (*C.int32_t)(unsafe.Pointer(&tags[0])), C.int(len(cnames)), C.int(selected))
-
-	for _, cname := range cnames {
-		C.free(unsafe.Pointer(cname))
-	}
-}
-
-func (w NativeWindow) InitSubtitleMenu(names []string, tags []int32, selected1 int, selected2 int) {
-	if len(names) == 0 {
-		return
-	}
-
-	cnames := make([]*C.char, 0)
-	for _, name := range names {
-		cnames = append(cnames, C.CString(name))
-	}
-
-	log.Printf("selected1:%d, selected2:%d", selected1, selected2)
-
-	C.initSubtitleMenu(unsafe.Pointer(w), (**C.char)(&cnames[0]), (*C.int32_t)(unsafe.Pointer(&tags[0])), C.int(len(cnames)), C.int32_t(selected1), C.int32_t(selected2))
 
 	for _, cname := range cnames {
 		C.free(unsafe.Pointer(cname))

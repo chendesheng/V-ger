@@ -46,6 +46,9 @@
 	inline int isPlaying() {
 		return goIsPlaying();
 	}
+	inline void getSubtitles(void*** names, int* length, int* firstSub, int* secondSub) {
+		goGetSubtitles(names, length, firstSub, secondSub);   
+	}	
 #else
 #include <stdio.h>
     inline void onDraw() {
@@ -96,4 +99,7 @@
     inline int isPlaying() {
         return 0;
     }
+inline void getSubtitles(void*** names, int* length, int* firstSub, int* secondSub) {
+    
+}
 #endif

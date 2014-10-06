@@ -1,4 +1,5 @@
 #import "window.h"
+#include <stdlib.h>
 
 @implementation Window
 - (id)initWithWidth:(int)w height:(int)h  {
@@ -121,6 +122,13 @@
 -(void)playPause:(id)sender {
     onMenuClick(MENU_PLAY, 0);
 }
+-(void)selectSubtitle:(id)sender {
+}
+-(void)selectSubtitleItem:(id)sender {
+    NSMenuItem* item = (NSMenuItem*)sender;
+    onMenuClick(MENU_SUBTITLE, (int)item.tag);
+}
+
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     if ([item action] == @selector(playPause:)) {
@@ -128,6 +136,29 @@
             item.title = @"Pause";
         } else {
             item.title = @"Play";
+        }
+        return YES;
+    } else if ([item action] == @selector(selectSubtitle:)) {
+        NSMenu* menu = item.submenu;
+        [menu removeAllItems];
+
+        char** names;
+        int length;
+        int firstSub, secondSub;
+        getSubtitles((void***)&names, &length, &firstSub, &secondSub);
+        if (length == 0) {
+            [menu addItemWithTitle:@"(None)" action:nil keyEquivalent:@""];
+        } else {
+            for (int i = 0; i < length; i++) {
+                NSMenuItem * submenuItem = [menu addItemWithTitle:[NSString stringWithUTF8String:names[i]] action:@selector(selectSubtitleItem:) keyEquivalent:@""];
+                submenuItem.tag = i;
+                if (i == firstSub || i == secondSub) {
+                    submenuItem.state = NSOnState;
+                } else {
+                    submenuItem.state = NSOffState;
+                }
+                free(names[i]);
+            }
         }
         return YES;
     }

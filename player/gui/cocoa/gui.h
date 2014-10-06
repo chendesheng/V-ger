@@ -45,9 +45,6 @@ void hideSubtitle(void*, void*);
 
 void initAudioMenu(void*, char**, int32_t*, int, int);
 void hideAudioMenu();
-void initSubtitleMenu(void*, char**, int32_t*, int, int32_t, int32_t);
-void hideSubtitleMenu();
-void selectSubtitleMenu(int,int);
 
 //including playback panel, window title, cursor
 void setControlsVisible(void*, int);
@@ -70,9 +67,8 @@ void onMouseWheel(double);
 void onPlaybackChange(int, double);
 int onOpenFile(const char*);
 void onWillTerminate();
-
 int isPlaying();
-
+void getSubtitles(void***, int*, int*, int*);
 
 #define MENU_AUDIO 0
 #define	MENU_SUBTITLE 1

@@ -24,6 +24,7 @@ var (
 
 type Player interface {
 	IsPlaying() bool
+	GetSubtitleNames() ([]string, int, int)
 }
 
 //export goOnMenuClick
@@ -119,6 +120,25 @@ func goIsPlaying() C.int {
 	} else {
 		return 0
 	}
+}
+
+//export goGetSubtitles
+func goGetSubtitles(names **unsafe.Pointer, length *C.int, firstSub, secondSub *C.int) {
+	strs, s1, s2 := P.GetSubtitleNames()
+	if len(strs) == 0 {
+		return
+	}
+
+	*length = C.int(len(strs))
+
+	arr := make([]unsafe.Pointer, len(strs))
+	for i, str := range strs {
+		arr[i] = unsafe.Pointer(C.CString(str))
+	}
+
+	*names = &arr[0]
+	*firstSub = C.int(s1)
+	*secondSub = C.int(s2)
 }
 
 func b2i(b bool) C.int {

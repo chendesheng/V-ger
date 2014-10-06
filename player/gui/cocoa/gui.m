@@ -76,9 +76,6 @@ void hideMenuNSString(NSString* title) {
         }
     }
 }
-void hideSubtitleMenu() {
-    hideMenuNSString(@"Subtitle");
-}
 void hideAudioMenu() {
     hideMenuNSString(@"Audio");
 }
@@ -110,53 +107,6 @@ void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selecte
             }
             [audioMenuItem setSubmenu:audioMenu];
         }
-    }
-}
-
-void initSubtitleMenu(void* wptr, char** names, int32_t* tags, int len, int32_t selected1, int32_t selected2) {
-    hideSubtitleMenu();
-    
-    @autoreleasepool {
-        if (len > 0) {
-            NSWindow* w = (NSWindow*)wptr;
-
-            NSMenu* menubar = [NSApp mainMenu];
-            NSMenuItem* subtitleMenuItem = [[NSMenuItem new] autorelease];
-            [subtitleMenuItem setTitle:@"Subtitle"];
-            [menubar addItem:subtitleMenuItem];
-            NSMenu* subtitleMenu = [[NSMenu alloc] initWithTitle:@"Subtitle"];
-
-            for (int i = 0; i < len; i++) {
-                char* name = names[i];
-                int tag = tags[i];
-                NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
-                    action:@selector(subtitleMenuItemClick:) keyEquivalent:@""];
-                [item autorelease];
-                [item setTarget: w];
-                [item setTag: tag];
-                [subtitleMenu addItem:item];
-
-                if (tag == selected1 || tag == selected2) {
-                    [item setState: NSOnState];
-                }
-            }
-
-            [subtitleMenuItem setSubmenu:subtitleMenu];
-        }
-    }
-}
-void selectSubtitleMenu(int t1, int t2) {
-    @autoreleasepool {
-        NSMenuItem* menu = getTopMenuByTitle(@"Subtitle");
-        for (NSMenuItem* item in [[menu submenu] itemArray]) {
-            int tag = (int)[item tag];
-            if (tag == t1 || tag == t2) {
-                [item setState:NSOnState];
-            } else {
-                [item setState:NSOffState];
-            }
-        }
-    
     }
 }
 

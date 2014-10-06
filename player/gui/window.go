@@ -16,7 +16,7 @@ type window struct {
 	FuncKeyDown           []func(int) bool
 	FuncOnProgressChanged []func(int, float64)
 	FuncAudioMenuClick    []func(int)
-	FuncSubtitleMenuClick []func(int)
+	FuncSubtitleMenuClick func(int)
 	FuncMouseWheelled     []func(float64)
 
 	chAlert               chan string
@@ -585,11 +585,12 @@ func onMenuClick(typ int, tag int) int {
 				fn(tag)
 			}
 		case 1:
-			for _, fn := range w.FuncSubtitleMenuClick {
-				fn(tag)
+			if w.FuncSubtitleMenuClick != nil {
+				w.FuncSubtitleMenuClick(tag)
 			}
 		case 2:
 			onSearchSubtitleMenuItemClick()
+
 		default:
 			if appDelegate != nil {
 				return appDelegate.OnMenuClick(typ, tag)
