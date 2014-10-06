@@ -178,13 +178,10 @@
                         <items>
                             <menuItem title="Select" id="590-Fq-vUw">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Select" id="CvM-e0-TAc">
-                                    <items>
-                                        <menuItem title="Item" id="ZGW-ag-SGd">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                        </menuItem>
-                                    </items>
-                                </menu>
+                                <menu key="submenu" title="Select" id="CvM-e0-TAc"/>
+                                <connections>
+                                    <action selector="selectAudio:" target="-1" id="G0b-aa-1AI"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="U7B-65-Mmm"/>
                             <menuItem title="Volume Up" keyEquivalent="" id="fG2-5c-Gcm">

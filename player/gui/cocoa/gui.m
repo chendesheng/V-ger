@@ -23,91 +23,9 @@ void initialize() {
     Application *appDelegate = [[Application alloc] init];
     [NSApp setDelegate:appDelegate];
 
-	//create memu bar
-//	id menubar = [[NSMenu new] autorelease];
-//    id appMenuItem = [[NSMenuItem new] autorelease];
-//    [menubar addItem:appMenuItem];
-//    [NSApp setMainMenu:menubar];
-//    id appMenu = [[NSMenu new] autorelease];
-//
-//    NSMenuItem *searchSubtitleMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Search Subtitle"
-//        action:@selector(searchSubtitleMenuItemClick:) keyEquivalent:@"s"] autorelease];
-//    [searchSubtitleMenuItem setKeyEquivalentModifierMask:0];
-//    [searchSubtitleMenuItem setTarget: appDelegate];
-//    [appMenu addItem:searchSubtitleMenuItem];
-//
-//    NSMenuItem *openFileMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Open..."
-//        action:@selector(openFileMenuItemClick:) keyEquivalent:@"o"] autorelease];
-//    [openFileMenuItem setTarget: appDelegate];
-//    [appMenu addItem:openFileMenuItem];
-//
-//    id appName = [[NSProcessInfo processInfo] processName];
-//    id quitTitle = [@"Quit " stringByAppendingString:appName];
-//    id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
-//        action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
-//    [appMenu addItem:quitMenuItem];
-//
-//
-//    [appMenuItem setSubmenu:appMenu];
-    //[[NSMenu alloc] initWithWindowNibName:@"MainMenu"];
-    // NSArray* objects;
     [[NSBundle mainBundle] loadNibNamed:@"MainMenu" owner:NSApp topLevelObjects:nil];
     
-//    [NSBundleobjects loadNibNamed:@"MainMenu" owner:NSApp];
-    
     [[NSAppleEventManager sharedAppleEventManager] setEventHandler:appDelegate andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
-}
-NSMenuItem* getTopMenuByTitle(NSString* title) {
-    NSMenu* menubar = [NSApp mainMenu];
-    NSArray* menus = [menubar itemArray];
-    for (NSMenuItem* menu in menus) {
-        if ([menu title] == title) {
-            return menu;
-        }
-    }
-
-    return nil;
-}
-void hideMenuNSString(NSString* title) {
-    @autoreleasepool {
-        NSMenuItem* item = getTopMenuByTitle(title);
-        if (item != nil) {
-            [[NSApp mainMenu] removeItem:item];
-        }
-    }
-}
-void hideAudioMenu() {
-    hideMenuNSString(@"Audio");
-}
-void initAudioMenu(void* wptr, char** names, int32_t* tags, int len, int selected) {
-    hideAudioMenu();
-
-    @autoreleasepool {
-        if (len > 0) {
-            NSWindow* w = (NSWindow*)wptr;
-
-            NSMenu *menubar = [NSApp mainMenu];
-            NSMenuItem* audioMenuItem = [[NSMenuItem new] autorelease];
-            [audioMenuItem setTitle:@"Audio"];
-            [menubar addItem:audioMenuItem];
-            NSMenu* audioMenu = [[NSMenu alloc] initWithTitle:@"Audio"];
-
-            for (int i = 0; i < len; i++) {
-                char* name = names[i];
-                int tag = tags[i];
-                NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:name] 
-                    action:@selector(audioMenuItemClick:) keyEquivalent:@""];
-                [item setTarget: w];
-                [item setTag: tag];
-                [audioMenu addItem:item];
-
-                if (tag == selected) {
-                    [item setState: NSOnState];
-                }
-            }
-            [audioMenuItem setSubmenu:audioMenu];
-        }
-    }
 }
 
 void setWindowTitle(void* wptr, char* title) {

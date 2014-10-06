@@ -31,27 +31,6 @@ func (w NativeWindow) Alert(str string) {
 
 type NativeWindow uintptr
 
-func (NativeWindow) HideAudioMenu() {
-	C.hideAudioMenu()
-}
-
-func (w NativeWindow) InitAudioMenu(names []string, tags []int32, selected int) {
-	if len(names) == 0 {
-		return
-	}
-
-	cnames := make([]*C.char, 0)
-	for _, name := range names {
-		cnames = append(cnames, C.CString(name))
-	}
-
-	C.initAudioMenu(unsafe.Pointer(w), (**C.char)(&cnames[0]), (*C.int32_t)(unsafe.Pointer(&tags[0])), C.int(len(cnames)), C.int(selected))
-
-	for _, cname := range cnames {
-		C.free(unsafe.Pointer(cname))
-	}
-}
-
 func (w NativeWindow) RefreshContent() {
 	C.refreshWindowContent(unsafe.Pointer(w))
 }

@@ -48,7 +48,11 @@
 	}
 	inline void getSubtitles(void*** names, int* length, int* firstSub, int* secondSub) {
 		goGetSubtitles(names, length, firstSub, secondSub);   
-	}	
+	}
+	void getAudioes(void*** names, int* length, int* selected) {
+		goGetAudioes(names, length, selected);
+	}
+
 #else
 #include <stdio.h>
     inline void onDraw() {
@@ -101,5 +105,8 @@
     }
 inline void getSubtitles(void*** names, int* length, int* firstSub, int* secondSub) {
     
+}
+void getAudioes(void** names, int* length, int* selected) {
+
 }
 #endif

@@ -3,7 +3,10 @@ package cocoa
 // #cgo CFLAGS: -x objective-c
 // #cgo LDFLAGS: -framework Cocoa -framework OpenGL -framework QuartzCore
 import "C"
-import "unsafe"
+import (
+	"log"
+	"unsafe"
+)
 
 var (
 	OnMouseMove      func(int, int)
@@ -25,6 +28,7 @@ var (
 type Player interface {
 	IsPlaying() bool
 	GetSubtitleNames() ([]string, int, int)
+	GetAudioNames() ([]string, int)
 }
 
 //export goOnMenuClick
@@ -139,6 +143,25 @@ func goGetSubtitles(names **unsafe.Pointer, length *C.int, firstSub, secondSub *
 	*names = &arr[0]
 	*firstSub = C.int(s1)
 	*secondSub = C.int(s2)
+}
+
+//export goGetAudioes
+func goGetAudioes(names **unsafe.Pointer, length *C.int, selected *C.int) {
+	strs, a := P.GetAudioNames()
+	log.Print("audio:", len(strs))
+	if len(strs) == 0 {
+		return
+	}
+
+	*length = C.int(len(strs))
+
+	arr := make([]unsafe.Pointer, len(strs))
+	for i, str := range strs {
+		arr[i] = unsafe.Pointer(C.CString(str))
+	}
+
+	*names = &arr[0]
+	*selected = C.int(a)
 }
 
 func b2i(b bool) C.int {

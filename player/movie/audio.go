@@ -1,7 +1,6 @@
 package movie
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	. "vger/player/libav"
@@ -40,26 +39,6 @@ func getDefaultAudioStream(streams []AVStream, lastSelected int) AVStream {
 
 	return selectedStream
 }
-func (m *Movie) setupAudioMenu(selected int) {
-	m.w.HideAudioMenu()
-
-	audioStreams := m.audioStreams
-	audioStreamNames := make([]string, 0)
-	audioStreamIndexes := make([]int32, 0)
-	if len(audioStreams) > 1 {
-		for _, stream := range audioStreams {
-			dic := stream.MetaData()
-			mp := dic.Map()
-			title := mp["title"]                        //dic.AVDictGet("title", AVDictionaryEntry{}, 2).Value()
-			language := strings.ToLower(mp["language"]) //dic.AVDictGet("language", AVDictionaryEntry{}, 2).Value()
-
-			// println(title, language)
-			audioStreamNames = append(audioStreamNames, fmt.Sprintf("[%s] %s", language, title))
-			audioStreamIndexes = append(audioStreamIndexes, int32(stream.Index()))
-		}
-		m.w.InitAudioMenu(audioStreamNames, audioStreamIndexes, selected)
-	}
-}
 func (m *Movie) setupAudio() error {
 	ctx := m.ctx
 
@@ -81,8 +60,6 @@ func (m *Movie) setupAudio() error {
 		if err != nil {
 			return err
 		}
-
-		m.setupAudioMenu(selected)
 	}
 
 	return nil

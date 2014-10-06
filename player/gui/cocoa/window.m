@@ -128,7 +128,12 @@
     NSMenuItem* item = (NSMenuItem*)sender;
     onMenuClick(MENU_SUBTITLE, (int)item.tag);
 }
-
+-(void)selectAudio:(id)sender {
+}
+-(void)selectAudioItem:(id)sender {
+    NSMenuItem* item = (NSMenuItem*)sender;
+    onMenuClick(MENU_AUDIO, (int)item.tag);
+}
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     if ([item action] == @selector(playPause:)) {
@@ -137,7 +142,6 @@
         } else {
             item.title = @"Play";
         }
-        return YES;
     } else if ([item action] == @selector(selectSubtitle:)) {
         NSMenu* menu = item.submenu;
         [menu removeAllItems];
@@ -160,7 +164,28 @@
                 free(names[i]);
             }
         }
-        return YES;
+    } else if ([item action] == @selector(selectAudio:)) {
+        NSMenu* menu = item.submenu;
+        [menu removeAllItems];
+
+        char** names;
+        int length;
+        int selected;
+        getAudioes((void***)&names, &length, &selected);
+        if (length == 0) {
+            [menu addItemWithTitle:@"(None)" action:nil keyEquivalent:@""];
+        } else {
+            for (int i = 0; i < length; i++) {
+                NSMenuItem * submenuItem = [menu addItemWithTitle:[NSString stringWithUTF8String:names[i]] action:@selector(selectAudioItem:) keyEquivalent:@""];
+                submenuItem.tag = i;
+                if (i == selected) {
+                    submenuItem.state = NSOnState;
+                } else {
+                    submenuItem.state = NSOffState;
+                }
+                free(names[i]);
+            }
+        }
     }
     return YES;
 }

@@ -16,20 +16,21 @@ func (m *Movie) uievents() {
 		go func() {
 			log.Printf("Audio menu click:%d", i)
 
-			m.p.SoundStream = i
-			SavePlayingAsync(m.p)
+			if m.audioStreams[i].Index() == m.a.StreamIndex() {
+				return
+			}
 
 			m.a.Close()
-			err := m.a.Open(getStream(m.audioStreams, i))
+			err := m.a.Open(m.audioStreams[i])
 			if err != nil {
 				log.Print(err)
+			} else {
+				m.p.SoundStream = m.a.StreamIndex()
+				SavePlayingAsync(m.p)
 			}
 		}()
 	})
 
-	// var chPausing chan seekArg
-	// chPausing = nil
-	// var pausingTime time.Duration
 	m.w.FuncKeyDown = append(m.w.FuncKeyDown, func(keycode int) bool {
 		SavePlayingAsync(m.p)
 

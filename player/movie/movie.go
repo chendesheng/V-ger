@@ -310,17 +310,19 @@ func (m *Movie) IsPlaying() bool {
 }
 
 func (m *Movie) GetSubtitleNames() (names []string, firstSub int, secondSub int) {
-	names = make([]string, len(m.subs))
-	s1, s2 := m.getPlayingSubs()
-
 	firstSub = -1
 	secondSub = -1
-	for i, sub := range m.subs {
-		names[i] = sub.Name
-		if s1 == sub {
-			firstSub = i
-		} else if s2 == sub {
-			secondSub = i
+
+	if len(m.subs) > 0 {
+		s1, s2 := m.getPlayingSubs()
+		names = make([]string, len(m.subs))
+		for i, sub := range m.subs {
+			names[i] = sub.Name
+			if s1 == sub {
+				firstSub = i
+			} else if s2 == sub {
+				secondSub = i
+			}
 		}
 	}
 
@@ -331,4 +333,24 @@ func (m *Movie) TogglePlay() {
 	if m.c != nil {
 		m.c.Toggle()
 	}
+}
+
+func (m *Movie) GetAudioNames() (names []string, selected int) {
+	selected = -1
+	if len(m.audioStreams) > 0 {
+		names = make([]string, len(m.audioStreams))
+		for i, stream := range m.audioStreams {
+			if m.a.StreamIndex() == stream.Index() {
+				selected = i
+			}
+
+			dic := stream.MetaData()
+			mp := dic.Map()
+			title := mp["title"]
+			language := strings.ToLower(mp["language"])
+
+			names[i] = fmt.Sprintf("[%s] %s", language, title)
+		}
+	}
+	return
 }

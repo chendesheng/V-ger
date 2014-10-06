@@ -43,9 +43,6 @@ void updateBufferInfo(void*, char*, double);
 void* showSubtitle(void*, SubItem*);
 void hideSubtitle(void*, void*);
 
-void initAudioMenu(void*, char**, int32_t*, int, int);
-void hideAudioMenu();
-
 //including playback panel, window title, cursor
 void setControlsVisible(void*, int);
 void setSpinningVisible(void*, int);
@@ -69,6 +66,7 @@ int onOpenFile(const char*);
 void onWillTerminate();
 int isPlaying();
 void getSubtitles(void***, int*, int*, int*);
+void getAudioes(void***, int*, int*);
 
 #define MENU_AUDIO 0
 #define	MENU_SUBTITLE 1
