@@ -140,29 +140,29 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="weX-61-NVk"/>
-                            <menuItem title="Backwrad Subtitle" keyEquivalent="" id="USN-lw-NFD">
+                            <menuItem title="Backwrad 10 sec." keyEquivalent="" id="USN-lw-NFD">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="seekBackwardBySubtitle:" target="-1" id="HeM-pB-9zy"/>
+                                    <action selector="seekBackwardByTime:" target="-1" id="h9o-xv-Mqf"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Forward Subtitle" keyEquivalent="" id="qu4-9Q-seR">
+                            <menuItem title="Forward 10 sec." keyEquivalent="" id="qu4-9Q-seR">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="seekForwardBySubtitle:" target="-1" id="hRf-Cf-3bu"/>
+                                    <action selector="seekForwardByTime:" target="-1" id="nLD-Al-mt1"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="ZNv-0l-KPm"/>
-                            <menuItem title="Backward 10 sec." keyEquivalent="" id="C5y-gd-Ix0">
+                            <menuItem title="Backward Subtitle" keyEquivalent="" id="C5y-gd-Ix0">
                                 <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                                 <connections>
-                                    <action selector="seekBackwardByTime:" target="-1" id="Blu-7d-oQy"/>
+                                    <action selector="seekBackwardBySubtitle:" target="-1" id="3VK-oe-D39"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Forward 10 sec." keyEquivalent="" id="XbB-vd-Va8">
+                            <menuItem title="Forward Subtitle" keyEquivalent="" id="XbB-vd-Va8">
                                 <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                                 <connections>
-                                    <action selector="seekForwardByTime:" target="-1" id="edH-rv-lgT"/>
+                                    <action selector="seekForwardBySubtitle:" target="-1" id="1JS-aS-DDb"/>
                                 </connections>
                             </menuItem>
                         </items>
@@ -177,9 +177,6 @@
                                 <connections>
                                     <action selector="toggleFullScreen:" target="-1" id="vNt-ko-Ziw"/>
                                 </connections>
-                            </menuItem>
-                            <menuItem title="Screen Aspect Ratio" keyEquivalent="r" id="yb1-YM-sYk">
-                                <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
                         </items>
                     </menu>
