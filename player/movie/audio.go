@@ -45,7 +45,7 @@ func (m *Movie) setupAudio() error {
 	audioStreams := ctx.AudioStream()
 	m.audioStreams = audioStreams
 
-	log.Print("setupAudio:", len(audioStreams))
+	log.Print("setupAudio:", len(audioStreams), m.p.Volume)
 
 	if len(audioStreams) > 0 {
 		selectedStream := getDefaultAudioStream(audioStreams, m.p.SoundStream)

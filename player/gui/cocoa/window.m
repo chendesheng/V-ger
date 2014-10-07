@@ -172,6 +172,9 @@
 -(void)pushAudio:(id)sender {
     onMenuClick(MENU_SYNC_AUDIO, 1);
 }
+-(void)searchSubtitle:(id)sender {
+    onMenuClick(MENU_SEARCH_SUBTITLE, 0);
+}
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     if ([item action] == @selector(playPause:)) {
@@ -249,6 +252,12 @@
         [item action] == @selector(pushAudio:)) {
         if (getPlayingAudioTrack() == -1) {
             return NO;
+        }
+    } else if ([item action] == @selector(searchSubtitle:)) {
+        if (isSearchingSubtitle() != 0) {
+            item.title = @"Stop Search";
+        } else {
+            item.title = @"Search Online";
         }
     }
     return YES;

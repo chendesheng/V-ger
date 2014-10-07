@@ -139,7 +139,7 @@ func checkDownloadSubtitle(m *Movie, file string, filename string) {
 	subs := GetSubtitlesMap(filename)
 	log.Printf("%v", subs)
 	if len(subs) == 0 {
-		m.SearchDownloadSubtitle()
+		m.searchDownloadSubtitle()
 	} else {
 		log.Print("setupSubtitles")
 		m.setupSubtitles(subs)
@@ -537,4 +537,19 @@ func (m *Movie) ToggleSubtitle(index int) {
 
 	m.setPlayingSubs(s1, s2)
 	SavePlayingAsync(m.p)
+}
+
+func (m *Movie) SetAudioTrack(i int) {
+	if m.audioStreams[i].Index() == m.a.StreamIndex() {
+		return
+	}
+
+	m.a.Close()
+	err := m.a.Open(m.audioStreams[i])
+	if err != nil {
+		log.Print(err)
+	} else {
+		m.p.SoundStream = m.a.StreamIndex()
+		SavePlayingAsync(m.p)
+	}
 }

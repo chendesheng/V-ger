@@ -70,6 +70,7 @@ void getPlayingSubtitles(int*, int*);
 
 void getAllAudioTracks(void***, int*);
 int getPlayingAudioTrack();
+int isSearchingSubtitle();
 
 #define MENU_AUDIO 0
 #define	MENU_SUBTITLE 1

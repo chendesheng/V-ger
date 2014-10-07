@@ -13,10 +13,6 @@
      }
 }
 
--(void)searchSubtitle:(id)sender {
-	onMenuClick(MENU_SEARCH_SUBTITLE, 0);
-}
-
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {
      NSOpenPanel *panel  = [NSOpenPanel openPanel];
      [panel setCanChooseDirectories:NO];

@@ -162,10 +162,14 @@ func (m *Movie) ToggleSearchSubtitle() {
 		m.subQuit = nil
 		close(q)
 	} else {
-		m.SearchDownloadSubtitle()
+		m.searchDownloadSubtitle()
 	}
 }
-func (m *Movie) SearchDownloadSubtitle() {
+func (m *Movie) IsSearchingSubtitle() bool {
+	return m.subQuit != nil
+}
+
+func (m *Movie) searchDownloadSubtitle() {
 	quit := make(chan struct{})
 	m.subQuit = quit
 

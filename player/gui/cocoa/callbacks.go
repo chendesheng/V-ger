@@ -31,6 +31,7 @@ type Player interface {
 	GetPlayingSubtitles() (int, int)
 	GetAllAudioTracks() []string
 	GetPlayingAudioTrack() int
+	IsSearchingSubtitle() bool
 }
 
 //export goOnMenuClick
@@ -173,6 +174,11 @@ func goGetAllAudioTracks(names **unsafe.Pointer, length *C.int) {
 //export goGetPlayingAudioTrack
 func goGetPlayingAudioTrack() C.int {
 	return C.int(P.GetPlayingAudioTrack())
+}
+
+//export goIsSearchingSubtitle
+func goIsSearchingSubtitle() C.int {
+	return b2i(P.IsSearchingSubtitle())
 }
 
 func b2i(b bool) C.int {

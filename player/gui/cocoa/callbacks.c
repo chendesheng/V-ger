@@ -58,6 +58,9 @@
 	inline int getPlayingAudioTrack() {
 		return goGetPlayingAudioTrack();
 	}
+	inline int isSearchingSubtitle() {
+		return goIsSearchingSubtitle();
+	}
 
 #else
 #include <stdio.h>
@@ -113,4 +116,5 @@ inline void getAllSubtitleNames(void*** names, int* length) {}
 inline void getPlayingSubtitles(int* firstSub, int* secondSub) {}
 inline int getPlayingAudioTrack(){return -1;}
 inline void getAllAudioTracks(void*** names, int* length) {}
+inline int isSearchingSubtitle() {}
 #endif

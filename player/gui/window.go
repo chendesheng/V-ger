@@ -15,7 +15,6 @@ type window struct {
 	FuncTimerTick         []func()
 	FuncKeyDown           []func(int) bool
 	FuncOnProgressChanged []func(int, float64)
-	FuncAudioMenuClick    []func(int)
 	FuncMouseWheelled     []func(float64)
 
 	chAlert               chan string
@@ -244,7 +243,6 @@ func (w *Window) initEvents() {
 func (w *Window) ClearEvents() {
 	w.FuncOnProgressChanged = w.FuncOnProgressChanged[:1]
 	w.FuncKeyDown = nil
-	w.FuncAudioMenuClick = nil
 	w.FuncMouseWheelled = nil
 }
 
@@ -476,7 +474,7 @@ func (w *Window) SendSetVolumeDisplay(b bool) {
 	w.chSetVolumeVisible <- b
 }
 
-func (w *Window) Refresh(img []byte) {
+func (w *Window) refresh(img []byte) {
 	w.img = img
 	w.RefreshContent()
 }
@@ -492,7 +490,7 @@ func onTimerTick() {
 		select {
 		case img, ok := <-w.ChanDraw:
 			if ok {
-				w.Refresh(img)
+				w.refresh(img)
 			}
 		case <-w.ChanDestoryRender:
 			w.DestoryRender()
@@ -573,31 +571,6 @@ func onProgressChange(typ int, position float64) {
 			fn(typ, position)
 		}
 	}
-}
-
-func onMenuClick(typ int, tag int) int {
-	if w != nil {
-		switch typ {
-		case 0:
-			for _, fn := range w.FuncAudioMenuClick {
-				fn(tag)
-			}
-		// case 1:
-		// if w.FuncSubtitleMenuClick != nil {
-		// 	w.FuncSubtitleMenuClick(tag)
-		// }
-
-		case 2:
-			onSearchSubtitleMenuItemClick()
-
-		default:
-			if appDelegate != nil {
-				return appDelegate.OnMenuClick(typ, tag)
-			}
-		}
-	}
-
-	return 0
 }
 
 func onMouseWheel(deltaX float64, deltaY float64) {

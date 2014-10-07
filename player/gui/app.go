@@ -16,16 +16,17 @@ func onWillTerminate() {
 	}
 }
 
-func onSearchSubtitleMenuItemClick() {
-	if appDelegate != nil {
-		appDelegate.ToggleSearchSubtitle()
-	}
-}
-
 func onOpenOpenPanel() {
 	if appDelegate != nil {
 		appDelegate.OnOpenOpenPanel()
 	}
+}
+
+func onMenuClick(typ int, tag int) int {
+	if appDelegate != nil {
+		return appDelegate.OnMenuClick(typ, tag)
+	}
+	return 0
 }
 
 func onCloseOpenPanel(name string) {
@@ -39,7 +40,6 @@ type AppDelegate interface {
 	OnOpenOpenPanel()
 	OnCloseOpenPanel(filename string)
 	WillTerminate()
-	ToggleSearchSubtitle()
 	OnMenuClick(int, int) int
 }
 

@@ -76,13 +76,6 @@ func (app *appDelegate) WillTerminate() {
 		app.w.DestoryRender()
 	}
 }
-func (app *appDelegate) ToggleSearchSubtitle() {
-	log.Print("ToggleSearchSubtitle")
-
-	if app.m != nil {
-		go app.m.ToggleSearchSubtitle()
-	}
-}
 func (app *appDelegate) OnOpenOpenPanel() {
 	if app.m != nil {
 		app.t = app.m.Hold()
@@ -100,8 +93,12 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 
 func (app *appDelegate) OnMenuClick(typ int, tag int) int {
 	switch typ {
+	case 0:
+		go app.m.SetAudioTrack(tag)
 	case 1:
 		app.m.ToggleSubtitle(tag)
+	case 2:
+		go app.m.ToggleSearchSubtitle()
 	case 3:
 		app.m.TogglePlay()
 	case 4:
