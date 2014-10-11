@@ -13,7 +13,7 @@
     self->savedAspectRatio = w->customAspectRatio;
     w->customAspectRatio = frame.size;
 
-    setControlsVisible(w, 0);
+    setControlsVisible(w, 0, 0);
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
@@ -64,6 +64,6 @@
 //lost focus
 -(void)windowDidResignKey:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
-    setControlsVisible(w, 0);
+    setControlsVisible(w, 0, 0);
 }
 @end

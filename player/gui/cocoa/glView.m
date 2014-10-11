@@ -68,6 +68,8 @@
         startupView = [[StartupView alloc] initWithFrame:self.frame];
         [self addSubview:startupView positioned:NSWindowAbove relativeTo:bvProgressView];
         [startupView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+
+        self.showCursorDeadline = [NSDate date];
     }
     
     return self;
@@ -102,7 +104,7 @@
         toggleFullScreen(self.window);
     }
 
-    setControlsVisible(self.window, 0);
+    setControlsVisible(self.window, 0, 0);
 }
 
 -(BOOL)mouseDownCanMoveWindow {
@@ -115,6 +117,9 @@
         currentCursor = [NSCursor arrowCursor];
     }
 }
+-(BOOL)isCursorHidden {
+    return currentCursor == noneCursor;
+}
 -(void)setPlaybackViewHidden:(BOOL)b {
     [progressView setHidden:b];
 }
@@ -122,7 +127,16 @@
 - (void)mouseMoved:(NSEvent *)event {
      NSPoint mouse = [NSEvent mouseLocation];
     if ([NSWindow windowNumberAtPoint:mouse belowWindowWithWindowNumber:0] == [self window].windowNumber) {
-        onMouseMove();
+        setControlsVisible(self.window, 1, 1);
+    }
+}
+
+- (void)timerTick:(NSEvent *)event {
+    @autoreleasepool {
+        onTimerTick();
+        if ([self.showCursorDeadline compare:[NSDate date]] == NSOrderedAscending) {
+            setControlsVisible(self.window, 0, 0);
+        }
     }
 }
 

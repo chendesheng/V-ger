@@ -6,7 +6,6 @@ import "C"
 import "vger/player/gui/cocoa"
 
 func init() {
-	cocoa.OnMouseMove = onMouseMove
 	cocoa.OnDraw = onDraw
 	cocoa.OnKeyDown = onKeyDown
 	cocoa.OnMenuClick = onMenuClick

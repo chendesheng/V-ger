@@ -37,9 +37,6 @@
 		goOnMouseWheel(deltaY);
 	}
 
-	inline void onMouseMove() {
-		goOnMouseMove();
-	}
 	inline int onMenuClick(int type, int tag) {
 		return goOnMenuClick(type, tag);
 	}
@@ -102,9 +99,6 @@
 	//	goOnMouseWheel(deltaY);
 	}
 
-	inline void onMouseMove() {
-        //showCursor(w);
-	}
 	inline int onMenuClick(int type, int tag) {
         printf("onMenuClick: %d %d\n", type, tag);
         return 0;

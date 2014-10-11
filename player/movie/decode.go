@@ -183,7 +183,7 @@ func (m *Movie) decode(name string) {
 	}
 
 	m.w.SendSetSize(m.v.Width, m.v.Height)
-	m.w.SendSetCursor(true)
+	m.w.SendSetControlsVisible(true, true)
 
 	ctx := m.ctx
 
@@ -213,7 +213,7 @@ func (m *Movie) decode(name string) {
 		resCode := ctx.ReadFrame(&packet)
 		if resCode >= 0 {
 			if m.sendPacket(m.v.StreamIndex, m.v.ChPackets, &packet) {
-				m.seekPlayingSubs(m.c.GetTime(), false)
+				m.seekPlayingSubs(m.c.GetTime())
 				continue
 			}
 

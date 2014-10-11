@@ -122,26 +122,12 @@ func (w NativeWindow) HideSubtitle(ptr uintptr) {
 	C.hideSubtitle(unsafe.Pointer(w), unsafe.Pointer(ptr))
 }
 
-func (w NativeWindow) SetControlsVisible(b bool) {
-	var i C.int
-	if b {
-		i = 1
-	} else {
-		i = 0
-	}
-
-	C.setControlsVisible(unsafe.Pointer(w), i)
+func (w NativeWindow) SetControlsVisible(b bool, autoHide bool) {
+	C.setControlsVisible(unsafe.Pointer(w), b2i(b), b2i(autoHide))
 }
 
 func (w NativeWindow) SetSpinningVisible(b bool) {
-	var i C.int
-	if b {
-		i = 1
-	} else {
-		i = 0
-	}
-
-	C.setSpinningVisible(unsafe.Pointer(w), i)
+	C.setSpinningVisible(unsafe.Pointer(w), b2i(b))
 }
 
 func (w NativeWindow) SetVolume(volume int) {
@@ -149,14 +135,7 @@ func (w NativeWindow) SetVolume(volume int) {
 }
 
 func (w NativeWindow) SetVolumeVisible(b bool) {
-	var i C.int
-	if b {
-		i = 1
-	} else {
-		i = 0
-	}
-
-	C.setVolumeVisible(unsafe.Pointer(w), i)
+	C.setVolumeVisible(unsafe.Pointer(w), b2i(b))
 }
 
 func (w NativeWindow) Close() {

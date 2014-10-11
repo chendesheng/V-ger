@@ -74,12 +74,11 @@ func (item *SubItem) IsInDefaultPosition() bool {
 
 type SubItemExtra struct {
 	Id     int
-	Handle uintptr
+	Handle int
 }
 type SubItemArg struct {
 	SubItem
 	AutoHide bool
-	Result   chan SubItemExtra
 }
 type Position struct {
 	X, Y float64

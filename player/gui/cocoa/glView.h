@@ -28,7 +28,10 @@
     
     VolumeView* volumeView;
     BlurView* bvVolumeView;
+
 }
+
+@property (nonatomic, strong, retain) NSDate* showCursorDeadline;
 
 -(id)initWithFrame2:(NSRect)frame;
 -(void)updatePorgressInfo:(NSString*)leftStr rightString:(NSString*)rightStr percent:(CGFloat)p;
@@ -43,7 +46,8 @@
 -(void)setPlaybackViewHidden:(BOOL)b;
 -(void)setCursorHidden:(BOOL)b;
 -(void)setOriginalSize:(NSSize)size;
-- (void)setSpinningHidden:(BOOL)b;
-- (void)setVolume:(int)volume;
-- (void)setVolumeHidden:(BOOL)b;
+-(void)setSpinningHidden:(BOOL)b;
+-(void)setVolume:(int)volume;
+-(void)setVolumeHidden:(BOOL)b;
+-(BOOL)isCursorHidden;
 @end

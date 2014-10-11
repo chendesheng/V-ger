@@ -67,13 +67,13 @@ func (m *movieSubs) setPlayingSubs(s1, s2 *Subtitle) {
 
 	m.s1, m.s2 = s1, s2
 }
-func (m *movieSubs) seekPlayingSubs(t time.Duration, refresh bool) {
+func (m *movieSubs) seekPlayingSubs(t time.Duration) {
 	s1, s2 := m.getPlayingSubs()
 	if s1 != nil {
-		s1.Seek(t, refresh)
+		s1.Seek(t)
 	}
 	if s2 != nil {
-		s2.Seek(t, refresh)
+		s2.Seek(t)
 	}
 }
 func (m *movieSubs) stopPlayingSubs() {
@@ -144,7 +144,7 @@ func checkDownloadSubtitle(m *Movie, file string, filename string) {
 		log.Print("setupSubtitles")
 		m.setupSubtitles(subs)
 
-		m.seekPlayingSubs(m.c.GetTime(), false)
+		m.seekPlayingSubs(m.c.GetTime())
 	}
 }
 
@@ -199,7 +199,7 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 }
 
 func (m *Movie) Open(w *Window, file string) (err error) {
-	w.SetStartupViewVisible(true)
+	w.SendSetStartupViewVisible(true)
 
 	w.SendShowSpinning()
 	defer w.SendHideSpinning(false)

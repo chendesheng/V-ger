@@ -55,9 +55,9 @@
      return YES;
 }
 
-- (void)timerTick:(NSEvent *)event {
-    @autoreleasepool {
-     	onTimerTick();
-     }
-}
+// - (void)timerTick:(NSEvent *)event {
+//     @autoreleasepool {
+//      	onTimerTick();
+//      }
+// }
 @end

@@ -65,7 +65,7 @@ void* newWindow(char* title, int width, int height) {
         [w makeFirstResponder:w->glView];
 
         NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/100.0 
-                                target:[NSApp delegate]
+                                target:w->glView
                               selector:@selector(timerTick:)
                               userInfo:nil
                                repeats:YES];
@@ -154,10 +154,23 @@ void toggleFullScreen(void* ptr) {
     [w toggleFullScreen:nil];
 }
 
-void setControlsVisible(void* ptr, int b) {
+void setControlsVisible(void* ptr, int b, int autoHide) {
     Window* w = (Window*)ptr;
 
     BOOL hidden = (b==0);
+
+    if (!hidden) {
+        if (autoHide) {
+            [w->glView setShowCursorDeadline:[NSDate dateWithTimeIntervalSinceNow:(NSTimeInterval)2.0]];
+        } else {
+            [w->glView setShowCursorDeadline:[NSDate distantFuture]];
+        }
+    }
+
+    if ((hidden && [w->glView isCursorHidden]) || (!hidden && ![w->glView isCursorHidden])) {
+        return;
+    }
+
     [w->glView setCursorHidden:hidden];
     [w->glView setPlaybackViewHidden:hidden];
     [w setTitleHidden:hidden];
@@ -190,6 +203,7 @@ void alert(void* wptr, char* str) {
     [alert setMessageText:[NSString stringWithUTF8String:str]];
     [alert setAlertStyle:NSCriticalAlertStyle];
 
+    setControlsVisible(w, 1, 0);
     [alert beginSheetModalForWindow:w modalDelegate:w didEndSelector:@selector(close) contextInfo:nil];
 }
 

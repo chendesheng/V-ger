@@ -40,7 +40,7 @@ func (m *Movie) uievents() {
 		for {
 			select {
 			case <-time.After(time.Second):
-				m.w.SendSetVolumeDisplay(false)
+				m.w.SendSetVolumeVisible(false)
 				<-chVolume //prevent call SendSetVolumeDisplay every second
 			case <-chVolume:
 			case <-m.quit:
@@ -56,9 +56,9 @@ func (m *Movie) uiProgressBarEvents() {
 		if m.c == nil {
 			return
 		}
-
 		switch typ {
 		case 0:
+			m.w.SetControlsVisible(true, false)
 			fallthrough
 		case 1:
 			t := m.c.CalcTime(percent)
@@ -68,6 +68,8 @@ func (m *Movie) uiProgressBarEvents() {
 
 			m.seeking.SendSeek(t)
 		case 2:
+			m.w.SetControlsVisible(true, true)
+
 			t := m.c.CalcTime(percent)
 			t = t / time.Second * time.Second
 

@@ -10,7 +10,7 @@ import (
 var timerEndSeek *time.Timer
 
 func (m *Movie) SeekOffset(offset time.Duration) {
-	m.w.SendSetCursor(true)
+	m.w.SendSetControlsVisible(true, true)
 
 	m.seeking.SendSeekOffset(offset)
 
@@ -41,7 +41,7 @@ func (m *Movie) OnSeek(t time.Duration, img []byte) {
 		m.w.SendDrawImage(img)
 	}
 
-	m.seekPlayingSubs(t, false)
+	m.seekPlayingSubs(t)
 
 }
 func (m *Movie) OnSeekPaused(t time.Duration) {

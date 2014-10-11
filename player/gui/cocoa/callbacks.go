@@ -50,13 +50,6 @@ func goOnMouseWheel(deltaY float64) {
 	}
 }
 
-//export goOnMouseMove
-func goOnMouseMove() {
-	if OnMouseMove != nil {
-		OnMouseMove(0, 0)
-	}
-}
-
 //export goOnDraw
 func goOnDraw() {
 	if OnDraw != nil {

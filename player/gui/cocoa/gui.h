@@ -44,7 +44,7 @@ void* showSubtitle(void*, SubItem*);
 void hideSubtitle(void*, void*);
 
 //including playback panel, window title, cursor
-void setControlsVisible(void*, int);
+void setControlsVisible(void*, int, int);
 void setSpinningVisible(void*, int);
 
 void setVolume(void*, int);
@@ -53,7 +53,6 @@ void setVolumeVisible(void*, int);
 void addRecentOpenedFile(char*);
 
 //callbacks
-void onMouseMove();
 int onMenuClick(int, int);
 void onOpenOpenPanel();
 void onCloseOpenPanel(char*);

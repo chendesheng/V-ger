@@ -4,6 +4,7 @@ import (
 	"log"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"vger/player/language"
 	. "vger/player/shared"
@@ -32,8 +33,13 @@ type Subtitle struct {
 	Lang1      string //one subtitle file may has two languages
 	Lang2      string
 	Type       string
-	chanRes    chan SubItemExtra
-	displaying []*SubItem
+	displaying map[int]*SubItem
+}
+
+var keycounter = int64(1)
+
+func genKey() int64 {
+	return atomic.AddInt64(&keycounter, 1)
 }
 
 type displayingItem struct {
@@ -41,54 +47,21 @@ type displayingItem struct {
 	handle uintptr
 }
 
-func (s *Subtitle) Seek(t time.Duration, refersh bool) {
+func (s *Subtitle) Seek(t time.Duration) {
 	s.Lock()
 	defer s.Unlock()
 
 	t -= s.offset
 
-	if s.chanRes == nil {
-		s.chanRes = make(chan SubItemExtra, 20)
-		go func() {
-			for arg := range s.chanRes {
-				s.Lock()
-
-				item := s.items.getById(arg.Id)
-				item.Handle = arg.Handle
-				s.displaying = append(s.displaying, item)
-
-				s.Unlock()
-			}
-		}()
-	}
-
-	if refersh {
-		s.hideAll()
-	} else {
-		for i := len(s.displaying) - 1; i >= 0; i-- {
-			item := s.displaying[i]
-
-			if !item.Contains(t) {
-				s.hideSubItem(item)
-
-				s.displaying = sliceRemove(s.displaying, i)
-			}
+	for _, item := range s.displaying {
+		if !item.Contains(t) {
+			s.hideSubItem(item)
 		}
 	}
 
 	for _, item := range s.items.get(t) {
-		if item.Handle == 0 {
-			s.showSubitem(*item)
-			item.Handle = 1
-		}
+		s.showSubitem(item)
 	}
-}
-
-//check https://code.google.com/p/go-wiki/wiki/SliceTricks
-func sliceRemove(a []*SubItem, i int) []*SubItem {
-	l := len(a)
-	a[i], a[l-1], a = a[l-1], nil, a[:l-1]
-	return a
 }
 
 func (s *Subtitle) Stop() {
@@ -102,7 +75,6 @@ func (s *Subtitle) hideAll() {
 	for _, item := range s.displaying {
 		s.hideSubItem(item)
 	}
-	s.displaying = nil
 }
 
 func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
@@ -114,7 +86,11 @@ func (s *Subtitle) checkPos(pos int, t time.Duration) bool {
 	}
 }
 
-func (s *Subtitle) showSubitem(item SubItem) {
+func (s *Subtitle) showSubitem(item *SubItem) {
+	if item.Handle > 0 {
+		return
+	}
+
 	if !s.IsMainSub && item.PositionType != 10 {
 		if item.IsInDefaultPosition() {
 			item.PositionType = 10
@@ -122,11 +98,16 @@ func (s *Subtitle) showSubitem(item SubItem) {
 			return
 		}
 	}
-	arg := SubItemArg{item, false, s.chanRes}
-	go s.r.SendShowText(arg)
+
+	key := int(genKey())
+	s.displaying[key] = item
+	item.Handle = key
+
+	go s.r.SendShowText(*item)
 }
 func (s *Subtitle) hideSubItem(item *SubItem) {
-	go s.r.SendHideText(SubItemArg{*item, false, nil})
+	go s.r.SendHideText(item.Handle)
+	delete(s.displaying, item.Handle)
 	item.Handle = 0
 }
 
@@ -166,6 +147,7 @@ func NewSubtitle(sub *Sub, r SubRender, width, height float64) *Subtitle {
 	s.IsMainSub = true
 	s.Lang1 = sub.Lang1
 	s.Lang2 = sub.Lang2
+	s.displaying = make(map[int]*SubItem)
 
 	s.Type = sub.Type
 

@@ -17,29 +17,9 @@ type window struct {
 	FuncOnProgressChanged []func(int, float64)
 	FuncMouseWheelled     []func(float64)
 
-	chAlert               chan string
-	chAddRecentOpenedFile chan string
+	chFunc chan func()
 
-	ChanDraw     chan []byte
-	ChanShowText chan SubItemArg
-	ChanSetSize  chan argSize
-	ChanSetTitle chan string
-
-	ChanShowMessage chan SubItemArg
-	ChanHideMessage chan uintptr
-
-	ChanDestoryRender chan struct{}
-
-	ChanShowProgress chan *struct {
-		left    string
-		right   string
-		percent float64
-	}
-	ChanShowSpeed chan *BufferInfo
-
-	ChanSetCursor      chan bool
-	chSetVolume        chan int
-	chSetVolumeVisible chan bool
+	chDraw chan []byte
 
 	ChanShowSpinning chan bool
 
@@ -57,10 +37,9 @@ type window struct {
 
 	showMessageDeadline time.Time
 
-	chCursor         chan struct{}
-	chCursorAutoHide chan struct{}
-
 	chDelayShowSpinning chan int
+
+	displayingTexts map[int]uintptr
 }
 
 type imageRender interface {
@@ -72,17 +51,12 @@ type argSize struct {
 }
 
 func (w *Window) SendDrawImage(img []byte) {
-	w.ChanDraw <- img
+	w.chDraw <- img
 }
-func (w *Window) SendSetCursor(b bool) {
-	go func() {
-		w.ChanSetCursor <- b
-	}()
 
-	if b {
-		w.chCursor <- struct{}{}
-	} else {
-		<-w.chCursor
+func (w *Window) SendSetControlsVisible(b bool, autoHide bool) {
+	w.chFunc <- func() {
+		w.SetControlsVisible(b, autoHide)
 	}
 }
 
@@ -92,11 +66,20 @@ func (w *Window) DestoryRender() {
 		w.render = nil
 	}
 }
+func (w *Window) SendShowText(s SubItem) {
+	arg := &s
+	w.chFunc <- func() {
+		ptr := w.ShowSubtitle(arg)
+		w.displayingTexts[arg.Handle] = ptr
+	}
+}
 
 func (w *Window) SendDestoryRender() {
 	log.Print("SendDestoryRender")
 
-	w.ChanDestoryRender <- struct{}{}
+	w.chFunc <- func() {
+		w.DestoryRender()
+	}
 }
 
 func (w *Window) IsFullScreen() bool {
@@ -126,7 +109,7 @@ func (w *Window) SetSize(width, height int) {
 
 	log.Printf("set window size:%d %d", width, height)
 
-	w.ChanDraw = make(chan []byte)
+	w.chDraw = make(chan []byte)
 
 	if width%4 != 0 {
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
@@ -172,36 +155,16 @@ func NewWindow(title string, width, height int) *Window {
 	w = &Window{
 		newWindow(title, width, height),
 		window{
-			ChanDraw: make(chan []byte),
-			ChanShowProgress: make(chan *struct {
-				left    string
-				right   string
-				percent float64
-			}),
-			ChanShowSpeed: make(chan *BufferInfo),
-			ChanShowText:  make(chan SubItemArg, 20), //the buffer is required because show&hide must handles in the same order
-			ChanSetSize:   make(chan argSize),
-			ChanSetTitle:  make(chan string),
+			chDraw: make(chan []byte),
 
-			ChanShowMessage: make(chan SubItemArg),
-			ChanHideMessage: make(chan uintptr),
-
-			ChanSetCursor:       make(chan bool),
 			ChanShowSpinning:    make(chan bool),
 			chDelayShowSpinning: nil,
-
-			chSetVolume:        make(chan int),
-			chSetVolumeVisible: make(chan bool),
-
-			ChanDestoryRender: make(chan struct{}),
 
 			originalWidth:  width,
 			originalHeight: height,
 
-			chCursor:              make(chan struct{}),
-			chCursorAutoHide:      make(chan struct{}),
-			chAlert:               make(chan string),
-			chAddRecentOpenedFile: make(chan string),
+			displayingTexts: make(map[int]uintptr),
+			chFunc:          make(chan func()),
 		},
 	}
 
@@ -210,38 +173,12 @@ func NewWindow(title string, width, height int) *Window {
 	w.Show()
 	w.MakeCurrentContext() //must make current context before do texture bind or we will get a all white window
 	gl.Init()
-	// gl.ClearColor(0, 0, 0, 1)
-
-	w.initEvents()
 
 	return w
 }
 
-func (w *Window) initEvents() {
-	w.FuncOnProgressChanged = append(w.FuncOnProgressChanged, func(typ int, percent float64) { //run in main thread, safe to operate ui elements
-		if typ == 0 || typ == 2 {
-			w.chCursorAutoHide <- struct{}{}
-		}
-	})
-
-	go func() {
-		for {
-			select {
-			case <-time.After(2 * time.Second):
-				w.SendSetCursor(false)
-				break
-			case <-w.chCursor:
-				break
-			case <-w.chCursorAutoHide:
-				<-w.chCursorAutoHide
-				break
-			}
-		}
-	}()
-}
-
 func (w *Window) ClearEvents() {
-	w.FuncOnProgressChanged = w.FuncOnProgressChanged[:1]
+	w.FuncOnProgressChanged = nil
 	w.FuncKeyDown = nil
 	w.FuncMouseWheelled = nil
 }
@@ -315,25 +252,21 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 }
 
 func (w *Window) SendShowProgress(left string, right string, percent float64) {
-	w.ChanShowProgress <- &struct {
+	info := &struct {
 		left    string
 		right   string
 		percent float64
 	}{left, right, percent}
+	w.chFunc <- func() {
+		w.UpdatePlaybackInfo(info.left, info.right, info.percent)
+	}
 }
 func (w *Window) SendShowBufferInfo(info *BufferInfo) {
-	w.ChanShowSpeed <- info
+	w.chFunc <- func() {
+		w.UpdateBufferInfo(info.Speed, info.BufferPercent)
+	}
 }
 
-// func (w *Window) ShowProgress(p *PlayProgressInfo) {
-// 	w.ShowWindowProgress(w.ptr, p.Right, p.Left, p.Percent)
-// }
-
-func (w *Window) SendShowText(s SubItemArg) {
-	// res := make(chan SubItemExtra)
-	w.ChanShowText <- s
-	// return <-res
-}
 func createMessageSubItem(msg string) SubItem {
 	s := SubItem{}
 	s.PositionType = 7
@@ -345,9 +278,9 @@ func createMessageSubItem(msg string) SubItem {
 	return s
 }
 func (w *Window) SendShowMessage(msg string, autoHide bool) {
-	s := createMessageSubItem(msg)
-
-	w.ChanShowMessage <- SubItemArg{s, autoHide, nil}
+	w.chFunc <- func() {
+		w.ShowMessage(msg, autoHide)
+	}
 }
 
 func (w *Window) ShowMessage(msg string, autoHide bool) {
@@ -380,15 +313,21 @@ func (w *Window) HideMessage() {
 }
 
 func (w *Window) SendHideMessage() {
-	w.ChanHideMessage <- 0
+	w.chFunc <- func() {
+		w.HideMessage()
+	}
 }
 
 func (w *Window) SendSetSize(width, height int) {
-	w.ChanSetSize <- argSize{width, height}
+	w.chFunc <- func() {
+		w.SetSize(width, height)
+	}
 }
 
 func (w *Window) SendSetTitle(title string) {
-	w.ChanSetTitle <- title
+	w.chFunc <- func() {
+		w.SetTitle(title)
+	}
 }
 
 func (w *Window) ShowSubtitle(s *SubItem) uintptr {
@@ -408,8 +347,13 @@ func (w *Window) ShowSubtitle(s *SubItem) uintptr {
 	return w.NativeWindow.ShowSubtitle(items, s.PositionType, s.X, s.Y)
 }
 
-func (w *Window) SendHideText(arg SubItemArg) {
-	w.ChanShowText <- arg
+func (w *Window) SendHideText(handle int) {
+	w.chFunc <- func() {
+		if ptr, ok := w.displayingTexts[handle]; ok {
+			w.HideSubtitle(ptr)
+			delete(w.displayingTexts, handle)
+		}
+	}
 }
 
 func (w *Window) SendShowSpinning() {
@@ -467,11 +411,15 @@ func (w *Window) SendHideSpinning(forceHide bool) {
 }
 
 func (w *Window) SendSetVolume(volume int) {
-	w.chSetVolume <- volume
+	w.chFunc <- func() {
+		w.SetVolume(volume)
+	}
 }
 
-func (w *Window) SendSetVolumeDisplay(b bool) {
-	w.chSetVolumeVisible <- b
+func (w *Window) SendSetVolumeVisible(b bool) {
+	w.chFunc <- func() {
+		w.SetVolumeVisible(b)
+	}
 }
 
 func (w *Window) refresh(img []byte) {
@@ -488,62 +436,19 @@ func onDraw() {
 func onTimerTick() {
 	if w != nil {
 		select {
-		case img, ok := <-w.ChanDraw:
+		case img, ok := <-w.chDraw:
 			if ok {
 				w.refresh(img)
 			}
-		case <-w.ChanDestoryRender:
-			w.DestoryRender()
-		case str := <-w.chAlert:
-			w.Alert(str)
 		default:
 		}
 
 		select {
 		case b := <-w.ChanShowSpinning:
 			w.SetSpinningVisible(b)
-		case p := <-w.ChanShowProgress:
-			w.UpdatePlaybackInfo(p.left, p.right, p.percent)
-		case info := <-w.ChanShowSpeed:
-			w.UpdateBufferInfo(info.Speed, info.BufferPercent)
-		default:
-		}
-
-		select {
-		case b := <-w.ChanSetCursor:
-			w.SetControlsVisible(b)
+		case fn := <-w.chFunc:
+			fn()
 			break
-		case volume := <-w.chSetVolume:
-			w.SetVolume(volume)
-		case b := <-w.chSetVolumeVisible:
-			w.SetVolumeVisible(b)
-		case arg := <-w.ChanSetSize:
-			w.SetSize(arg.width, arg.height)
-			break
-		case title := <-w.ChanSetTitle:
-			w.SetTitle(title)
-			break
-		case arg := <-w.ChanShowText:
-		skip:
-			for {
-				if arg.Handle == 0 || arg.Handle == 1 {
-					arg.Result <- SubItemExtra{arg.Id, w.ShowSubtitle(&arg.SubItem)}
-				} else {
-					w.HideSubtitle(arg.Handle)
-				}
-				select {
-				case arg = <-w.ChanShowText:
-				default:
-					break skip
-				}
-			}
-			break
-		case arg := <-w.ChanShowMessage:
-			w.showMessage(&arg.SubItem, arg.AutoHide)
-		case <-w.ChanHideMessage:
-			w.HideMessage()
-		case filename := <-w.chAddRecentOpenedFile:
-			AddRecentOpenedFile(filename)
 		default:
 			if w.currentMessagePtr != 0 && time.Now().After(w.showMessageDeadline) {
 				w.HideMessage()
@@ -581,17 +486,20 @@ func onMouseWheel(deltaX float64, deltaY float64) {
 	}
 }
 
-func onMouseMove(x, y int) {
-	if w != nil {
-		w.SendSetCursor(true)
+func (w *Window) SendAlert(str string) {
+	w.chFunc <- func() {
+		w.Alert(str)
 	}
 }
 
-func (w *Window) SendAlert(str string) {
-	w.chCursorAutoHide <- struct{}{}
-	w.chAlert <- str
+func SendAddRecentOpenedFile(filename string) {
+	w.chFunc <- func() {
+		AddRecentOpenedFile(filename)
+	}
 }
 
-func SendAddRecentOpenedFile(filename string) {
-	w.chAddRecentOpenedFile <- filename
+func (w *Window) SendSetStartupViewVisible(b bool) {
+	w.chFunc <- func() {
+		w.SetStartupViewVisible(b)
+	}
 }
