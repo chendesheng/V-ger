@@ -27,23 +27,6 @@
      return NO;
 }
 
--(void)open:(id)sender {
-     onOpenOpenPanel();
-
-     NSOpenPanel *panel	= [NSOpenPanel openPanel];
-     [panel setCanChooseDirectories:NO];
-     [panel setAllowsMultipleSelection:NO];
-
-     NSInteger type	= [panel runModal];
-     if(type == NSOKButton){
-          NSString* filename = [[panel URL] path];
-          char* cfilename = (char*)[filename UTF8String];
-          onCloseOpenPanel(cfilename);
-     } else {
-          onCloseOpenPanel("");
-     	return;
-     }
-}
 - (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
      NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
      const char *cstr = [[urlString substringFromIndex:13] UTF8String];
@@ -55,9 +38,4 @@
      return YES;
 }
 
-// - (void)timerTick:(NSEvent *)event {
-//     @autoreleasepool {
-//      	onTimerTick();
-//      }
-// }
 @end

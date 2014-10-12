@@ -164,6 +164,7 @@ void setControlsVisible(void* ptr, int b, int autoHide) {
             [w->glView setShowCursorDeadline:[NSDate dateWithTimeIntervalSinceNow:(NSTimeInterval)2.0]];
         } else {
             [w->glView setShowCursorDeadline:[NSDate distantFuture]];
+            NSLog(@"never hide automatically");
         }
     }
 
@@ -196,14 +197,13 @@ void setVolumeVisible(void* wptr, int b) {
 
 void alert(void* wptr, char* str) {
     Window* w = (Window*)wptr;
-    [w setDelegate:nil];  //remove delegate prevent hide title bar
-    [w->glView setPlaybackViewHidden:NO];
+
+    setControlsVisible(w, 1, 0);
 
     NSAlert* alert = [[NSAlert alloc] init];
     [alert setMessageText:[NSString stringWithUTF8String:str]];
     [alert setAlertStyle:NSCriticalAlertStyle];
 
-    setControlsVisible(w, 1, 0);
     [alert beginSheetModalForWindow:w modalDelegate:w didEndSelector:@selector(close) contextInfo:nil];
 }
 

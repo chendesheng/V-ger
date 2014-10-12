@@ -262,6 +262,28 @@
     }
     return YES;
 }
+
+
+-(void)open:(id)sender {
+    setControlsVisible(self, 1, 0);
+    onOpenOpenPanel();
+
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    [panel setCanChooseDirectories:NO];
+    [panel setAllowsMultipleSelection:NO];
+    [panel beginSheetModalForWindow: self completionHandler:^(NSInteger result){
+        setControlsVisible(self, 1, 1);
+
+        if(result == NSFileHandlingPanelOKButton){
+            NSString* filename = [[panel URL] path];
+            char* cfilename = (char*)[filename UTF8String];
+            onCloseOpenPanel(cfilename);
+        } else {
+            onCloseOpenPanel("");
+            return;
+        }
+    }];
+}
 @end
 
 

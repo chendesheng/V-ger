@@ -62,8 +62,8 @@
     return r;
 }
 //lost focus
--(void)windowDidResignKey:(NSNotification *)notification {
-    Window* w = (Window*)[notification object];
-    setControlsVisible(w, 0, 0);
-}
+// -(void)windowDidResignKey:(NSNotification *)notification {
+//     Window* w = (Window*)[notification object];
+//     setControlsVisible(w, 0, 0);
+// }
 @end

@@ -77,17 +77,21 @@ func (app *appDelegate) WillTerminate() {
 	}
 }
 func (app *appDelegate) OnOpenOpenPanel() {
-	if app.m != nil {
-		app.t = app.m.Hold()
-	}
+	go func() {
+		if app.m != nil {
+			app.t = app.m.Hold()
+		}
+	}()
 }
 func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	if len(filename) > 0 {
 		app.OpenFile(filename)
 	} else {
-		if app.m != nil {
-			app.m.Unhold(app.t)
-		}
+		go func() {
+			if app.m != nil {
+				app.m.Unhold(app.t)
+			}
+		}()
 	}
 }
 

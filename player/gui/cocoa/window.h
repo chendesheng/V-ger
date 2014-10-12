@@ -19,4 +19,6 @@
 - (void)subtitleMenuItemClick:(id)sender;
 -(void)setTitleHidden:(BOOL)b;
 -(void)playPause:(id)sender;
+-(void)open:(id)sender;
+
 @end
