@@ -117,6 +117,8 @@
 
 -(void)setTitle:(NSString *)title {
     titleTextView.title = title;
+
+    [super setTitle:title];
 }
 
 -(void)playPause:(id)sender {
