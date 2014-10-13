@@ -10,7 +10,7 @@ import (
 var timerEndSeek *time.Timer
 
 func (m *Movie) SeekOffset(offset time.Duration) {
-	m.w.SendSetControlsVisible(true, true)
+	go m.w.SendSetControlsVisible(true, true)
 
 	m.seeking.SendSeekOffset(offset)
 
