@@ -261,8 +261,22 @@
         } else {
             item.title = @"Search Online";
         }
+    } else if ([item action] == @selector(alwaysOnTop:)) {
+        if (self.level == NSFloatingWindowLevel) {
+            item.state = NSOnState;
+        } else {
+            item.state = NSOffState;
+        }
     }
     return YES;
+}
+
+-(void)alwaysOnTop:(id)sender {
+    if (self.level == NSNormalWindowLevel) {
+        self.level = NSFloatingWindowLevel;
+    } else {
+        self.level = NSNormalWindowLevel;
+    }
 }
 
 

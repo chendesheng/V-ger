@@ -178,6 +178,12 @@
                                     <action selector="toggleFullScreen:" target="-1" id="vNt-ko-Ziw"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Always On Top" keyEquivalent="t" id="y8B-Ml-uxh">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="alwaysOnTop:" target="-1" id="BeK-Nz-rV2"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
