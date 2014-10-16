@@ -59,7 +59,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 					if len(app.m.Filename) > 0 {
 						filename = app.m.Filename
 					}
-					app.w.SendAlert(fmt.Sprintf("Coundn't open \"%s\".", filename))
+					app.w.SendAlert(fmt.Sprintf("Couldn't open \"%s\".", filename))
 					break
 				}
 			}
