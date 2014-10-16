@@ -262,10 +262,15 @@
             item.title = @"Search Online";
         }
     } else if ([item action] == @selector(alwaysOnTop:)) {
-        if (self.level == NSFloatingWindowLevel) {
-            item.state = NSOnState;
-        } else {
+        if ([self isFullScreen]) {
             item.state = NSOffState;
+            return NO;
+        } else {
+            if (self.level == NSFloatingWindowLevel) {
+                item.state = NSOnState;
+            } else {
+                item.state = NSOffState;
+            }
         }
     }
     return YES;
@@ -299,6 +304,11 @@
             return;
         }
     }];
+}
+
+- (BOOL)isFullScreen
+{
+    return (([self styleMask] & NSFullScreenWindowMask) == NSFullScreenWindowMask);
 }
 @end
 

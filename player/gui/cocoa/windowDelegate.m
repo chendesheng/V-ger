@@ -13,6 +13,9 @@
     self->savedAspectRatio = w->customAspectRatio;
     w->customAspectRatio = frame.size;
 
+    self->savedWindowLevel = w.level;
+    w.level = NSNormalWindowLevel;
+
     setControlsVisible(w, 0, 0);
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
@@ -28,6 +31,8 @@
     w->customAspectRatio = self->savedAspectRatio;
 
     [w->glView showAllTexts];
+
+    w.level = self->savedWindowLevel;
 }
 - (void)windowDidResize:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
