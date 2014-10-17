@@ -15,10 +15,10 @@
     
     NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 	[style setAlignment:NSCenterTextAlignment];
-	[style setLineBreakMode:NSLineBreakByTruncatingMiddle];
+	[style setLineBreakMode:NSLineBreakByTruncatingTail];
 
     NSDictionary *attr = @{NSFontAttributeName : [NSFont titleBarFontOfSize:13], NSParagraphStyleAttributeName: style};
-    [self->_title drawWithRect:NSMakeRect(82, 6, self.bounds.size.width-164, 16) options:NSStringDrawingTruncatesLastVisibleLine attributes:attr];
+    [self->_title drawWithRect:NSMakeRect(66, 6, self.bounds.size.width-132, 16) options:NSStringDrawingTruncatesLastVisibleLine attributes:attr];
     [super drawRect:dirtyRect];
 }
 @end

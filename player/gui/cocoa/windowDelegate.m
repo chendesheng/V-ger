@@ -44,6 +44,8 @@
 	NSRect r = NSMakeRect([w frame].origin.x, [w frame].origin.y, frameSize.width, frameSize.height);
 	NSSize aspectRatio = w->customAspectRatio;
 	r.size.height = r.size.width * aspectRatio.height / aspectRatio.width;
+
+    setControlsVisible(w, false, false);
 	return r.size;
 }
 

@@ -4,7 +4,7 @@
 @implementation Window
 - (id)initWithWidth:(int)w height:(int)h  {
 	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask 
-		| NSMiniaturizableWindowMask | NSResizableWindowMask;
+		| NSMiniaturizableWindowMask | NSResizableWindowMask | NSTexturedBackgroundWindowMask ;
 
     self = [super initWithContentRect:NSMakeRect(0,0,w,h-22)
     	styleMask:styleMask
@@ -19,6 +19,7 @@
     [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [self setOpaque:YES];
     
+
     [self center];
     
     
@@ -100,7 +101,7 @@
     NSView* fv = [self.contentView superview];
     if (b) {
         [bvTitleTextView setHidden:YES];
-        for (NSView* v in [fv subviews]) {
+        for (NSView* v in fv.subviews) {
             if (v != glView) {
                 [v setHidden:YES];
             }
@@ -108,7 +109,9 @@
     } else {
         [bvTitleTextView setHidden:NO];
         for (NSView* v in fv.subviews) {
-            if (v != glView) {
+            if ([NSStringFromClass([v class]) isEqual:@"NSThemeFrameTitleTextField"]) {
+                [v setHidden:YES];
+            } else if (v != glView) {
                 [v setHidden:NO];
             }
         }
