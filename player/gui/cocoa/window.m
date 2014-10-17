@@ -310,6 +310,16 @@
 {
     return (([self styleMask] & NSFullScreenWindowMask) == NSFullScreenWindowMask);
 }
+
+
+- (void)magnifyWithEvent:(NSEvent *)event {
+    NSLog(@"magnifyWithEvent %f", [event magnification]);
+    if ([event magnification] < 0 && [self isFullScreen]) {
+        [self toggleFullScreen:nil];
+    } else if ([event magnification] > 0 && ![self isFullScreen]) {
+        [self toggleFullScreen:nil];
+    }
+}
 @end
 
 
