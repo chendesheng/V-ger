@@ -95,6 +95,19 @@ func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	}
 }
 
+func (app *appDelegate) addVolume(offset int) {
+	if volume := app.m.AddVolume(offset); volume >= 0 {
+		app.w.SetVolume(volume)
+		app.w.SetVolumeVisible(true)
+	}
+}
+
+func (app *appDelegate) OnMouseWheel(deltaX, deltaY float64) {
+	if deltaY != 0 {
+		app.addVolume(int(deltaY * -10))
+	}
+}
+
 func (app *appDelegate) OnMenuClick(typ int, tag int) int {
 	switch typ {
 	case 0:
@@ -108,10 +121,7 @@ func (app *appDelegate) OnMenuClick(typ int, tag int) int {
 	case 4:
 		app.onSeekMenuClick(tag)
 	case 5:
-		if volume := app.m.AddVolume(tag); volume >= 0 {
-			app.w.SetVolume(volume)
-			app.w.SetVolumeVisible(true)
-		}
+		app.addVolume(tag)
 	case 6:
 		app.onSyncSubtitleClick(tag)
 	case 7:

@@ -28,17 +28,6 @@ func (m *Movie) uievents() {
 		return true
 	})
 
-	m.w.FuncMouseWheelled = append(m.w.FuncMouseWheelled, func(deltaY float64) {
-		if deltaY == 0 {
-			return
-		}
-
-		if volume := m.AddVolume(int(deltaY * -10)); volume >= 0 {
-			m.w.SetVolume(volume)
-			m.w.SetVolumeVisible(true)
-		}
-	})
-
 	go func() {
 		for {
 			select {

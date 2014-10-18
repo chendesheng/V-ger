@@ -15,7 +15,6 @@ type window struct {
 	FuncTimerTick         []func()
 	FuncKeyDown           []func(int) bool
 	FuncOnProgressChanged []func(int, float64)
-	FuncMouseWheelled     []func(float64)
 
 	chFunc chan func()
 
@@ -181,7 +180,6 @@ func NewWindow(title string, width, height int) *Window {
 func (w *Window) ClearEvents() {
 	w.FuncOnProgressChanged = nil
 	w.FuncKeyDown = nil
-	w.FuncMouseWheelled = nil
 }
 
 func (w *Window) fitToWindow(imgWidth, imgHeight int) (int, int, int, int) {
@@ -475,14 +473,6 @@ func onProgressChange(typ int, position float64) {
 	if w != nil {
 		for _, fn := range w.FuncOnProgressChanged {
 			fn(typ, position)
-		}
-	}
-}
-
-func onMouseWheel(deltaX float64, deltaY float64) {
-	if w != nil {
-		for _, fn := range w.FuncMouseWheelled {
-			fn(deltaY)
 		}
 	}
 }

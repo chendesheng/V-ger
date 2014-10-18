@@ -35,12 +35,19 @@ func onCloseOpenPanel(name string) {
 	}
 }
 
+func onMouseWheel(deltaX, deltaY float64) {
+	if appDelegate != nil {
+		appDelegate.OnMouseWheel(deltaX, deltaY)
+	}
+}
+
 type AppDelegate interface {
 	OpenFile(string) bool
 	OnOpenOpenPanel()
 	OnCloseOpenPanel(filename string)
 	WillTerminate()
 	OnMenuClick(int, int) int
+	OnMouseWheel(float64, float64)
 }
 
 var appDelegate AppDelegate
