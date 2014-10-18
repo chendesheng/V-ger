@@ -262,9 +262,9 @@ func (w *Window) SendShowProgress(left string, right string, percent float64) {
 		w.UpdatePlaybackInfo(info.left, info.right, info.percent)
 	}
 }
-func (w *Window) SendShowBufferInfo(info *BufferInfo) {
+func (w *Window) SendShowBufferInfo(speed string, percent float64) {
 	w.chFunc <- func() {
-		w.UpdateBufferInfo(info.Speed, info.BufferPercent)
+		w.UpdateBufferInfo(speed, percent)
 	}
 }
 

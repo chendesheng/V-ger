@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-	. "vger/player/shared"
 )
 
 func (m *Movie) showProgressInner(t time.Duration) {
@@ -30,9 +29,9 @@ func (m *Movie) SetSpeed(speed float64) {
 
 func (m *Movie) showProgressPerSecond() {
 	if m.httpBuffer != nil {
-		m.w.SendShowBufferInfo(&BufferInfo{"0 KB/s", 0})
+		m.w.SendShowBufferInfo("0 KB/s", 0)
 	} else {
-		m.w.SendShowBufferInfo(&BufferInfo{})
+		m.w.SendShowBufferInfo("", 0)
 	}
 
 	var t time.Duration
@@ -57,7 +56,7 @@ func (m *Movie) showProgressPerSecond() {
 
 				lastSpeed = speed
 				m.p.Speed = speed
-				m.w.SendShowBufferInfo(&BufferInfo{fmt.Sprintf("%.0f KB/s", speed), percent})
+				m.w.SendShowBufferInfo(fmt.Sprintf("%.0f KB/s", speed), percent)
 			}
 		case <-m.quit:
 			log.Print("quit show progress")

@@ -89,10 +89,6 @@ type PlayProgressInfo struct {
 	Right   string
 	Percent float64
 }
-type BufferInfo struct {
-	Speed         string
-	BufferPercent float64
-}
 
 type SubItems []*SubItem
 
