@@ -120,7 +120,7 @@
 
 -(void)setTitle:(NSString *)title {
     titleTextView.title = title;
-
+    [titleTextView setNeedsDisplay:YES];
     [super setTitle:title];
 }
 
