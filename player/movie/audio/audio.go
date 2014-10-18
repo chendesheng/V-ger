@@ -28,9 +28,6 @@ type Audio struct {
 
 	silence []byte
 
-	diffCnt       int
-	diffCum       float64
-	diffCoef      float64
 	diffThreshold time.Duration
 
 	Offset time.Duration
