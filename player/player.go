@@ -108,7 +108,10 @@ func (app *appDelegate) OnMenuClick(typ int, tag int) int {
 	case 4:
 		app.onSeekMenuClick(tag)
 	case 5:
-		app.m.AddVolume(tag)
+		if volume := app.m.AddVolume(tag); volume >= 0 {
+			app.w.SetVolume(volume)
+			app.w.SetVolumeVisible(true)
+		}
 	case 6:
 		app.onSyncSubtitleClick(tag)
 	case 7:
@@ -133,18 +136,27 @@ func (app *appDelegate) onSeekMenuClick(typ int) {
 func (app *appDelegate) onSyncSubtitleClick(typ int) {
 	switch typ {
 	case 0:
-		app.m.SyncMainSubtitle(-200 * time.Millisecond)
+		if offset, err := app.m.SyncMainSubtitle(-200 * time.Millisecond); err == nil {
+			app.w.ShowMessage(fmt.Sprint("Main Subtitle offset ", offset.String()), true)
+		}
 	case 1:
-		app.m.SyncMainSubtitle(200 * time.Millisecond)
+		if offset, err := app.m.SyncMainSubtitle(200 * time.Millisecond); err == nil {
+			app.w.ShowMessage(fmt.Sprint("Main Subtitle offset ", offset.String()), true)
+		}
 	case 2:
-		app.m.SyncSecondSubtitle(-200 * time.Millisecond)
+		if offset, err := app.m.SyncSecondSubtitle(-200 * time.Millisecond); err == nil {
+			app.w.ShowMessage(fmt.Sprint("Second Subtitle offset ", offset.String()), true)
+		}
 	case 3:
-		app.m.SyncSecondSubtitle(200 * time.Millisecond)
+		if offset, err := app.m.SyncSecondSubtitle(200 * time.Millisecond); err == nil {
+			app.w.ShowMessage(fmt.Sprint("Second Subtitle offset ", offset.String()), true)
+		}
 	}
 }
 
 func (app *appDelegate) onSyncAudioClick(tag int) {
-	app.m.SyncAudio(time.Duration(tag) * 100 * time.Millisecond)
+	offset := app.m.SyncAudio(time.Duration(tag) * 100 * time.Millisecond)
+	app.w.ShowMessage(fmt.Sprint("Audio offset ", offset.String()), true)
 }
 
 func main() {

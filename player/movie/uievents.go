@@ -32,8 +32,11 @@ func (m *Movie) uievents() {
 		if deltaY == 0 {
 			return
 		}
-		m.AddVolume(int(deltaY * -10))
 
+		if volume := m.AddVolume(int(deltaY * -10)); volume >= 0 {
+			m.w.SetVolume(volume)
+			m.w.SetVolumeVisible(true)
+		}
 	})
 
 	go func() {

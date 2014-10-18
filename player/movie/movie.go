@@ -1,6 +1,7 @@
 package movie
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -394,9 +395,11 @@ func (m *Movie) SeekBySubtitle(forward bool) {
 	m.SeekOffset(offset)
 }
 
-func (m *Movie) AddVolume(d int) {
+// increase or decrease volume
+// return -1 means audio not ready
+func (m *Movie) AddVolume(d int) int {
 	if m.a == nil {
-		return
+		return -1
 	}
 
 	var volume int
@@ -409,45 +412,43 @@ func (m *Movie) AddVolume(d int) {
 	m.p.Volume = volume
 	SavePlayingAsync(m.p)
 
-	m.w.SetVolume(volume)
-	m.w.SetVolumeVisible(true)
+	go func() {
+		select {
+		case chVolume <- struct{}{}:
+		case <-m.quit:
+		case <-time.After(100 * time.Millisecond):
+		}
+	}()
 
-	select {
-	case chVolume <- struct{}{}:
-	case <-m.quit:
-	case <-time.After(100 * time.Millisecond):
+	return volume
+}
+
+func (m *Movie) SyncMainSubtitle(d time.Duration) (time.Duration, error) {
+	s1, _ := m.getPlayingSubs()
+	if s1 != nil {
+		offset := s1.AddOffset(d)
+		UpdateSubtitleOffsetAsync(s1.Name, offset)
+
+		return offset, nil
+	} else {
+		return 0, errors.New("main subtitle not exists")
 	}
 }
 
-func (m *Movie) SyncMainSubtitle(d time.Duration) {
-	go func() {
-		s1, _ := m.getPlayingSubs()
-		if s1 != nil {
-			offset := s1.AddOffset(d)
-			m.w.SendShowMessage(fmt.Sprint("Main Subtitle offset ", offset.String()), true)
+func (m *Movie) SyncSecondSubtitle(d time.Duration) (time.Duration, error) {
+	_, s2 := m.getPlayingSubs()
+	if s2 != nil {
+		offset := s2.AddOffset(d)
+		UpdateSubtitleOffsetAsync(s2.Name, offset)
 
-			UpdateSubtitleOffsetAsync(s1.Name, offset)
-		}
-	}()
+		return offset, nil
+	} else {
+		return 0, errors.New("second subtitle not exists")
+	}
 }
 
-func (m *Movie) SyncSecondSubtitle(d time.Duration) {
-	go func() {
-		_, s2 := m.getPlayingSubs()
-		if s2 != nil {
-			offset := s2.AddOffset(d)
-			m.w.SendShowMessage(fmt.Sprint("Second Subtitle offset ", offset.String()), true)
-
-			UpdateSubtitleOffsetAsync(s2.Name, offset)
-		}
-	}()
-}
-
-func (m *Movie) SyncAudio(d time.Duration) {
-	go func() {
-		offset := m.a.AddOffset(d)
-		m.w.SendShowMessage(fmt.Sprint("Audio offset ", offset.String()), true)
-	}()
+func (m *Movie) SyncAudio(d time.Duration) time.Duration {
+	return m.a.AddOffset(d)
 }
 
 func (m *Movie) ToggleSubtitle(index int) {
