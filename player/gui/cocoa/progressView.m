@@ -36,7 +36,7 @@
     CGFloat stringWidth = 60;
 
     if ([_speedString length] > 0) {
-        _paddingLeft = 50;
+        _paddingLeft = 53;
     } else {
         _paddingLeft = 0;
     }
@@ -54,7 +54,7 @@
 
     if (_paddingLeft > 0) {
         NSSize sz = [_speedString sizeWithAttributes:attr];
-        [_speedString drawAtPoint:NSMakePoint(_paddingLeft+stringWidth-4-textSize.width-sz.width-10, textY) withAttributes:attr];
+        [_speedString drawAtPoint:NSMakePoint(_paddingLeft+stringWidth-4-textSize.width-sz.width-8, textY) withAttributes:attr];
     }
     
     [[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.3] set];
