@@ -39,8 +39,20 @@ void setWindowSize(void* wptr, int width, int height) {
     Window* w = (Window*)wptr;
 
     NSRect frame = [w frame];
+
     frame.origin.y -= (height - frame.size.height)/2;
     frame.origin.x -= (width - frame.size.width)/2;
+
+    if (frame.origin.x < 50) {
+        frame.origin.x = 50;
+    }
+
+    CGFloat screenh = [[NSScreen mainScreen] frame].size.height;
+
+    if (frame.origin.y > screenh - height - 80) {
+        frame.origin.y = screenh - height - 80;
+    }
+
     frame.size = NSMakeSize(width, height);
 
     w->customAspectRatio = NSMakeSize(width, height);
@@ -154,7 +166,7 @@ void toggleFullScreen(void* ptr) {
     [w toggleFullScreen:nil];
 }
 
-void setControlsVisible(void* ptr, int b, int autoHide) {
+void setControlsVisible(void* ptr, int b, int autoHide) {    
     Window* w = (Window*)ptr;
 
     BOOL hidden = (b==0);

@@ -14,11 +14,10 @@
 
 - (id)initWithWidth:(int)w height:(int)h;
 - (void)makeCurrentContext;
-- (void)updateRoundCorner;
 - (void)audioMenuItemClick:(id)sender;
 - (void)subtitleMenuItemClick:(id)sender;
--(void)setTitleHidden:(BOOL)b;
--(void)playPause:(id)sender;
--(void)open:(id)sender;
+- (void)setTitleHidden:(BOOL)b;
+- (void)playPause:(id)sender;
+- (void)open:(id)sender;
 
 @end

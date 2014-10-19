@@ -6,21 +6,19 @@
 	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask 
 		| NSMiniaturizableWindowMask | NSResizableWindowMask | NSTexturedBackgroundWindowMask ;
 
-    self = [super initWithContentRect:NSMakeRect(0,0,w,h-22)
+    CGFloat screenh = [[NSScreen mainScreen] frame].size.height;
+    self = [super initWithContentRect:NSMakeRect(50, screenh - h + 22 - 150, w, h-22)
     	styleMask:styleMask
     	backing:NSBackingStoreBuffered
       	defer:YES];
 
     self->customAspectRatio = NSMakeSize(w, h);
     [self setHasShadow:YES];
-    [self setContentMinSize:NSMakeSize(200, 200*h/w)];
+    [self setContentMinSize:NSMakeSize(300, 300*h/w)];
     [self setAcceptsMouseMovedEvents:YES];
 	[self setRestorable:NO];
     [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [self setOpaque:YES];
-    
-
-    [self center];
     
     
     //Window > NSFrameView > NSOpenGLView > TitleView & ProgressView & TextView
@@ -28,6 +26,8 @@
 
     NSView* fv = [[self contentView] superview];
     glView = [[GLView alloc] initWithFrame2:bounds];
+    glView.layer.cornerRadius = 4.1;
+    glView.layer.masksToBounds = YES;
 
     [fv addSubview:glView positioned:NSWindowBelow relativeTo:nil];
     fv.wantsLayer = YES;
@@ -80,23 +80,12 @@
     else
         onMenuClick(MENU_SUBTITLE, (int)[subtitleMenuItem tag]);
 }
-- (void)updateRoundCorner {
-    NSView* fv = [[self contentView] superview];
-    fv.layer.cornerRadius=4.1;
-    fv.layer.masksToBounds=YES;
-}
 
 -(void)close {
     [super close];
     [NSApp terminate:nil];
 }
--(void)setFrame:(NSRect)frameRect display:(BOOL)flag {
-    // Maintain round corner when resizing window
-    // Remove this window's round corner disappear after resize, don't known why.
-    [self updateRoundCorner];
-    
-    [super setFrame:frameRect display:flag];
-}
+
 -(void)setTitleHidden:(BOOL)b {
     NSView* fv = [self.contentView superview];
     if (b) {

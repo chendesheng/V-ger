@@ -4,8 +4,7 @@
 @implementation WindowDelegate
 
 
-- (void)windowWillEnterFullScreen:(NSNotification *)notification
-{
+- (void)windowWillEnterFullScreen:(NSNotification *)notification {
     NSScreen *mainScreen = [NSScreen mainScreen];
     NSRect frame = [mainScreen frame];
     
@@ -18,14 +17,16 @@
 
     setControlsVisible(w, 0, 0);
 }
-- (void)windowDidEnterFullScreen:(NSNotification *)notification
-{
+- (void)windowDidEnterFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
     [w->glView showAllTexts];
 }
 
-- (void)windowDidExitFullScreen:(NSNotification *)notification
-{
+- (void)windowWillExitFullScreen:(NSNotification *)notification {
+    Window* w = (Window*)[notification object];
+    setControlsVisible(w, true, true);
+}
+- (void)windowDidExitFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
 
     w->customAspectRatio = self->savedAspectRatio;
@@ -51,7 +52,6 @@
 
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
-    [w updateRoundCorner];
     [w->glView showAllTexts];
 }
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)newFrame {
