@@ -245,7 +245,6 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 
 	go updateSubscribeDuration(m.p.Movie, m.p.Duration)
 	go checkDownloadSubtitle(m, file, filename)
-	go w.SendSetTitle(filename)
 	return
 }
 
@@ -280,7 +279,7 @@ func (m *Movie) Close() {
 func (m *Movie) PlayAsync() {
 	log.Print("movie play async")
 
-	go m.decode(m.p.Movie)
+	go m.decode()
 	go m.showProgressPerSecond()
 }
 

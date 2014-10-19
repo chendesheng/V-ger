@@ -135,7 +135,7 @@ func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet *AVPacket) bool 
 	return false
 }
 
-func (m *Movie) decode(name string) {
+func (m *Movie) decode() {
 	m.chHold = make(chan time.Duration)
 
 	defer func() {
@@ -184,6 +184,7 @@ func (m *Movie) decode(name string) {
 
 	m.w.SendSetSize(m.v.Width, m.v.Height)
 	m.w.SendSetControlsVisible(true, true)
+	m.w.SendSetTitle(m.Filename)
 
 	ctx := m.ctx
 

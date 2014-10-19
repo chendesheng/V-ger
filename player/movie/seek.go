@@ -10,8 +10,6 @@ import (
 var timerEndSeek *time.Timer
 
 func (m *Movie) SeekOffset(offset time.Duration) {
-	go m.w.SendSetControlsVisible(true, true)
-
 	m.seeking.SendSeekOffset(offset)
 
 	if timerEndSeek == nil || !timerEndSeek.Reset(200*time.Millisecond) {

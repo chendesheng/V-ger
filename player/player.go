@@ -141,6 +141,8 @@ func (app *appDelegate) onSeekMenuClick(typ int) {
 	case 3:
 		app.m.SeekOffset(10 * time.Second)
 	}
+
+	app.w.SetControlsVisible(true, true)
 }
 
 func (app *appDelegate) onSyncSubtitleClick(typ int) {

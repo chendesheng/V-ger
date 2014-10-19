@@ -69,7 +69,7 @@
         [self addSubview:startupView positioned:NSWindowAbove relativeTo:bvProgressView];
         [startupView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
-        self.showCursorDeadline = [NSDate date];
+        self.showCursorDeadline = [NSDate distantFuture];
     }
     
     return self;
@@ -104,7 +104,9 @@
         toggleFullScreen(self.window);
     }
 
-    setControlsVisible(self.window, 0, 0);
+    if ([self.showCursorDeadline compare:[NSDate distantFuture]] == NSOrderedAscending) {
+        setControlsVisible(self.window, 0, 0);
+    }
 }
 
 -(BOOL)mouseDownCanMoveWindow {
@@ -126,7 +128,8 @@
 
 - (void)mouseMoved:(NSEvent *)event {
      NSPoint mouse = [NSEvent mouseLocation];
-    if ([NSWindow windowNumberAtPoint:mouse belowWindowWithWindowNumber:0] == [self window].windowNumber) {
+    if ([NSWindow windowNumberAtPoint:mouse belowWindowWithWindowNumber:0] == [self window].windowNumber
+        && [self.showCursorDeadline compare:[NSDate distantFuture]] == NSOrderedAscending) {
         setControlsVisible(self.window, 1, 1);
     }
 }
