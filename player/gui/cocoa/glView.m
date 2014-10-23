@@ -240,12 +240,12 @@
                 //current is second sub and first sub is visible
                 NSSize sz1 = [textView sizeForWidth:(wsz.width-2*PADDING) height:FLT_MAX];
                 if (sz1.height > 0) {
-                    y += sz1.height + GAP;
+                    y = PADDING + sz1.height + GAP;
                 }
             } else if ([textView2 isHidden] == NO && sz.height > 0) {
                 //current is first sub and second sub is visible
                 NSRect rt = [textView2 frame];
-                rt.origin.y += sz.height + GAP;
+                rt.origin.y = PADDING + sz.height + GAP;
                 [textView2 setFrame:rt];
             }
         }
