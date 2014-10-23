@@ -42,3 +42,4 @@ util/unar
 *.xcuserstate
 
 player/gui/cocoa/lib.xcodeproj/project.xcworkspace/xcuserdata/Roy.xcuserdatad/UserInterfaceState.xcuserstate
+*.swp
