@@ -45,9 +45,6 @@ type imageRender interface {
 	draw(img []byte, width, height int)
 	delete()
 }
-type argSize struct {
-	width, height int
-}
 
 func (w *Window) SendDrawImage(img []byte) {
 	w.chDraw <- img

@@ -33,6 +33,9 @@ type Streaming struct {
 	chArg chan int64
 }
 
+func (s *Streaming) SetUrl(url string) {
+	s.url = url
+}
 func (s *Streaming) Start(from int64, quit chan struct{}) {
 	log.Print("Streaming Start:", from)
 
@@ -51,6 +54,12 @@ func (s *Streaming) Start(from int64, quit chan struct{}) {
 		}
 	case <-s.quit:
 	}
+}
+
+func (s *Streaming) Stop() {
+	log.Print("Stop Streaming")
+	close(s.quit)
+	s.quit = nil
 }
 
 func NewStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {

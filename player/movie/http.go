@@ -1,6 +1,7 @@
 package movie
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -68,9 +69,15 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 						pos := m.httpBuffer.CurrentPos()
 
 						log.Print("Streaming timeout Start:", pos)
-
+						url, _, _, _, err := download.GetDownloadInfoN(file, nil, 10, false, m.quit)
+						if err != nil {
+							m.w.SendAlert(fmt.Sprintf(`Couldn't download "%s"`, file))
+							streaming.Stop()
+							return AVERROR_INVALIDDATA
+						}
+						streaming.SetUrl(url)
 						startWaitTime = time.Now()
-						streaming.Start(pos, m.quit)
+						go streaming.Start(pos, m.quit)
 					}
 				}
 			}

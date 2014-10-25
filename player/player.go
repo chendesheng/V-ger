@@ -83,6 +83,7 @@ func (app *appDelegate) OnOpenOpenPanel() {
 		}
 	}()
 }
+
 func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	if len(filename) > 0 {
 		app.OpenFile(filename)
@@ -108,23 +109,34 @@ func (app *appDelegate) OnMouseWheel(deltaX, deltaY float64) {
 	}
 }
 
+const (
+	MENU_AUDIO = iota
+	MENU_SUBTITLE
+	MENU_SEARCH_SUBTITLE
+	MENU_PLAY
+	MENU_SEEK
+	MENU_VOLUME
+	MENU_SYNC_SUBTITLE
+	MENU_SYNC_AUDIO
+)
+
 func (app *appDelegate) OnMenuClick(typ int, tag int) int {
 	switch typ {
-	case 0:
+	case MENU_AUDIO:
 		go app.m.SetAudioTrack(tag)
-	case 1:
+	case MENU_SUBTITLE:
 		app.m.ToggleSubtitle(tag)
-	case 2:
+	case MENU_SEARCH_SUBTITLE:
 		go app.m.ToggleSearchSubtitle()
-	case 3:
+	case MENU_PLAY:
 		app.m.TogglePlay()
-	case 4:
+	case MENU_SEEK:
 		app.onSeekMenuClick(tag)
-	case 5:
+	case MENU_VOLUME:
 		app.addVolume(tag)
-	case 6:
+	case MENU_SYNC_SUBTITLE:
 		app.onSyncSubtitleClick(tag)
-	case 7:
+	case MENU_SYNC_AUDIO:
 		app.onSyncAudioClick(tag)
 	}
 	return 0
