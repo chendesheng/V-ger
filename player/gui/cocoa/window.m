@@ -4,7 +4,7 @@
 @implementation Window
 - (id)initWithWidth:(int)w height:(int)h  {
 	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask 
-		| NSMiniaturizableWindowMask | NSResizableWindowMask | NSTexturedBackgroundWindowMask ;
+		| NSMiniaturizableWindowMask | NSResizableWindowMask;
 
     CGFloat screenh = [[NSScreen mainScreen] frame].size.height;
     self = [super initWithContentRect:NSMakeRect(50, screenh - h + 22 - 150, w, h-22)
@@ -310,6 +310,16 @@
         [self toggleFullScreen:nil];
     } else if ([event magnification] > 0 && ![self isFullScreen]) {
         [self toggleFullScreen:nil];
+    }
+}
+
+- (void)setRoundCorner:(bool)b {
+    if (b) {
+        glView.layer.cornerRadius = 4.1;
+        glView.layer.masksToBounds = YES;
+    } else {
+        glView.layer.cornerRadius = 0;
+        glView.layer.masksToBounds = YES;
     }
 }
 @end

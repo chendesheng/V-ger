@@ -19,5 +19,5 @@
 - (void)setTitleHidden:(BOOL)b;
 - (void)playPause:(id)sender;
 - (void)open:(id)sender;
-
+- (void)setRoundCorner:(bool)b;
 @end

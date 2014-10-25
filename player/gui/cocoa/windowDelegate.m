@@ -16,6 +16,7 @@
     w.level = NSNormalWindowLevel;
 
     setControlsVisible(w, 0, 0);
+    [w setRoundCorner:NO];  //hide round corner in full screen
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
@@ -25,6 +26,7 @@
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
     setControlsVisible(w, true, true);
+    [w setRoundCorner:YES];
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
