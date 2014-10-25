@@ -110,5 +110,5 @@ inline void getAllSubtitleNames(void*** names, int* length) {}
 inline void getPlayingSubtitles(int* firstSub, int* secondSub) {}
 inline int getPlayingAudioTrack(){return -1;}
 inline void getAllAudioTracks(void*** names, int* length) {}
-inline int isSearchingSubtitle() {}
+inline int isSearchingSubtitle() { return 0; }
 #endif

@@ -2,7 +2,7 @@
 @interface WindowDelegate : NSObject<NSWindowDelegate>
 {
 	NSSize savedAspectRatio;
-	int savedWindowLevel;
+	NSInteger savedWindowLevel;
 }
 
 @end
