@@ -129,12 +129,18 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         NSShadow *shadow = [[NSShadow alloc] init];
         [shadow setShadowColor:[NSColor blackColor]];
         [shadow setShadowBlurRadius:6];
-        
+       
+        NSMutableParagraphStyle *paragrapStyle = NSMutableParagraphStyle.new;
+        paragrapStyle.alignment = kCTTextAlignmentCenter;
+
         NSAttributedString *str = [[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:item.str] 
-            attributes:@{NSFontAttributeName:font,
+            attributes:@{
+                         NSFontAttributeName:font,
               NSBackgroundColorAttributeName:[NSColor clearColor],
               NSForegroundColorAttributeName:color,
-                       NSShadowAttributeName:shadow}];
+                       NSShadowAttributeName:shadow,
+               NSParagraphStyleAttributeName:paragrapStyle
+            }];
         
         [attrStr appendAttributedString:str];
     }
