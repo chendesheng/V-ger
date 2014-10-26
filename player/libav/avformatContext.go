@@ -149,7 +149,7 @@ func (ctx AVFormatContext) SeekFrame(stream AVStream, t time.Duration, flags int
 	// seek_target := C.av_rescale_q(C.int64_t(seek_pos), timebaseq, timeBase)
 	res := C.av_seek_frame(ctx.ptr, -1, C.int64_t(seek_pos), C.int(flags))
 	if res < 0 {
-		return fmt.Errorf("Seek frame error:", res)
+		return fmt.Errorf("Seek frame error: %d", res)
 	}
 
 	//this is required! otherwise will get history data after seeking

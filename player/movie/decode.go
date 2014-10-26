@@ -232,6 +232,7 @@ func (m *Movie) decode() {
 				if m.playNextEpisode() {
 					return
 				}
+				m.v.SendEOF()
 			} else {
 				if m.httpBuffer == nil && resCode == AVERROR_INVALIDDATA {
 					t := m.c.GetTime()

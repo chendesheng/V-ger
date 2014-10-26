@@ -49,6 +49,15 @@ type Video struct {
 	lastDts float64
 
 	chHold chan struct{}
+	chEOF  chan struct{}
+}
+
+func (v *Video) SendEOF() {
+	select {
+	case v.chEOF <- struct{}{}:
+	case <-time.After(20 * time.Millisecond):
+	case <-v.quit:
+	}
 }
 
 func (v *Video) setupCodec(codec AVCodecContext) error {
@@ -136,6 +145,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 	v.flushQuit = make(chan struct{})
 	v.quit = make(chan struct{})
 	v.chHold = make(chan struct{})
+	v.chEOF = make(chan struct{})
 
 	log.Print("new video success")
 	return v, nil
@@ -291,7 +301,18 @@ func (v *Video) Play() {
 					return
 				}
 			}
-
+		case <-v.chEOF:
+			v.r.SendHideSpinning(false)
+			select {
+			case <-v.chHold:
+				select {
+				case <-v.chHold:
+				case <-v.quit:
+					return
+				}
+			case <-v.quit:
+				return
+			}
 		case <-v.quit:
 			v.r.SendHideSpinning(false)
 			return

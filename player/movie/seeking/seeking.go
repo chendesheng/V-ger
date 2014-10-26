@@ -40,10 +40,12 @@ func NewSeeking(v VideoSeeker, h SeekHandler, chQuit chan struct{}) *Seeking {
 func (s *Seeking) seek(t time.Duration) time.Duration {
 	var img []byte
 	var err error
-	t, img, err = s.v.Seek(t)
+	t1, img, err := s.v.Seek(t)
 	if err != nil {
 		log.Print(err)
 		return t
+	} else {
+		t = t1
 	}
 
 	s.h.OnSeek(t, img)
