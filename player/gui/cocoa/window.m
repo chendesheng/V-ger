@@ -110,7 +110,9 @@
 -(void)setTitle:(NSString *)title {
     titleTextView.title = title;
     [titleTextView setNeedsDisplay:YES];
+#ifndef MAC_OS_X_VERSION_10_10
     [super setTitle:title];
+#endif
 }
 
 -(void)playPause:(id)sender {
