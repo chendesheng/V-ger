@@ -20,7 +20,7 @@ type window struct {
 
 	chDraw chan []byte
 
-	ChanShowSpinning chan bool
+	chShowSpinning chan bool
 
 	img []byte
 
@@ -36,7 +36,8 @@ type window struct {
 
 	showMessageDeadline time.Time
 
-	chDelayShowSpinning chan int
+	chDelayShowSpinning      chan bool
+	chDelayForceShowSpinning chan struct{}
 
 	displayingTexts map[int]uintptr
 }
@@ -153,8 +154,7 @@ func NewWindow(title string, width, height int) *Window {
 		window{
 			chDraw: make(chan []byte),
 
-			ChanShowSpinning:    make(chan bool),
-			chDelayShowSpinning: nil,
+			chShowSpinning: make(chan bool),
 
 			originalWidth:  width,
 			originalHeight: height,
@@ -356,53 +356,40 @@ func (w *Window) SendShowSpinning() {
 	// log.Print(string(debug.Stack()))
 
 	if w.chDelayShowSpinning == nil {
-		w.chDelayShowSpinning = make(chan int)
+		w.chDelayShowSpinning = make(chan bool)
+		w.chDelayForceShowSpinning = make(chan struct{})
 		go func() {
-			w.ChanShowSpinning <- true
-			i := 1
-			delta := <-w.chDelayShowSpinning
-			if delta == 0 {
-				i = 0
-			} else {
-				i += delta
-			}
-
+			b := false
+			bsaved := false
 			for {
-				// log.Print(i)
 				select {
 				case <-time.After(500 * time.Millisecond):
-					w.ChanShowSpinning <- (i > 0)
-					delta := <-w.chDelayShowSpinning
-					if delta == 0 {
-						i = 0
-					} else {
-						i += delta
+					if b != bsaved {
+						bsaved = b
+						w.chShowSpinning <- b
 					}
-				case delta := <-w.chDelayShowSpinning:
-					if delta == 0 {
-						i = 0
-					} else {
-						i += delta
+					b = <-w.chDelayShowSpinning
+				case b = <-w.chDelayShowSpinning:
+				case <-w.chDelayForceShowSpinning:
+					b = false
+					if b != bsaved {
+						bsaved = b
+						w.chShowSpinning <- b
 					}
+					b = <-w.chDelayShowSpinning
 				}
 			}
 		}()
-	} else {
-		w.chDelayShowSpinning <- 1
 	}
+	w.chDelayShowSpinning <- true
 }
 func (w *Window) SendHideSpinning(forceHide bool) {
 	// log.Print(string(debug.Stack()))
 
 	if forceHide {
-		w.ChanShowSpinning <- false
-		if w.chDelayShowSpinning != nil {
-			w.chDelayShowSpinning <- 0
-		}
+		w.chDelayForceShowSpinning <- struct{}{}
 	} else {
-		if w.chDelayShowSpinning != nil {
-			w.chDelayShowSpinning <- -1
-		}
+		w.chDelayShowSpinning <- false
 	}
 }
 
@@ -440,7 +427,7 @@ func onTimerTick() {
 		}
 
 		select {
-		case b := <-w.ChanShowSpinning:
+		case b := <-w.chShowSpinning:
 			w.SetSpinningVisible(b)
 		case fn := <-w.chFunc:
 			fn()
