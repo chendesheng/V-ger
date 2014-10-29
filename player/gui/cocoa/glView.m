@@ -35,9 +35,11 @@
         [data release];
 
         textView = [[TextView alloc] init];
+        [textView setVerticallyResizable:NO]; // this is required or setFrame won't do right
         [self addSubview:textView];
 
         textView2 = [[TextView alloc] init];
+        [textView2 setVerticallyResizable:NO];
         [self addSubview:textView2];
 
         [self updateTrackingAreas];
@@ -70,6 +72,8 @@
         [startupView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
         self.showCursorDeadline = [NSDate distantFuture];
+
+
     }
     
     return self;
@@ -190,6 +194,7 @@
 
     if (tv == nil) {
         tv = [[TextView alloc] init];
+        [tv setVerticallyResizable:NO];
         [self addSubview:tv positioned:NSWindowBelow relativeTo:progressView];
     }
 
@@ -197,17 +202,15 @@
     tv->x = item->x;
     tv->y = item->y;
     tv->align = item->align;
-    [self updateTextViewPosition:tv];
     [tv setHidden:NO];
+    [self showAllTexts];
     return tv;
 }
 -(void)updateTextViewPosition:(TextView*)tv {
     int align = tv->align;
 
-    BOOL secondSub = NO;
     if (align == 10) {
         align = 2;
-        secondSub = YES;
     }
 
     int xalign = (align-1)%3;   //0-left, 1-center, 2-right
@@ -216,7 +219,7 @@
     NSSize wsz = [[self window] frame].size;
         
     CGFloat PADDING = 30;
-    CGFloat GAP = 5.0;  //5 pixes gap between first subtitle and second subtitle
+    CGFloat GAP = 5.0;  //5 pixes space between collisioned texts
 
     CGFloat x;
     CGFloat y;
@@ -234,25 +237,14 @@
         x = 0.5*xalign*wsz.width + (1-xalign)*PADDING;
         y = 0.5*yalign*wsz.height + (1-yalign)*PADDING;
 
-        //handle default position
-        if (align == 2) {
-            if (secondSub && [textView isHidden] == NO) {
-                //current is second sub and first sub is visible
-                NSSize sz1 = [textView sizeForWidth:(wsz.width-2*PADDING) height:FLT_MAX];
-                if (sz1.height > 0) {
-                    y = PADDING + sz1.height + GAP;
-                }
-            } else if ([textView2 isHidden] == NO && sz.height > 0) {
-                //current is first sub and second sub is visible
-                NSRect rt = [textView2 frame];
-                rt.origin.y = PADDING + sz.height + GAP;
-                [textView2 setFrame:rt];
-            }
-        }
+        // handle position collision
+        y += _collisionOffsets[align];
+        _collisionOffsets[align] += (sz.height + GAP) * _collisionDeltas[align];
     }
 
-    //NSLog(@"%f %f %f %f %f %f", x, y, sz.width, sz.height, x-0.5*xalign*sz.width, y-0.5*yalign*sz.height);
+    // NSLog(@"set:%f,%f,%f,%f",x-0.5*xalign*sz.width, y-0.5*yalign*sz.height, sz.width, sz.height);
     [tv setFrame:NSMakeRect(x-0.5*xalign*sz.width, y-0.5*yalign*sz.height, sz.width, sz.height)];
+    // NSLog(@"after:%f %f %f %f", tv.frame.origin.x, tv.frame.origin.y, tv.frame.size.width, tv.frame.size.height);
 }
 -(void)hideSubtitle:(TextView*)tv {
     if (tv == textView) {
@@ -262,9 +254,12 @@
         [tv setText:NULL length:0];
         [tv setHidden:YES];
     } else {
+        [tv setHidden:YES];
         [tv removeFromSuperview];
         [tv release];
     }
+    
+    [self showAllTexts];
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
@@ -288,11 +283,19 @@
     originalSize = size;
 }
 - (void)showAllTexts {
+    
+    for (int i = 0; i < 10; i++) {
+        self->_collisionOffsets[i] = 0;
+        if (i < 7) self->_collisionDeltas[i] = 1;
+        else self->_collisionDeltas[i] = -1;
+    }
+
+    // NSLog(@"subview length: %ld", [self subviews].count);
     for (NSView* v in [self subviews]) {
         if ([v isKindOfClass:[textView class]] && [v isHidden]==NO) {
-        // NSLog(@"begin update %d", [(TextView*)v getSubItem]->align);
-        [self updateTextViewPosition:(TextView*)v];
-        // NSLog(@"end update %d", [(TextView*)v getSubItem]->align);
+        // NSLog(@"begin update %@", v);
+        [self updateTextViewPosition:(TextView*)v ];
+        // NSLog(@"end update %@", v);
 
             // [v setHidden:NO];
         }

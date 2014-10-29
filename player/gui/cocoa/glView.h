@@ -28,7 +28,9 @@
     
     VolumeView* volumeView;
     BlurView* bvVolumeView;
-
+    
+    CGFloat _collisionOffsets[10];
+    CGFloat _collisionDeltas[10];
 }
 
 @property (nonatomic, strong, retain) NSDate* showCursorDeadline;
