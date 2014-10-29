@@ -91,12 +91,8 @@ func (s *Subtitle) showSubitem(item *SubItem) {
 		return
 	}
 
-	if !s.IsMainSub && item.PositionType != 10 {
-		if item.IsInDefaultPosition() {
-			item.PositionType = 10
-		} else {
-			return
-		}
+	if !s.IsMainSub && !item.IsInDefaultPosition() {
+		return
 	}
 
 	key := int(genKey())

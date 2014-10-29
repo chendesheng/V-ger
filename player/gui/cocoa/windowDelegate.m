@@ -20,7 +20,7 @@
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
-    [w->glView showAllTexts];
+    [w->glView refreshTexts];
 }
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
@@ -33,13 +33,13 @@
 
     w->customAspectRatio = self->savedAspectRatio;
 
-    [w->glView showAllTexts];
+    [w->glView refreshTexts];
 
     w.level = self->savedWindowLevel;
 }
 - (void)windowDidResize:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
-    [w->glView showAllTexts];
+    [w->glView refreshTexts];
 }
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
     Window* w = (Window*)sender;
@@ -54,7 +54,7 @@
 
 -(void)windowDidEndLiveResize:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
-    [w->glView showAllTexts];
+    [w->glView refreshTexts];
 }
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)newFrame {
     Window* w = (Window*)window;

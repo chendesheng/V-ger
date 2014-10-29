@@ -14,9 +14,6 @@
     NSCursor* noneCursor;
     NSCursor* currentCursor;
     
-    TextView* textView;
-    TextView* textView2;
-    
     StartupView* startupView;
     
     NSSize originalSize;
@@ -41,7 +38,7 @@
 
 -(TextView*)showSubtitle:(SubItem*)item;
 -(void)hideSubtitle:(TextView*)tv;
--(void)showAllTexts;
+-(void)refreshTexts;
 // -(void)hideAllTexts;
 
 -(void)setStartupViewHidden:(BOOL)b;

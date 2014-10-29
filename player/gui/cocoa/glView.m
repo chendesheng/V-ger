@@ -34,14 +34,6 @@
                                                   hotSpot:NSZeroPoint];
         [data release];
 
-        textView = [[TextView alloc] init];
-        [textView setVerticallyResizable:NO]; // this is required or setFrame won't do right
-        [self addSubview:textView];
-
-        textView2 = [[TextView alloc] init];
-        [textView2 setVerticallyResizable:NO];
-        [self addSubview:textView2];
-
         [self updateTrackingAreas];
         
         CGFloat width = frame.size.width;
@@ -86,8 +78,6 @@
 
 -(void)dealloc {
     [trackingArea release];
-    [textView release];
-    [textView2 release];
     [super dealloc];
 }
 
@@ -181,37 +171,31 @@
 }
 
 -(TextView*)showSubtitle:(SubItem*)item {
-    int align = item->align;
-
-    TextView* tv = nil;
-    if (item->x < 0 && item->y < 0) {
-        if (align == 2) {
-            tv = textView;
-        } else if (align == 10) {
-            tv = textView2;
-        }
-    }
-
-    if (tv == nil) {
-        tv = [[TextView alloc] init];
-        [tv setVerticallyResizable:NO];
-        [self addSubview:tv positioned:NSWindowBelow relativeTo:progressView];
-    }
-
+    TextView *tv = [self getOrCreateTextView];
     [tv setText:item->texts length:item->length];
     tv->x = item->x;
     tv->y = item->y;
     tv->align = item->align;
     [tv setHidden:NO];
-    [self showAllTexts];
+    [self refreshTexts];
+    return tv;
+}
+// get an unused textView or create one
+-(TextView*)getOrCreateTextView {
+    for (NSView* v in [self subviews]) {
+        if ([NSStringFromClass([v class]) isEqualToString:@"TextView"] && [v isHidden] == YES) {
+            return (TextView*)v;
+        }
+    }
+
+    TextView *tv = [[TextView alloc] init];
+    [tv setVerticallyResizable:NO]; // this is required or setFrame won't do right
+    [self addSubview:tv positioned:NSWindowBelow relativeTo:progressView];
+    [tv release];
     return tv;
 }
 -(void)updateTextViewPosition:(TextView*)tv {
     int align = tv->align;
-
-    if (align == 10) {
-        align = 2;
-    }
 
     int xalign = (align-1)%3;   //0-left, 1-center, 2-right
     int yalign = (align-1)/3;   //0-bottom, 1-middle, 2-top
@@ -247,19 +231,10 @@
     // NSLog(@"after:%f %f %f %f", tv.frame.origin.x, tv.frame.origin.y, tv.frame.size.width, tv.frame.size.height);
 }
 -(void)hideSubtitle:(TextView*)tv {
-    if (tv == textView) {
-        [tv setText:NULL length:0];
-        [tv setHidden:YES];
-    } else if (tv == textView2) {
-        [tv setText:NULL length:0];
-        [tv setHidden:YES];
-    } else {
-        [tv setHidden:YES];
-        [tv removeFromSuperview];
-        [tv release];
-    }
-    
-    [self showAllTexts];
+    [tv setText:NULL length:0];
+    [tv setHidden:YES];
+
+    [self refreshTexts];
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
@@ -282,7 +257,7 @@
 - (void)setOriginalSize:(NSSize)size {
     originalSize = size;
 }
-- (void)showAllTexts {
+- (void)refreshTexts {
     
     for (int i = 0; i < 10; i++) {
         self->_collisionOffsets[i] = 0;
@@ -292,7 +267,7 @@
 
     // NSLog(@"subview length: %ld", [self subviews].count);
     for (NSView* v in [self subviews]) {
-        if ([v isKindOfClass:[textView class]] && [v isHidden]==NO) {
+        if ([NSStringFromClass([v class]) isEqualToString:@"TextView"] && [v isHidden]==NO) {
         // NSLog(@"begin update %@", v);
         [self updateTextViewPosition:(TextView*)v ];
         // NSLog(@"end update %@", v);
