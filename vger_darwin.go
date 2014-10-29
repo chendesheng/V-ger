@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"os/exec"
-	"vger/cocoa"
+	// "vger/cocoa"
 	"vger/download"
 	"vger/util"
 	// "subscribe"
@@ -29,6 +29,7 @@ func main() {
 		website.Run(*debug)
 	} else {
 		go website.Run(*debug)
-		cocoa.Start()
+		//cocoa.Start()
+		<-(chan struct{})(nil)
 	}
 }

@@ -18,28 +18,28 @@ type NativeAPI interface {
 var DefaultNativeAPI NativeAPI
 
 func SendNotification(title, infoText string) {
-	if DefaultNativeAPI != nil {
-		DefaultNativeAPI.SendNotification(title, infoText)
-	}
+//	if DefaultNativeAPI != nil {
+//		DefaultNativeAPI.SendNotification(title, infoText)
+//	}
 }
 
 func Shutdown(reason string) error {
-	if DefaultNativeAPI != nil {
-		return DefaultNativeAPI.ComputerShutdown(reason)
-	}
+//	if DefaultNativeAPI != nil {
+//		return DefaultNativeAPI.ComputerShutdown(reason)
+//	}
 	return nil
 }
 
 func MoveFileToTrash(dir, name string) error {
-	if DefaultNativeAPI != nil {
-		return DefaultNativeAPI.MoveFileToTrash(dir, name)
-	}
-
+//	if DefaultNativeAPI != nil {
+//		return DefaultNativeAPI.MoveFileToTrash(dir, name)
+//	}
+//
 	return nil
 }
 
 func SetNotificationClickCallback(callback NotificationClickCallback) {
-	if DefaultNativeAPI != nil {
-		DefaultNativeAPI.SetNotificationClickCallback(callback)
-	}
+//	if DefaultNativeAPI != nil {
+//		DefaultNativeAPI.SetNotificationClickCallback(callback)
+//	}
 }
