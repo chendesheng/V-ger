@@ -19,7 +19,7 @@
      [panel setAllowsMultipleSelection:NO];
 
      NSInteger type = [panel runModal];
-     if(type == NSOKButton){
+     if(type == NSModalResponseOK){
           NSString* filename = [[panel URL] path];
           char* cfilename = (char*)[filename UTF8String];
           onOpenFile(cfilename);

@@ -1,6 +1,6 @@
 #import <Cocoa/Cocoa.h>
 
-@interface Application : NSObject {
+@interface Application : NSObject <NSFileManagerDelegate> {
 }
 
 @property (strong, nonatomic) IBOutlet NSMenu *mainMenu;

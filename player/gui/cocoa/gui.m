@@ -216,7 +216,9 @@ void alert(void* wptr, char* str) {
     [alert setMessageText:[NSString stringWithUTF8String:str]];
     [alert setAlertStyle:NSCriticalAlertStyle];
 
-    [alert beginSheetModalForWindow:w modalDelegate:w didEndSelector:@selector(close) contextInfo:nil];
+    [alert beginSheetModalForWindow:w completionHandler: ^(NSInteger result){
+        [w close];
+    }];
 }
 
 void closeWindow(void* wptr) {
