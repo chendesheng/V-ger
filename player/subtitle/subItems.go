@@ -23,7 +23,16 @@ func newSubItems(items []*SubItem) *subItems {
 	others := make([]*SubItem, 0)
 
 	for i, item := range items[1:] {
-		if item.IsInDefaultPosition() && items[i].To <= item.From {
+		prev := items[i]
+		if item.IsInDefaultPosition() && prev.To <= item.From {
+			if item.From-prev.To < 50*time.Millisecond { //avoid flash
+				prev.To = item.From - 50*time.Millisecond
+			}
+
+			if prev.To <= prev.From { // avoid flash
+				continue
+			}
+
 			nooverlap = append(nooverlap, item)
 		} else {
 			others = append(others, item)
