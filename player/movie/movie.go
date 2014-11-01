@@ -200,8 +200,6 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 }
 
 func (m *Movie) Open(w *Window, file string) (err error) {
-	w.SendSetStartupViewVisible(true)
-
 	w.SendShowSpinning()
 	defer w.SendHideSpinning(false)
 
@@ -255,8 +253,6 @@ func (m *Movie) SavePlaying() {
 }
 
 func (m *Movie) Close() {
-	m.w.SetStartupViewVisible(true)
-
 	if m.subQuit != nil {
 		close(m.subQuit)
 	}

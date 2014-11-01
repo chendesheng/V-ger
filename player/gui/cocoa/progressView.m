@@ -24,6 +24,10 @@
     [textViewSurround fill];
 }
 -(void)drawRect:(NSRect)dirtyRect {
+    if (_leftString == _rightString) {
+        return;
+    }
+
     CGFloat barHeight = 2;
     CGFloat knotHeight = 6;
     CGFloat knotWidth = 6;

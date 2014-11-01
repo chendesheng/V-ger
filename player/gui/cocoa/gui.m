@@ -76,7 +76,7 @@ void* newWindow(char* title, int width, int height) {
 
         [w makeFirstResponder:w->glView];
 
-        NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/100.0 
+        NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/10.0 
                                 target:w->glView
                               selector:@selector(timerTick:)
                               userInfo:nil
@@ -101,6 +101,14 @@ void initWindowCurrentContext(void*ptr) {
     Window* w = (Window*)ptr;
     [w makeCurrentContext];
 }
+void makeCurrentContext(void* ptr) {
+    Window* w = (Window*)ptr;
+    [w->glView makeCurrentContext];
+}
+void flushBuffer(void* ptr) {
+    Window* w = (Window*)ptr;
+    [w->glView flushBuffer];
+} 
 void pollEvents() {
     [NSApp run];
     // NSApplicationMain(0, NULL);
@@ -152,10 +160,6 @@ void* showSubtitle(void* ptr, SubItem* item) {
 void hideSubtitle(void* ptrWin, void* ptrText) {
     Window* w = (Window*)ptrWin;
     [w->glView hideSubtitle:ptrText];
-}
-void setStartupViewVisible(void* ptr, int b) {
-    Window* w = (Window*)ptr;
-    [w->glView setStartupViewHidden:(b==0)];
 }
 void setSpinningVisible(void* ptr, int b) {
     Window* w = (Window*)ptr;

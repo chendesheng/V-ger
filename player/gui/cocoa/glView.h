@@ -14,8 +14,6 @@
     NSCursor* noneCursor;
     NSCursor* currentCursor;
     
-    StartupView* startupView;
-    
     NSSize originalSize;
 
     ProgressView* progressView;
@@ -41,7 +39,6 @@
 -(void)refreshTexts;
 // -(void)hideAllTexts;
 
--(void)setStartupViewHidden:(BOOL)b;
 -(void)setPlaybackViewHidden:(BOOL)b;
 -(void)setCursorHidden:(BOOL)b;
 -(void)setOriginalSize:(NSSize)size;
@@ -49,4 +46,6 @@
 -(void)setVolume:(int)volume;
 -(void)setVolumeHidden:(BOOL)b;
 -(BOOL)isCursorHidden;
+-(void)makeCurrentContext;
+-(void)flushBuffer;
 @end

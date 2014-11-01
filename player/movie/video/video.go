@@ -11,7 +11,7 @@ import (
 )
 
 type VideoRender interface {
-	SendDrawImage([]byte)
+	Draw([]byte)
 	SendShowSpinning()
 	SendHideSpinning(bool)
 }
@@ -289,7 +289,7 @@ func (v *Video) Play() {
 						}
 					case <-v.c.WaitUntil(pts):
 						v.r.SendHideSpinning(true)
-						v.r.SendDrawImage(img)
+						v.r.Draw(img)
 					case <-v.flushQuit:
 						v.r.SendHideSpinning(false)
 						continue

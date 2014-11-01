@@ -70,15 +70,6 @@ func (w NativeWindow) ToggleFullScreen() {
 	C.toggleFullScreen(unsafe.Pointer(w))
 }
 
-func (w NativeWindow) SetStartupViewVisible(b bool) {
-	var i C.int
-	if b {
-		i = 1
-	} else {
-		i = 0
-	}
-	C.setStartupViewVisible(unsafe.Pointer(w), i)
-}
 func (w NativeWindow) UpdatePlaybackInfo(left, right string, percent float64) {
 	cleft := C.CString(left)
 	defer C.free(unsafe.Pointer(cleft))
@@ -140,4 +131,11 @@ func (w NativeWindow) SetVolumeVisible(b bool) {
 
 func (w NativeWindow) Close() {
 	C.closeWindow(unsafe.Pointer(w))
+}
+
+func (w NativeWindow) FlushBuffer() {
+	C.flushBuffer(unsafe.Pointer(w))
+}
+func (w NativeWindow) MakeGLCurrentContext() {
+	C.makeCurrentContext(unsafe.Pointer(w))
 }

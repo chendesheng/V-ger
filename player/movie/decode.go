@@ -152,6 +152,8 @@ func (m *Movie) decode() {
 		}
 	}()
 
+	m.w.SendSetSize(m.v.Width, m.v.Height)
+
 	var start time.Duration
 	lastPos := m.p.GetLastPos()
 	if lastPos > time.Second && lastPos < m.p.Duration-50*time.Millisecond {
@@ -175,14 +177,13 @@ func (m *Movie) decode() {
 		}
 
 		m.showProgressInner(start)
-		m.w.SendDrawImage(img)
+		m.w.Draw(img)
 
 		if m.waitBuffer(3 * 1024 * 1024) {
 			return
 		}
 	}
 
-	m.w.SendSetSize(m.v.Width, m.v.Height)
 	m.w.SendSetControlsVisible(true, true)
 	m.w.SendSetTitle(m.Filename)
 
@@ -191,7 +192,6 @@ func (m *Movie) decode() {
 	m.c.SetTime(start)
 
 	go m.v.Play()
-
 	for {
 		select {
 		case m.chProgress <- m.c.GetTime():

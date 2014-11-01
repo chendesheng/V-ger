@@ -36,7 +36,7 @@ func (m *Movie) OnSeekStarted() time.Duration {
 
 func (m *Movie) OnSeek(t time.Duration, img []byte) {
 	if len(img) > 0 {
-		m.w.SendDrawImage(img)
+		m.w.Draw(img)
 	}
 
 	m.seekPlayingSubs(t)

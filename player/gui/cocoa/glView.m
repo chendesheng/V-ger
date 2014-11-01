@@ -59,13 +59,7 @@
         [self addSubview:bvVolumeView positioned:NSWindowAbove relativeTo:spinningView];
         [bvVolumeView setHidden:YES];
         
-        startupView = [[StartupView alloc] initWithFrame:self.frame];
-        [self addSubview:startupView positioned:NSWindowAbove relativeTo:bvProgressView];
-        [startupView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-
         self.showCursorDeadline = [NSDate distantFuture];
-
-
     }
     
     return self;
@@ -75,7 +69,12 @@
     GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 }
-
+- (void)makeCurrentContext {
+    [[self openGLContext] makeCurrentContext];
+}
+- (void)flushBuffer {
+    [[self openGLContext] flushBuffer];
+}
 -(void)dealloc {
     [trackingArea release];
     [super dealloc];
@@ -242,14 +241,6 @@
     [cur set];
 }
 
-- (void)drawRect:(NSRect)dirtyRect {
-    onDraw();
-    [[self openGLContext] flushBuffer];
-}
--(void)setStartupViewHidden:(BOOL)b {
-    [startupView setHidden:b];
-    [self setNeedsDisplay:YES];
-}
 - (void)scrollWheel:(NSEvent *)event
 {
     onMouseWheel([event deltaY]);

@@ -18,8 +18,6 @@ type window struct {
 
 	chFunc chan func()
 
-	chDraw chan []byte
-
 	chShowSpinning chan bool
 
 	img []byte
@@ -45,10 +43,6 @@ type window struct {
 type imageRender interface {
 	draw(img []byte, width, height int)
 	delete()
-}
-
-func (w *Window) SendDrawImage(img []byte) {
-	w.chDraw <- img
 }
 
 func (w *Window) SendSetControlsVisible(b bool, autoHide bool) {
@@ -102,11 +96,9 @@ func (w *Window) ToggleForceScreenRatio() {
 	}
 }
 func (w *Window) SetSize(width, height int) {
-	w.SetStartupViewVisible(true)
+	w.DrawClear()
 
 	log.Printf("set window size:%d %d", width, height)
-
-	w.chDraw = make(chan []byte)
 
 	if width%4 != 0 {
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
@@ -116,19 +108,17 @@ func (w *Window) SetSize(width, height int) {
 
 	w.originalWidth, w.originalHeight = width, height
 
-	if w.IsFullScreen() {
-		return
-	}
+	if !w.IsFullScreen() {
+		sw, sh := getScreenSize()
+		if width > int(0.9*float64(sw)) || height > int(0.9*float64(sh)) {
+			ratio := float64(height) / float64(width)
+			width = int(float64(sw) * 0.9)
+			height = int(float64(sw) * 0.9 * ratio)
 
-	sw, sh := getScreenSize()
-	if width > int(0.9*float64(sw)) || height > int(0.9*float64(sh)) {
-		ratio := float64(height) / float64(width)
-		width = int(float64(sw) * 0.9)
-		height = int(float64(sw) * 0.9 * ratio)
-
-		w.NativeWindow.SetSize(width, height)
-	} else {
-		w.NativeWindow.SetSize(width, height)
+			w.NativeWindow.SetSize(width, height)
+		} else {
+			w.NativeWindow.SetSize(width, height)
+		}
 	}
 }
 
@@ -152,8 +142,6 @@ func NewWindow(title string, width, height int) *Window {
 	w = &Window{
 		newWindow(title, width, height),
 		window{
-			chDraw: make(chan []byte),
-
 			chShowSpinning: make(chan bool),
 
 			originalWidth:  width,
@@ -167,6 +155,7 @@ func NewWindow(title string, width, height int) *Window {
 	log.Print("NewWindow:", w.NativeWindow)
 
 	w.Show()
+	w.DrawClear()
 	w.MakeCurrentContext() //must make current context before do texture bind or we will get a all white window
 	gl.Init()
 	gl.ClearColor(0, 0, 0, 1)
@@ -243,8 +232,6 @@ func (w *Window) draw(img []byte, imgWidth, imgHeight int) {
 	gl.TexCoord2d(0, 1)
 	gl.Vertex2d(-1, 1)
 	gl.End()
-
-	w.SetStartupViewVisible(false)
 }
 
 func (w *Window) SendShowProgress(left string, right string, percent float64) {
@@ -405,27 +392,18 @@ func (w *Window) SendSetVolumeVisible(b bool) {
 	}
 }
 
-func (w *Window) refresh(img []byte) {
-	w.img = img
-	w.RefreshContent()
+func (w *Window) Draw(img []byte) {
+	w.MakeGLCurrentContext()
+	w.draw(img, w.originalWidth, w.originalHeight)
+	w.FlushBuffer()
 }
-
-func onDraw() {
-	if w != nil {
-		w.draw(w.img, w.originalWidth, w.originalHeight)
-	}
+func (w *Window) DrawClear() {
+	w.MakeGLCurrentContext()
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+	w.FlushBuffer()
 }
-
 func onTimerTick() {
 	if w != nil {
-		select {
-		case img, ok := <-w.chDraw:
-			if ok {
-				w.refresh(img)
-			}
-		default:
-		}
-
 		select {
 		case b := <-w.chShowSpinning:
 			w.SetSpinningVisible(b)
@@ -470,11 +448,5 @@ func (w *Window) SendAlert(str string) {
 func SendAddRecentOpenedFile(filename string) {
 	w.chFunc <- func() {
 		AddRecentOpenedFile(filename)
-	}
-}
-
-func (w *Window) SendSetStartupViewVisible(b bool) {
-	w.chFunc <- func() {
-		w.SetStartupViewVisible(b)
 	}
 }

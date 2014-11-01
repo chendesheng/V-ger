@@ -33,7 +33,6 @@ void setWindowTitle(void*, char* title);
 
 void refreshWindowContent(void*);
 void initWindowCurrentContext(void*);
-void setStartupViewVisible(void*, int);
 void toggleFullScreen(void*);
 void closeWindow(void*);
 
@@ -80,4 +79,6 @@ int isSearchingSubtitle();
 #define MENU_SYNC_SUBTITLE 6
 #define MENU_SYNC_AUDIO 7
 
+void flushBuffer(void* ptr);
+void makeCurrentContext(void* ptr);
 #endif
