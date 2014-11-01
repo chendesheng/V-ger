@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-	. "vger/player/shared"
+	//. "vger/player/shared"
 )
 
 func TestShowWindow(t *testing.T) {
@@ -79,9 +79,9 @@ func TestStartupView(t *testing.T) {
 
 	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
-			w.HideStartupView()
+			//w.HideStartupView()
 		} else if key == KEY_B {
-			w.ShowStartupView()
+			//w.ShowStartupView()
 		}
 		return true
 	})
@@ -113,21 +113,21 @@ func TestMenu(t *testing.T) {
 
 	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
-			w.HideSubtitleMenu()
-			w.HideAudioMenu()
+			//w.HideSubtitleMenu()
+			//w.HideAudioMenu()
 		} else if key == KEY_B {
-			names := make([]string, 0)
-			names = append(names, "sub1")
+			//names := make([]string, 0)
+			//names = append(names, "sub1")
 
-			tags := make([]int32, 0)
-			tags = append(tags, 0)
+			//tags := make([]int32, 0)
+			//tags = append(tags, 0)
 
-			selected1 := -1
-			selected2 := -1
+			//selected1 := -1
+			//selected2 := -1
 
-			w.InitSubtitleMenu(names, tags, selected1, selected2)
+			//w.InitSubtitleMenu(names, tags, selected1, selected2)
 
-			w.InitAudioMenu(names, tags, selected1)
+			//w.InitAudioMenu(names, tags, selected1)
 		}
 
 		return true
@@ -185,7 +185,10 @@ func TestYUV2RGBShader(t *testing.T) {
 	w := NewWindow("GLSL", width, height)
 	w.SetSize(width, height)
 
-	w.Refresh(img)
+	w.refresh(img)
+	go func() {
+		w.chDraw <- img
+	}()
 
 	run()
 }
@@ -195,9 +198,9 @@ func TestSpinningView(t *testing.T) {
 
 	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
-			w.ShowSpinning()
+			//w.ShowSpinning()
 		} else if key == KEY_B {
-			w.HideSpinning()
+			//w.HideSpinning()
 		}
 
 		return true
@@ -211,9 +214,9 @@ func TestVolumeView(t *testing.T) {
 
 	w.FuncKeyDown = append(w.FuncKeyDown, func(key int) bool {
 		if key == KEY_A {
-			w.SetVolumeDisplay(true)
+			//w.SetVolumeDisplay(true)
 		} else if key == KEY_B {
-			w.SetVolumeDisplay(false)
+			//w.SetVolumeDisplay(false)
 		}
 
 		return true
@@ -227,14 +230,14 @@ func TestTextView(t *testing.T) {
 
 	w := NewWindow("title", 1280, 720)
 	for i := 1; i < 2; i++ {
-		w.ShowText(&SubItem{
-			Content:      []AttributedString{AttributedString{"Test subtitle", 0, 0}},
-			Position:     Position{-1, -1},
-			PositionType: i,
-		})
+		//w.ShowText(&SubItem{
+		//Content:      []AttributedString{AttributedString{"Test subtitle", 0, 0}},
+		//Position:     Position{-1, -1},
+		//PositionType: i,
+		//})
 	}
 
-	w.HideStartupView()
+	//w.HideStartupView()
 
 	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) bool {
 		if keycode == KEY_ESCAPE {
@@ -251,14 +254,14 @@ func TestTextView2(t *testing.T) {
 
 	w := NewWindow("title", 1280, 720)
 	for i := 1; i < 10; i++ {
-		w.ShowText(&SubItem{
-			Content:      []AttributedString{AttributedString{"Test subtitle", 0, 0}},
-			Position:     Position{300, 300},
-			PositionType: i,
-		})
+		//w.ShowText(&SubItem{
+		//Content:      []AttributedString{AttributedString{"Test subtitle", 0, 0}},
+		//Position:     Position{300, 300},
+		//PositionType: i,
+		//})
 	}
 
-	w.HideStartupView()
+	//w.HideStartupView()
 
 	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) bool {
 		if keycode == KEY_ESCAPE {
