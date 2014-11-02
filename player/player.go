@@ -28,7 +28,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 	log.Println("open file:", filename)
 
 	if app.w == nil {
-		app.w = gui.NewWindow("V'ger", 390, 120) // default window size copy from QuickTime player
+		app.w = gui.NewWindow("V'ger", 390, 142) // default window size copy from QuickTime player
 	}
 
 	go func() {
