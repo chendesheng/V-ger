@@ -162,7 +162,6 @@ func (a *Audio) Open(stream AVStream) error {
 	return a.driver.Open(a.codecCtx.SampleRate(),
 		func(length int) []byte {
 			if a.c.WaitUntilRunning(a.quit) {
-				close(a.chQuitDone)
 				return a.getSilence(length)
 			}
 
