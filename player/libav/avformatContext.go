@@ -126,7 +126,7 @@ func (ctx AVFormatContext) SeekFrame2(stream AVStream, t time.Duration, flags in
 	seek_target := C.av_rescale_q(C.int64_t(seek_pos), timebaseq, timeBase)
 	res := C.av_seek_frame(ctx.ptr, -1, C.int64_t(seek_target), C.int(flags))
 	if res < 0 {
-		return fmt.Error("Seek frame error:", res)
+		return fmt.Errorf("Seek frame error: %d", res)
 	}
 
 	//this is required! otherwise will get history data after seeking
@@ -170,7 +170,7 @@ func (ctx AVFormatContext) SeekFile(t time.Duration, flags int) error {
 
 	ret := int(C.avformat_seek_file(ctx.ptr, -1, C.int64_t(math.MinInt64), C.int64_t(seek_target), C.int64_t(math.MaxInt64), C.int(flags)))
 	if ret < 0 {
-		return fmt.Error("Seek file error:", ret)
+		return fmt.Errorf("Seek file error: %d", ret)
 	}
 
 	return nil
