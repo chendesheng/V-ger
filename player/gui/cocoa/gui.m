@@ -55,7 +55,7 @@ void setWindowSize(void* wptr, int width, int height) {
 
     frame.size = NSMakeSize(width, height);
 
-    w->customAspectRatio = NSMakeSize(width, height);
+    w.aspectRatio = NSMakeSize(width, height);
     [w->glView setOriginalSize:NSMakeSize(width, height)];
 
     [w setFrame:frame display:YES animate:YES];
@@ -195,7 +195,9 @@ void setControlsVisible(void* ptr, int b, int autoHide) {
 
     [w->glView setCursorHidden:hidden];
     [w->glView setPlaybackViewHidden:hidden];
-    [w setTitleHidden:hidden];
+
+    if (![w isFullScreen])
+        [w setTitleHidden:hidden];
 }
 
 CSize getScreenSize() {

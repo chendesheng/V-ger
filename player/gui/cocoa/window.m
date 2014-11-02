@@ -4,7 +4,7 @@
 @implementation Window
 - (id)initWithWidth:(int)w height:(int)h  {
 	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask 
-		| NSMiniaturizableWindowMask | NSResizableWindowMask | NSTexturedBackgroundWindowMask;
+		| NSMiniaturizableWindowMask | NSResizableWindowMask | NSFullSizeContentViewWindowMask;
 
     CGFloat screenh = [[NSScreen mainScreen] frame].size.height;
     self = [super initWithContentRect:NSMakeRect(50, screenh - h + 22 - 150, w, h-22)
@@ -12,38 +12,21 @@
     	backing:NSBackingStoreBuffered
       	defer:YES];
 
-    self->customAspectRatio = NSMakeSize(w, h);
     [self setHasShadow:YES];
     [self setContentMinSize:NSMakeSize(300, 300*h/w)];
     [self setAcceptsMouseMovedEvents:YES];
 	[self setRestorable:NO];
     [self setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [self setOpaque:YES];
-    
-    
-    //Window > NSFrameView > NSOpenGLView > TitleView & ProgressView & TextView
+
     NSRect bounds = NSMakeRect(0, 0, w, h);
-
-    NSView* fv = [[self contentView] superview];
     glView = [[GLView alloc] initWithFrame2:bounds];
-    glView.layer.cornerRadius = 4.1;
-    glView.layer.masksToBounds = YES;
+    self.contentView = glView;
+    self.aspectRatio = bounds.size;
 
-    [fv addSubview:glView positioned:NSWindowBelow relativeTo:nil];
-    fv.wantsLayer = YES;
-    
     glView.frame = bounds;
     [glView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
     
-    //TitleTextView* ttv = [[TitleTextView alloc] init];
-    BlurView* tiv = [[BlurView alloc] initWithFrame:NSMakeRect(0,h-22,w,22)];
-    [tiv setAutoresizingMask:NSViewWidthSizable|NSViewMinYMargin];
-
-    //must add title view to glView
-    [glView addSubview:tiv positioned:NSWindowAbove relativeTo:nil];
-    //self->titleTextView = ttv;
-    self->bvTitleTextView = tiv;
-
     return self;
 }
 
@@ -87,52 +70,18 @@
     [NSApp terminate:nil];
 }
 
--(void)willEnterFullScreen {
-    NSView* fv = [self.contentView superview];
-    [self->bvTitleTextView setHidden:YES];
-    [super setTitle:self->savedTitle];
-    for (NSView* v in fv.subviews) {
-        if (v != glView)
-            [v setHidden:NO];
-    }
-    return;
-}
-
--(void)willExitFullScreen {
-    NSView* fv = [self.contentView superview];
-    [self->bvTitleTextView setHidden:YES];
-    [super setTitle:@""];
-    for (NSView* v in fv.subviews) {
-        if (v != glView)
-            [v setHidden:YES];
-    }
-    return;
-}
-
 -(void)setTitleHidden:(BOOL)b {
-    NSView* fv = [self.contentView superview];
     if ([self isFullScreen]) {
         return;
     }
+    //self.titlebarAppearsTransparent = b;
 
-    if (b) [super setTitle:@""];
-    else [super setTitle:self->savedTitle];
-
-    [bvTitleTextView setHidden:b];
+    NSView* fv = [self.contentView superview];
     for (NSView* v in fv.subviews) {
         if (v != glView) {
             [v setHidden:b];
         }
     }
-}
-
--(void)setTitle:(NSString *)title {
-    self->savedTitle = title;
-    //titleTextView.title = title;
-    //[titleTextView setNeedsDisplay:YES];
-//#ifndef MAC_OS_X_VERSION_10_10
-    [super setTitle:title];
-//#endif
 }
 
 -(void)playPause:(id)sender {
@@ -344,16 +293,6 @@
         [self toggleFullScreen:nil];
     } else if ([event magnification] > 0 && ![self isFullScreen]) {
         [self toggleFullScreen:nil];
-    }
-}
-
-- (void)setRoundCorner:(bool)b {
-    if (b) {
-        glView.layer.cornerRadius = 4.1;
-        glView.layer.masksToBounds = YES;
-    } else {
-        glView.layer.cornerRadius = 0;
-        glView.layer.masksToBounds = YES;
     }
 }
 
