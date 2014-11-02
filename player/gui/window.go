@@ -96,7 +96,7 @@ func (w *Window) ToggleForceScreenRatio() {
 	}
 }
 func (w *Window) SetSize(width, height int) {
-	w.DrawClear()
+	w.drawClear()
 
 	log.Printf("set window size:%d %d", width, height)
 
@@ -155,7 +155,7 @@ func NewWindow(title string, width, height int) *Window {
 	log.Print("NewWindow:", w.NativeWindow)
 
 	w.Show()
-	w.DrawClear()
+	w.drawClear()
 	w.MakeCurrentContext() //must make current context before do texture bind or we will get a all white window
 	gl.Init()
 	gl.ClearColor(0, 0, 0, 1)
@@ -397,7 +397,7 @@ func (w *Window) Draw(img []byte) {
 	w.draw(img, w.originalWidth, w.originalHeight)
 	w.FlushBuffer()
 }
-func (w *Window) DrawClear() {
+func (w *Window) drawClear() {
 	w.MakeGLCurrentContext()
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	w.FlushBuffer()
