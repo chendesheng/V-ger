@@ -26,7 +26,7 @@ type Video struct {
 	codec       AVCodecContext
 
 	frame               AVFrame
-	pictureObjects      [5]*AVObject
+	imageData           *AVObject
 	currentPictureIndex int
 
 	Width, Height int
@@ -108,18 +108,10 @@ func (v *Video) guessCorrectPts(reorderedPts float64, dts float64) (pts float64)
 
 func (v *Video) setupPictureRGB() {
 	sz := AVPictureGetSize(AV_PIX_FMT_YUV420P, v.Width, v.Height)
-	for i, _ := range v.pictureObjects {
-		obj := AVObject{}
-		obj.Malloc(sz)
-		v.pictureObjects[i] = &obj
-	}
-}
 
-func (v *Video) getPictureObject() *AVObject {
-	obj := v.pictureObjects[v.currentPictureIndex]
-	v.currentPictureIndex++
-	v.currentPictureIndex = v.currentPictureIndex % len(v.pictureObjects)
-	return obj
+	obj := AVObject{}
+	obj.Malloc(sz)
+	v.imageData = &obj
 }
 
 func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRender) (*Video, error) {
@@ -222,7 +214,7 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 		frame := v.frame
 		width, height := v.Width, v.Height
 		pic := frame.Picture()
-		obj := v.getPictureObject()
+		obj := v.imageData
 		pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
 		return true, pts, obj.Bytes()
 	}
@@ -359,7 +351,7 @@ func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 			packet.Free()
 
 			pic := frame.Picture()
-			obj := v.getPictureObject()
+			obj := v.imageData
 			pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
 			return pts, obj.Bytes(), nil
 		} else {
@@ -382,7 +374,7 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 
 			if t-pts < 0*time.Millisecond {
 				pic := frame.Picture()
-				obj := v.getPictureObject()
+				obj := v.imageData
 				pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
 				return pts, obj.Bytes(), nil
 			}
@@ -402,10 +394,7 @@ func (v *Video) Close() {
 	<-v.chQuitDone
 
 	v.frame.Free()
-
-	for _, obj := range v.pictureObjects {
-		obj.Free()
-	}
+	v.imageData.Free()
 
 	v.codec.Close()
 }

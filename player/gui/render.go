@@ -91,8 +91,15 @@ func (r *yuvRender) draw(img []byte, width, height int) {
 		tex.Bind(gl.TEXTURE_2D)
 		uniform.Uniform1i(i)
 
-		gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, c.width, c.height, gl.LUMINANCE,
-			gl.UNSIGNED_BYTE, c.data)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, c.width, c.height, 0,
+			gl.LUMINANCE, gl.UNSIGNED_BYTE, c.data)
+
+		//gl.TexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, c.width, c.height, gl.LUMINANCE,
+		//	gl.UNSIGNED_BYTE, c.data)
 	}
 }
 
@@ -125,31 +132,19 @@ func getYUVChannels(img []byte, width, height int) [3]channel {
 }
 
 func NewYUVRender(width, height int) imageRender {
-	size := width * height * 3 / 2
-	img := make([]byte, size)
-	// if cap(img) > size {
-	// 	img = img[:size]
-	// } else {
-
-	// }
-	log.Print("NewYUVRender:", len(img), size, width*height)
+	//size := width * height * 3 / 2
+	//img := make([]byte, size)
+	//log.Print("NewYUVRender:", len(img), size, width*height)
 
 	r := yuvRender{}
 
-	channels := getYUVChannels(img, width, height)
+	//channels := getYUVChannels(img, width, height)
 
 	for i, _ := range r.texYUV {
 		tex := gl.GenTexture()
 		tex.Bind(gl.TEXTURE_2D)
 
-		c := channels[i]
-
-		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, c.width, c.height, 0,
-			gl.LUMINANCE, gl.UNSIGNED_BYTE, c.data)
+		//c := channels[i]
 
 		r.texYUV[i] = tex
 	}

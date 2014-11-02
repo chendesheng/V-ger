@@ -112,7 +112,7 @@ func (a *Audio) decode(packet *AVPacket) {
 			if gotFrame {
 				data := resampleFrame(a.resampleCtx, a.frame, a.codecCtx)
 				if !data.IsNil() {
-					pts = a.audioBuffer.append(&samples{data.Bytes(), pts})
+					pts = a.audioBuffer.append(&samples{data.Copy(), pts})
 					data.Free()
 				}
 			}
