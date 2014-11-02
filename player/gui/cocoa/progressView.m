@@ -24,10 +24,6 @@
     [textViewSurround fill];
 }
 -(void)drawRect:(NSRect)dirtyRect {
-    if (_leftString == _rightString) {
-        return;
-    }
-
     CGFloat barHeight = 2;
     CGFloat knotHeight = 6;
     CGFloat knotWidth = 6;
@@ -73,6 +69,10 @@
     [super drawRect:dirtyRect];
 }
 - (void)mouseDown:(NSEvent *)event {
+    if (_leftString == _rightString) {
+        return;
+    }
+
     CGFloat stringWidth = 60;
     NSPoint pt = [self convertPoint:[event locationInWindow] fromView:nil];
     NSRect bound = NSMakeRect(stringWidth+_paddingLeft, 4, self.frame.size.width-2*stringWidth-_paddingLeft, 22-8);
