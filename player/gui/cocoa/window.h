@@ -6,7 +6,8 @@
 #import "titleTextView.h"
 @interface Window : NSWindow {
     BlurView* bvTitleTextView;
-    TitleTextView* titleTextView;
+    //TitleTextView* titleTextView;
+    NSString* savedTitle;
 @public
 	NSSize customAspectRatio;
 	GLView* glView;
@@ -20,4 +21,7 @@
 - (void)playPause:(id)sender;
 - (void)open:(id)sender;
 - (void)setRoundCorner:(bool)b;
+- (void)willEnterFullScreen;
+- (void)willExitFullScreen;
+
 @end

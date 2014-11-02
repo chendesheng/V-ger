@@ -17,16 +17,20 @@
 
     setControlsVisible(w, 0, 0);
     [w setRoundCorner:NO];  //hide round corner in full screen
+    [w willEnterFullScreen];
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
+
     [w->glView refreshTexts];
 }
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
+
     setControlsVisible(w, true, true);
     [w setRoundCorner:YES];
+    [w willExitFullScreen];
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
     Window* w = (Window*)[notification object];
