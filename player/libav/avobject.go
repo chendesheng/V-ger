@@ -4,6 +4,9 @@ package libav
 //#include "libavutil/opt.h"
 //#include <string.h>
 //#include <stdlib.h>
+//void copybytes(void* p, int offset, void* source, int len) {
+//	memcpy(p+offset, source, len);
+//}
 import "C"
 import (
 	"reflect"
@@ -11,9 +14,9 @@ import (
 )
 
 type AVObject struct {
-	ptr  unsafe.Pointer
-	ptr2 uintptr
-	size int
+	ptr    unsafe.Pointer
+	length int
+	size   int
 }
 
 func (obj *AVObject) Malloc(sz int) {
@@ -82,14 +85,12 @@ func (obj *AVObject) Write(p []byte) (int, error) {
 	if len(p) == 0 {
 		return 0, nil
 	}
-
-	if obj.ptr2 == 0 {
-		obj.ptr2 = uintptr(obj.ptr)
+	if obj.length+len(p) > obj.size {
+		panic("write out of range")
 	}
 
-	C.memcpy(unsafe.Pointer(obj.ptr2), unsafe.Pointer(&p[0]), C.size_t(len(p)))
-
-	obj.ptr2 = obj.ptr2 + uintptr(len(p))
+	C.copybytes(obj.ptr, C.int(obj.length), unsafe.Pointer(&p[0]), C.int(len(p)))
+	obj.length += len(p)
 
 	return len(p), nil
 }

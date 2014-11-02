@@ -36,6 +36,4 @@ func (tf *timeoutFilter) active() {
 
 		}
 	}
-
-	log.Print("timeout filter end")
 }

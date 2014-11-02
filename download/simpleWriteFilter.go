@@ -31,6 +31,4 @@ func (swf *simpleWriteFilter) active() {
 			return
 		}
 	}
-
-	fmt.Println("simpleWriteOutput end")
 }

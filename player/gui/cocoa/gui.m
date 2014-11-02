@@ -157,9 +157,9 @@ void* showSubtitle(void* ptr, SubItem* item) {
     Window* w = (Window*)ptr;
     return [w->glView showSubtitle:item];
 }
-void hideSubtitle(void* ptrWin, void* ptrText) {
+void hideSubtitle(void* ptrWin, long ptrText) {
     Window* w = (Window*)ptrWin;
-    [w->glView hideSubtitle:ptrText];
+    [w->glView hideSubtitle:(TextView*)ptrText];
 }
 void setSpinningVisible(void* ptr, int b) {
     Window* w = (Window*)ptr;

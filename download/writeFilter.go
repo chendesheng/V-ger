@@ -37,8 +37,6 @@ func (wf *writeFilter) active() {
 			return
 		}
 	}
-
-	log.Print("writeOutput end")
 }
 
 func (wf *writeFilter) mustWrite(b block.Block) error {

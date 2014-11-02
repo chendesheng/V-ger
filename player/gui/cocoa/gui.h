@@ -41,7 +41,7 @@ void updatePlaybackInfo(void*,char*,char*,double);
 void updateBufferInfo(void*, char*, double);
 
 void* showSubtitle(void*, SubItem*);
-void hideSubtitle(void*, void*);
+void hideSubtitle(void*, long);
 
 //including playback panel, window title, cursor
 void setControlsVisible(void*, int, int);

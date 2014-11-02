@@ -197,28 +197,20 @@ func decryptUrl(encryptedUrl string) string {
 		switch string(a[0]) {
 		case "o":
 			return (b((c(a[1:], 8, 17, 27))))
-			break
 		case "n":
 			return (b(d(c(a[1:], 6, 15, 17))))
-			break
 		case "m":
 			return (d(c(a[1:], 6, 11, 17)))
-			break
 		case "l":
 			return (d(b(c(a[1:], 6, 12, 17))))
-			break
 		case "k":
 			return (c(a[1:], 14, 17, 24))
-			break
 		case "j":
 			return (c(b(d(a[1:])), 11, 17, 27))
-			break
 		case "i":
 			return (c(d(b(a[1:])), 5, 7, 24))
-			break
 		case "h":
 			return (c(b(a[1:]), 12, 22, 30))
-			break
 		case "g":
 			return (c(d(a[1:]), 11, 15, 21))
 		case "f":
@@ -233,7 +225,6 @@ func decryptUrl(encryptedUrl string) string {
 			return (d(a[1:]))
 		case "a":
 			return b(a[1:])
-			break
 		}
 	}
 	return a

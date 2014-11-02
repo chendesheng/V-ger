@@ -33,8 +33,6 @@ func ResumeTask(name string) error {
 		t.Speed = 0
 		return SaveTask(t)
 	}
-
-	return nil
 }
 
 func startOrQueueTask(t *Task) bool {
@@ -76,7 +74,6 @@ func StopTask(name string) error {
 		t.Status = "Stopped"
 		return SaveTask(t)
 	}
-	return nil
 }
 
 func ResumeNextTask() (error, bool) {
