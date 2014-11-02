@@ -70,6 +70,10 @@ func (w NativeWindow) ToggleFullScreen() {
 	C.toggleFullScreen(unsafe.Pointer(w))
 }
 
+func (w NativeWindow) IsFullScreen() bool {
+	return C.isFullScreen(unsafe.Pointer(w)) != 0
+}
+
 func (w NativeWindow) UpdatePlaybackInfo(left, right string, percent float64) {
 	cleft := C.CString(left)
 	defer C.free(unsafe.Pointer(cleft))

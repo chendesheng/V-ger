@@ -23,5 +23,6 @@
 - (void)setRoundCorner:(bool)b;
 - (void)willEnterFullScreen;
 - (void)willExitFullScreen;
+- (BOOL)isFullScreen;
 
 @end

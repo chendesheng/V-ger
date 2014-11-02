@@ -34,6 +34,7 @@ void setWindowTitle(void*, char* title);
 void refreshWindowContent(void*);
 void initWindowCurrentContext(void*);
 void toggleFullScreen(void*);
+int isFullScreen(void*);
 void closeWindow(void*);
 
 void updatePlaybackInfo(void*,char*,char*,double);

@@ -73,16 +73,10 @@ func (w *Window) SendDestoryRender() {
 	}
 }
 
-func (w *Window) IsFullScreen() bool {
-	width, height := w.GetSize()
-	swidth, sheight := getScreenSize()
-
-	return width == swidth && height == sheight
-}
-
 func fequal(a, b float64) bool {
 	return math.Abs(a-b) < 1e-5
 }
+
 func (w *Window) ToggleForceScreenRatio() {
 	sw, sh := getScreenSize()
 	if fequal(float64(w.originalWidth)/float64(w.originalHeight), float64(sw)/float64(sh)) {

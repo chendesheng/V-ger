@@ -170,6 +170,11 @@ void toggleFullScreen(void* ptr) {
     [w toggleFullScreen:nil];
 }
 
+int isFullScreen(void* ptr) {
+    Window* w = (Window*)ptr;
+    return (int)[w isFullScreen];
+}
+
 void setControlsVisible(void* ptr, int b, int autoHide) {    
     Window* w = (Window*)ptr;
 
