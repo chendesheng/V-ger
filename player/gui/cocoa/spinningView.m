@@ -14,13 +14,10 @@
         [_progressIndicator startAnimation:nil];
         [_progressIndicator setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 
-        _blurView = [[BlurView alloc] initWithFrame:rt];
-        _blurView.wantsLayer = YES;
-        _blurView.layer.masksToBounds = YES;
-        _blurView.layer.cornerRadius = 4.1;
+        _blurView = [[BlurView alloc] initWithView:_progressIndicator frame:rt];
+        [_blurView setCornerRadius:4.1];
 
         [self addSubview:_blurView];
-        [self addSubview:_progressIndicator positioned:NSWindowAbove relativeTo:nil];
     }
     
     return self;

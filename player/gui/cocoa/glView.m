@@ -51,11 +51,8 @@
         
         volumeView = [[VolumeView alloc] init];
         bvVolumeView = [[BlurView alloc] initWithView:volumeView frame:NSMakeRect((width-120)/2, (height-120)/2, 120, 120)];
-        [bvVolumeView setBlurRadius:30.0];
         [bvVolumeView setAutoresizingMask:NSViewMinXMargin|NSViewMaxXMargin|NSViewMinYMargin|NSViewMaxYMargin];
-        bvVolumeView.wantsLayer = YES;
-        bvVolumeView.layer.masksToBounds = YES;
-        bvVolumeView.layer.cornerRadius = 4.1;
+        [bvVolumeView setCornerRadius:4.1];
         [self addSubview:bvVolumeView positioned:NSWindowAbove relativeTo:spinningView];
         [bvVolumeView setHidden:YES];
         
