@@ -6,6 +6,10 @@ package libav
 #include "libavutil/avutil.h"
 #include "libavutil/mathematics.h"
 #include <stdlib.h>
+void decode_size(AVPacket* pkt, int len) {
+	pkt->size -= len;
+	pkt->data += len;
+}
 */
 import "C"
 import "unsafe"
@@ -34,4 +38,8 @@ func (packet *AVPacket) StreamIndex() int {
 
 func (packet *AVPacket) pointer() *C.AVPacket {
 	return (*C.AVPacket)(unsafe.Pointer(packet))
+}
+
+func (packet *AVPacket) DecodeSize(len int) {
+	C.decode_size((*C.struct_AVPacket)(packet), C.int(len))
 }

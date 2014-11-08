@@ -101,21 +101,24 @@ func (a *Audio) getPts(packet *AVPacket) time.Duration {
 
 //decode one packet
 func (a *Audio) decode(packet *AVPacket) {
-	packetSize := packet.Size()
 	pts := a.getPts(packet)
+	log.Print("audio package pts: ", pts.String())
 
 	//decode frame from this packet, there may be many frames in one packet
-	for packetSize > 0 { //continue decode until packet is empty
+	for packet.Size() > 0 { //continue decode until packet is empty
 		gotFrame, size := a.codecCtx.DecodeAudio(a.frame, packet)
 		if size >= 0 {
-			packetSize -= size
 			if gotFrame {
 				data := resampleFrame(a.resampleCtx, a.frame, a.codecCtx)
 				if !data.IsNil() {
+					log.Print("add audio buffer, pts: ", pts.String())
 					pts = a.audioBuffer.append(&samples{data.Copy(), pts})
 					data.Free()
+				} else {
+					log.Print("resample output nil")
 				}
 			}
+			packet.DecodeSize(size)
 		} else {
 			log.Print("audio decode error")
 			break
