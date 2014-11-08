@@ -133,7 +133,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 	v.frame = AllocFrame()
 	v.c = c
 
-	v.ChPackets = make(chan *AVPacket, 100)
+	v.ChPackets = make(chan *AVPacket, 200)
 	v.flushQuit = make(chan struct{})
 	v.quit = make(chan struct{})
 	v.chHold = make(chan struct{})
