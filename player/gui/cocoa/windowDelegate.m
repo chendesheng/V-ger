@@ -27,7 +27,7 @@
 }
 
 - (void)windowDidResize:(NSNotification *)notification {
-    NSLog(@"DidResize");
+    //NSLog(@"DidResize");
 
     Window* w = (Window*)[notification object];
     [w->glView refreshTexts];

@@ -6,8 +6,8 @@ import (
 	"log"
 	"math"
 	"time"
-	. "vger/player/clock"
-	. "vger/player/libav"
+	"vger/player/clock"
+	"vger/player/libav"
 )
 
 type VideoRender interface {
@@ -15,30 +15,34 @@ type VideoRender interface {
 	SendShowSpinning()
 	SendHideSpinning(bool)
 }
+type SubRender interface {
+	SeekPlayingSubs(time.Duration)
+}
 type VideoFrame struct {
 	Pts time.Duration
 	Img []byte
 }
 type Video struct {
-	formatCtx   AVFormatContext
-	stream      AVStream
+	formatCtx   libav.AVFormatContext
+	stream      libav.AVStream
 	StreamIndex int
-	codec       AVCodecContext
+	codec       libav.AVCodecContext
 
-	frame               AVFrame
-	imageData           *AVObject
+	frame               libav.AVFrame
+	imageData           *libav.AVObject
 	currentPictureIndex int
 
 	Width, Height int
-	c             *Clock
+	c             *clock.Clock
 
 	// ChanDecoded chan *VideoFrame
-	ChPackets chan *AVPacket
+	ChPackets chan *libav.AVPacket
 
 	flushQuit  chan struct{}
 	quit       chan struct{}
 	chQuitDone chan struct{}
 	r          VideoRender
+	sr         SubRender
 
 	global_pts uint64 //for avframe only
 
@@ -60,7 +64,7 @@ func (v *Video) SendEOF() {
 	}
 }
 
-func (v *Video) setupCodec(codec AVCodecContext) error {
+func (v *Video) setupCodec(codec libav.AVCodecContext) error {
 	log.Print("setupCodec")
 
 	v.codec = codec
@@ -83,21 +87,21 @@ func (v *Video) setupCodec(codec AVCodecContext) error {
 
 //copy from avplay.c
 func (v *Video) guessCorrectPts(reorderedPts float64, dts float64) (pts float64) {
-	pts = AV_NOPTS_VALUE
+	pts = libav.AV_NOPTS_VALUE
 
-	if dts != AV_NOPTS_VALUE {
+	if dts != libav.AV_NOPTS_VALUE {
 		if dts <= v.lastDts {
 			v.numFaultyDts += 1
 		}
 		v.lastDts = dts
 	}
-	if reorderedPts != AV_NOPTS_VALUE {
+	if reorderedPts != libav.AV_NOPTS_VALUE {
 		if reorderedPts <= v.lastPts {
 			v.numFaultyPts += 1
 		}
 		v.lastPts = reorderedPts
 	}
-	if (v.numFaultyPts <= v.numFaultyDts || dts == AV_NOPTS_VALUE) && reorderedPts != AV_NOPTS_VALUE {
+	if (v.numFaultyPts <= v.numFaultyDts || dts == libav.AV_NOPTS_VALUE) && reorderedPts != libav.AV_NOPTS_VALUE {
 		pts = reorderedPts
 	} else {
 		pts = dts
@@ -107,9 +111,9 @@ func (v *Video) guessCorrectPts(reorderedPts float64, dts float64) (pts float64)
 }
 
 func (v *Video) setupPictureRGB() {
-	sz := AVPictureGetSize(AV_PIX_FMT_YUV420P, v.Width, v.Height)
+	sz := libav.AVPictureGetSize(libav.AV_PIX_FMT_YUV420P, v.Width, v.Height)
 
-	obj := AVObject{}
+	obj := libav.AVObject{}
 	obj.Malloc(sz)
 	v.imageData = &obj
 }
@@ -119,8 +123,9 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 	v.formatCtx = formatCtx
 	v.stream = stream
 	v.StreamIndex = stream.Index()
-	v.global_pts = AV_NOPTS_VALUE
+	v.global_pts = libav.AV_NOPTS_VALUE
 	v.r = r
+	v.sr = sr
 
 	err := v.setupCodec(stream.Codec())
 	if err != nil {
@@ -130,10 +135,10 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 	v.Width, v.Height = v.codec.Width(), v.codec.Height()
 
 	v.setupPictureRGB()
-	v.frame = AllocFrame()
+	v.frame = libav.AllocFrame()
 	v.c = c
 
-	v.ChPackets = make(chan *AVPacket, 200)
+	v.ChPackets = make(chan *libav.AVPacket, 200)
 	v.flushQuit = make(chan struct{})
 	v.quit = make(chan struct{})
 	v.chHold = make(chan struct{})
@@ -143,7 +148,7 @@ func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRende
 	return v, nil
 }
 
-func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
+func (v *Video) Decode(packet *libav.AVPacket) (bool, time.Duration) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0
 	}
@@ -156,7 +161,7 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 
 	if frameFinished {
 		pts := v.guessCorrectPts(frame.Pts(), frame.Dts())
-		if pts == AV_NOPTS_VALUE {
+		if pts == libav.AV_NOPTS_VALUE {
 			pts = 0
 		}
 
@@ -169,7 +174,7 @@ func (v *Video) Decode(packet *AVPacket) (bool, time.Duration) {
 }
 
 func (v *Video) SeekAccurate(t time.Duration) (time.Duration, []byte, error) {
-	flags := AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD
+	flags := libav.AVSEEK_FLAG_FRAME | libav.AVSEEK_FLAG_BACKWARD
 
 	ctx := v.formatCtx
 	err := ctx.SeekFrame(v.stream, t, flags)
@@ -189,7 +194,7 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 	v.r.SendShowSpinning()
 	defer v.r.SendHideSpinning(false)
 
-	flags := AVSEEK_FLAG_FRAME
+	flags := libav.AVSEEK_FLAG_FRAME
 
 	ctx := v.formatCtx
 	err := ctx.SeekFrame(v.stream, t, flags)
@@ -206,7 +211,7 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 	}
 }
 
-func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
+func (v *Video) DecodeAndScale(packet *libav.AVPacket) (bool, time.Duration, []byte) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0, nil
 	}
@@ -215,7 +220,7 @@ func (v *Video) DecodeAndScale(packet *AVPacket) (bool, time.Duration, []byte) {
 		width, height := v.Width, v.Height
 		pic := frame.Picture()
 		obj := v.imageData
-		pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
+		pic.Layout(libav.AV_PIX_FMT_YUV420P, width, height, *obj)
 		return true, pts, obj.Bytes()
 	}
 
@@ -335,7 +340,7 @@ func (v *Video) Unhold() {
 }
 
 func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
-	packet := AVPacket{}
+	packet := libav.AVPacket{}
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
@@ -352,7 +357,7 @@ func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 
 			pic := frame.Picture()
 			obj := v.imageData
-			pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
+			pic.Layout(libav.AV_PIX_FMT_YUV420P, width, height, *obj)
 			return pts, obj.Bytes(), nil
 		} else {
 			packet.Free()
@@ -362,7 +367,7 @@ func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 	return 0, nil, fmt.Errorf("read frame error: %x", errCode)
 }
 func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
-	packet := AVPacket{}
+	packet := libav.AVPacket{}
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
@@ -375,7 +380,7 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 			if t-pts < 0*time.Millisecond {
 				pic := frame.Picture()
 				obj := v.imageData
-				pic.Layout(AV_PIX_FMT_YUV420P, width, height, *obj)
+				pic.Layout(libav.AV_PIX_FMT_YUV420P, width, height, *obj)
 				return pts, obj.Bytes(), nil
 			}
 		} else {

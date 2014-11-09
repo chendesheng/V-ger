@@ -3,21 +3,21 @@ package movie
 import (
 	"log"
 	"strings"
-	. "vger/player/libav"
+	"vger/player/libav"
 	. "vger/player/movie/audio"
-	. "vger/player/shared"
+	"vger/player/shared"
 )
 
-func getStream(streams []AVStream, index int) AVStream {
+func getStream(streams []libav.AVStream, index int) libav.AVStream {
 	for _, stream := range streams {
 		if stream.Index() == index {
 			return stream
 		}
 	}
 
-	return AVStream{}
+	return libav.AVStream{}
 }
-func getStreamByLanguage(streams []AVStream, lang string) AVStream {
+func getStreamByLanguage(streams []libav.AVStream, lang string) libav.AVStream {
 	for _, stream := range streams {
 		dic := stream.MetaData()
 		mp := dic.Map()
@@ -27,10 +27,10 @@ func getStreamByLanguage(streams []AVStream, lang string) AVStream {
 		}
 	}
 
-	return AVStream{}
+	return libav.AVStream{}
 }
-func getDefaultAudioStream(streams []AVStream, lastSelected int) AVStream {
-	var selectedStream AVStream
+func getDefaultAudioStream(streams []libav.AVStream, lastSelected int) libav.AVStream {
+	var selectedStream libav.AVStream
 	if selectedStream = getStream(streams, lastSelected); selectedStream.IsNil() {
 		if selectedStream = getStreamByLanguage(streams, "eng"); selectedStream.IsNil() {
 			selectedStream = streams[0]
@@ -51,7 +51,7 @@ func (m *Movie) setupAudio() error {
 		selectedStream := getDefaultAudioStream(audioStreams, m.p.SoundStream)
 		selected := selectedStream.Index()
 		m.p.SoundStream = selected
-		SavePlayingAsync(m.p)
+		shared.SavePlayingAsync(m.p)
 
 		var err error
 		m.a = NewAudio(m.c, m.p.Volume)

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 	"vger/download"
-	. "vger/player/libav"
+	"vger/player/libav"
 	"vger/util"
 )
 
@@ -21,7 +21,7 @@ func (m *Movie) waitBuffer(size int64) bool {
 	return false
 }
 
-func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
+func (m *Movie) openHttp(file string) (libav.AVFormatContext, string, error) {
 	download.NetworkTimeout = time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	download.BaseDir = util.ReadConfig("dir")
 
@@ -30,23 +30,23 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 	url, name, size, _, err := download.GetDownloadInfoN(file, nil, 10, false, m.quit)
 
 	if err != nil {
-		return AVFormatContext{}, "", err
+		return libav.AVFormatContext{}, "", err
 	}
 
 	m.httpBuffer = newBuffer(size)
 
-	buf := AVObject{}
+	buf := libav.AVObject{}
 	buf.Malloc(1024 * 64)
 
 	streaming := download.NewStreaming(url, size, m.httpBuffer, m)
 
-	ioctx := NewAVIOContext(buf, func(buf AVObject) int {
+	ioctx := libav.NewAVIOContext(buf, func(buf libav.AVObject) int {
 		if buf.Size() == 0 {
 			return 0
 		}
 
 		if m.httpBuffer.CurrentPos() >= size {
-			return AVERROR_EOF
+			return libav.AVERROR_EOF
 		}
 
 		require := int64(buf.Size())
@@ -58,7 +58,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 				select {
 				case <-time.After(20 * time.Millisecond):
 				case <-m.quit:
-					return AVERROR_INVALIDDATA
+					return libav.AVERROR_INVALIDDATA
 				}
 
 				got += m.httpBuffer.Read(&buf, require-got)
@@ -73,7 +73,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 						if err != nil {
 							m.w.SendAlert(fmt.Sprintf(`Couldn't download "%s"`, file))
 							streaming.Stop()
-							return AVERROR_INVALIDDATA
+							return libav.AVERROR_INVALIDDATA
 						}
 						streaming.SetUrl(url)
 						startWaitTime = time.Now()
@@ -85,7 +85,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 
 		return int(got)
 	}, func(offset int64, whence int) int64 {
-		if whence == AVSEEK_SIZE {
+		if whence == libav.AVSEEK_SIZE {
 			return m.httpBuffer.size
 		}
 
@@ -96,7 +96,7 @@ func (m *Movie) openHttp(file string) (AVFormatContext, string, error) {
 		return pos
 	})
 
-	ctx := NewAVFormatContext()
+	ctx := libav.NewAVFormatContext()
 	ctx.SetPb(ioctx)
 
 	m.httpBuffer.Seek(0, os.SEEK_SET)

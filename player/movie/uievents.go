@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 	"vger/player/gui"
-	. "vger/player/shared"
+	"vger/player/shared"
 )
 
 var chVolume = make(chan struct{})
@@ -13,7 +13,7 @@ func (m *Movie) uievents() {
 	log.Print("movie uievents")
 
 	m.w.FuncKeyDown = append(m.w.FuncKeyDown, func(keycode int) bool {
-		SavePlayingAsync(m.p)
+		shared.SavePlayingAsync(m.p)
 
 		switch keycode {
 		case gui.KEY_R:

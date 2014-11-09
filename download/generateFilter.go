@@ -35,7 +35,7 @@ func (gf *generateFilter) nextBlock() (*block.Block, bool) {
 func (gf *generateFilter) active() {
 	if gf.blockSize == 0 {
 		//small blocksize for fast boot
-		gf.blockSize = 128 * block.KB
+		gf.blockSize = 512 * block.KB
 	}
 
 	log.Printf("generateFilter:%d %d %d %d\n", gf.from, gf.to, gf.blockSize, gf.maxConnections)
@@ -53,7 +53,7 @@ func (gf *generateFilter) active() {
 	}
 
 	//change to a larger blocksize after boot
-	gf.blockSize = 512 * block.KB
+	gf.blockSize = 1024 * block.KB
 	for {
 		select {
 		case _, ok := <-gf.input:
@@ -83,6 +83,6 @@ func getBlockSize(maxSpeed int) int {
 	if maxSpeed > 0 {
 		return maxSpeed * block.KB
 	} else {
-		return 512 * block.KB
+		return 1024 * block.KB
 	}
 }

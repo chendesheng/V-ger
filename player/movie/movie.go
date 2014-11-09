@@ -9,34 +9,34 @@ import (
 	"sync"
 	"time"
 	"vger/block"
-	. "vger/player/clock"
-	. "vger/player/gui"
-	. "vger/player/libav"
+	"vger/player/clock"
+	"vger/player/gui"
+	"vger/player/libav"
 	. "vger/player/movie/audio"
 	. "vger/player/movie/seeking"
 	. "vger/player/movie/video"
-	. "vger/player/shared"
-	. "vger/player/subtitle"
+	"vger/player/shared"
+	"vger/player/subtitle"
 	"vger/subscribe"
 	"vger/task"
 )
 
 type Movie struct {
-	ctx AVFormatContext
+	ctx libav.AVFormatContext
 	v   *Video
 	a   *Audio
-	c   *Clock
-	w   *Window
-	p   *Playing
+	c   *clock.Clock
+	w   *gui.Window
+	p   *shared.Playing
 	movieSubs
 
 	quit        chan struct{}
 	subQuit     chan struct{}
 	finishClose chan bool
 
-	subs []*Subtitle
+	subs []*subtitle.Subtitle
 
-	audioStreams []AVStream
+	audioStreams []libav.AVStream
 
 	httpBuffer *buffer
 
@@ -52,23 +52,23 @@ type Movie struct {
 type movieSubs struct {
 	sync.Mutex
 
-	s1 *Subtitle
-	s2 *Subtitle
+	s1 *subtitle.Subtitle
+	s2 *subtitle.Subtitle
 }
 
-func (m *movieSubs) getPlayingSubs() (*Subtitle, *Subtitle) {
+func (m *movieSubs) getPlayingSubs() (*subtitle.Subtitle, *subtitle.Subtitle) {
 	m.Lock()
 	defer m.Unlock()
 
 	return m.s1, m.s2
 }
-func (m *movieSubs) setPlayingSubs(s1, s2 *Subtitle) {
+func (m *movieSubs) setPlayingSubs(s1, s2 *subtitle.Subtitle) {
 	m.Lock()
 	defer m.Unlock()
 
 	m.s1, m.s2 = s1, s2
 }
-func (m *movieSubs) seekPlayingSubs(t time.Duration) {
+func (m *movieSubs) SeekPlayingSubs(t time.Duration) {
 	s1, s2 := m.getPlayingSubs()
 	if s1 != nil {
 		s1.Seek(t)
@@ -137,7 +137,7 @@ func checkDownloadSubtitle(m *Movie, file string, filename string) {
 		return
 	}
 
-	subs := GetSubtitlesMap(filename)
+	subs := shared.GetSubtitlesMap(filename)
 	log.Printf("%v", subs)
 	if len(subs) == 0 {
 		m.searchDownloadSubtitle()
@@ -145,13 +145,13 @@ func checkDownloadSubtitle(m *Movie, file string, filename string) {
 		log.Print("setupSubtitles")
 		m.setupSubtitles(subs)
 
-		m.seekPlayingSubs(m.c.GetTime())
+		m.SeekPlayingSubs(m.c.GetTime())
 	}
 }
 
 func setBufferCapacity(buf *buffer, duration time.Duration) {
 	var capacity int64
-	if duration < 10*time.Minute {
+	if duration < 1*time.Hour {
 		capacity = buf.size
 	} else {
 		//overflow, divide before cross
@@ -159,8 +159,8 @@ func setBufferCapacity(buf *buffer, duration time.Duration) {
 		log.Print(capacity)
 	}
 
-	if capacity > 100*block.MB {
-		capacity = 100 * block.MB
+	if capacity > 1000*block.MB {
+		capacity = 1000 * block.MB
 	}
 	if capacity < 10*block.MB {
 		capacity = 10 * block.MB
@@ -171,7 +171,7 @@ func setBufferCapacity(buf *buffer, duration time.Duration) {
 func (m *Movie) setupContext(file string) (filename string, duration time.Duration, err error) {
 	log.Print("setupContext")
 
-	var ctx AVFormatContext
+	var ctx libav.AVFormatContext
 
 	if strings.HasPrefix(file, "http://") ||
 		strings.HasPrefix(file, "https://") {
@@ -183,7 +183,7 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 	} else {
 		filename = filepath.Base(file)
 
-		ctx = NewAVFormatContext()
+		ctx = libav.NewAVFormatContext()
 		if err = ctx.OpenInput(file); err != nil {
 			return
 		}
@@ -199,7 +199,7 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 	return
 }
 
-func (m *Movie) Open(w *Window, file string) (err error) {
+func (m *Movie) Open(w *gui.Window, file string) (err error) {
 	w.SendShowSpinning()
 	defer w.SendHideSpinning(false)
 
@@ -223,9 +223,9 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 		setBufferCapacity(m.httpBuffer, duration)
 	}
 
-	m.c = NewClock(duration)
+	m.c = clock.New(duration)
 
-	m.p = CreateOrGetPlaying(filename)
+	m.p = shared.CreateOrGetPlaying(filename)
 	m.p.Duration = duration
 
 	err = m.setupVideo()
@@ -248,7 +248,7 @@ func (m *Movie) Open(w *Window, file string) (err error) {
 
 func (m *Movie) SavePlaying() {
 	if m.p != nil {
-		SavePlaying(m.p)
+		shared.SavePlaying(m.p)
 	}
 }
 
@@ -286,7 +286,7 @@ func (m *Movie) setupVideo() error {
 	videoStream := ctx.VideoStream()
 	if !videoStream.IsNil() {
 		var err error
-		m.v, err = NewVideo(ctx, videoStream, m.c, m.w)
+		m.v, err = NewVideo(ctx, videoStream, m.c, m.w, m)
 		if err != nil {
 			return err
 		}
@@ -405,7 +405,7 @@ func (m *Movie) AddVolume(d int) int {
 	}
 
 	m.p.Volume = volume
-	SavePlayingAsync(m.p)
+	shared.SavePlayingAsync(m.p)
 
 	go func() {
 		select {
@@ -422,7 +422,7 @@ func (m *Movie) SyncMainSubtitle(d time.Duration) (time.Duration, error) {
 	s1, _ := m.getPlayingSubs()
 	if s1 != nil {
 		offset := s1.AddOffset(d)
-		UpdateSubtitleOffsetAsync(s1.Name, offset)
+		shared.UpdateSubtitleOffsetAsync(s1.Name, offset)
 
 		return offset, nil
 	} else {
@@ -434,7 +434,7 @@ func (m *Movie) SyncSecondSubtitle(d time.Duration) (time.Duration, error) {
 	_, s2 := m.getPlayingSubs()
 	if s2 != nil {
 		offset := s2.AddOffset(d)
-		UpdateSubtitleOffsetAsync(s2.Name, offset)
+		shared.UpdateSubtitleOffsetAsync(s2.Name, offset)
 
 		return offset, nil
 	} else {
@@ -452,7 +452,7 @@ func (m *Movie) ToggleSubtitle(index int) {
 	subs := m.subs
 	clicked := subs[index]
 
-	var s1, s2 *Subtitle
+	var s1, s2 *subtitle.Subtitle
 	ps1, ps2 := m.getPlayingSubs()
 
 	if ps1 == nil && ps2 == nil {
@@ -532,7 +532,7 @@ func (m *Movie) ToggleSubtitle(index int) {
 	}
 
 	m.setPlayingSubs(s1, s2)
-	SavePlayingAsync(m.p)
+	shared.SavePlayingAsync(m.p)
 }
 
 func (m *Movie) SetAudioTrack(i int) {
@@ -546,6 +546,6 @@ func (m *Movie) SetAudioTrack(i int) {
 		log.Print(err)
 	} else {
 		m.p.SoundStream = m.a.StreamIndex()
-		SavePlayingAsync(m.p)
+		shared.SavePlayingAsync(m.p)
 	}
 }

@@ -1,10 +1,8 @@
 package movie
 
 import (
-	// . "player/libav"
-
 	"time"
-	. "vger/player/shared"
+	"vger/player/shared"
 )
 
 var timerEndSeek *time.Timer
@@ -39,7 +37,7 @@ func (m *Movie) OnSeek(t time.Duration, img []byte) {
 		m.w.Draw(img)
 	}
 
-	m.seekPlayingSubs(t)
+	m.SeekPlayingSubs(t)
 
 }
 func (m *Movie) OnSeekPaused(t time.Duration) {
@@ -53,5 +51,5 @@ func (m *Movie) OnSeekEnded(t time.Duration) {
 	m.Unhold(t)
 
 	m.p.SetLastPos(t)
-	SavePlayingAsync(m.p)
+	shared.SavePlayingAsync(m.p)
 }

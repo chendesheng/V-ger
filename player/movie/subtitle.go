@@ -11,8 +11,8 @@ import (
 	"time"
 	"unicode/utf8"
 	"vger/download"
-	. "vger/player/shared"
-	. "vger/player/subtitle"
+	"vger/player/shared"
+	"vger/player/subtitle"
 	"vger/subtitles"
 	"vger/task"
 	"vger/toutf8"
@@ -118,7 +118,7 @@ func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
 
 			// lang1, lang2 := cld.DetectLanguage2(utf8Text)
 			log.Printf("insert subtitle %s", name)
-			InsertSubtitle(&Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
+			shared.InsertSubtitle(&shared.Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
 		} else {
 			log.Print(err)
 		}
@@ -186,7 +186,7 @@ func (m *Movie) searchDownloadSubtitle() {
 		m.subQuit = nil
 		close(quit)
 
-		subs := GetSubtitlesMap(m.p.Movie)
+		subs := shared.GetSubtitlesMap(m.p.Movie)
 		if len(subs) == 0 {
 			w.SendShowMessage("No subtitle", true)
 		} else {
@@ -195,7 +195,7 @@ func (m *Movie) searchDownloadSubtitle() {
 		}
 	}
 }
-func (m *Movie) getSub(name string) *Subtitle {
+func (m *Movie) getSub(name string) *subtitle.Subtitle {
 	for _, s := range m.subs {
 		if s.Name == name {
 			return s
@@ -208,7 +208,7 @@ func (m *Movie) setupDefaultSubtitles() {
 
 	s1, s2 := m.getSub(m.p.Sub1), m.getSub(m.p.Sub2)
 	if s1 == nil && s2 == nil {
-		s1, s2 = Subtitles(m.subs).Select()
+		s1, s2 = subtitle.Subtitles(m.subs).Select()
 	}
 
 	switch {
@@ -230,18 +230,18 @@ func (m *Movie) setupDefaultSubtitles() {
 
 	m.setPlayingSubs(s1, s2)
 
-	SavePlayingAsync(m.p)
+	shared.SavePlayingAsync(m.p)
 }
 
-func (m *Movie) setupSubtitles(subs map[string]*Sub) {
+func (m *Movie) setupSubtitles(subs map[string]*shared.Sub) {
 	if len(subs) > 0 {
 		m.subs = nil
 		width, height := m.v.Width, m.v.Height
 		for _, sub := range subs {
-			m.subs = append(m.subs, NewSubtitle(sub, m.w, float64(width), float64(height)))
+			m.subs = append(m.subs, subtitle.NewSubtitle(sub, m.w, float64(width), float64(height)))
 		}
 
-		sort.Sort(Subtitles(m.subs))
+		sort.Sort(subtitle.Subtitles(m.subs))
 
 		m.setupDefaultSubtitles()
 	}

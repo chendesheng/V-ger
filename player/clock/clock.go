@@ -217,7 +217,7 @@ func (c *Clock) TotalTime() time.Duration {
 	return c.totalTime
 }
 
-func NewClock(totalTime time.Duration) *Clock {
+func New(totalTime time.Duration) *Clock {
 	log.Print("NewClock:", totalTime.String())
 
 	now := time.Now()

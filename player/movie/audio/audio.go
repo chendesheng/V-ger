@@ -6,18 +6,18 @@ import (
 	"math"
 	"sync/atomic"
 	"time"
-	. "vger/player/clock"
-	. "vger/player/libav"
+	"vger/player/clock"
+	"vger/player/libav"
 )
 
 type Audio struct {
-	c           *Clock
-	codecCtx    *AVCodecContext
-	resampleCtx AVAudioResampleContext
-	stream      AVStream
-	frame       AVFrame
+	c           *clock.Clock
+	codecCtx    *libav.AVCodecContext
+	resampleCtx libav.AVAudioResampleContext
+	stream      libav.AVStream
+	frame       libav.AVFrame
 
-	ChPackets   chan *AVPacket
+	ChPackets   chan *libav.AVPacket
 	audioBuffer *sampleBuffer
 
 	skipBytes int
@@ -35,15 +35,15 @@ type Audio struct {
 	chQuitDone chan struct{}
 }
 
-func NewAudio(c *Clock, volume int) *Audio {
+func NewAudio(c *clock.Clock, volume int) *Audio {
 	a := &Audio{}
 
-	resampleCtx := AVAudioResampleContext{}
+	resampleCtx := libav.AVAudioResampleContext{}
 	resampleCtx.Alloc()
 
-	a.frame = AllocFrame()
+	a.frame = libav.AllocFrame()
 	a.resampleCtx = resampleCtx
-	a.ChPackets = make(chan *AVPacket, 500)
+	a.ChPackets = make(chan *libav.AVPacket, 500)
 	a.c = c
 	a.driver = &portAudio{volume: volume}
 	a.audioBuffer = &sampleBuffer{}
@@ -53,7 +53,7 @@ func (a *Audio) StreamIndex() int {
 	return a.stream.Index()
 }
 
-func (a *Audio) receivePacket() (*AVPacket, bool) {
+func (a *Audio) receivePacket() (*libav.AVPacket, bool) {
 	select {
 	case packet, ok := <-a.ChPackets:
 		return packet, ok
@@ -91,16 +91,16 @@ func (a *Audio) sync(pts time.Duration) {
 	}
 }
 
-func (a *Audio) getPts(packet *AVPacket) time.Duration {
+func (a *Audio) getPts(packet *libav.AVPacket) time.Duration {
 	var pts time.Duration
-	if packet.Pts() != AV_NOPTS_VALUE {
+	if packet.Pts() != libav.AV_NOPTS_VALUE {
 		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
 	}
 	return pts + a.GetOffset()
 }
 
 //decode one packet
-func (a *Audio) decode(packet *AVPacket) {
+func (a *Audio) decode(packet *libav.AVPacket) {
 	pts := a.getPts(packet)
 	//log.Print("audio package pts: ", pts.String())
 
@@ -142,11 +142,11 @@ func (a *Audio) getSilence(size int) []byte {
 	return a.silence[:size]
 }
 
-func (a *Audio) Open(stream AVStream) error {
+func (a *Audio) Open(stream libav.AVStream) error {
 	a.stream = stream
 	codecCtx := stream.Codec()
 	a.codecCtx = &codecCtx
-	a.audioBuffer.bytesPerSec = 2 * GetBytesPerSample(AV_SAMPLE_FMT_S16) * a.codecCtx.SampleRate()
+	a.audioBuffer.bytesPerSec = 2 * libav.GetBytesPerSample(libav.AV_SAMPLE_FMT_S16) * a.codecCtx.SampleRate()
 
 	a.diffThreshold = 50 * time.Millisecond
 
