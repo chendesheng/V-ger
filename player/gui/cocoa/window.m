@@ -296,6 +296,31 @@
     }
 }
 
+- (void)fatal:(NSString *)message {
+    NSAlert* alert = [[NSAlert alloc] init];
+    [alert setMessageText:message];
+    [alert setAlertStyle:NSCriticalAlertStyle];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+        selector:@selector(openPanelDidClose:)
+        name:NSWindowDidEndSheetNotification
+        object:self];
+
+    [alert beginSheetModalForWindow:self completionHandler: ^(NSInteger result){
+        self->isFatalHappen = YES;
+    }];
+}
+
+- (void)openPanelDidClose:(NSNotification *)notification {
+    if (self->isFatalHappen == YES) {
+        self->isFatalHappen = NO;
+        [self close];
+    }
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+        name:NSWindowDidEndSheetNotification
+        object:self];
+}
 @end
 
 

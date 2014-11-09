@@ -5,6 +5,7 @@
 #import "blurView.h"
 #import "titleTextView.h"
 @interface Window : NSWindow {
+    BOOL isFatalHappen;
 @public
 	GLView* glView;
 }
@@ -17,5 +18,5 @@
 - (void)playPause:(id)sender;
 - (void)open:(id)sender;
 - (BOOL)isFullScreen;
-
+- (void)fatal:(NSString*)message;
 @end

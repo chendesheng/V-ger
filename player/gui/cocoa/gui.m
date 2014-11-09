@@ -221,14 +221,7 @@ void alert(void* wptr, char* str) {
     Window* w = (Window*)wptr;
 
     setControlsVisible(w, 1, 0);
-
-    NSAlert* alert = [[NSAlert alloc] init];
-    [alert setMessageText:[NSString stringWithUTF8String:str]];
-    [alert setAlertStyle:NSCriticalAlertStyle];
-
-    [alert beginSheetModalForWindow:w completionHandler: ^(NSInteger result){
-        [w close];
-    }];
+    [w fatal:[NSString stringWithUTF8String:str]];
 }
 
 void closeWindow(void* wptr) {
