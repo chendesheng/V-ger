@@ -7,7 +7,7 @@
 		| NSMiniaturizableWindowMask | NSResizableWindowMask | NSFullSizeContentViewWindowMask;
 
     CGFloat screenh = [[NSScreen mainScreen] frame].size.height;
-    self = [super initWithContentRect:NSMakeRect(50, screenh - h + 22 - 150, w, h-22)
+    self = [super initWithContentRect:NSMakeRect(50, screenh - h - 150, w, h)
     	styleMask:styleMask
     	backing:NSBackingStoreBuffered
       	defer:YES];
