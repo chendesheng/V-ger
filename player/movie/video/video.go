@@ -118,7 +118,7 @@ func (v *Video) setupPictureRGB() {
 	v.imageData = &obj
 }
 
-func NewVideo(formatCtx AVFormatContext, stream AVStream, c *Clock, r VideoRender) (*Video, error) {
+func NewVideo(formatCtx libav.AVFormatContext, stream libav.AVStream, c *clock.Clock, r VideoRender, sr SubRender) (*Video, error) {
 	v := &Video{}
 	v.formatCtx = formatCtx
 	v.stream = stream
@@ -286,6 +286,7 @@ func (v *Video) Play() {
 						}
 					case <-v.c.WaitUntil(pts):
 						v.r.SendHideSpinning(true)
+						v.sr.SeekPlayingSubs(v.c.GetTime())
 						v.r.Draw(img)
 					case <-v.flushQuit:
 						v.r.SendHideSpinning(false)

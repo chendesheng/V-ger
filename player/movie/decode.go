@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 	"time"
-	. "vger/player/libav"
+	"vger/player/libav"
 	"vger/player/shared"
 	"vger/task"
 	"vger/util"
@@ -114,7 +114,7 @@ func (m *Movie) playNextEpisode() bool {
 	return false
 }
 
-func (m *Movie) sendPacket(index int, ch chan *AVPacket, packet *AVPacket) bool {
+func (m *Movie) sendPacket(index int, ch chan *libav.AVPacket, packet *libav.AVPacket) bool {
 	if index == packet.StreamIndex() {
 		select {
 		case ch <- packet:
@@ -210,11 +210,10 @@ func (m *Movie) decode() {
 			}
 		}
 
-		packet := AVPacket{}
+		packet := libav.AVPacket{}
 		resCode := ctx.ReadFrame(&packet)
 		if resCode >= 0 {
 			if m.sendPacket(m.v.StreamIndex, m.v.ChPackets, &packet) {
-				m.seekPlayingSubs(m.c.GetTime())
 				continue
 			}
 
