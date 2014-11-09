@@ -114,23 +114,21 @@ func (m *Movie) playNextEpisode() bool {
 	return false
 }
 
-func (m *Movie) sendPacket(index int, ch chan *libav.AVPacket, packet *libav.AVPacket) bool {
-	if index == packet.StreamIndex() {
+func (m *Movie) sendPacket(ch chan *libav.AVPacket, packet *libav.AVPacket) bool {
+	select {
+	case ch <- packet:
+		return true
+	case <-m.chHold:
+		log.Print("hold movie2")
 		select {
-		case ch <- packet:
-			return true
-		case <-m.chHold:
-			log.Print("hold movie2")
-			select {
-			case t := <-m.chHold:
-				log.Print("unhold movie2:", t.String())
-				m.c.SetTime(t)
-			case <-m.quit:
-				return false
-			}
+		case t := <-m.chHold:
+			log.Print("unhold movie2:", t.String())
+			m.c.SetTime(t)
 		case <-m.quit:
 			return false
 		}
+	case <-m.quit:
+		return false
 	}
 	return false
 }
@@ -213,52 +211,28 @@ func (m *Movie) decode() {
 		packet := libav.AVPacket{}
 		resCode := ctx.ReadFrame(&packet)
 		if resCode >= 0 {
-			if m.sendPacket(m.v.StreamIndex, m.v.ChPackets, &packet) {
-				continue
+			if m.v.StreamIndex == packet.StreamIndex() {
+				if m.sendPacket(m.v.ChPackets, &packet) {
+					continue
+				}
 			}
 
 			if m.a != nil {
-				if m.sendPacket(m.a.StreamIndex(), m.a.ChPackets, &packet) {
-					continue
+				if m.a.StreamIndex() == packet.StreamIndex() {
+					if m.sendPacket(m.a.ChPackets, &packet) {
+						continue
+					}
 				}
 			}
 
 			packet.Free()
 		} else {
-			log.Printf("read frame error: %x", resCode)
-			if resCode == AVERROR_EOF && (m.c.TotalTime()-m.c.GetTime() < 2*time.Second) {
-				m.c.SetTime(m.c.TotalTime())
-				if m.playNextEpisode() {
-					return
-				}
-				m.v.SendEOF()
-			} else {
-				if m.httpBuffer == nil && resCode == AVERROR_INVALIDDATA {
-					t := m.c.GetTime()
-					t = t / (500 * time.Millisecond) * 500 * time.Millisecond
-					m.c.SetTime(t)
-				} else {
-					m.v.FlushBuffer()
-					if m.a != nil {
-						m.a.FlushBuffer()
-					}
-
-					t, _, err := m.v.Seek(m.c.GetTime())
-					if err == nil {
-						log.Print("seek success:", t.String())
-
-						if m.waitBuffer(2 * 1024 * 1024) {
-							return
-						}
-
-						m.c.SetTime(t)
-
-						continue
-					} else {
-						log.Print("seek error:", err)
-					}
-				}
+			if resCode == libav.AVERROR_EOF && m.c.GetTime() >= m.c.TotalTime() {
+				//log.Print("SendEOF")
+				//m.v.SendEOF()
+				m.sendPacket(m.v.ChPackets, nil)
 			}
+
 			select {
 			case <-time.After(100 * time.Millisecond):
 				break

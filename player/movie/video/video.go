@@ -255,7 +255,20 @@ func (v *Video) Play() {
 		select {
 		case packet := <-v.ChPackets:
 			v.r.SendHideSpinning(false)
-
+			if packet == nil {
+				//EOF
+				select {
+				case <-v.chHold:
+					select {
+					case <-v.chHold:
+					case <-v.quit:
+						return
+					}
+				case <-v.quit:
+					return
+				}
+				continue
+			}
 			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
 
 				d := time.Since(t)
@@ -298,18 +311,6 @@ func (v *Video) Play() {
 				case <-v.quit:
 					return
 				}
-			}
-		case <-v.chEOF:
-			v.r.SendHideSpinning(false)
-			select {
-			case <-v.chHold:
-				select {
-				case <-v.chHold:
-				case <-v.quit:
-					return
-				}
-			case <-v.quit:
-				return
 			}
 		case <-v.quit:
 			v.r.SendHideSpinning(false)
