@@ -350,7 +350,6 @@ func (w *Window) SendShowSpinning() {
 						bsaved = b
 						w.chShowSpinning <- b
 					}
-					b = <-w.chDelayShowSpinning
 				case b = <-w.chDelayShowSpinning:
 				case <-w.chDelayForceShowSpinning:
 					b = false
