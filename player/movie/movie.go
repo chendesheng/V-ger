@@ -151,11 +151,11 @@ func checkDownloadSubtitle(m *Movie, file string, filename string) {
 
 func setBufferCapacity(buf *buffer, duration time.Duration) {
 	var capacity int64
-	if duration < 1*time.Hour {
+	if duration < 10*time.Minute {
 		capacity = buf.size
 	} else {
 		//overflow, divide before cross
-		capacity = int64(float64(buf.size) / float64(duration) * 5 * float64(time.Minute))
+		capacity = int64(float64(buf.size) / float64(duration) * 1 * float64(time.Hour))
 		log.Print(capacity)
 	}
 
