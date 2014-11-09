@@ -149,10 +149,11 @@ func NewWindow(title string, width, height int) *Window {
 	log.Print("NewWindow:", w.NativeWindow)
 
 	w.Show()
-	w.drawClear()
 	w.MakeCurrentContext() //must make current context before do texture bind or we will get a all white window
+
 	gl.Init()
 	gl.ClearColor(0, 0, 0, 1)
+	w.drawClear()
 
 	return w
 }

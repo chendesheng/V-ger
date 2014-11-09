@@ -27,6 +27,7 @@
     glView.frame = bounds;
     [glView setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
     
+    self.backgroundColor = [NSColor blackColor]; 
     return self;
 }
 
