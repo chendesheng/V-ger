@@ -255,20 +255,19 @@ func (v *Video) Play() {
 		select {
 		case packet := <-v.ChPackets:
 			v.r.SendHideSpinning(false)
+			//error happens, wait until package come
 			if packet == nil {
-				//EOF
-				select {
-				case <-v.chHold:
+				for packet == nil {
 					select {
+					case packet = <-v.ChPackets:
 					case <-v.chHold:
 					case <-v.quit:
 						return
 					}
-				case <-v.quit:
-					return
 				}
-				continue
+				t = time.Now()
 			}
+
 			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
 
 				d := time.Since(t)

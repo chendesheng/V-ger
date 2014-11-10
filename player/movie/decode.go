@@ -188,8 +188,8 @@ func (m *Movie) decode() {
 	ctx := m.ctx
 
 	m.c.SetTime(start)
-
 	go m.v.Play()
+
 	for {
 		select {
 		case m.chProgress <- m.c.GetTime():
@@ -227,10 +227,10 @@ func (m *Movie) decode() {
 
 			packet.Free()
 		} else {
-			if resCode == libav.AVERROR_EOF && m.c.GetTime() >= m.c.TotalTime() {
-				//log.Print("SendEOF")
-				//m.v.SendEOF()
-				m.sendPacket(m.v.ChPackets, nil)
+			select {
+			case m.v.ChPackets <- nil:
+			case <-m.quit:
+				return
 			}
 
 			select {
@@ -239,7 +239,6 @@ func (m *Movie) decode() {
 			case <-m.quit:
 				return
 			}
-
 		}
 	}
 }
