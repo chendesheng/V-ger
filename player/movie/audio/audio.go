@@ -58,7 +58,10 @@ func (a *Audio) receivePacket() (*libav.AVPacket, bool) {
 	case packet, ok := <-a.ChPackets:
 		return packet, ok
 	case <-a.quit:
-		close(a.chQuitDone)
+		if a.chQuitDone != nil {
+			close(a.chQuitDone)
+			a.chQuitDone = nil
+		}
 		return nil, false
 	}
 }
