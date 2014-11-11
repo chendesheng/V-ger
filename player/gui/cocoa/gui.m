@@ -75,7 +75,7 @@ void* newWindow(char* title, int width, int height) {
 
         [w makeFirstResponder:w->glView];
 
-        NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/10.0 
+        NSTimer *renderTimer = [NSTimer timerWithTimeInterval:1.0/30.0 
                                 target:w->glView
                               selector:@selector(timerTick:)
                               userInfo:nil

@@ -36,11 +36,10 @@ func (m *Movie) OnSeek(t time.Duration, img []byte) {
 	if len(img) > 0 {
 		m.w.Draw(img)
 	}
-
-	m.SeekPlayingSubs(t)
-
+	m.SeekPlayingSubs(-1) //Hide subs while dragging
 }
 func (m *Movie) OnSeekPaused(t time.Duration) {
+	m.SeekPlayingSubs(t)
 	m.showProgressInner(t)
 }
 func (m *Movie) OnSeekEnded(t time.Duration) {
