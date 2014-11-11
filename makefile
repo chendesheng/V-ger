@@ -18,7 +18,7 @@ vp:
 	ibtool --compile $(RESOURCES)/MainMenu.nib player/gui/cocoa/MainMenu.xib
 	cp $(RESOURCES)/MainMenu.nib $(RESOURCES)/en.lproj/MainMenu.nib
 vprace:
-	go install -race player
+	go install -race vger/player
 	cp $(BIN)/player $(BIN)/VgerPlayer.app/Contents/MacOS/VgerPlayer
 	cp $(BIN)/player.plist $(BIN)/VgerPlayer.app/Contents/Info.plist
 runvger:
