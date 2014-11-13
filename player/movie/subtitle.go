@@ -65,7 +65,7 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 				break
 			}
 
-			if subname == "content" {
+			if s.Source == "Kankan" {
 				subname = s.Description + ".srt" //always use srt
 			}
 
