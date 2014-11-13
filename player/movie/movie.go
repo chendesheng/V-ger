@@ -127,7 +127,9 @@ func checkDownloadSubtitle(m *Movie, file string, filename string) {
 	subs := shared.GetSubtitlesMap(filename)
 	log.Printf("%v", subs)
 	if len(subs) == 0 {
-		m.searchDownloadSubtitle()
+		if m.p.FirstOpen {
+			m.searchDownloadSubtitle()
+		}
 	} else {
 		log.Print("setupSubtitles")
 		m.setupSubtitles(subs)
@@ -228,9 +230,7 @@ func (m *Movie) Open(w *gui.Window, file string) (err error) {
 	m.seeking = NewSeeking(m.v, m, m.quit)
 	m.uiProgressBarEvents()
 
-	if m.p.FirstOpen {
-		go checkDownloadSubtitle(m, file, filename)
-	}
+	go checkDownloadSubtitle(m, file, filename)
 	return
 }
 
