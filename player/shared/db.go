@@ -182,6 +182,7 @@ func scanPlaying(scanner dbHelper.RowScanner) (*Playing, error) {
 	if err == nil {
 		p.LastPos = lastPos
 		p.Duration = time.Duration(duration)
+		p.FirstOpen = lastPos == 0
 		return &p, nil
 	} else {
 		log.Print(err)
@@ -229,7 +230,7 @@ func PlayingExists(movie string) bool {
 
 func CreateOrGetPlaying(movie string) *Playing {
 	if !PlayingExists(movie) {
-		SavePlaying(&Playing{movie, 0, -1, "", "", 0, 8, 0})
+		SavePlaying(&Playing{movie, 0, -1, "", "", 0, 8, 0, true})
 	}
 
 	return GetPlaying(movie)

@@ -17,8 +17,6 @@ import (
 	. "vger/player/movie/video"
 	"vger/player/shared"
 	"vger/player/subtitle"
-	"vger/subscribe"
-	"vger/task"
 )
 
 type Movie struct {
@@ -119,17 +117,6 @@ func (m *Movie) Reset() {
 	m.chHold = nil
 	m.chSpeed = nil
 	m.seeking = nil
-}
-
-func updateSubscribeDuration(movie string, duration time.Duration) {
-	if t, _ := task.GetTask(movie); t != nil {
-		if subscr := subscribe.GetSubscribe(t.Subscribe); subscr != nil && subscr.Duration == 0 {
-			err := subscribe.UpdateDuration(t.Subscribe, duration)
-			if err != nil {
-				log.Print(err)
-			}
-		}
-	}
 }
 
 func checkDownloadSubtitle(m *Movie, file string, filename string) {
@@ -241,8 +228,9 @@ func (m *Movie) Open(w *gui.Window, file string) (err error) {
 	m.seeking = NewSeeking(m.v, m, m.quit)
 	m.uiProgressBarEvents()
 
-	go updateSubscribeDuration(m.p.Movie, m.p.Duration)
-	go checkDownloadSubtitle(m, file, filename)
+	if m.p.FirstOpen {
+		go checkDownloadSubtitle(m, file, filename)
+	}
 	return
 }
 

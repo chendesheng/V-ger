@@ -58,6 +58,7 @@ type Playing struct {
 	Duration    time.Duration
 	Volume      int
 	Speed       float64 //online video downlad speed
+	FirstOpen   bool
 }
 
 func (p *Playing) GetLastPos() time.Duration {
