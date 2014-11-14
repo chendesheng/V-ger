@@ -14,7 +14,7 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         [self setSelectable:NO];
         [self setBackgroundColor:[NSColor clearColor]];
         [self setAlignment:NSCenterTextAlignment];
-        [self setFontSize:35.0];
+        [self setFontSize:30.0];
         self->originalWindowWidth = 1280;//fontsize 35 in 1280 pixel
     }
     
