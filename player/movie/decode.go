@@ -40,12 +40,12 @@ func (m *Movie) Hold() time.Duration {
 }
 
 func (m *Movie) Unhold(t time.Duration) {
-	m.v.Unhold()
-
 	select {
 	case m.chHold <- t:
 	case <-m.quit:
 	}
+
+	m.v.Unhold()
 }
 
 func getNextEpisode(filename string) (bool, string) {

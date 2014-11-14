@@ -56,14 +56,6 @@ type Video struct {
 	chEOF  chan struct{}
 }
 
-func (v *Video) SendEOF() {
-	select {
-	case v.chEOF <- struct{}{}:
-	case <-time.After(20 * time.Millisecond):
-	case <-v.quit:
-	}
-}
-
 func (v *Video) setupCodec(codec libav.AVCodecContext) error {
 	log.Print("setupCodec")
 
@@ -270,7 +262,13 @@ func (v *Video) Play() {
 
 			if frameFinished, pts, img := v.DecodeAndScale(packet); frameFinished {
 
-				d := time.Since(t)
+				var d time.Duration
+				if v.c.IsRunning() {
+					d = time.Since(t)
+				} else {
+					d = v.c.GetPausedTime().Sub(t)
+				}
+
 				if d > 30*time.Millisecond {
 					log.Print("long decode time:", d.String())
 					v.c.AddTime(-d)

@@ -88,6 +88,15 @@ func (c *Clock) SetTime(t time.Duration) {
 
 	c.base = time.Now().Add(-t)
 }
+
+// Get pause begin time
+func (c *Clock) GetPausedTime() time.Time {
+	c.Lock()
+	defer c.Unlock()
+
+	return c.base.Add(c.pausedTime)
+}
+
 func (c *Clock) AddTime(d time.Duration) {
 	c.Lock()
 	defer c.Unlock()
