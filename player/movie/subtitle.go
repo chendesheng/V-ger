@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 	"time"
 	"unicode/utf8"
 	"vger/download"
@@ -66,7 +67,11 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 			}
 
 			if s.Source == "Kankan" {
-				subname = s.Description + ".srt" //always use srt
+				if strings.HasSuffix(s.Description, ".srt") {
+					subname = s.Description
+				} else {
+					subname = s.Description + ".srt" //always use srt
+				}
 			}
 
 			subFile := path.Join(dir, subname)
