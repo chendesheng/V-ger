@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-	//. "vger/player/shared"
+	"vger/player/shared"
 )
 
 func TestShowWindow(t *testing.T) {
@@ -96,14 +96,14 @@ func TestShowMessage(t *testing.T) {
 	// w.hideStartupView()
 	go func() {
 		time.Sleep(time.Second)
-		black := make([]byte, 1280*720*3/2)
+		//black := make([]byte, 1280*720*3/2)
 		// for i := 0; i < 1280*270; i++ {
 		// 	black[i] = 16
 		// }
 		// for i := 1280 * 720; i < 1280*270*3/2; i++ {
 		// 	black[i] = 128
 		// }
-		w.SendDrawImage(black)
+		//w.SendDrawImage(black)
 	}()
 	run()
 }
@@ -178,20 +178,20 @@ func readPPMFile(file string) (int, int, []byte) {
 // 	run()
 // }
 
-func TestYUV2RGBShader(t *testing.T) {
-	img, _ := ioutil.ReadFile("window_test_image.yuv")
-	width, height := 1920, 1040
-
-	w := NewWindow("GLSL", width, height)
-	w.SetSize(width, height)
-
-	w.refresh(img)
-	go func() {
-		w.chDraw <- img
-	}()
-
-	run()
-}
+//func TestYUV2RGBShader(t *testing.T) {
+//	img, _ := ioutil.ReadFile("window_test_image.yuv")
+//	width, height := 1920, 1040
+//
+//	w := NewWindow("GLSL", width, height)
+//	w.SetSize(width, height)
+//
+//	w.refresh(img)
+//	go func() {
+//		w.chDraw <- img
+//	}()
+//
+//	run()
+//}
 
 func TestSpinningView(t *testing.T) {
 	w := NewWindow("hello", 1280, 720)
@@ -253,22 +253,15 @@ func TestTextView2(t *testing.T) {
 	runtime.LockOSThread()
 
 	w := NewWindow("title", 1280, 720)
+	w.SetSize(1280, 720)
+
 	for i := 1; i < 10; i++ {
-		//w.ShowText(&SubItem{
-		//Content:      []AttributedString{AttributedString{"Test subtitle", 0, 0}},
-		//Position:     Position{300, 300},
-		//PositionType: i,
-		//})
+		w.ShowSubtitle(&shared.SubItem{
+			Content:      []shared.AttributedString{shared.AttributedString{"ggggggggggggggg yyyyyy", 0, 0xffffff}},
+			Position:     shared.Position{-1, -1},
+			PositionType: i,
+		})
 	}
-
-	//w.HideStartupView()
-
-	w.FuncKeyDown = append(w.FuncKeyDown, func(keycode int) bool {
-		if keycode == KEY_ESCAPE {
-			w.ToggleFullScreen()
-		}
-		return true
-	})
 
 	run()
 }

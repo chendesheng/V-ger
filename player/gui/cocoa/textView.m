@@ -53,6 +53,8 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
 		// In case we changed it above, set typesetterBehavior back
 		// to the default value.
 		gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior ;
+                
+                answer.height += 6;
 	}
 	
 	return answer ;

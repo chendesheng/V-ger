@@ -19,6 +19,7 @@
 
 -(BlurView*) initWithView:(NSView*)v frame:(NSRect)bounds;
 -(NSView*) getWrappedView;
+-(void) setCornerRadius:(CGFloat)r;
 
 /** The layer will be tinted using the tint color. By default it is a 70% White Color */
 @property (strong,nonatomic) NSColor *tintColor;

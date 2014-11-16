@@ -198,7 +198,7 @@
 
     NSSize wsz = [[self window] frame].size;
         
-    CGFloat PADDING = 30;
+    CGFloat PADDING = 25;
     CGFloat GAP = 5.0;  //5 pixes space between collisioned texts
 
     CGFloat x;
