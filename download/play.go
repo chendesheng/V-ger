@@ -3,6 +3,7 @@ package download
 import (
 	"io"
 	"log"
+	"sync"
 	"vger/task"
 )
 
@@ -25,6 +26,7 @@ func Play(t *task.Task, w io.Writer, from, to int64) {
 
 //guarantee only one streaming, and could restart any moment
 type Streaming struct {
+	sync.Mutex
 	url   string
 	size  int64
 	w     WriterAtQuit
@@ -39,31 +41,35 @@ func (s *Streaming) SetUrl(url string) {
 func (s *Streaming) Start(from int64, quit chan struct{}) {
 	log.Print("Streaming Start:", from)
 
-	if s.quit != nil {
-		close(s.quit)
-	}
-	s.quit = make(chan struct{})
+	squit := make(chan struct{})
+	s.closeReplaceQuit(squit)
 
-	streaming(s.url, s.w, from, s.size, s.sm, s.quit)
+	streaming(s.url, s.w, from, s.size, s.sm, squit)
 
 	select {
 	case <-quit:
-		if s.quit != nil {
-			close(s.quit)
-			s.quit = nil
-		}
-	case <-s.quit:
+		s.Stop()
+	case <-squit:
 	}
+}
+func (s *Streaming) closeReplaceQuit(newQuit chan struct{}) {
+	s.Lock()
+	defer s.Unlock()
+
+	if s.quit != nil {
+		close(s.quit)
+	}
+	s.quit = newQuit
 }
 
 func (s *Streaming) Stop() {
 	log.Print("Stop Streaming")
-	close(s.quit)
-	s.quit = nil
+
+	s.closeReplaceQuit(nil)
 }
 
 func NewStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {
-	return &Streaming{url, size, w, sm, nil, make(chan int64)}
+	return &Streaming{sync.Mutex{}, url, size, w, sm, nil, make(chan int64)}
 }
 
 type writerWrap struct {
