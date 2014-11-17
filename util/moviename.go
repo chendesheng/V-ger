@@ -17,7 +17,7 @@ func CleanMovieNameWithMaxLen(name string, maxLen int) string {
 	}
 }
 
-var regCleanName *regexp.Regexp = regexp.MustCompile("(?i)720p|[[]720p[]]|x[.]264|BluRay|DTS|x264|1080p|H[.]264|AC3|[.]ENG|[.]BD|Rip|BRRip|H264|HDTV|-IMMERSE|-DIMENSION|xvid|[[]PublicHD[]]|[.]Rus|Chi_Eng|DD5[.]1|HR-HDTV|[.]AAC|[0-9]+x[0-9]+|blu-ray|Remux|dxva|dvdscr|WEB-DL|[_.]")
+var regCleanName *regexp.Regexp = regexp.MustCompile("(?i)720p|[[]720p[]]|x[.]264|BluRay|DTS|x264|1080p|H[.]264|AC3|[.]ENG|[.]BD|Rip|BRRip|H264|HDTV|-IMMERSE|-DIMENSION|xvid|[[]PublicHD[]]|[.]Rus|Chi_Eng|DD5[.]1|HR-HDTV|[.]AAC|[0-9]+x[0-9]+|blu-ray|Remux|dxva|dvdscr|WEB-DL")
 
 func cleanMovieName2(name string) string {
 	name = cleanMovieName1(name)
