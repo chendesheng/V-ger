@@ -1,7 +1,7 @@
 angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 	function($scope, $http) {
 		function monitor(path, ondata, onclose, onerror) {
-			var websocket = new WebSocket('ws://192.168.0.111:9527/' + path);
+			var websocket = new WebSocket('ws://localhost:9527/' + path);
 
 			websocket.onopen = onOpen;
 			websocket.onclose = onClose;
