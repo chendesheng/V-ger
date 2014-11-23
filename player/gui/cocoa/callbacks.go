@@ -126,6 +126,8 @@ func goIsPlaying() C.int {
 func goGetSubtitles(names **unsafe.Pointer, length *C.int) {
 	strs := P.GetSubtitleNames()
 	if len(strs) == 0 {
+		*length = 0
+		*names = nil
 		return
 	}
 
