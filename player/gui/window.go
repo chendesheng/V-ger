@@ -4,7 +4,7 @@ import (
 	"log"
 	"math"
 	"time"
-	. "vger/player/shared"
+	"vger/player/shared"
 
 	"github.com/go-gl/gl"
 )
@@ -26,7 +26,7 @@ type window struct {
 	originalHeight int
 
 	currentMessagePtr uintptr
-	currentMessage    *SubItem
+	currentMessage    *shared.SubItem
 
 	render imageRender
 
@@ -57,7 +57,7 @@ func (w *Window) DestoryRender() {
 		w.render = nil
 	}
 }
-func (w *Window) SendShowText(s SubItem) {
+func (w *Window) SendShowText(s shared.SubItem) {
 	arg := &s
 	w.chFunc <- func() {
 		ptr := w.ShowSubtitle(arg)
@@ -245,13 +245,13 @@ func (w *Window) SendShowBufferInfo(speed string, percent float64) {
 	}
 }
 
-func createMessageSubItem(msg string) SubItem {
-	s := SubItem{}
+func createMessageSubItem(msg string) shared.SubItem {
+	s := shared.SubItem{}
 	s.PositionType = 7
 	s.X = 20
 	s.Y = 20
-	s.Content = make([]AttributedString, 0)
-	s.Content = append(s.Content, AttributedString{msg, 3, 0xffffff})
+	s.Content = make([]shared.AttributedString, 0)
+	s.Content = append(s.Content, shared.AttributedString{msg, 3, 0xffffff})
 
 	return s
 }
@@ -266,7 +266,7 @@ func (w *Window) ShowMessage(msg string, autoHide bool) {
 	w.showMessage(&s, autoHide)
 }
 
-func (w *Window) showMessage(s *SubItem, autoHide bool) {
+func (w *Window) showMessage(s *shared.SubItem, autoHide bool) {
 	if w.currentMessagePtr != 0 {
 		w.HideSubtitle(w.currentMessagePtr)
 	}
@@ -308,7 +308,7 @@ func (w *Window) SendSetTitle(title string) {
 	}
 }
 
-func (w *Window) ShowSubtitle(s *SubItem) uintptr {
+func (w *Window) ShowSubtitle(s *shared.SubItem) uintptr {
 	strs := s.Content
 	items := make([]struct {
 		Content string
