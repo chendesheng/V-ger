@@ -96,7 +96,7 @@ func InsertSubtitle(sub *Sub) {
 	var count int
 	err := db.QueryRow("select count(*) from subtitle where Name=?", sub.Name).Scan(&count)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	if count == 0 {
 		sql := "insert into subtitle(Movie, Name, Offset, Content, Type, Lang1, Lang2) values (?,?,?,?,?,?,?)"
@@ -274,7 +274,7 @@ func SavePlaying(p *Playing) {
 	var count int
 	err := db.QueryRow("select count(*) from playing where Movie=?", p.Movie).Scan(&count)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	if count == 0 {
