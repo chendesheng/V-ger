@@ -57,6 +57,7 @@
                 [bvVolumeView setHidden:YES];
 
                 self.showCursorDeadline = [NSDate distantFuture];
+                self->_fontSize = 25.0;
         }
 
         return self;
@@ -184,7 +185,7 @@
                 }
         }
 
-        TextView *tv = [[TextView alloc] init];
+        TextView *tv = [[TextView alloc] initWithFrameAndSize:NSMakeRect(0,0,0,0) fontSize:self->_fontSize];
         [tv setVerticallyResizable:NO]; // this is required or setFrame won't do right
         [self addSubview:tv positioned:NSWindowBelow relativeTo:progressView];
         [tv release];
@@ -263,6 +264,17 @@
                         // [v setHidden:NO];
                 }
         }
+}
+- (void)setFontSize:(double)sz {
+        self->_fontSize = sz;
+
+        for (NSView* v in [self subviews]) {
+                if ([NSStringFromClass([v class]) isEqualToString:@"TextView"]) {
+                        [(TextView*)v setFontSize:sz];
+                }
+        }
+
+        [self refreshTexts];
 }
 - (void)setSpinningHidden:(BOOL)b {
   [spinningView setHidden:b];

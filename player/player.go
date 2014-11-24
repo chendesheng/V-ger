@@ -29,6 +29,7 @@ func (app *appDelegate) OpenFile(filename string) bool {
 
 	if app.w == nil {
 		app.w = gui.NewWindow("V'ger", 390, 114) // default window size copy from QuickTime player
+		app.w.SetSubFontSize(float64(util.ReadIntConfig("subtitle-font-size")))
 	}
 
 	go func() {

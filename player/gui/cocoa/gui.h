@@ -82,4 +82,6 @@ int isSearchingSubtitle();
 
 void flushBuffer(void* ptr);
 void makeCurrentContext(void* ptr);
+
+void setSubFontSize(void*, double);
 #endif

@@ -9,23 +9,25 @@
 #import "volumeView.h"
 
 @interface GLView : NSOpenGLView {
-    NSTrackingArea* trackingArea;
-    
-    NSCursor* noneCursor;
-    NSCursor* currentCursor;
-    
-    NSSize originalSize;
+        NSTrackingArea* trackingArea;
 
-    ProgressView* progressView;
-    BlurView* bvProgressView;
-    
-    SpinningView* spinningView;
-    
-    VolumeView* volumeView;
-    BlurView* bvVolumeView;
-    
-    CGFloat _collisionOffsets[10];
-    CGFloat _collisionDeltas[10];
+        NSCursor* noneCursor;
+        NSCursor* currentCursor;
+
+        NSSize originalSize;
+
+        ProgressView* progressView;
+        BlurView* bvProgressView;
+
+        SpinningView* spinningView;
+
+        VolumeView* volumeView;
+        BlurView* bvVolumeView;
+
+        CGFloat _collisionOffsets[10];
+        CGFloat _collisionDeltas[10];
+        
+        double _fontSize;
 }
 
 @property (nonatomic, strong, retain) NSDate* showCursorDeadline;
@@ -48,4 +50,5 @@
 -(BOOL)isCursorHidden;
 -(void)makeCurrentContext;
 -(void)flushBuffer;
+-(void)setFontSize:(double)sz;
 @end

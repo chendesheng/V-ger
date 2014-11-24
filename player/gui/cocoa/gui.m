@@ -233,3 +233,10 @@ void addRecentOpenedFile(char* str) {
         NSString* filename = [NSString stringWithUTF8String:str];
         [[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
 }
+
+void setSubFontSize(void* wptr, double sz) {
+        if (sz == 0) sz = 25;
+
+        Window* w = (Window*)wptr;
+        [w->glView setFontSize:sz];
+}

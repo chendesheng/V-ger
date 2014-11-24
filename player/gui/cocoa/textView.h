@@ -13,6 +13,8 @@
 - (NSSize)sizeForWidth:(float)width
 				height:(float)height;
 
+- (id)initWithFrameAndSize:(NSRect)frame fontSize:(double)sz;
+
 - (void)setFontSize:(CGFloat)size;
 
 - (void)setText:(AttributedString*)items length:(int)len;

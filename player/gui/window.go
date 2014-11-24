@@ -444,3 +444,9 @@ func SendAddRecentOpenedFile(filename string) {
 		AddRecentOpenedFile(filename)
 	}
 }
+
+func SendSetSubFontSize(sz float64) {
+	w.chFunc <- func() {
+		w.SetSubFontSize(sz)
+	}
+}

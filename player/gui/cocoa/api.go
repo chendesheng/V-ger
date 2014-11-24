@@ -3,7 +3,10 @@ package cocoa
 // #include "gui.h"
 // #include <stdlib.h>
 import "C"
-import "unsafe"
+import (
+	"log"
+	"unsafe"
+)
 
 func Run() {
 	C.initialize()
@@ -142,6 +145,13 @@ func (w NativeWindow) Close() {
 func (w NativeWindow) FlushBuffer() {
 	C.flushBuffer(w.ptr)
 }
+
 func (w NativeWindow) MakeGLCurrentContext() {
 	C.makeCurrentContext(w.ptr)
+}
+
+func (w NativeWindow) SetSubFontSize(sz float64) {
+	log.Print("SetSubFontSize:", sz)
+
+	C.setSubFontSize(w.ptr, C.double(sz))
 }

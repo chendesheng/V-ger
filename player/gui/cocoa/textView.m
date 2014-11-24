@@ -14,11 +14,24 @@ int gNSStringGeometricsTypesetterBehavior = NSTypesetterLatestBehavior;
         [self setSelectable:NO];
         [self setBackgroundColor:[NSColor clearColor]];
         [self setAlignment:NSCenterTextAlignment];
-        [self setFontSize:25.0];
-        self->originalWindowWidth = 1280;//fontsize 35 in 1280 pixel
     }
     
     return self;
+}
+
+- (id)initWithFrameAndSize:(NSRect)frame fontSize:(double)sz {
+        [super initWithFrame:frame];
+        if (self) {
+                // Initialization code here.
+                [self setEditable:NO];
+                [self setSelectable:NO];
+                [self setBackgroundColor:[NSColor clearColor]];
+                [self setAlignment:NSCenterTextAlignment];
+                [self setFontSize:sz];
+
+                self->originalWindowWidth = 1280;
+        }
+        return self;
 }
 
 - (void)setFontSize:(CGFloat)size {
