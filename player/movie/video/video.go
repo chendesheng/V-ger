@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"runtime"
 	"time"
 	"vger/player/clock"
 	"vger/player/libav"
@@ -235,8 +234,6 @@ func (v *Video) FlushBuffer() {
 }
 
 func (v *Video) Play() {
-	runtime.LockOSThread()
-
 	defer func() {
 		if v.chQuitDone != nil {
 			close(v.chQuitDone)

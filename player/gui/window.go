@@ -145,7 +145,7 @@ func NewWindow(title string, width, height int) *Window {
 
 			displayingTexts: make(map[int]uintptr),
 			chFunc:          make(chan func()),
-			chImg:           make(chan []byte, 10),
+			chImg:           make(chan []byte),
 		},
 	}
 

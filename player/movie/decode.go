@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"runtime"
 	"time"
 	"vger/player/libav"
 	"vger/player/shared"
@@ -135,8 +134,6 @@ func (m *Movie) sendPacket(ch chan *libav.AVPacket, packet *libav.AVPacket) bool
 }
 
 func (m *Movie) decode() {
-	runtime.LockOSThread()
-
 	m.chHold = make(chan time.Duration)
 
 	defer func() {
