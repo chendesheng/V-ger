@@ -96,10 +96,6 @@ func (w *Window) SetSize(width, height int) {
 
 	log.Printf("set window size:%d %d", width, height)
 
-	if width%4 != 0 {
-		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
-	}
-
 	w.render = NewYUVRender(width, height)
 
 	w.originalWidth, w.originalHeight = width, height

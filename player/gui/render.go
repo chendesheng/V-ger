@@ -51,7 +51,7 @@ void main() {
 	float v = texture2D(tex_v, v_texcoord).r-128.0/255.0;
 
 	gl_FragColor = vec4(y, u, v, 1.0) * mat4(
-		1.16438356164384,  0			   ,  1.59602678571428, 0,
+		1.16438356164384,  0               ,  1.59602678571428, 0,
 		1.16438356164384, -0.39176229009491, -0.81296764723777, 0,
 		1.16438356164384,  2.01723214285714,  0               , 0,
 		0               ,  0               ,  0               , 1.0
@@ -155,6 +155,10 @@ func NewYUVRender(width, height int) imageRender {
 	shaderAttachFromFile(r.program, gl.VERTEX_SHADER, VSHADER)
 	r.program.Link()
 	r.program.Use()
+
+	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1) //This can fix crashes on some rare resolution video like 1916*796
+	//If image is 1916*796, then the U/V part's width is 1916/2=958 which is not 4 bit alignment
+	//Check more details: "Texture upload and pixel reads" section of https://www.opengl.org/wiki/Common_Mistakes
 
 	return &r
 }
