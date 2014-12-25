@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 	"vger/httpex"
 
-	"github.com/peterbourgon/html"
+	"vger/html"
 )
 
 // func Addic7edSubtitle(keywords string, quit chan struct{}) (name string, content string) {

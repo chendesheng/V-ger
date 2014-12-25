@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/peterbourgon/html"
+	"vger/html"
 
 	. "vger/player/shared"
 )

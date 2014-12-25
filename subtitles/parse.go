@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/peterbourgon/html"
+	"vger/html"
 )
 
 func attr2Map(attrs []html.Attribute) (m map[string]string) {

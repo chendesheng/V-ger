@@ -15,7 +15,7 @@ import (
 	"vger/task"
 	"vger/util"
 
-	"github.com/peterbourgon/html"
+	"vger/html"
 )
 
 func parseEpisodes(n *html.Node, season int, subscribeName string, format string, result *map[int]*task.Task) {

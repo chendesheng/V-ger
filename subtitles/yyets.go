@@ -7,7 +7,7 @@ import (
 	"strings"
 	"vger/httpex"
 
-	"github.com/peterbourgon/html"
+	"vger/html"
 )
 
 func yyetsParseSub(n *html.Node) Subtitle {
