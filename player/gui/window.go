@@ -18,7 +18,7 @@ type window struct {
 	FuncOnProgressChanged []func(int, float64)
 
 	chFunc chan func()
-	chImg  chan []byte
+	chDraw chan drawArg
 
 	chShowSpinning chan bool
 
@@ -40,6 +40,10 @@ type window struct {
 	chDelayForceShowSpinning chan struct{}
 
 	displayingTexts map[int]uintptr
+}
+type drawArg struct {
+	data []byte
+	res  chan struct{}
 }
 
 type imageRender interface {
@@ -141,7 +145,7 @@ func NewWindow(title string, width, height int) *Window {
 
 			displayingTexts: make(map[int]uintptr),
 			chFunc:          make(chan func()),
-			chImg:           make(chan []byte),
+			chDraw:          make(chan drawArg),
 		},
 	}
 
@@ -152,15 +156,17 @@ func NewWindow(title string, width, height int) *Window {
 
 	gl.Init()
 	gl.ClearColor(0, 0, 0, 1)
+
 	w.drawClear()
 
 	go func() {
 		runtime.LockOSThread()
 
-		for img := range w.chImg {
+		for input := range w.chDraw {
 			w.MakeGLCurrentContext()
-			w.draw(img, w.originalWidth, w.originalHeight)
+			w.draw(input.data, w.originalWidth, w.originalHeight)
 			w.FlushBuffer()
+			input.res <- struct{}{}
 		}
 	}()
 
@@ -397,7 +403,9 @@ func (w *Window) SendSetVolumeVisible(b bool) {
 
 func (w *Window) Draw(img []byte) {
 	if len(img) > 0 {
-		w.chImg <- img
+		res := make(chan struct{})
+		w.chDraw <- drawArg{img, res}
+		<-res
 	}
 }
 func (w *Window) drawClear() {
