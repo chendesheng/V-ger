@@ -51,4 +51,5 @@
 -(void)makeCurrentContext;
 -(void)flushBuffer;
 -(void)setFontSize:(double)sz;
+-(void)timerTick:(NSEvent *)event;
 @end
