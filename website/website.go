@@ -125,6 +125,7 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err)
 	}
 }
+
 func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if re := recover(); re != nil {
@@ -157,29 +158,21 @@ func newTaskHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("add download \"%s\".\nname: %s\n", url, name)
 
 		if t, err := task.GetTask(name); err == nil {
-			if t.Status == "New" {
-				t.URL = url
-				t.Size = size
-				t.DownloadedSize = 0
-				task.StartNewTask2(t)
-			} else if t.Status == "Finished" {
+			if t.Status == "Finished" {
 				w.Write([]byte("File has already been downloaded."))
-			} else {
+			} else if t.Status != "Downloading" && t.Status != "Stopped" {
 				if t.Status == "Deleted" {
 					log.Print("deleted task")
-
 					t.DownloadedSize = 0
 				}
 				t.URL = url
-				task.SaveTaskIgnoreErr(t)
-
-				log.Print("task already exists")
-				err := task.ResumeTask(name)
-				if err != nil {
-					log.Print(err)
+				t.Size = size
+				t.Status = "Stopped"
+				if err := task.SaveTask(t); err != nil {
+					writeError(w, err)
 				}
 			}
-		} else if err := task.StartNewTask(name, url, size); err != nil {
+		} else if err := task.NewTask(name, url, size, "Stopped"); err != nil {
 			writeError(w, err)
 		} else {
 			native.SendNotification("V'ger add task", name)

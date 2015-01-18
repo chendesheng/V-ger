@@ -6,6 +6,12 @@ import (
 	"vger/util"
 )
 
+func NewTask(name string, url string, size int64, status string) error {
+	t := newTask(name, url, size)
+	t.Status = status
+	return SaveTask(t)
+}
+
 func StartNewTask(name string, url string, size int64) error {
 	t := newTask(name, url, size)
 

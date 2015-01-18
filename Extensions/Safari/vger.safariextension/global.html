@@ -11,26 +11,28 @@ Global HTML Page to control the extension logic.
 // }
 // Function to perform when event is received
 
-safari.application.addEventListener("command", performCommand, false);
+safari.application.addEventListener('command', performCommand, false);
 function performCommand(event) {
+        command = event.command;
+        var verifycode = event.verifycode || '';
 	// Make sure event comes from the button
-	if (event.command == "download") {
+	if (event.command == 'download') {
 		console.log(currentLinkURL);
 
 		if (currentLinkURL.indexOf('lixian.vip.xunlei.com') != -1 ||
 			currentLinkURL.indexOf('youtube.com') != -1 || 
 			/.*dmg|.*zip|.*rar|.*exe$/.test(currentLinkURL)) {
-			post('/new/', currentLinkURL);
+                        post('/new', currentLinkURL);
 		} else {
 			var data = JSON.stringify({
-				"url": currentLinkURL,
-				"verifycode": ""
+				'url': currentLinkURL,
+				'verifycode': verifycode
 			});
 			post('/thunder/new', data, function (data) {
 				for (var i = 0; i < data.length; i++) {
 					var f = data[i];
 					if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
-						downloadFile(f);
+                                                post('/new/' + encodeURIComponent(f.Name), f.DownloadURL);
 						return;
 					}
 				}
@@ -38,17 +40,17 @@ function performCommand(event) {
 				alert(currentPage, 'Download fail.');
 			});
 		}
-	} else if (event.command == "play") {
+	} else if (event.command == 'play') {
 		var data = JSON.stringify({
-			"url": currentLinkURL,
-			"verifycode": ""
+			'url': currentLinkURL,
+			'verifycode': verifycode
 		});
 		post('/thunder/new', data, function (data) {
 			for (var i = 0; i < data.length; i++) {
 				var f = data[i];
 				if (f.Percent == 100 && /\.(mkv|avi|mp4|rmvb|rm|wmv)$/i.test(f.Name)) {
 					post('/new/' + encodeURIComponent(f.Name), f.DownloadURL, function() {
-						post('/play/' + encodeURIComponent(f.Name));
+                                                post('/play/' + encodeURIComponent(f.Name));
 					});
 					return;
 				}
@@ -61,27 +63,42 @@ function performCommand(event) {
 
 
 function alert(page, m) {
-	if (currentPage != null) {
-		page.dispatchMessage("alert", m);
+	if (page != null) {
+		page.dispatchMessage('alert', m);
 	}
 }
-function downloadFile(f) {
-	post('/new/' + encodeURIComponent(f.Name), f.DownloadURL, function(resp) {});
+
+function verifycode(page, ifneed) {
+        if (page != null) {
+                console.log('send verifycode message:'+ifneed);
+
+                if (ifneed) {
+                        page.dispatchMessage('verifycode', baseUrl+'/thunder/verifycode');
+                } else {
+                        //passed
+                        page.dispatchMessage('verifycode', '');
+                }
+        }
 }
 
 var currentLinkURL = "";
 var currentPage = null;
+var command = "";
 
 safari.application.addEventListener("message", handleMessage, false);
 function handleMessage (event) {
-	if (event.name == "contextmenu") {
+	if (event.name == 'contextmenu') {
 		currentLinkURL = event.message;
 		currentPage = event.target.page;
-	}
+        } else if (event.name == 'verifycode') {
+                console.log('receive verifycode message:'+event.message);
+
+                var verifycode = event.message;
+                performCommand({command:command, verifycode:verifycode});
+        }
 }
 
-
-var baseUrl = safari.extension.settings.server;//'http://localhost:9527';
+var baseUrl = safari.extension.settings.server;
 console.log(baseUrl);
 
 function post(path, data, success) {
@@ -98,8 +115,12 @@ function post(path, data, success) {
 	    if (success) {
 	    	if (!request.responseText) {
 	    		success("");
-	    	} else {
-		    	success(JSON.parse(request.responseText));
+                } else if (request.responseText == "Need verify code") {
+                        verifycode(currentPage, true);
+                } else {
+                        //passed don't need any more
+                        verifycode(currentPage, false);
+                        success(JSON.parse(request.responseText));
 	    	}
 	    }
 	};

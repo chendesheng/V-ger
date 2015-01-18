@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>chendesheng</string>
 	<key>Builder Version</key>
-	<string>8537.78.2</string>
+	<string>10600.2.5</string>
 	<key>CFBundleDisplayName</key>
 	<string>V'ger</string>
 	<key>CFBundleIdentifier</key>
@@ -50,6 +50,8 @@
 			</array>
 		</dict>
 	</dict>
+	<key>DeveloperIdentifier</key>
+	<string>S9Z7R4R86A</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>
