@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"regexp"
 	"strings"
@@ -18,23 +19,17 @@ func singleMd5(s string) string {
 	h.Write([]byte(s))
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
-func doubleMD5(p string) string {
-	return singleMd5(singleMd5(p))
-}
 
 var isLogined = false
 
 var UserName string
 var Password string
+var Gdriveid string
 
 func Login(quit chan struct{}) error {
-	config := util.ReadAllConfigs()
-	user := config["thunder-user"]
-	password := config["thunder-password"]
-
-	gdriveid, _, err := Login2(util.ReadConfig("gdriveid"), user, password, quit)
+	Gdriveid, _, err := Login2(Gdriveid, UserName, Password, quit)
 	if err == nil {
-		util.SaveConfig("gdriveid", gdriveid)
+		util.SaveConfig("gdriveid", Gdriveid)
 	}
 	return err
 }
@@ -64,7 +59,7 @@ func Login2(gdriveid string, user, password string, quit chan struct{}) (string,
 		return "", "", fmt.Errorf("Login faild")
 	}
 	verifyCode := args[1]
-	passwordMd5 := singleMd5(doubleMD5(password) + strings.ToUpper(verifyCode))
+	passwordMd5 := singleMd5(password + strings.ToUpper(verifyCode))
 
 	_, err = httpex.PostFormRespString("http://login.xunlei.com/sec2login/", nil,
 		&url.Values{
@@ -127,6 +122,9 @@ func setCookie(name, value string) {
 	}
 	cookies := []*http.Cookie{&cookie}
 	url, _ := url.Parse("http://lixian.vip.xunlei.com")
+	if http.DefaultClient.Jar == nil {
+		http.DefaultClient.Jar, _ = cookiejar.New(nil)
+	}
 	http.DefaultClient.Jar.SetCookies(url, cookies)
 
 	// http.DefaultClient.Get("http://lixian.vip.xunlei.com")

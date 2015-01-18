@@ -1,6 +1,7 @@
 package thunder
 
 import (
+	"fmt"
 	"regexp"
 	// "strconv"
 	"strings"
@@ -50,4 +51,15 @@ func TestDecodeFid2(t *testing.T) {
 	// if gcid != "4CBA1317934F7E60E4D293CAAE9C6B23A1FF1F3E" {
 	// 	t.Errorf("Expect gcid '4CBA1317934F7E60E4D293CAAE9C6B23A1FF1F3E', but '%s'", "", gcid)
 	// }
+}
+
+func TestMagnet(t *testing.T) {
+	UserName = ""
+	Password = ""
+
+	tks, err := NewTask("magnet:?xt=urn:btih:66883EE64827A8D7C4DD04209568D55F5BB7572A", "")
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Printf("tasks:%#v", tks)
 }

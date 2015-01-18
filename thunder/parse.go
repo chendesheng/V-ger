@@ -37,7 +37,7 @@ func getError(text string) error {
 	return errors.New(fmt.Sprintln("Unknown thunder server error"))
 }
 func parseUrlQueryResult(text string) (cid string, tsize string, btname string, size string, findex string) {
-	regexUrlQuery := regexp.MustCompile(`queryUrl\((-?[0-9]*),'([^']*)','([^']*)','([^']*)','([^']*)',new Array\((.+)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),'[^']*','[^']*'\)`)
+	regexUrlQuery := regexp.MustCompile(`queryUrl\((-?[0-9]*),'([^']*)','([^']*)','([^']*)','([^']*)',new Array\((.+)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),new Array\(([^)]*)\),'[^']*','[^']*'\)`)
 
 	args := make([]string, 0, 10)
 
@@ -51,6 +51,7 @@ func parseUrlQueryResult(text string) (cid string, tsize string, btname string, 
 	for _, s := range matches[1:] {
 		args = append(args, strings.TrimSpace(s))
 	}
+	log.Printf("parseUrlQueryResult:%v", args)
 
 	sizeList := strings.Split(args[7], ",")
 	trimStringSlice(&sizeList, " '")
@@ -108,7 +109,6 @@ func parseNewlyCreateTask(text string) map[string]interface{} {
 	regexUrl := regexp.MustCompile(`("id":"[0-9]*").*("filesize":"[^"]*").*("cid":"[^"]*").*("taskname":"[^"]*").*("lixian_url":"[^"]*")`)
 
 	if matches := regexUrl.FindStringSubmatch(text); matches != nil {
-
 		jsonStr := "{" + strings.Join(matches[1:], ",") + "}"
 		log.Println(jsonStr)
 
@@ -118,7 +118,6 @@ func parseNewlyCreateTask(text string) map[string]interface{} {
 		}
 		return r.(map[string]interface{})
 	} else {
-		log.Println("parseNewlyCreateTask")
 		panic(fmt.Errorf("Parse unexpected response: %s", text))
 	}
 }

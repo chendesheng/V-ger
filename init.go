@@ -1,8 +1,6 @@
 package main
 
 import (
-
-	// "cocoa/cookiejar"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -39,6 +37,10 @@ func init() {
 	transport := http.DefaultTransport.(*http.Transport)
 	transport.ResponseHeaderTimeout = networkTimeout
 	transport.MaxIdleConnsPerHost = 3
+
+	thunder.UserName = util.ReadConfig("thunder-user")
+	thunder.Password = util.ReadConfig("thunder-password")
+	thunder.Gdriveid = util.ReadConfig("gdriveid")
 
 	go func() {
 		err := thunder.Login(nil)

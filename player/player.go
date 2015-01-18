@@ -14,6 +14,7 @@ import (
 	"vger/logger"
 	"vger/player/gui"
 	"vger/player/movie"
+	"vger/thunder"
 	"vger/util"
 )
 
@@ -202,7 +203,9 @@ func main() {
 
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
-	util.SetCookie("gdriveid", util.ReadConfig("gdriveid"), "http://xunlei.com")
+	thunder.UserName = util.ReadConfig("thunder-user")
+	thunder.Password = util.ReadConfig("thunder-password")
+	thunder.Gdriveid = util.ReadConfig("gdriveid")
 
 	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	transport := http.DefaultTransport.(*http.Transport)
