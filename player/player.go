@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	_ "net/http/pprof"
 	"path"
 	"runtime"
@@ -206,6 +207,13 @@ func main() {
 	thunder.UserName = util.ReadConfig("thunder-user")
 	thunder.Password = util.ReadConfig("thunder-password")
 	thunder.Gdriveid = util.ReadConfig("gdriveid")
+
+	if http.DefaultClient.Jar == nil {
+		http.DefaultClient.Jar, _ = cookiejar.New(nil)
+	}
+
+	log.Print("gdriveid:", thunder.Gdriveid)
+	util.SetCookie("gdriveid", thunder.Gdriveid, "http://xunlei.com")
 
 	networkTimeout := time.Duration(util.ReadIntConfig("network-timeout")) * time.Second
 	transport := http.DefaultTransport.(*http.Transport)
