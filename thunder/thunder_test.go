@@ -63,3 +63,9 @@ func TestMagnet(t *testing.T) {
 	}
 	fmt.Printf("tasks:%#v", tks)
 }
+
+func TestCheckSessionTimeout(t *testing.T) {
+	if !checkSessionTimeout("document.cookie =\"sessionid=; path=/; domain=xunlei.com\"; document.cookie =\"lx_sessionid=; path=/; domain=vip.xunlei.com\";top.location='http://lixian.vip.xunlei.com/task.html?error=1'") {
+		t.Error("should return true")
+	}
+}

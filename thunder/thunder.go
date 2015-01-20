@@ -2,6 +2,7 @@ package thunder
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,36 +16,38 @@ import (
 	"vger/httpex"
 )
 
+var ErrSessionTimeout = errors.New("Thunder session timeout")
+
 func NewTask(taskURL string, verifyCode string) ([]ThunderTask, error) {
-	err := Login(nil)
-	if err != nil {
-		return nil, err
-	} else {
-		log.Println("Thunder login success.")
-	}
-
-	log.Println("thunder new task: ", taskURL)
-
-	taskType, torrent := getTaskType(taskURL)
-	userId := getCookieValue("userid")
-
-	if taskType == 4 {
-		if err := btTaskCommit(userId, taskURL, verifyCode); err != nil {
-			return nil, err
-		}
-	} else if taskType == 1 {
-		err := uploadTorrent(torrent, userId, verifyCode)
+	for {
+		err := Login(nil)
 		if err != nil {
 			return nil, err
+		} else {
+			log.Println("Thunder login success.")
 		}
 
-	} else {
-		if err := taskCommit(userId, taskURL, taskType, verifyCode); err != nil {
+		log.Println("thunder new task: ", taskURL)
+
+		taskType, torrent := getTaskType(taskURL)
+		userId := getCookieValue("userid")
+
+		if taskType == 4 {
+			err = btTaskCommit(userId, taskURL, verifyCode)
+		} else if taskType == 1 {
+			err = uploadTorrent(torrent, userId, verifyCode)
+		} else {
+			err = taskCommit(userId, taskURL, taskType, verifyCode)
+		}
+
+		if err == ErrSessionTimeout {
+			isLogined = false
+		} else if err != nil {
 			return nil, err
+		} else {
+			return getNewlyCreateTask(userId)
 		}
 	}
-
-	return getNewlyCreateTask(userId)
 }
 
 // func GetUserId() (string, error) {
@@ -80,6 +83,10 @@ func uploadTorrent(torrent []byte, userId string, verifycode string) error {
 	text, err := uploadTorrentFile(torrent)
 	if err != nil {
 		return err
+	}
+
+	if checkSessionTimeout(text) {
+		return ErrSessionTimeout
 	}
 
 	result, err := parseUploadTorrentResutl(text)
@@ -145,6 +152,10 @@ func taskCommit(userId string, taskURL string, taskType int, verifyCode string) 
 		return err
 	}
 
+	if checkSessionTimeout(text) {
+		return ErrSessionTimeout
+	}
+
 	cid, gcid, size, t, err := parseTaskCheck(text)
 	if err != nil {
 		log.Print(err)
@@ -197,8 +208,16 @@ func uploadTorrentFile(torrent []byte) (string, error) {
 
 	return "", err
 }
-func btTaskCommit(userId string, taskURL string, verifycode string) error {
 
+func checkSessionTimeout(resp string) bool {
+	b, _ := regexp.MatchString("document[.]cookie\\s*=\\s*\"sessionid=;", resp)
+	log.Printf("checkSessionTimeout:%s, %s", resp, b)
+	return b
+	//session timeout response text:
+	//document.cookie ="sessionid=; path=/; domain=xunlei.com"; document.cookie ="lx_sessionid=; path=/; domain=vip.xunlei.com";top.location='http://lixian.vip.xunlei.com/task.html?error=1'
+}
+
+func btTaskCommit(userId string, taskURL string, verifycode string) error {
 	text, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/interface/url_query", &url.Values{
 		"u":        {taskURL},
 		"callback": {"queryUrl"},
@@ -207,7 +226,14 @@ func btTaskCommit(userId string, taskURL string, verifycode string) error {
 		return err
 	}
 
+	if checkSessionTimeout(text) {
+		return ErrSessionTimeout
+	}
+
 	cid, tsize, btname, size, findex := parseUrlQueryResult(text)
+	if err != nil {
+		return err
+	}
 
 	// if cid == "" {
 	// 	return fmt.Errorf("Commit bt task error, try again later.")
