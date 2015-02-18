@@ -1,7 +1,7 @@
 angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 	function($scope, $http) {
 		function monitor(path, ondata, onclose, onerror) {
-			var websocket = new WebSocket('ws://localhost:9527/' + path);
+			var websocket = new WebSocket('ws://192.168.0.110:9527/' + path);
 
 			websocket.onopen = onOpen;
 			websocket.onclose = onClose;
@@ -559,7 +559,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 		$scope.go = function() {
 			$scope.waiting = true
 
-			if (/www.yyets.com\/(php\/)?resource\/[0-9+]/.test($scope.new_url)) {
+			if (/www.zimuzu.tv\/(php\/)?resource\/[0-9+]/.test($scope.new_url)) {
 				$scope.new_subscribe($scope.new_url);
 			} else if (/.+\:\/\/.+|^magnet\:\?.+/.test($scope.new_url)) {
 				new_task($scope.new_url);

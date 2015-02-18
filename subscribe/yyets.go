@@ -199,27 +199,29 @@ func YYetsLogin(name string, password string) {
 	}
 
 	data := url.Values{
-		"type":     []string{"nickname"},
+		"url_back": []string{""},
+		"from":     []string{"loginpage"},
 		"account":  []string{name},
 		"password": []string{password},
 		"remember": []string{"1"},
 	}
 
-	resp, err := http.PostForm("http://www.yyets.com/user/login/ajaxLogin", data)
+	resp, err := http.PostForm("http://www.zimuzu.tv/user/login/ajaxlogin", data)
 	if err != nil {
 		log.Print(err)
 	} else {
 		log.Print("YYets login success")
 	}
+	bytes, _ := httputil.DumpResponse(resp, false)
+	log.Print(string(bytes))
 
 	resp.Body.Close()
 }
 
 func YYetsIfLogined() bool {
-	u, _ := url.Parse("http://www.yyets.com")
+	u, _ := url.Parse("http://www.zimuzu.tv")
 	cookies := http.DefaultClient.Jar.Cookies(u)
 	for _, c := range cookies {
-		fmt.Printf("%#v\n", c)
 		if c.Name == "GINFO" && strings.HasPrefix(c.Value, "uid") {
 			return true
 		}

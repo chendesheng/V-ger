@@ -18,7 +18,7 @@ func yyetsParseSub(n *html.Node) Subtitle {
 	pageUrl := getAttr(a, "href")
 	id := pageUrl[strings.LastIndex(pageUrl, "/")+1:]
 
-	sub.URL = "http://www.yyets.com/subtitle/index/download?id=" + id
+	sub.URL = "http://www.zimuzu.tv/subtitle/index/download?id=" + id
 
 	text := getRidOfTags(a)
 	regClean := regexp.MustCompile("([[][^]]*[]])")
@@ -38,7 +38,7 @@ type yyetsSearch struct {
 func (y *yyetsSearch) search(result chan Subtitle) error {
 	log.Printf("YYets search subtitle: %s %d", y.name, y.maxcnt)
 
-	resp, err := httpex.Get("http://www.yyets.com/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
+	resp, err := httpex.Get("http://www.zimuzu.tv/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (y *yyetsSearch) search(result chan Subtitle) error {
 	f = func(n *html.Node) {
 		if n.Data == "ul" {
 			if hasClass(n, "allsearch") {
-				for _, c := range getTag(n, "li")[1:] { //skip first item, first item is ad
+				for _, c := range getTag(n, "li") { //skip first item, first item is ad
 					s := yyetsParseSub(c)
 
 					select {
