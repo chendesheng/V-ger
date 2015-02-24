@@ -17,7 +17,7 @@ type Audio struct {
 	stream      libav.AVStream
 	frame       libav.AVFrame
 
-	ChPackets   chan *libav.AVPacket
+	ChPackets   chan libav.AVPacket
 	audioBuffer *sampleBuffer
 
 	skipBytes int
@@ -43,7 +43,7 @@ func NewAudio(c *clock.Clock, volume int) *Audio {
 
 	a.frame = libav.AllocFrame()
 	a.resampleCtx = resampleCtx
-	a.ChPackets = make(chan *libav.AVPacket, 500)
+	a.ChPackets = make(chan libav.AVPacket, 500)
 	a.c = c
 	a.driver = &portAudio{volume: volume}
 	a.audioBuffer = &sampleBuffer{}
@@ -53,7 +53,7 @@ func (a *Audio) StreamIndex() int {
 	return a.stream.Index()
 }
 
-func (a *Audio) receivePacket() (*libav.AVPacket, bool) {
+func (a *Audio) receivePacket() (libav.AVPacket, bool) {
 	select {
 	case packet, ok := <-a.ChPackets:
 		return packet, ok
@@ -62,7 +62,7 @@ func (a *Audio) receivePacket() (*libav.AVPacket, bool) {
 			close(a.chQuitDone)
 			a.chQuitDone = nil
 		}
-		return nil, false
+		return libav.AVPacket{}, false
 	}
 }
 
@@ -94,7 +94,7 @@ func (a *Audio) sync(pts time.Duration) {
 	}
 }
 
-func (a *Audio) getPts(packet *libav.AVPacket) time.Duration {
+func (a *Audio) getPts(packet libav.AVPacket) time.Duration {
 	var pts time.Duration
 	if packet.Pts() != libav.AV_NOPTS_VALUE {
 		pts = time.Duration(float64(packet.Pts()) * a.stream.Timebase().Q2D() * (float64(time.Second)))
@@ -103,7 +103,10 @@ func (a *Audio) getPts(packet *libav.AVPacket) time.Duration {
 }
 
 //decode one packet
-func (a *Audio) decode(packet *libav.AVPacket) {
+func (a *Audio) decode(packet libav.AVPacket) {
+	defer packet.Free()
+	defer packet.FreePacket()
+
 	pts := a.getPts(packet)
 	//log.Print("audio package pts: ", pts.String())
 
@@ -174,7 +177,6 @@ func (a *Audio) Open(stream libav.AVStream) error {
 			for a.audioBuffer.empty() {
 				if packet, ok := a.receivePacket(); ok {
 					a.decode(packet)
-					packet.Free()
 				} else {
 					//can't receive more packets
 					// log.Print("No more audio packets.")
@@ -205,6 +207,7 @@ func (a *Audio) FlushBuffer() {
 	for {
 		select {
 		case p := <-a.ChPackets:
+			p.FreePacket()
 			p.Free()
 			break
 		default:

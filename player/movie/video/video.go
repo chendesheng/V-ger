@@ -36,7 +36,7 @@ type Video struct {
 	c             *clock.Clock
 
 	// ChanDecoded chan *VideoFrame
-	ChPackets chan *libav.AVPacket
+	ChPackets chan libav.AVPacket
 
 	flushQuit  chan struct{}
 	quit       chan struct{}
@@ -130,7 +130,7 @@ func NewVideo(formatCtx libav.AVFormatContext, stream libav.AVStream, c *clock.C
 	v.frame = libav.AllocFrame()
 	v.c = c
 
-	v.ChPackets = make(chan *libav.AVPacket, 200)
+	v.ChPackets = make(chan libav.AVPacket, 200)
 	v.flushQuit = make(chan struct{})
 	v.quit = make(chan struct{})
 	v.chHold = make(chan struct{})
@@ -140,7 +140,7 @@ func NewVideo(formatCtx libav.AVFormatContext, stream libav.AVStream, c *clock.C
 	return v, nil
 }
 
-func (v *Video) Decode(packet *libav.AVPacket) (bool, time.Duration) {
+func (v *Video) Decode(packet libav.AVPacket) (bool, time.Duration) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0
 	}
@@ -203,7 +203,7 @@ func (v *Video) Seek(t time.Duration) (time.Duration, []byte, error) {
 	}
 }
 
-func (v *Video) DecodeAndScale(packet *libav.AVPacket) (bool, time.Duration, []byte) {
+func (v *Video) DecodeAndScale(packet libav.AVPacket) (bool, time.Duration, []byte) {
 	if v.stream.Index() != packet.StreamIndex() {
 		return false, 0, nil
 	}
@@ -223,6 +223,7 @@ func (v *Video) FlushBuffer() {
 	for {
 		select {
 		case packet := <-v.ChPackets:
+			packet.FreePacket()
 			packet.Free()
 			break
 		default:
@@ -248,8 +249,8 @@ func (v *Video) Play() {
 		case packet := <-v.ChPackets:
 			v.r.SendHideSpinning(false)
 			//error happens, wait until package come
-			if packet == nil {
-				for packet == nil {
+			if packet.IsNil() {
+				for packet.IsNil() {
 					select {
 					case packet = <-v.ChPackets:
 					case <-v.chHold:
@@ -274,6 +275,7 @@ func (v *Video) Play() {
 					v.c.AddTime(-d)
 				}
 
+				packet.FreePacket()
 				packet.Free()
 
 				// log.Printf("playing:%s,%s", pts.String(), v.c.GetTime())
@@ -339,42 +341,44 @@ func (v *Video) Unhold() {
 }
 
 func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
-	packet := libav.AVPacket{}
+	packet := libav.NewAVPacket()
+	defer packet.Free()
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
 
 	errCode := 0
 	for {
-		errCode = ctx.ReadFrame(&packet)
+		errCode = ctx.ReadFrame(packet)
 		if errCode < 0 {
 			break
 		}
 
-		if frameFinished, pts := v.Decode(&packet); frameFinished {
-			packet.Free()
+		if frameFinished, pts := v.Decode(packet); frameFinished {
+			packet.FreePacket()
 
 			pic := frame.Picture()
 			obj := v.imageData
 			pic.Layout(libav.AV_PIX_FMT_YUV420P, width, height, *obj)
 			return pts, obj.Bytes(), nil
 		} else {
-			packet.Free()
+			packet.FreePacket()
 		}
 	}
 
 	return 0, nil, fmt.Errorf("read frame error: %x", errCode)
 }
 func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
-	packet := libav.AVPacket{}
+	packet := libav.NewAVPacket()
+	defer packet.Free()
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
-	for ctx.ReadFrame(&packet) >= 0 {
-		if frameFinished, pts := v.Decode(&packet); frameFinished {
+	for ctx.ReadFrame(packet) >= 0 {
+		if frameFinished, pts := v.Decode(packet); frameFinished {
 
 			// log.Print("pts:", pts.String())
-			packet.Free()
+			packet.FreePacket()
 
 			if t-pts < 0*time.Millisecond {
 				pic := frame.Picture()
@@ -383,7 +387,7 @@ func (v *Video) DropFramesUtil(t time.Duration) (time.Duration, []byte, error) {
 				return pts, obj.Bytes(), nil
 			}
 		} else {
-			packet.Free()
+			packet.FreePacket()
 		}
 	}
 

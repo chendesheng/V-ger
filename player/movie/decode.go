@@ -114,7 +114,7 @@ func (m *Movie) playNextEpisode() bool {
 	return false
 }
 
-func (m *Movie) sendPacket(ch chan *libav.AVPacket, packet *libav.AVPacket) bool {
+func (m *Movie) sendPacket(ch chan libav.AVPacket, packet libav.AVPacket) bool {
 	select {
 	case ch <- packet:
 		return true
@@ -208,27 +208,27 @@ func (m *Movie) decode() {
 			}
 		}
 
-		packet := libav.AVPacket{}
-		resCode := ctx.ReadFrame(&packet)
+		packet := libav.NewAVPacket()
+		resCode := ctx.ReadFrame(packet)
 		if resCode >= 0 {
 			if m.v.StreamIndex == packet.StreamIndex() {
-				if m.sendPacket(m.v.ChPackets, &packet) {
+				if m.sendPacket(m.v.ChPackets, packet) {
 					continue
 				}
 			}
 
 			if m.a != nil {
 				if m.a.StreamIndex() == packet.StreamIndex() {
-					if m.sendPacket(m.a.ChPackets, &packet) {
+					if m.sendPacket(m.a.ChPackets, packet) {
 						continue
 					}
 				}
 			}
-
+			packet.FreePacket()
 			packet.Free()
 		} else {
 			select {
-			case m.v.ChPackets <- nil:
+			case m.v.ChPackets <- libav.AVPacket{}:
 			case <-m.quit:
 				return
 			}

@@ -109,7 +109,7 @@ func (ctx AVFormatContext) Stream(i int) AVStream {
 
 	return AVStream{ptr: streams[i]}
 }
-func (ctx *AVFormatContext) ReadFrame(packet *AVPacket) int {
+func (ctx *AVFormatContext) ReadFrame(packet AVPacket) int {
 	return int(C.av_read_frame(ctx.ptr, packet.pointer()))
 }
 func (ctx AVFormatContext) SeekFrame2(stream AVStream, t time.Duration, flags int) error {
