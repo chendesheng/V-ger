@@ -126,7 +126,8 @@ func (a *Audio) decode(packet libav.AVPacket) {
 			}
 			packet.DecodeSize(size)
 		} else {
-			log.Print("audio decode error")
+			//size < 0 means an error occurred during decoding
+			log.Print("audio decode error:", size)
 			break
 		}
 	}

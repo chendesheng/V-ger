@@ -149,7 +149,12 @@ func (v *Video) Decode(packet libav.AVPacket) (bool, time.Duration) {
 	frame := v.frame
 
 	v.global_pts = packet.Pts()
-	frameFinished := codec.DecodeVideo(frame, packet)
+	frameFinished, errno := codec.DecodeVideo(frame, packet)
+
+	if errno != 0 {
+		log.Print("decode video error:", errno)
+		return false, 0
+	}
 
 	if frameFinished {
 		pts := v.guessCorrectPts(frame.Pts(), frame.Dts())
@@ -343,6 +348,7 @@ func (v *Video) Unhold() {
 func (v *Video) ReadOneFrame() (time.Duration, []byte, error) {
 	packet := libav.NewAVPacket()
 	defer packet.Free()
+
 	ctx := v.formatCtx
 	width, height := v.Width, v.Height
 	frame := v.frame
