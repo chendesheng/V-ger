@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 	"vger/block"
+	"vger/download"
 	"vger/player/clock"
 	"vger/player/gui"
 	"vger/player/libav"
@@ -37,6 +38,7 @@ type Movie struct {
 	audioStreams []libav.AVStream
 
 	httpBuffer *buffer
+	streaming  *download.Streaming
 
 	chSeek     chan *seekArg
 	chHold     chan time.Duration
@@ -253,6 +255,7 @@ func (m *Movie) Close() {
 
 	if m.httpBuffer != nil {
 		m.httpBuffer.Close()
+		m.streaming.Stop()
 	}
 
 	<-m.finishClose

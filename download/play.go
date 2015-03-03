@@ -65,7 +65,9 @@ func (s *Streaming) closeReplaceQuit(newQuit chan struct{}) {
 func (s *Streaming) Stop() {
 	log.Print("Stop Streaming")
 
-	s.closeReplaceQuit(nil)
+	if s.quit != nil {
+		s.closeReplaceQuit(nil)
+	}
 }
 
 func NewStreaming(url string, size int64, w WriterAtQuit, sm SpeedMonitor) *Streaming {

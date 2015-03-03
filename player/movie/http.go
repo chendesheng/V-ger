@@ -39,6 +39,7 @@ func (m *Movie) openHttp(file string) (libav.AVFormatContext, string, error) {
 	buf.Malloc(1024 * 64)
 
 	streaming := download.NewStreaming(url, size, m.httpBuffer, m)
+	m.streaming = streaming
 
 	ioctx := libav.NewAVIOContext(buf, func(buf libav.AVObject) int {
 		if buf.Size() == 0 {
