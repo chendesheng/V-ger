@@ -161,3 +161,29 @@ func TestSelectSorted2(t *testing.T) {
 		t.Errorf("Expect 2,3 but %s,%s", a.Name, b.Name)
 	}
 }
+
+func TestSort(t *testing.T) {
+	subs := make([]*Subtitle, 0, 10)
+
+	subs = append(subs, &Subtitle{
+		Name:     "house.of.cards.2013.s03e10.720p.webrip.x264",
+		Lang1:    "cn",
+		Lang2:    "en",
+		Type:     "ass",
+		Distance: 11,
+	})
+
+	subs = append(subs, &Subtitle{
+		Name:     "House.of.Cards.S03E10.720p.WEBRip.DD5.1.x264",
+		Lang1:    "cn",
+		Lang2:    "en",
+		Type:     "srt",
+		Distance: 0,
+	})
+
+	sort.Sort(Subtitles(subs))
+
+	if subs[0].Distance != 0 {
+		t.Errorf("first sub's distance: expect %d but %d", 0, subs[0].Distance)
+	}
+}

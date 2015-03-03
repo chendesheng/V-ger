@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 	"vger/download"
 	"vger/player/shared"
@@ -122,8 +123,9 @@ func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
 			name := path.Base(filename)
 
 			// lang1, lang2 := cld.DetectLanguage2(utf8Text)
-			log.Printf("insert subtitle %s", name)
-			shared.InsertSubtitle(&shared.Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", ""})
+			dis := getNameDistance(name, movieName)
+			log.Printf("insert subtitle %s, dis:%d", name, dis)
+			shared.InsertSubtitle(&shared.Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", "", dis})
 		} else {
 			log.Print(err)
 		}
@@ -249,5 +251,56 @@ func (m *Movie) setupSubtitles(subs map[string]*shared.Sub) {
 		sort.Sort(subtitle.Subtitles(m.subs))
 
 		m.setupDefaultSubtitles()
+	}
+}
+
+func getNameDistance(from, to string) int {
+	if i := strings.LastIndex(from, "-"); i >= 0 {
+		from = from[:i]
+	}
+
+	if i := strings.LastIndex(to, "-"); i >= 0 {
+		to = to[:i]
+	}
+
+	return levenshtein(from, to)
+}
+
+//This version uses dynamic programming with time complexity of O(mn) where m and n are lengths of a and b,
+//	and the space complexity is n+1 of integers plus some constant space(i.e. O(n)).
+//copy from:
+//http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Go
+func levenshtein(a, b string) int {
+	f := make([]int, utf8.RuneCountInString(b)+1)
+
+	for j := range f {
+		f[j] = j
+	}
+
+	for _, ca := range a {
+		j := 1
+		fj1 := f[0] // fj1 is the value of f[j - 1] in last iteration
+		f[0]++
+		for _, cb := range b {
+			mn := minint(f[j]+1, f[j-1]+1) // delete & insert
+			if unicode.ToLower(cb) != unicode.ToLower(ca) {
+				mn = minint(mn, fj1+1) // change
+			} else {
+				mn = minint(mn, fj1) // matched
+			}
+
+			fj1, f[j] = f[j], mn // save f[j] to fj1(j is about to increase), update f[j] to mn
+			j++
+		}
+	}
+
+	return f[len(f)-1]
+}
+
+func minint(a, b int) int {
+	if a <= b {
+		return a
+	} else {
+		return b
 	}
 }

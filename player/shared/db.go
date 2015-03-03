@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"fmt"
 	"log"
 	"time"
 	"vger/dbHelper"
@@ -8,11 +9,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var subFields = "Movie, Name, Offset, Content, Type, Lang1, Lang2, Distance"
+
 func scanSub(scanner dbHelper.RowScanner) (*Sub, error) {
 	var sub Sub
 
 	var offset int64
-	err := scanner.Scan(&sub.Movie, &sub.Name, &offset, &sub.Content, &sub.Type, &sub.Lang1, &sub.Lang2)
+	err := scanner.Scan(&sub.Movie, &sub.Name, &offset, &sub.Content, &sub.Type, &sub.Lang1, &sub.Lang2, &sub.Distance)
 	if err == nil {
 		sub.Offset = time.Duration(offset)
 		return &sub, nil
@@ -26,7 +29,7 @@ func GetSubtitles(movie string) []*Sub {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
 
-	sql := `select Movie, Name, Offset, Content, Type, Lang1, Lang2 from subtitle where Movie=?`
+	sql := fmt.Sprintf("select %s from subtitle where Movie=?", subFields)
 	rows, err := db.Query(sql, movie)
 	if err != nil {
 		log.Print(err)
@@ -49,7 +52,7 @@ func GetSubtitlesMap(movie string) map[string]*Sub {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
 
-	sql := `select Movie, Name, Offset, Content, Type, Lang1, Lang2 from subtitle where Movie=?`
+	sql := fmt.Sprintf("select %s from subtitle where Movie=?", subFields)
 	rows, err := db.Query(sql, movie)
 	if err != nil {
 		log.Print(err)
@@ -72,7 +75,7 @@ func GetSubtitle(name string) *Sub {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
 
-	sql := `select Movie, Name, Offset, Content, Type, Lang1, Lang2 from subtitle where Name=?`
+	sql := fmt.Sprintf("select %s from subtitle where Name=?", subFields)
 	rows, err := db.Query(sql, name)
 	if err != nil {
 		log.Print(err)
@@ -99,8 +102,8 @@ func InsertSubtitle(sub *Sub) {
 		log.Print(err)
 	}
 	if count == 0 {
-		sql := "insert into subtitle(Movie, Name, Offset, Content, Type, Lang1, Lang2) values (?,?,?,?,?,?,?)"
-		_, err := db.Exec(sql, sub.Movie, sub.Name, sub.Offset, sub.Content, sub.Type, sub.Lang1, sub.Lang2)
+		sql := fmt.Sprintf("insert into subtitle(%s) values (?,?,?,?,?,?,?,?)", subFields)
+		_, err := db.Exec(sql, sub.Movie, sub.Name, sub.Offset, sub.Content, sub.Type, sub.Lang1, sub.Lang2, sub.Distance)
 		if err != nil {
 			log.Print(err)
 		}

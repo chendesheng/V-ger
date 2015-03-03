@@ -10,11 +10,13 @@ func (s Subtitles) Less(i, j int) bool {
 	a := s[i]
 	b := s[j]
 
-	c := compareLang(a.Lang1, a.Lang2, b.Lang1, b.Lang2)
-	if c != 0 {
-		return c > 0
-	} else {
-		c = compareType(a.Type, b.Type)
+	compares := []int{
+		compareLang(a.Lang1, a.Lang2, b.Lang1, b.Lang2),
+		compareDistance(a.Distance, b.Distance),
+		compareType(a.Type, b.Type),
+	}
+
+	for _, c := range compares {
 		if c != 0 {
 			return c > 0
 		}
@@ -94,6 +96,7 @@ func compareLang(a1, a2, b1, b2 string) int {
 	}
 	return 1
 }
+
 func compareType(a, b string) int {
 	if a == b {
 		return 0
@@ -101,5 +104,18 @@ func compareType(a, b string) int {
 		return 1
 	} else {
 		return -1
+	}
+}
+
+func compareDistance(a, b int) int {
+	switch {
+	case a == b:
+		return 0
+	case a < b:
+		return 1
+	case a > b:
+		return -1
+	default:
+		return 0
 	}
 }

@@ -47,6 +47,8 @@ type Sub struct {
 
 	Lang1 string //one subtitle file may has double languages
 	Lang2 string
+
+	Distance int //edit distance between subtitle name and movie name
 }
 
 type Playing struct {

@@ -25,14 +25,16 @@ type subTimeArg struct {
 type Subtitle struct {
 	sync.Mutex
 
-	r          SubRender
-	items      *subItems
-	offset     time.Duration
-	Name       string
-	IsMainSub  bool
-	Lang1      string //one subtitle file may has two languages
-	Lang2      string
-	Type       string
+	r         SubRender
+	items     *subItems
+	offset    time.Duration
+	Name      string
+	IsMainSub bool
+	Lang1     string //one subtitle file may has two languages
+	Lang2     string
+	Type      string
+	Distance  int
+
 	displaying map[int]*SubItem
 }
 
@@ -144,6 +146,7 @@ func NewSubtitle(sub *Sub, r SubRender, width, height float64) *Subtitle {
 	s.Lang1 = sub.Lang1
 	s.Lang2 = sub.Lang2
 	s.displaying = make(map[int]*SubItem)
+	s.Distance = sub.Distance
 
 	s.Type = sub.Type
 
