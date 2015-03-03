@@ -336,10 +336,18 @@ func (m *Movie) GetAllAudioTracks() (names []string) {
 		for i, stream := range m.audioStreams {
 			dic := stream.MetaData()
 			mp := dic.Map()
-			title := mp["title"]
-			language := strings.ToLower(mp["language"])
+			title := strings.TrimSpace(mp["title"])
+			language := strings.TrimSpace(strings.ToLower(mp["language"]))
 
-			names[i] = fmt.Sprintf("[%s] %s", language, title)
+			if len(title) == 0 && len(language) == 0 {
+				names[i] = fmt.Sprintf("Track %d", i+1)
+			} else if len(language) > 0 {
+				names[i] = fmt.Sprintf("Track %d [%s]", i+1, language)
+			} else if len(title) > 0 {
+				names[i] = fmt.Sprintf("Track %d - %s", i+1, title)
+			} else {
+				names[i] = fmt.Sprintf("Track %d [%s] - %s", i+1, title, language)
+			}
 		}
 	}
 	return
