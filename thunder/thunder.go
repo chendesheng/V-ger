@@ -211,7 +211,7 @@ func uploadTorrentFile(torrent []byte) (string, error) {
 
 func checkSessionTimeout(resp string) bool {
 	b, _ := regexp.MatchString("document[.]cookie\\s*=\\s*\"sessionid=;", resp)
-	log.Printf("checkSessionTimeout:%s, %s", resp, b)
+	log.Printf("checkSessionTimeout:%s, %t", resp, b)
 	return b
 	//session timeout response text:
 	//document.cookie ="sessionid=; path=/; domain=xunlei.com"; document.cookie ="lx_sessionid=; path=/; domain=vip.xunlei.com";top.location='http://lixian.vip.xunlei.com/task.html?error=1'
