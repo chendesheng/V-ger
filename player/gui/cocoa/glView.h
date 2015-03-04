@@ -2,7 +2,6 @@
 #import "gui.h"
 #import "progressView.h"
 #import "textView.h"
-#import "startupView.h"
 #import "blurView.h"
 #import "titleTextView.h"
 #import "spinningView.h"
