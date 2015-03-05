@@ -136,10 +136,16 @@ func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
 func downloadSubs(movieName string, url string, search string, quit chan struct{}) {
 	chSubs := make(chan subtitles.Subtitle)
 
-	dir := path.Join(util.ReadConfig("dir"), "subs", movieName)
+	dir := path.Join("/tmp/vgersubs", movieName)
 	go subtitles.SearchSubtitles(search, url, chSubs, quit)
 
-	err, _ := util.MakeSurePathExists(dir)
+	err, _ := util.MakeSurePathExists("/tmp/vgersubs")
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	err, _ = util.MakeSurePathExists(dir)
 	if err != nil {
 		log.Print(err)
 		return
