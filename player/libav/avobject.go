@@ -8,10 +8,7 @@ package libav
 //	memcpy(p+offset, source, len);
 //}
 import "C"
-import (
-	"reflect"
-	"unsafe"
-)
+import "unsafe"
 
 type AVObject struct {
 	ptr    unsafe.Pointer
@@ -60,17 +57,11 @@ func (obj *AVObject) SetOptInt(name string, value int64, searchFlags int) int {
 }
 
 func (obj *AVObject) Bytes() []byte {
-	var bytes []byte
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&bytes))
-	if obj.size > 0 {
-		header.Len = obj.size
-	} else {
-		header.Len = (1 << 31)
+	if obj.size <= 0 {
+		return nil
 	}
-	header.Cap = header.Len
-	header.Data = uintptr(obj.ptr)
 
-	return bytes
+	return (*[1 << 30]byte)(obj.ptr)[:obj.size:obj.size]
 }
 
 func (obj *AVObject) Copy() []byte {

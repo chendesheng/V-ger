@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"reflect"
 	// "sync"
 	"time"
 	"unsafe"
@@ -67,14 +66,10 @@ func (ctx AVFormatContext) SetInputFormat(f unsafe.Pointer) {
 }
 
 func (ctx AVFormatContext) VideoStream() AVStream {
-	var streams []*C.AVStream
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&streams))
-	header.Len = int(ctx.ptr.nb_streams)
-	header.Cap = header.Len
-	header.Data = uintptr(unsafe.Pointer(ctx.ptr.streams))
+	length := int(ctx.ptr.nb_streams)
+	var streams = (*[1 << 30]*C.AVStream)(unsafe.Pointer(ctx.ptr.streams))[:length:length]
 
 	for i := 0; i < len(streams); i++ {
-		// stream := (ctx.ptr.streams)[i]
 		stream := streams[i]
 		if int(stream.codec.codec_type) == AVMEDIA_TYPE_VIDEO {
 			return AVStream{ptr: stream}
@@ -84,15 +79,11 @@ func (ctx AVFormatContext) VideoStream() AVStream {
 	return AVStream{ptr: nil}
 }
 func (ctx AVFormatContext) AudioStream() []AVStream {
-	var streams []*C.AVStream
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&streams))
-	header.Len = int(ctx.ptr.nb_streams)
-	header.Cap = header.Len
-	header.Data = uintptr(unsafe.Pointer(ctx.ptr.streams))
+	length := int(ctx.ptr.nb_streams)
+	var streams = (*[1 << 30]*C.AVStream)(unsafe.Pointer(ctx.ptr.streams))[:length:length]
 
 	res := make([]AVStream, 0)
 	for i := 0; i < len(streams); i++ {
-		// stream := (ctx.ptr.streams)[i]
 		stream := streams[i]
 		if int(stream.codec.codec_type) == AVMEDIA_TYPE_AUDIO {
 			res = append(res, AVStream{ptr: stream})
@@ -101,11 +92,8 @@ func (ctx AVFormatContext) AudioStream() []AVStream {
 	return res
 }
 func (ctx AVFormatContext) Stream(i int) AVStream {
-	var streams []*C.AVStream
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&streams))
-	header.Len = int(ctx.ptr.nb_streams)
-	header.Cap = header.Len
-	header.Data = uintptr(unsafe.Pointer(ctx.ptr.streams))
+	length := int(ctx.ptr.nb_streams)
+	var streams = (*[1 << 30]*C.AVStream)(unsafe.Pointer(ctx.ptr.streams))[:length:length]
 
 	return AVStream{ptr: streams[i]}
 }
