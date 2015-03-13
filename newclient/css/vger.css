@@ -1,0 +1,166 @@
+body {
+        margin:0;
+        padding:0;
+        font-family: helvetica, arial, sans-serif;
+}
+
+ul {
+        margin:0;
+        padding:0;
+}
+
+li {
+        margin:0;
+        padding:0;
+        list-style-type: none;
+}
+
+.noscrollbar::-webkit-scrollbar {
+        display: none;
+}
+
+.noselect {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.subscribe .banner {
+        max-width: 150px;
+        max-height: 150px;
+}
+
+.subscribe {
+        display:inline-block;
+        padding: 5px 5px 8px 5px;
+        background-color:#222;
+        border-bottom:#222 solid 4px;
+}
+
+.subscribe.selected {
+        background-color:#000;
+        border-bottom:#dd4b39 solid 4px;
+}
+
+.subscribe:hover {
+        background-color:#000;
+        border-bottom:#000 solid 4px;
+}
+.subscribe.selected:hover {
+        background-color:#000;
+        border-bottom:#dd4b39 solid 4px;
+}
+
+.title-bar {
+        font-family: arial, sans-serif;
+        font-size: 18px;
+        color: #999;
+        line-height: 40px;
+        height: 40px;
+}
+
+.title-bar .sep {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAaCAYAAAC+aNwHAAAAW0lEQVR42u3MIQ6AQAxE0b3Vei5DsChu0s4tMVhgmzCmbifBtcm4vt94AHqsCUd8fusqfmLTEXffieUIgKMiFfk9AmAbu1PgMrOlcGHiVcK8eAwg4RzJeDqi4BdUIqQzx/qs/wAAAABJRU5ErkJggg==);
+        background-size: auto 13px;
+        display:inline-block;
+        margin:0 8px;
+        width:8px;
+        height:13px;
+        font-size:18px;
+}
+
+.subscribes {
+        background-color:#222;
+        padding:0 2%;
+}
+
+.subscribe-list {
+        white-space:nowrap;
+        overflow:scroll;
+        margin-bottom:15px;
+	-webkit-overflow-scrolling:touch;
+}
+
+.subscribe-info {
+        box-shadow: 0px 1px 4px 0px rgba(0,0,0,0.2);
+        padding:15px;
+        margin:15px 2%;
+}
+
+.subscribe-info .name {
+        font-size:25px;
+}
+
+.subscribe-info .source {
+        color: #777;
+        font-size: 13px;
+        margin: 4px 0;
+        width: 368px;
+}
+
+.subscribe-info .attributes {
+        margin-top:10px;
+        font-size: 13px;
+	word-break: break-all;
+}
+
+.subscribe-info .attributes li {
+        margin: 4px 0;
+}
+
+.subscribe-info .attributes .key {
+        margin-right:10px;
+        font-weight: bold;
+}
+
+.task-list {
+        padding-left:2%;
+}
+
+.task-season li {
+	display:inline-block;
+	height: 30px;
+	line-height: 32px;
+	width: 30px;
+	margin-right: 5px;
+        box-shadow: 0px 1px 4px 0px rgba(0,0,0,0.2);
+	font-size:16px;
+	text-align: center;
+	cursor: pointer;
+	position:relative;
+}
+
+.task-season li.disabled {
+	color: #aaa;
+	cursor: default;
+}
+
+.task-season .progress {
+	height:1px;
+	position:absolute;
+	bottom:0;
+	right:0;
+	background-color:rgb(65,174,57);
+}
+
+.task-season {
+	overflow:scroll;
+	line-height:40px;
+	padding:4px;
+	clear:both;
+}
+
+.task-name {
+	margin-right:5px;
+	border: solid blue 1px;
+}
+
+.season-title {
+	float:left;
+        font-size:16px;
+	padding-left:6px;
+	clear:both;
+}

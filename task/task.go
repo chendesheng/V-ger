@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 	"vger/dbHelper"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -42,7 +43,7 @@ type Task struct {
 	NameHash   string
 	Est        time.Duration
 
-	LastPlaying time.Duration
+	LastPlaying float64
 
 	Original  string
 	Subscribe string
@@ -122,7 +123,7 @@ func ExistsEpisode(subscribeName string, season, episode int) (bool, error) {
 }
 
 func scanTask(scanner dbHelper.RowScanner) (*Task, error) {
-	var lastPlaying sql.NullInt64
+	var lastPlaying sql.NullFloat64
 
 	var t Task
 	var elapsedTime, est int64
@@ -146,7 +147,7 @@ func scanTask(scanner dbHelper.RowScanner) (*Task, error) {
 		t.ElapsedTime = time.Duration(elapsedTime)
 		t.Est = time.Duration(est)
 		if lastPlaying.Valid {
-			t.LastPlaying = time.Duration(lastPlaying.Int64)
+			t.LastPlaying = lastPlaying.Float64
 		}
 		return &t, nil
 	} else {
@@ -156,7 +157,7 @@ func scanTask(scanner dbHelper.RowScanner) (*Task, error) {
 func GetTasks() []*Task {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
-	rows, err := db.Query(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie`, taskColumnes))
+	rows, err := db.Query(fmt.Sprintf(`select %s,(cast(playing.LastPos as double)/cast(playing.Duration as double)) as LastPlaying from task left join playing on Name=Movie`, taskColumnes))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -176,7 +177,7 @@ func GetTasks() []*Task {
 func GetDownloadingTask() (*Task, bool) {
 	db := dbHelper.Open()
 	defer dbHelper.Close(db)
-	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,LastPos from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
+	t, err := scanTask(db.QueryRow(fmt.Sprintf(`select %s,(cast(playing.LastPos as double)/cast(playing.Duration as double)) as LastPlaying from task left join playing on Name=Movie where Status='Downloading'`, taskColumnes)))
 	if err != nil {
 		return nil, false
 	} else {

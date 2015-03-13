@@ -21,7 +21,6 @@ import (
 	"vger/download"
 	"vger/native"
 	"vger/player/shared"
-	"vger/subscribe"
 	"vger/task"
 	"vger/thunder"
 	"vger/util"
@@ -78,27 +77,8 @@ func trashHandler(w http.ResponseWriter, r *http.Request) {
 	name := vars["name"]
 
 	log.Printf("trash \"%s\".\n", name)
-	t, err := task.GetTask(name)
-	if err != nil {
-		writeError(w, err)
-		return
-	}
 
-	p := shared.GetPlaying(name)
-
-	if s := subscribe.GetSubscribe(t.Subscribe); s != nil {
-		if t.LastPlaying > time.Minute &&
-			p != nil && p.Duration > 0 &&
-			float64(t.LastPlaying)/float64(p.Duration) > 0.85 &&
-			t.LastPlaying < s.Duration {
-			err := subscribe.UpdateDuration(t.Subscribe, t.LastPlaying)
-			if err != nil {
-				log.Print(err)
-			}
-		}
-	}
-
-	err = task.DeleteTask(name)
+	err := task.DeleteTask(name)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -545,6 +525,9 @@ func Run(isDebug bool) {
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./index.html")
+	})
+	r.HandleFunc("/newclient", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./newindex.html")
 	})
 	r.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./assets/favicon.png")
