@@ -1,19 +1,33 @@
 var assign = require('object-assign');
 var EventEmitter = require('events').EventEmitter;
-var Network = require('../utils/Network.js')
-var UPDATE_EVENT = 'update';
+var Network = require('../utils/Network.js');
 var Immutable = require('immutable');
+var UPDATE_EVENT = 'update';
 
-//var _tasks = Immutable.fromJS([]);
-var _tasks = [];
-
+var _tasks = Immutable.Map();
 var TaskStore = assign({}, EventEmitter.prototype, {
 	startMonitor:
 	function() {
 		var self = this;
 		Network.startMonitor('progress', function(data) {
-			//_tasks = _tasks.merge(Immutable.fromJS(data));
-			_tasks = _tasks.concat(data);
+			for (var i = 0; i < data.length; i++) {
+				_tasks = _tasks.set(data[i].Name, data[i]);
+			}
+
+			_tasks = _tasks.sort(function(a, b) {
+				if (a.Season > b.Season) {
+					return -1;
+				} else if (a.Season < b.Season) {
+					return 1;
+				} else if (a.Episode < b.Episode) {
+					return -1;
+				} else if (a.Episode > b.Episode) {
+					return 1;
+				} else {
+					return 0;
+				}
+			});
+
 			self.emitChange();
 		});
 	},
@@ -30,19 +44,6 @@ var TaskStore = assign({}, EventEmitter.prototype, {
 
 	getAllTasks:
 	function() {
-		_tasks.sort(function(a, b) {
-			if (a.Season > b.Season) {
-				return -1;
-			} else if (a.Season < b.Season) {
-				return 1;
-			} else if (a.Episode < b.Episode) {
-				return -1;
-			} else if (a.Episode > b.Episode) {
-				return 1;
-			} else {
-				return 0;
-			}
-		});
 		return _tasks;
 	}
 });

@@ -1,6 +1,9 @@
 var React = require('react');
+var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
 
 var Subscribe = React.createClass({
+	mixins: [PureRenderMixin],
+
 	handleClick:
 	function() {
 		this.props.onClick(this.props.data);

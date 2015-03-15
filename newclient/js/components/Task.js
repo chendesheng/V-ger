@@ -1,7 +1,10 @@
 var React = require('react');
 var Network = require('../utils/Network.js');
+var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
 
 var Task = React.createClass({
+	mixins: [PureRenderMixin],
+
 	render:
 	function() {
 		var status = this.props.data.Status;

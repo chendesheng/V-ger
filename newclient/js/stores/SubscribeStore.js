@@ -1,6 +1,7 @@
 var assign = require('object-assign');
 var EventEmitter = require('events').EventEmitter;
 var Network = require('../utils/network.js')
+
 var UPDATE_EVENT = 'update';
 
 var _subscribes = [];

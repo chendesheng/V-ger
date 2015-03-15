@@ -9,7 +9,7 @@ var VgerApp = React.createClass({
 	getInitialState:
 	function() {
 		return {
-			selectedSubscribe: '',
+			selectedSubscribe: null, 
 			subscribes: [],
 			tasks: []
 		};
@@ -18,10 +18,10 @@ var VgerApp = React.createClass({
 	_onTaskUpdate:
 	function(tasks) {
 		var subscribes = SubscribeStore.getAllSubscribes();
-		var selectedSubscribe = this.state.selectedSubscribe || '';
+		var selectedSubscribe = this.state.selectedSubscribe;
 
-		if (selectedSubscribe == '' && subscribes.length > 0) {
-			selectedSubscribe = subscribes[0].Name;
+		if (selectedSubscribe == null && subscribes.length > 0) {
+			selectedSubscribe = subscribes[0];
 		}
 
 		this.setState({
@@ -34,10 +34,10 @@ var VgerApp = React.createClass({
 	_onSubscribeUpdate:
 	function() {
 		var subscribes = SubscribeStore.getAllSubscribes();
-		var selectedSubscribe = this.state.selectedSubscribe || '';
+		var selectedSubscribe = this.state.selectedSubscribe;
 
-		if (selectedSubscribe == '' && subscribes.length > 0) {
-			selectedSubscribe = subscribes[0].Name;
+		if (selectedSubscribe == null && subscribes.length > 0) {
+			selectedSubscribe = subscribes[0];
 		}
 
 		this.setState({
@@ -45,7 +45,6 @@ var VgerApp = React.createClass({
 			subscribes: subscribes,
 			tasks: TaskStore.getAllTasks()
 		});
-
 	},
 
 	componentDidMount:
@@ -67,7 +66,7 @@ var VgerApp = React.createClass({
 	handleSelectSubscribe:
 	function(subscribe) {
 		this.setState({
-			selectedSubscribe: subscribe.Name,
+			selectedSubscribe: subscribe,
 			subscribes: SubscribeStore.getAllSubscribes(),
 			tasks: TaskStore.getAllTasks()
 		});
@@ -76,20 +75,18 @@ var VgerApp = React.createClass({
 	render:
 	function() {
 		var state = this.state;
-		var subscribeInfo = null;
-		
-		var subscribes = this.state.subscribes;
-		for (var i = 0; i < subscribes.length; i++) {
-			var s = subscribes[i];
-			if (s.Name == state.selectedSubscribe) {
-				subscribeInfo = <SubscribeInfo data={s} />;
+		var selectedTasks = state.tasks.filter(function(task){
+			if (state.selectedSubscribe) {
+				return task.Subscribe==state.selectedSubscribe.Name;
+			} else {
+				return false;
 			}
-		}
+		});
 
 		return <div>
-			<SubscribeList selectedSubscribe={this.state.selectedSubscribe} handleSelectSubscribe={this.handleSelectSubscribe} subscribes={this.state.subscribes} />
-			{subscribeInfo}
-			<TaskList filter={this.state.selectedSubscribe} tasks={this.state.tasks}/>
+			<SubscribeList selectedSubscribe={state.selectedSubscribe} handleSelectSubscribe={this.handleSelectSubscribe} subscribes={state.subscribes} />
+			<SubscribeInfo data={state.selectedSubscribe} />
+			<TaskList tasks={selectedTasks}/>
 		</div>
 	}
 });

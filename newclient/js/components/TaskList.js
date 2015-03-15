@@ -1,7 +1,10 @@
 var React = require('react');
 var Task = require('./Task.js');
+var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
 
 var TaskList = React.createClass({
+	mixins: [PureRenderMixin],
+
 	render:
 	function() {
 		var props = this.props;
@@ -11,12 +14,10 @@ var TaskList = React.createClass({
 		}
 
 		this.props.tasks.forEach(function(task) {
-			if (task.Subscribe == props.filter) {
-				if (task.Season <= 0) {
-					lists[0].push(task);
-				} else {
-					lists[task.Season].push(task);
-				}
+			if (task.Season <= 0) {
+				lists[0].push(task);
+			} else {
+				lists[task.Season].push(task);
 			}
 		});
 		var rows = [];

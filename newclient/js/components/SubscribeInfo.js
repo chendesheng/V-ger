@@ -3,6 +3,10 @@ var React = require('react');
 var SubscribeInfo = React.createClass({
 	render:
 	function() {
+		if (this.props.data == null) {
+			return <div></div>
+		}
+
 		return <div className="subscribe-info">
 			<div className="name">{this.props.data.Name}</div>
 			<div><a target="_blank" className="source" href={this.props.data.URL}>{this.props.data.URL}</a></div>
