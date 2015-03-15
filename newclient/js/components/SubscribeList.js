@@ -23,11 +23,6 @@ var SubscribeList = React.createClass({
 				selected={subscribe.Name==selectedName} data={subscribe} />
 		});
 		return <div className="subscribes">
-			<div className="title-bar">
-				<span>TV Shows</span>
-				<span className="sep"></span>
-				<span className="selected-name">{selectedName}</span>
-			</div>
 			<div className="subscribe-list noscrollbar">{rows}</div>
 		</div>
 	}
