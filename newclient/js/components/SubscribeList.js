@@ -12,15 +12,10 @@ var SubscribeList = React.createClass({
 
         render:
 	function() {
-		var self  = this;
-		var selectedName = null;
-		if (this.props.selectedSubscribe != null) {
-			selectedName = this.props.selectedSubscribe.Name;
-		}
-
-		var rows = this.props.subscribes.map(function(subscribe) {
-			return <Subscribe key={subscribe.Name} onClick={self.handleSelectSubscribe} 
-				selected={subscribe.Name==selectedName} data={subscribe} />
+		var props = this.props;
+		var rows = props.subscribes.map(function(subscribe) {
+			return <Subscribe key={subscribe.Name} onClick={props.handleSelectSubscribe} 
+				selected={subscribe===props.selectedSubscribe} data={subscribe} />
 		});
 		return <div className="subscribes">
 			<div className="subscribe-list noscrollbar">{rows}</div>
