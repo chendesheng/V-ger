@@ -19,6 +19,8 @@ var SubscribeList = React.createClass({
 		});
 		return <div className="subscribes">
 			<div className="subscribe-list noscrollbar">{rows}</div>
+			<span className="peek peek-left"></span>
+			<span className="peek peek-right"></span>
 		</div>
 	}
 });

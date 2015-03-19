@@ -75,6 +75,7 @@ li {
 .subscribes {
         background-color:#222;
         padding:0 2%;
+	position:relative;
 }
 
 .subscribe-list {
@@ -164,4 +165,24 @@ li {
 	color:#333;
 	padding-left:6px;
 	clear:both;
+}
+
+.peek {
+    position:absolute;
+    top:0;
+    width: 5px;
+    content: "";
+    height:174px;
+}
+
+.peek-right {
+    right: 2%;
+    border-right: solid 1px black;
+    background-image: radial-gradient(at 100% 50%, rgba(0,0,0,1) 0%, transparent 75%);
+}
+
+.peek-left {
+    left: 2%;
+    border-left: solid 1px black;
+    background-image: radial-gradient(at 0% 50%, rgba(0,0,0,1) 0%, transparent 75%);
 }
