@@ -12,6 +12,7 @@ import (
 	"vger/download"
 	"vger/filelock"
 	"vger/logger"
+	"vger/subscribe"
 	"vger/thunder"
 	"vger/util"
 )
@@ -41,6 +42,9 @@ func init() {
 	thunder.UserName = util.ReadConfig("thunder-user")
 	thunder.Password = util.ReadConfig("thunder-password")
 	thunder.Gdriveid = util.ReadConfig("gdriveid")
+
+	subscribe.YYetsFormats = util.ReadStringSliceConfig("yyets-formats")
+	log.Printf("yyets-formats:%v", subscribe.YYetsFormats)
 
 	go func() {
 		err := thunder.Login(nil)

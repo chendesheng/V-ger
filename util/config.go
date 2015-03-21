@@ -10,6 +10,7 @@ import (
 	"time"
 	// "path/filepath"
 	"strconv"
+	"strings"
 )
 
 var configCache map[string]string = make(map[string]string)
@@ -42,6 +43,14 @@ func ReadIntConfig(key string) (res int) {
 	res, err := strconv.Atoi(ReadConfig(key))
 	if err != nil {
 		panic(err)
+	}
+	return
+}
+
+func ReadStringSliceConfig(key string) (res []string) {
+	res = strings.Split(ReadAllConfigs()[key], ",")
+	for i, s := range res {
+		res[i] = strings.TrimSpace(s)
 	}
 	return
 }

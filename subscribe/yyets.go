@@ -18,6 +18,8 @@ import (
 	"vger/html"
 )
 
+var YYetsFormats = []string{"1080p", "720p", "bd-720p", "web-dl"}
+
 func parseEpisodes(n *html.Node, season int, subscribeName string, format string, result *map[int]*task.Task) {
 	for _, c := range getTag(n, "li") {
 		if strings.ToLower(getAttr(c, "format")) == format {
@@ -67,10 +69,9 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 				}
 
 				res := make(map[int]*task.Task)
-				parseEpisodes(n, season, s.Name, "720p", &res)
-				parseEpisodes(n, season, s.Name, "web-dl", &res)
-				parseEpisodes(n, season, s.Name, "bd-720p", &res)
-				parseEpisodes(n, season, s.Name, "1080p", &res)
+				for _, ft := range YYetsFormats {
+					parseEpisodes(n, season, s.Name, ft, &res)
+				}
 
 				for _, t := range res {
 					result = append(result, t)
