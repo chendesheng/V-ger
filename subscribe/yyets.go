@@ -185,8 +185,6 @@ func parseSingle(n *html.Node) *task.Task {
 		t.Original = getAttr(magnet, "href")
 	} else if thunder := getChildAttr1(c, "thunderhref", "*"); thunder != nil {
 		t.Original = getAttr(thunder, "thunderhref")
-	} else if a := getChildAttr1(c, "href", "*"); a != nil {
-		t.Original = getAttr(a, "href")
 	} else {
 		t.Original = ""
 	}
