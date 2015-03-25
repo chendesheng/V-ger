@@ -10,8 +10,6 @@
 	w.level = NSNormalWindowLevel;
 	self->savedAspectRatio = w.aspectRatio; 
 	w.aspectRatio = [[NSScreen mainScreen] frame].size;
-	setControlsVisible(w, 0, 0);
-	[w setTitleHidden:NO];
 
 	onFullScreen(WILL_ENTER_FULL_SCREEN);
 }
@@ -22,7 +20,6 @@
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
 	Window* w = (Window*)[notification object];
-	setControlsVisible(w, true, true);
 
 	onFullScreen(WILL_EXIT_FULL_SCREEN);
 }
