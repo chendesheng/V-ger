@@ -3,6 +3,7 @@ package gui
 import (
 	"log"
 	"math"
+	"os"
 	"runtime"
 	"time"
 	"vger/player/shared"
@@ -325,7 +326,11 @@ func (w *Window) SendSetSize(width, height int) {
 
 func (w *Window) SendSetTitle(title string) {
 	w.chFunc <- func() {
-		w.SetTitle(title)
+		if _, err := os.Stat(title); err != nil {
+			w.SetTitle(title)
+		} else {
+			w.SetTitleWithRepresentFilename(title)
+		}
 	}
 }
 

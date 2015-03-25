@@ -45,6 +45,13 @@ func (w NativeWindow) GetSize() (int, int) {
 	return int(sz.width), int(sz.height)
 }
 
+func (w NativeWindow) SetTitleWithRepresentFilename(title string) {
+	ctitle := C.CString(title)
+	defer C.free(unsafe.Pointer(ctitle))
+
+	C.setWindowTitleWithRepresentedFilename(w.ptr, ctitle)
+}
+
 func (w NativeWindow) SetTitle(title string) {
 	ctitle := C.CString(title)
 	defer C.free(unsafe.Pointer(ctitle))

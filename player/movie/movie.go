@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -172,7 +171,7 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 			return
 		}
 	} else {
-		filename = filepath.Base(file)
+		filename = file
 
 		ctx = libav.NewAVFormatContext()
 		if err = ctx.OpenInput(file); err != nil {

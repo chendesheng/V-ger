@@ -27,6 +27,13 @@ void initialize() {
         [[NSAppleEventManager sharedAppleEventManager] setEventHandler:appDelegate andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 
+void setWindowTitleWithRepresentedFilename(void* wptr, char* title) {
+        Window* w = (Window*)wptr;
+
+        NSString* str = [NSString stringWithUTF8String:title];
+	[w setTitleWithRepresentedFilename:str];
+}
+
 void setWindowTitle(void* wptr, char* title) {
         Window* w = (Window*)wptr;
 

@@ -30,6 +30,7 @@ void showWindow(void*);
 CSize getWindowSize(void*);
 void setWindowSize(void*, int, int);
 void setWindowTitle(void*, char* title);
+void setWindowTitleWithRepresentedFilename(void* wptr, char* title);
 
 void refreshWindowContent(void*);
 void initWindowCurrentContext(void*);
