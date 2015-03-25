@@ -63,6 +63,7 @@ void onMouseWheel(double);
 void onPlaybackChange(int, double);
 int onOpenFile(const char*);
 void onWillTerminate();
+void onFullScreen(int);
 int isPlaying();
 void getAllSubtitleNames(void***, int*);
 void getPlayingSubtitles(int*, int*);
@@ -79,6 +80,11 @@ int isSearchingSubtitle();
 #define MENU_VOLUME 5
 #define MENU_SYNC_SUBTITLE 6
 #define MENU_SYNC_AUDIO 7
+
+#define WILL_ENTER_FULL_SCREEN 0
+#define DID_ENTER_FULL_SCREEN 1
+#define WILL_EXIT_FULL_SCREEN 2
+#define DID_EXIT_FULL_SCREEN 3
 
 void flushBuffer(void* ptr);
 void makeCurrentContext(void* ptr);

@@ -21,6 +21,7 @@ var (
 	OnOpenOpenPanel  func()
 	OnCloseOpenPanel func(string)
 	OnOpenFile       func(string) bool
+	OnFullScreen     func(int)
 
 	P Player
 )
@@ -110,6 +111,13 @@ func goOnOpenFile(cfilename unsafe.Pointer) C.int {
 		return b2i(OnOpenFile(filename))
 	} else {
 		return 0
+	}
+}
+
+//export goOnFullScreen
+func goOnFullScreen(action C.int) {
+	if OnFullScreen != nil {
+		OnFullScreen(int(action))
 	}
 }
 

@@ -161,10 +161,16 @@ func NewWindow(title string, width, height int) *Window {
 
 	go func() {
 		runtime.LockOSThread()
+		var img []byte
 
 		for input := range w.chDraw {
+			//repeat last img if input.data is empty
+			if len(input.data) > 0 {
+				img = input.data
+			}
+
 			w.MakeGLCurrentContext()
-			w.draw(input.data, w.originalWidth, w.originalHeight)
+			w.draw(img, w.originalWidth, w.originalHeight)
 			w.FlushBuffer()
 			input.res <- struct{}{}
 		}
@@ -408,11 +414,13 @@ func (w *Window) Draw(img []byte) {
 		<-res
 	}
 }
+
 func (w *Window) drawClear() {
 	w.MakeGLCurrentContext()
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	w.FlushBuffer()
 }
+
 func onTimerTick() {
 	if w != nil {
 		select {
@@ -446,6 +454,24 @@ func onProgressChange(typ int, position float64) {
 	if w != nil {
 		for _, fn := range w.FuncOnProgressChanged {
 			fn(typ, position)
+		}
+	}
+}
+
+const (
+	WILL_ENTER_FULL_SCREEN = iota
+	DID_ENTER_FULL_SCREEN
+	WILL_EXIT_FULL_SCREEN
+	DID_EXIT_FULL_SCREEN
+)
+
+func onFullScreen(action int) {
+	if w != nil {
+		//refresh draw
+		if action == DID_ENTER_FULL_SCREEN || action == DID_EXIT_FULL_SCREEN {
+			res := make(chan struct{})
+			w.chDraw <- drawArg{nil, res}
+			<-res
 		}
 	}
 }

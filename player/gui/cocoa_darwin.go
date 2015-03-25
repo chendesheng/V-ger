@@ -14,6 +14,7 @@ func init() {
 	cocoa.OnCloseOpenPanel = onCloseOpenPanel
 	cocoa.OnProgressChange = onProgressChange
 	cocoa.OnTimerTick = onTimerTick
+	cocoa.OnFullScreen = onFullScreen
 }
 
 type Window struct {

@@ -24,7 +24,10 @@
 	inline void onWillTerminate() {
 		goOnWillTerminate();
 	}
-
+	
+	inline void onFullScreen(int action) {
+		goOnFullScreen(action);
+	}
 
 	inline void onOpenOpenPanel() {
 		goOnOpenOpenPanel();
@@ -40,6 +43,7 @@
 	inline int onMenuClick(int type, int tag) {
 		return goOnMenuClick(type, tag);
 	}
+
 	inline int isPlaying() {
 		return goIsPlaying();
 	}
@@ -85,6 +89,10 @@
 
 	inline void onWillTerminate() {
 	//	goOnWillTerminate();
+	}
+
+	inline void onFullScreen(int action) {
+		//goOnFullScreen(action)
 	}
 
 
