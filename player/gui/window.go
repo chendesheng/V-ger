@@ -470,13 +470,34 @@ const (
 	DID_EXIT_FULL_SCREEN
 )
 
+var savedRes = make(chan struct{})
+var savedOrignalWidth int
+var savedOrignalHeight int
+
 func onFullScreen(action int) {
 	if w != nil {
-		//refresh draw
-		if action == DID_ENTER_FULL_SCREEN || action == DID_EXIT_FULL_SCREEN {
-			res := make(chan struct{})
-			w.chDraw <- drawArg{nil, res}
-			<-res
+		switch action {
+		case DID_ENTER_FULL_SCREEN, DID_EXIT_FULL_SCREEN:
+			//restore orignial width/height changed before animation
+			w.originalWidth = savedOrignalWidth
+			w.originalHeight = savedOrignalHeight
+			//release the drawing routine
+			<-savedRes
+		case WILL_ENTER_FULL_SCREEN, WILL_EXIT_FULL_SCREEN:
+			//draw a strethed image in subject ratio before full screen animation
+			//hold drawing routine by not reading from response channel until animation finish
+			savedOrignalWidth = w.originalWidth
+			savedOrignalHeight = w.originalHeight
+
+			w.originalWidth, w.originalHeight = w.GetSize()
+			r := float64(w.originalWidth) / float64(w.originalHeight)
+
+			sw, sh := getScreenSize()
+			sr := float64(sw) / float64(sh)
+
+			w.originalWidth = int(float64(w.originalWidth)*r/sr + 0.5)
+
+			w.chDraw <- drawArg{nil, savedRes}
 		}
 	}
 }
