@@ -176,13 +176,11 @@ li {
 }
 
 .peek-right {
-    right: 2%;
-    border-right: solid 1px black;
+    right: 1.9%;
     background-image: radial-gradient(at 100% 50%, rgba(0,0,0,1) 0%, transparent 75%);
 }
 
 .peek-left {
-    left: 2%;
-    border-left: solid 1px black;
+    left: 1.9%;
     background-image: radial-gradient(at 0% 50%, rgba(0,0,0,1) 0%, transparent 75%);
 }

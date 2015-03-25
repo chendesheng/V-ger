@@ -27,7 +27,8 @@ var TaskList = React.createClass({
 		return <div className="task-list">{rows}</div>
 	},
 
-	getOneSeason: function(lists, i) {
+	getOneSeason:
+	function(lists, i) {
 		var l = lists[i].length;
 		if (l == 0) return;
 
@@ -36,14 +37,13 @@ var TaskList = React.createClass({
 			var t = lists[i][j];
 			items.push(<Task data={t} />)
 		}
-
 			
 		return <div>
-				<div className="season-title">{"Season "+i}</div>
-				<ul className="task-season noscrollbar noselect">
-					{items}
-				</ul>
-			</div>
+			<div className="season-title">{"Season "+i}</div>
+			<ul className="task-season noscrollbar noselect">
+				{items}
+			</ul>
+		</div>
 	}
 });
 
