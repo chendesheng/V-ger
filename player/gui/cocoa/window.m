@@ -72,17 +72,18 @@
 }
 
 -(void)setTitleHidden:(BOOL)b {
-        if ([self isFullScreen]) {
-                return;
-        }
-        //self.titlebarAppearsTransparent = b;
-
         NSView* fv = [self.contentView superview];
-        for (NSView* v in fv.subviews) {
-                if (v != glView) {
-                        [v setHidden:b];
-                }
-        }
+	if ([fv respondsToSelector:@selector(titlebarContainerView)]) {
+		//only for Yosemite
+		[[fv titlebarContainerView] setHidden:b];
+	} else {
+	        for (NSView* v in fv.subviews) {
+	                if (v != glView) {
+				//NSLog(@"%@", v);
+				[v setHidden:b];
+	                }
+	        }
+	}
 }
 
 -(void)playPause:(id)sender {

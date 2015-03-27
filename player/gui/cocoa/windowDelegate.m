@@ -16,12 +16,18 @@
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
 	onFullScreen(DID_ENTER_FULL_SCREEN);
+
+	Window* w = (Window*)[notification object];
+	[w setTitleHidden:NO];
 }
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
+	onFullScreen(WILL_EXIT_FULL_SCREEN);
+
 	Window* w = (Window*)[notification object];
 
-	onFullScreen(WILL_EXIT_FULL_SCREEN);
+	[w setTitleHidden:YES];
+	setControlsVisible(w, 0, 0);
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
