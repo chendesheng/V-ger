@@ -158,15 +158,6 @@
         onMenuClick(MENU_SEARCH_SUBTITLE, 0);
 }
 
--(void)openURL:(id)sender {
-        if (self->winOpenURL == NULL) {
-                self->winOpenURL = [[OpenURL alloc] initWithWindowNibName:@"openURL"];
-        }
-
-	[self->winOpenURL showWindow:self];
-        //[self->winOpenURL makeKeyAndOrderFront:nil];
-}
-
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     if ([item action] == @selector(playPause:)) {
             if (isPlaying()) {

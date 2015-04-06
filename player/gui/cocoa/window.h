@@ -7,7 +7,6 @@
 #import "openURL.h"
 @interface Window : NSWindow {
     BOOL isFatalHappen;
-    NSWindowController* winOpenURL;
 @public
 	GLView* glView;
 }
