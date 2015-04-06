@@ -8,6 +8,8 @@ vp:
 	cp $(BIN)/player.plist $(BIN)/VgerPlayer.app/Contents/Info.plist
 	ibtool --compile $(RESOURCES)/MainMenu.nib player/gui/cocoa/MainMenu.xib
 	cp $(RESOURCES)/MainMenu.nib $(RESOURCES)/en.lproj/MainMenu.nib
+	ibtool --compile $(RESOURCES)/openURL.nib player/gui/cocoa/openURL.xib
+	cp $(RESOURCES)/openURL.nib $(RESOURCES)/en.lproj/openURL.nib
 exe:
 	go install vger
 	cp $(BIN)/vger ~/Library/Vger/vger

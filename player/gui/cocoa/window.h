@@ -4,8 +4,10 @@
 #import "glView.h"
 #import "blurView.h"
 #import "titleTextView.h"
+#import "openURL.h"
 @interface Window : NSWindow {
     BOOL isFatalHappen;
+    NSWindowController* winOpenURL;
 @public
 	GLView* glView;
 }
