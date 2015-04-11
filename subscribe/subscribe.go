@@ -52,7 +52,8 @@ func GetSubscribes() []*Subscribe {
 
 	rows, err := db.Query(fmt.Sprintf(`select %s from subscribe`, subscribeColumnes))
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return nil
 	}
 	defer rows.Close()
 
