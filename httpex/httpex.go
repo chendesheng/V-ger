@@ -3,7 +3,6 @@ package httpex
 import (
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -45,18 +44,18 @@ func GetStringResp(url string, params *url.Values, quit chan struct{}) (string, 
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
-	return readBody(resp.Body), nil
+	return readBody(resp.Body)
 }
 
-func readBody(body io.ReadCloser) string {
-	defer body.Close()
+func readBody(body io.ReadCloser) (string, error) {
 	bytes, err := ioutil.ReadAll(body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	return string(bytes)
+	return string(bytes), nil
 }
 
 func PostFormRespString(url string, params *url.Values, data *url.Values) (string, error) {
@@ -67,6 +66,7 @@ func PostFormRespString(url string, params *url.Values, data *url.Values) (strin
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
-	return readBody(resp.Body), nil
+	return readBody(resp.Body)
 }
