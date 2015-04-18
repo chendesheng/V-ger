@@ -29,6 +29,12 @@ func onMenuClick(typ int, tag int) int {
 	return 0
 }
 
+func onFullScreen(action int) {
+	if appDelegate != nil {
+		appDelegate.OnFullScreen(action)
+	}
+}
+
 func onCloseOpenPanel(name string) {
 	if appDelegate != nil {
 		appDelegate.OnCloseOpenPanel(name)
@@ -48,6 +54,7 @@ type AppDelegate interface {
 	WillTerminate()
 	OnMenuClick(int, int) int
 	OnMouseWheel(float64, float64)
+	OnFullScreen(int)
 }
 
 var appDelegate AppDelegate

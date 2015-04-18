@@ -11,9 +11,10 @@ import (
 type Clock struct {
 	sync.Mutex
 
-	base       time.Time
-	pausedTime time.Duration
-	running    bool
+	base        time.Time
+	pausedTime  time.Duration
+	lastRunning bool
+	running     bool
 
 	wait chan struct{}
 
@@ -133,6 +134,27 @@ func (c *Clock) pause() {
 		c.pausedTime = time.Since(c.base)
 	}
 	// c.wait = make(chan struct{})
+}
+
+//Hold clock for a while, remain running status
+func (c *Clock) Hold() {
+	c.Lock()
+	defer c.Unlock()
+
+	c.lastRunning = c.running
+	if c.running {
+		c.pause()
+	}
+}
+
+//Recover running status
+func (c *Clock) Unhold() {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.lastRunning {
+		c.resume()
+	}
 }
 
 func (c *Clock) Toggle() {

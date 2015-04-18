@@ -79,23 +79,13 @@ func (app *appDelegate) WillTerminate() {
 		app.w.DestoryRender()
 	}
 }
+
 func (app *appDelegate) OnOpenOpenPanel() {
-	go func() {
-		if app.m != nil {
-			app.t = app.m.Hold()
-		}
-	}()
 }
 
 func (app *appDelegate) OnCloseOpenPanel(filename string) {
 	if len(filename) > 0 {
 		app.OpenFile(filename)
-	} else {
-		go func() {
-			if app.m != nil {
-				app.m.Unhold(app.t)
-			}
-		}()
 	}
 }
 
@@ -121,6 +111,13 @@ const (
 	MENU_VOLUME
 	MENU_SYNC_SUBTITLE
 	MENU_SYNC_AUDIO
+)
+
+const (
+	WILL_ENTER_FULL_SCREEN = iota
+	DID_ENTER_FULL_SCREEN
+	WILL_EXIT_FULL_SCREEN
+	DID_EXIT_FULL_SCREEN
 )
 
 func (app *appDelegate) OnMenuClick(typ int, tag int) int {
@@ -184,6 +181,17 @@ func (app *appDelegate) onSyncSubtitleClick(typ int) {
 func (app *appDelegate) onSyncAudioClick(tag int) {
 	offset := app.m.SyncAudio(time.Duration(tag) * 100 * time.Millisecond)
 	app.w.ShowMessage(fmt.Sprint("Audio offset ", offset.String()), true)
+}
+
+func (app *appDelegate) OnFullScreen(action int) {
+	app.w.SetFullScreen(action)
+
+	switch action {
+	case WILL_ENTER_FULL_SCREEN, WILL_EXIT_FULL_SCREEN:
+		app.m.ClockHold()
+	case DID_ENTER_FULL_SCREEN, DID_EXIT_FULL_SCREEN:
+		app.m.ClockUnhold()
+	}
 }
 
 func main() {

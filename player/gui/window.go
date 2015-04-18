@@ -474,31 +474,30 @@ var savedRes = make(chan struct{})
 var savedOrignalWidth int
 var savedOrignalHeight int
 
-func onFullScreen(action int) {
-	if w != nil {
-		switch action {
-		case DID_ENTER_FULL_SCREEN, DID_EXIT_FULL_SCREEN:
-			//restore orignial width/height changed before animation
-			w.originalWidth = savedOrignalWidth
-			w.originalHeight = savedOrignalHeight
-			//release the drawing routine
-			<-savedRes
-		case WILL_ENTER_FULL_SCREEN, WILL_EXIT_FULL_SCREEN:
-			//draw a strethed image in subject ratio before full screen animation
-			//hold drawing routine by not reading from response channel until animation finish
-			savedOrignalWidth = w.originalWidth
-			savedOrignalHeight = w.originalHeight
+//should call from UI thread
+func (w *Window) SetFullScreen(action int) {
+	switch action {
+	case DID_ENTER_FULL_SCREEN, DID_EXIT_FULL_SCREEN:
+		//restore orignial width/height changed before animation
+		w.originalWidth = savedOrignalWidth
+		w.originalHeight = savedOrignalHeight
+		//release the drawing routine
+		<-savedRes
+	case WILL_ENTER_FULL_SCREEN, WILL_EXIT_FULL_SCREEN:
+		//draw a strethed image in subject ratio before full screen animation
+		//hold drawing routine by not reading from response channel until animation finish
+		savedOrignalWidth = w.originalWidth
+		savedOrignalHeight = w.originalHeight
 
-			w.originalWidth, w.originalHeight = w.GetSize()
-			r := float64(w.originalWidth) / float64(w.originalHeight)
+		w.originalWidth, w.originalHeight = w.GetSize()
+		r := float64(w.originalWidth) / float64(w.originalHeight)
 
-			sw, sh := getScreenSize()
-			sr := float64(sw) / float64(sh)
+		sw, sh := getScreenSize()
+		sr := float64(sw) / float64(sh)
 
-			w.originalWidth = int(float64(w.originalWidth)*r/sr + 0.5)
+		w.originalWidth = int(float64(w.originalWidth)*r/sr + 0.5)
 
-			w.chDraw <- drawArg{nil, savedRes}
-		}
+		w.chDraw <- drawArg{nil, savedRes}
 	}
 }
 

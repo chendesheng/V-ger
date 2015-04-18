@@ -27,7 +27,7 @@ func (m *Movie) SeekOffset(offset time.Duration) {
 
 func (m *Movie) OnSeekStarted() time.Duration {
 	t := m.c.GetTime()
-	m.Hold()
+	m.SeekHold()
 
 	return t / time.Second * time.Second
 }
@@ -45,7 +45,7 @@ func (m *Movie) OnSeekEnded(t time.Duration) {
 		return
 	}
 
-	m.Unhold(t)
+	m.SeekUnhold(t)
 
 	m.p.SetLastPos(t)
 	shared.SavePlayingAsync(m.p)

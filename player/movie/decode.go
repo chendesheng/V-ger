@@ -11,7 +11,19 @@ import (
 	"vger/util"
 )
 
-func (m *Movie) Hold() time.Duration {
+func (m *Movie) ClockHold() {
+	if m.c != nil {
+		m.c.Hold()
+	}
+}
+
+func (m *Movie) ClockUnhold() {
+	if m.c != nil {
+		m.c.Unhold()
+	}
+}
+
+func (m *Movie) SeekHold() time.Duration {
 	if m.chHold == nil {
 		if m.c != nil {
 			return m.c.GetTime()
@@ -39,7 +51,7 @@ func (m *Movie) Hold() time.Duration {
 	}
 }
 
-func (m *Movie) Unhold(t time.Duration) {
+func (m *Movie) SeekUnhold(t time.Duration) {
 	select {
 	case m.chHold <- t:
 	case <-m.quit:
