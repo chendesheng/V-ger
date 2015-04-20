@@ -107,6 +107,13 @@ func InsertSubtitle(sub *Sub) {
 		if err != nil {
 			log.Print(err)
 		}
+	} else {
+		//sometimes different video get same subtitles
+		sql := "update subtitle set Movie=? where Name=?"
+		_, err := db.Exec(sql, sub.Movie, sub.Name)
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 
