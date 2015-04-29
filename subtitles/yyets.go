@@ -1,32 +1,65 @@
 package subtitles
 
 import (
+	"errors"
 	"log"
 	"net/url"
-	"regexp"
-	"strings"
 	"vger/httpex"
 
 	"vger/html"
 )
 
-func yyetsParseSub(n *html.Node) Subtitle {
-	sub := Subtitle{}
+func yyetsParseSub(n *html.Node, quit chan struct{}) *Subtitle {
+	sub := &Subtitle{}
 
-	a := getTag1(getClass1(getClass1(n, "search_info_ls"), "all_search_li2"), "a")
+	a := getTag1(getTag1(getTag1(getTag1(n, "div"), "div"), "div"), "a")
 
-	pageUrl := getAttr(a, "href")
-	id := pageUrl[strings.LastIndex(pageUrl, "/")+1:]
+	pageURL := "http://www.zimuzu.tv" + getAttr(a, "href")
 
-	sub.URL = "http://www.zimuzu.tv/subtitle/index/download?id=" + id
-
-	text := getRidOfTags(a)
-	regClean := regexp.MustCompile("([[][^]]*[]])")
-
-	sub.Description = regClean.ReplaceAllString(text, "")
+	var err error
+	sub.URL, sub.Description, err = getDownloadLink(pageURL, quit)
+	if err != nil {
+		log.Print(err)
+		return nil
+	}
 
 	sub.Source = "YYets"
 	return sub
+}
+
+func getDownloadLink(url string, quit chan struct{}) (string, string, error) {
+	log.Println("YYets: getDownloadLink", url)
+	resp, err := httpex.Get(url, quit)
+	if err != nil {
+		return "", "", err
+	}
+	defer resp.Body.Close()
+
+	doc, err := html.Parse(resp.Body)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	var f func(*html.Node) (string, string, error)
+	f = func(n *html.Node) (string, string, error) {
+		if n.Data == "div" {
+			if hasClass(n, "subtitle-links") {
+				a := getTag1(getTag1(n, "h3"), "a")
+				return getAttr(a, "href"), getRidOfTags(a), nil
+			}
+		}
+
+		for _, c := range n.Child {
+			if lnk, des, err := f(c); err == nil {
+				return lnk, des, nil
+			}
+		}
+
+		return "", "", errors.New("YYest: Can't find subtitle link")
+	}
+
+	return f(doc)
 }
 
 type yyetsSearch struct {
@@ -37,7 +70,6 @@ type yyetsSearch struct {
 
 func (y *yyetsSearch) search(result chan Subtitle) error {
 	log.Printf("YYets search subtitle: %s %d", y.name, y.maxcnt)
-
 	resp, err := httpex.Get("http://www.zimuzu.tv/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
 	if err != nil {
 		return err
@@ -53,15 +85,19 @@ func (y *yyetsSearch) search(result chan Subtitle) error {
 	count := 0
 	var f func(*html.Node)
 	f = func(n *html.Node) {
-		if n.Data == "ul" {
-			if hasClass(n, "allsearch") {
-				for _, c := range getTag(n, "li") { //skip first item, first item is ad
-					s := yyetsParseSub(c)
+		if n.Data == "div" {
+			if hasClass2(n, "search-result") {
+				n1 := getTag1(n, "ul")
+				for _, c := range getTag(n1, "li") {
+					s := yyetsParseSub(c, y.quit)
+					if s == nil {
+						continue
+					}
 
 					select {
 					case <-y.quit:
 						return
-					case result <- s:
+					case result <- *s:
 					}
 					if count++; count >= y.maxcnt {
 						return

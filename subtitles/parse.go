@@ -14,9 +14,19 @@ func attr2Map(attrs []html.Attribute) (m map[string]string) {
 	}
 	return
 }
+
 func hasClass(n *html.Node, class string) bool {
 	for _, a := range n.Attr {
 		if a.Key == "class" && strings.Index(a.Val, class) >= 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func hasClass2(n *html.Node, class string) bool {
+	for _, a := range n.Attr {
+		if a.Key == "class" && a.Val == class {
 			return true
 		}
 	}
