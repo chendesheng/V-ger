@@ -43,7 +43,10 @@ func init() {
 	thunder.Password = util.ReadConfig("thunder-password")
 	thunder.Gdriveid = util.ReadConfig("gdriveid")
 
-	subscribe.YYetsFormats = util.ReadStringSliceConfig("yyets-formats")
+	formats := util.ReadStringSliceConfig("yyets-formats")
+	for _, ft := range formats {
+		subscribe.YYetsFormats[ft] = struct{}{}
+	}
 	log.Printf("yyets-formats:%v", subscribe.YYetsFormats)
 
 	go func() {

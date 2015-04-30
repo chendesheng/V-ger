@@ -2,71 +2,47 @@ package subscribe
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/cookiejar"
 	"os"
 	"testing"
 )
 
-func TestYYets(t *testing.T) {
-	f, err := os.Open("yyets.html")
+func TestParse(t *testing.T) {
+	if http.DefaultClient.Jar == nil {
+		http.DefaultClient.Jar, _ = cookiejar.New(nil)
+	}
+
+	url := "http://www.zimuzu.tv/resource/32235"
+	s, tks, err := Parse(url)
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, tasks, err := parse(f)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if len(tasks) != 3 {
-		t.Errorf("Expect 3 tasks but %d", len(tasks))
-	}
-
-	fmt.Printf("%v\n", tasks[0])
-	fmt.Printf("%v\n", tasks[1])
-	fmt.Printf("%v\n", tasks[2])
+	fmt.Printf("%+v\n", s)
+	fmt.Printf("%v\n", tks[0])
+	fmt.Println(len(tks))
 }
 
-func TestYYets2(t *testing.T) {
-	f, err := os.Open("b.html")
+func TestParseSubscribeInfo(t *testing.T) {
+	f, err := os.Open("fargo-info.html")
 	if err != nil {
 		t.Error(err)
 	}
-
-	_, tasks, err := parse(f)
+	s, err := parseSubscribeInfo(f)
 	if err != nil {
 		t.Error(err)
 	}
-
-	if len(tasks) != 4 {
-		t.Errorf("Expect 4 tasks but %d", len(tasks))
-	}
-
-	fmt.Printf("%v\n", tasks[0])
-	fmt.Printf("%v\n", tasks[1])
-	fmt.Printf("%v\n", tasks[2])
-	fmt.Printf("%v\n", tasks[3])
+	fmt.Printf("%+v\n", s)
 }
 
-func TestYYetsGameOfThrones(t *testing.T) {
-	f, err := os.Open("gameofthrones.html")
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, tasks, err := parse(f)
-	if err != nil {
-		t.Error(err)
-	}
-
-	println(len(tasks))
-}
 func TestYYetsFargo(t *testing.T) {
 	f, err := os.Open("fargo.html")
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, tasks, err := parse(f)
+	tasks, err := parseEpisodes(f)
 	if err != nil {
 		t.Error(err)
 	}
@@ -74,5 +50,9 @@ func TestYYetsFargo(t *testing.T) {
 	println(len(tasks))
 }
 func TestYYetsLogin(t *testing.T) {
-	// YYetsLogin("", "")
+	if http.DefaultClient.Jar == nil {
+		http.DefaultClient.Jar, _ = cookiejar.New(nil)
+	}
+
+	YYetsLogin("", "")
 }

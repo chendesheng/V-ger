@@ -33,6 +33,7 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	println(len(tasks))
 
 	if s1 := subscribe.GetSubscribe(s.Name); s1 != nil {
 		for _, t := range tasks {

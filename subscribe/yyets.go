@@ -2,6 +2,7 @@ package subscribe
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,29 +19,74 @@ import (
 	"vger/html"
 )
 
-var YYetsFormats = []string{"1080p", "720p", "bd-720p", "web-dl"}
+var YYetsFormats map[string]struct{} //[]string{"1080p", "720p", "bd-720p", "web-dl"}
 
-func parseEpisodes(n *html.Node, season int, subscribeName string, format string, result *map[int]*task.Task) {
-	for _, c := range getTag(n, "li") {
-		if strings.ToLower(getAttr(c, "format")) == format {
-			episode, _ := strconv.Atoi(getAttr(c, "episode"))
-			if _, ok := (*result)[episode]; !ok {
-				t := parseSingle(c)
-				t.Subscribe = subscribeName
-				t.Season = season
-				t.Episode = episode
-				// println(t)
-				(*result)[t.Episode] = t
+func init() {
+	//init default formats
+	YYetsFormats = make(map[string]struct{})
+	YYetsFormats["1080p"] = struct{}{}
+	YYetsFormats["720p"] = struct{}{}
+	YYetsFormats["bd-720p"] = struct{}{}
+	YYetsFormats["web-dl"] = struct{}{}
+}
+
+func parseSubscribeInfo(r io.Reader) (s *Subscribe, err error) {
+	s = &Subscribe{}
+	var doc *html.Node
+	doc, err = html.Parse(r)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = r.(error)
+			return
+		}
+	}()
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		if n.Data == "div" {
+			if hasClass(n, "resource-con") {
+				s.Banner = getAttr(getTag1(getTag1(getClass1(n, "fl-img"), "p"), "a"), "href")
+				props := getTag(getTag1(getClass1(n, "fl-info"), "ul"), "li")
+				for _, c := range props {
+					span := getTag1(c, "span")
+					if span != nil {
+						k := getText(span)
+						if k == "英文：" {
+							if len(c.Child) > 1 {
+								s.Name = s.Name + getRidOfTags(c.Child[1])
+							}
+						}
+					}
+				}
+				s.Name = strings.TrimLeft(s.Name, ".")
+				s.Name = strings.TrimSpace(s.Name)
+				s.Name = strings.Replace(s.Name, "/", "|", -1)
+				s.Name = strings.Replace(s.Name, "\\", "|", -1)
+				return
 			}
 		}
+
+		for _, c := range n.Child {
+			f(c)
+		}
 	}
+
+	f(doc)
+
+	return
 }
-func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
+
+func parseEpisodes(r io.Reader) (result []*task.Task, err error) {
 
 	doc, err := html.Parse(r)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	defer func() {
@@ -53,53 +99,25 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 
 	result = make([]*task.Task, 0)
 
-	s = &Subscribe{}
-	s.Source = "YYets"
-	s.Autodownload = true
-
 	var f func(*html.Node)
 	f = func(n *html.Node) {
+		if n.Data == "div" {
+			if hasClass(n, "media-list") {
+				for _, li := range getTag(getTag1(n, "ul"), "li") {
+					ft := strings.ToLower(getAttr(li, "format"))
+					if _, ok := YYetsFormats[ft]; ok {
+						season, _ := strconv.Atoi(getAttr(li, "season"))
+						episode, _ := strconv.Atoi(getAttr(li, "episode"))
 
-		if n.Data == "ul" {
-			if hasClass(n, "resod_list") {
-				season, _ := strconv.Atoi(getAttr(n, "season"))
+						t := parseSingle(li)
+						t.Season = season
+						t.Episode = episode
 
-				if season > 100 { // means it's not normal show episodes, may be trailers.
-					season = -season // put it on bottom
-				}
-
-				res := make(map[int]*task.Task)
-				for _, ft := range YYetsFormats {
-					parseEpisodes(n, season, s.Name, ft, &res)
-				}
-
-				for _, t := range res {
-					result = append(result, t)
+						result = append(result, t)
+					}
 				}
 
 				return
-			}
-		}
-
-		if n.Data == "div" {
-			if hasClass(n, "res_infobox") {
-				s.Banner = getAttr(getTag1(getClass1(n, "f_l_img"), "a"), "href")
-				props := getTag(getClass1(getClass1(n, "f_r_info"), "r_d_info"), "li")
-				for _, c := range props {
-					k := getRidOfTags(getTag1(c, "span"))
-					if k == "英文：" {
-						if len(c.Child) > 1 {
-							s.Name = s.Name + getRidOfTags(c.Child[1])
-						}
-					}
-					// if k == "播出：" {
-					// 	s.Name = fmt.Sprintf("[%s] %s", getRidOfTags(getTag1(c, "strong")), s.Name)
-					// }
-				}
-				s.Name = strings.TrimLeft(s.Name, ".")
-				s.Name = strings.TrimSpace(s.Name)
-				s.Name = strings.Replace(s.Name, "/", "|", -1)
-				s.Name = strings.Replace(s.Name, "\\", "|", -1)
 			}
 		}
 
@@ -109,43 +127,68 @@ func parse(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
 	}
 	f(doc)
 
-	// fmt.Printf("%v\n", s)
-	// encoded, err := downloadBannerImage(s.Banner)
-	// if err == nil {
-	// 	s.Banner = encoded
-	// }
-	if len(s.Name) == 0 {
-		err = fmt.Errorf("Can't find name of the subscribe.")
-	} else {
-		err = nil
-	}
-
 	return
 }
 func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	YYetsLogin(util.ReadConfig("yyets-user"), util.ReadConfig("yyets-password"))
 
-	resp, err := http.Get(url)
+	i := strings.LastIndex(url, "/")
+	downloadPageUrl := fmt.Sprintf("%s/list%s", url[:i], url[i:])
+	log.Println("downloadPageUrl:", downloadPageUrl)
+
+	//parse episodes list
+	resp, err := http.Get(downloadPageUrl)
 	if err != nil {
 		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
-	s, t, err := parse(resp.Body)
-	if len(s.Name) == 0 {
-		respdata, _ := httputil.DumpResponse(resp, false)
-		log.Print(string(respdata))
-	}
-
+	t, err := parseEpisodes(resp.Body)
 	if err != nil {
 		return nil, nil, err
 	}
-	s.URL = url
 
-	return s, t, err
-}
-func ParseReader(r io.Reader) (s *Subscribe, result []*task.Task, err error) {
-	return parse(r)
+	//parse subscirbe info
+	resp, err = http.Get(url)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	s, err = parseSubscribeInfo(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	s.URL = url
+	s.Source = "YYets"
+	s.Autodownload = true
+	if len(s.Name) == 0 {
+		respdata, _ := httputil.DumpResponse(resp, false)
+		log.Print(string(respdata))
+		log.Print(t)
+		log.Print(s)
+		return nil, nil, errors.New("No subscirbe found")
+	}
+
+	filter := make(map[int]map[int]struct{})
+	var tks []*task.Task
+	for _, tk := range t {
+		if season, ok := filter[tk.Season]; ok {
+			if _, ok := season[tk.Episode]; !ok {
+				season[tk.Episode] = struct{}{}
+				tks = append(tks, tk)
+			}
+		} else {
+			filter[tk.Season] = make(map[int]struct{})
+			filter[tk.Season][tk.Episode] = struct{}{}
+			tks = append(tks, tk)
+		}
+
+		tk.Subscribe = s.Name
+	}
+
+	return s, tks, nil
 }
 
 func downloadBannerImage(url string) (string, error) {
@@ -174,17 +217,16 @@ func parseSingle(n *html.Node) *task.Task {
 	t := &task.Task{}
 	t.Status = "New"
 
-	c := getClass1(getTag1(getClass1(getClass1(n, "lks"), "lks-1"), "a"), "a")
-	t.Name = getRidOfTags(c)
+	t.Name = getText(getTag1(getClass1(n, "fl"), "a"))
 	t.StartTime = time.Now().Unix()
 
-	c = getClass1(getClass1(n, "pks"), "download")
+	c := getClass1(n, "fr")
 	if ed2k := getChildAttr1(c, "type", "ed2k"); ed2k != nil {
 		t.Original = getAttr(ed2k, "href")
 	} else if magnet := getChildAttr1(c, "type", "magnet"); magnet != nil {
 		t.Original = getAttr(magnet, "href")
-	} else if thunder := getChildAttr1(c, "thunderhref", "*"); thunder != nil {
-		t.Original = getAttr(thunder, "thunderhref")
+	} else if thunder := getChildAttr1(c, "pvgniyjm", "*"); thunder != nil {
+		t.Original = getAttr(thunder, "pvgniyjm")
 	} else {
 		t.Original = ""
 	}
