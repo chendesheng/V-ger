@@ -247,7 +247,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				if (typeof data == 'string') {
 					if (data == 'Need verify code') {
 						$scope.thunder_needverifycode = true;
-						document.getElementById('verifycode').src='thunder/verifycode/'+(new Date);
+						document.getElementById('verifycode').src='thunder/verifycode/?'+(new Date);
 						return;
 					} else {
 						$scope.thunder_needverifycode = false;
