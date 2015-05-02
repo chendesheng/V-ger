@@ -16,7 +16,7 @@ import (
 )
 
 var regAn = regexp.MustCompile(`^an([0-9])`)
-var regSvg = regexp.MustCompile("^([mlb] ([0-9]+ ?)+)+")
+var regSvg = regexp.MustCompile("^([mlb] (-?[0-9]+ ?)+)+")
 var regBold = regexp.MustCompile(`^b([0-9])+`)
 var regColor = regexp.MustCompile(`^[0-9]?c&H([0-9a-fA-F]+)&`)
 var regPos = regexp.MustCompile(`^pos\(([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*\)`)
