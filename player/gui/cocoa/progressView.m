@@ -11,6 +11,9 @@
                 _speedString = @"";
                 _paddingLeft = 0;
                 _titleString = @"";
+
+                _trackingArea = nil;
+                [self updateTrackingAreas];
         }
 
         return self;
@@ -68,7 +71,32 @@
 
         [super drawRect:dirtyRect];
 }
+
+-(void)dealloc {
+        [_trackingArea release];
+        [super dealloc];
+}
+
+- (void)updateTrackingAreas {
+        if (_trackingArea != nil) {
+                [self removeTrackingArea:_trackingArea];
+                [_trackingArea release];
+        }
+
+        NSTrackingAreaOptions options = NSTrackingMouseMoved | NSTrackingActiveInKeyWindow;
+
+        _trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
+                                                    options:options
+                                                      owner:self
+                                                   userInfo:nil];
+
+        [self addTrackingArea:_trackingArea];
+        [super updateTrackingAreas];
+}
+
 - (void)mouseDown:(NSEvent *)event {
+	NSLog(@"progressView mouseDown");
+
         if (_leftString == _rightString) {
                 return;
         }
@@ -133,9 +161,6 @@
         NSView *v = self.superview;
         [v setHidden:b];
 }
-- (void)mouseDragged:(NSEvent *)event{}
-- (void)mouseUp:(NSEvent *)event{}
-- (void)mouseMoved:(NSEvent *)event{}
 - (void)updatePorgressInfo:(NSString*)leftString rightString:(NSString*)rightString percent:(CGFloat)percent {
         _leftString = leftString;
         _rightString = rightString;
