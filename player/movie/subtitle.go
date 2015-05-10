@@ -73,6 +73,8 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 				} else {
 					subname = s.Description + ".srt" //always use srt
 				}
+
+				subname = subname[strings.LastIndex(subname, "\\")+1:]
 			}
 
 			subFile := path.Join(dir, subname)
