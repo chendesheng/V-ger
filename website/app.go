@@ -3,6 +3,9 @@ package website
 import (
 	"fmt"
 	"net/http"
+	"net/url"
+
+	"github.com/gorilla/mux"
 	// _ "net/http/pprof"
 	"bytes"
 	"os"
@@ -52,6 +55,7 @@ func appStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("</body></html>"))
 }
+
 func appShutdownHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("bye"))
 	go func() {
@@ -59,6 +63,14 @@ func appShutdownHandler(w http.ResponseWriter, r *http.Request) {
 		os.Exit(0)
 	}()
 }
+
 func appGCHandler(w http.ResponseWriter, r *http.Request) {
 	debug.FreeOSMemory()
+}
+
+func appCookieHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	u, _ := url.Parse("http://" + vars["domain"])
+	cookies := http.DefaultClient.Jar.Cookies(u)
+	writeJson(w, cookies)
 }

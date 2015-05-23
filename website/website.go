@@ -568,6 +568,7 @@ func Run(isDebug bool) {
 	r.HandleFunc("/app/status", appStatusHandler)
 	r.HandleFunc("/app/shutdown", appShutdownHandler)
 	r.HandleFunc("/app/gc", appGCHandler)
+	r.HandleFunc("/app/cookie/{domain}", appCookieHandler)
 
 	r.PathPrefix("/assets/").Handler(http.FileServer(http.Dir(".")))
 
