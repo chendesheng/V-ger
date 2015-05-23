@@ -6,7 +6,7 @@ import (
 )
 
 func TestBufferWrite(t *testing.T) {
-	b := NewBuffer(1000)
+	b := newBuffer(1000)
 	b.WriteAtQuit(block.Block{100, make([]byte, 100)}, nil)
 	if len(b.data) != 1 {
 		t.Errorf("list length should be 1 but %d", len(b.data))
@@ -19,7 +19,7 @@ func TestBufferWrite(t *testing.T) {
 }
 
 func TestBufferFromTo(t *testing.T) {
-	b := NewBuffer(1000)
+	b := newBuffer(1000)
 	b.WriteAtQuit(block.Block{100, make([]byte, 100)}, nil)
 	if len(b.data) != 1 {
 		t.Errorf("list length should be 1 but %d", len(b.data))
@@ -49,7 +49,7 @@ func (w *testWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 func TestBufferRead(t *testing.T) {
-	b := NewBuffer(1000)
+	b := newBuffer(1000)
 	from := int64(0)
 	for from < b.size {
 		b.WriteAtQuit(block.Block{from, make([]byte, 100)}, make(chan struct{}))
@@ -89,7 +89,7 @@ func TestBufferRead(t *testing.T) {
 }
 
 func TestBufferReadBorder(t *testing.T) {
-	b := NewBuffer(1000)
+	b := newBuffer(1000)
 	from := int64(0)
 	for from < b.size {
 		b.WriteAtQuit(block.Block{from, make([]byte, 100)}, make(chan struct{}))
@@ -110,7 +110,7 @@ func TestBufferReadBorder(t *testing.T) {
 }
 
 func TestGC(t *testing.T) {
-	b := NewBuffer(1000)
+	b := newBuffer(1000)
 	from := int64(0)
 	i := int64(1)
 	for from < b.size {
@@ -131,7 +131,7 @@ func TestGC(t *testing.T) {
 }
 
 func TestGCClear(t *testing.T) {
-	b := NewBuffer(1000)
+	b := newBuffer(1000)
 	from := int64(0)
 	i := int64(1)
 	for from < b.size {
@@ -147,7 +147,7 @@ func TestGCClear(t *testing.T) {
 	}
 }
 func TestGCNoRelease(t *testing.T) {
-	b := NewBuffer(1000)
+	b := newBuffer(1000)
 	from := int64(0)
 	i := int64(1)
 	for from < b.size {

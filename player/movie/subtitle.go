@@ -263,11 +263,11 @@ func (m *Movie) setupSubtitles(subs map[string]*shared.Sub) {
 }
 
 func getNameDistance(from, to string) int {
-	if i := strings.LastIndex(from, "-"); i >= 0 {
+	if i := strings.LastIndex(from, "."); i >= 0 {
 		from = from[:i]
 	}
 
-	if i := strings.LastIndex(to, "-"); i >= 0 {
+	if i := strings.LastIndex(to, "."); i >= 0 {
 		to = to[:i]
 	}
 
