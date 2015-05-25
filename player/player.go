@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	_ "net/http/pprof"
 	"path"
 	"runtime"
@@ -13,6 +12,7 @@ import (
 	"vger/dbHelper"
 	"vger/filelock"
 	"vger/logger"
+	"vger/nativejar"
 	"vger/player/gui"
 	"vger/player/movie"
 	"vger/thunder"
@@ -217,7 +217,8 @@ func main() {
 	thunder.Gdriveid = util.ReadConfig("gdriveid")
 
 	if http.DefaultClient.Jar == nil {
-		http.DefaultClient.Jar, _ = cookiejar.New(nil)
+		//http.DefaultClient.Jar, _ = cookiejar.New(nil)
+		http.DefaultClient.Jar, _ = nativejar.New()
 	}
 
 	log.Print("gdriveid:", thunder.Gdriveid)

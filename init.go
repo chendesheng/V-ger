@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"os"
 	"path"
 	"runtime"
@@ -12,6 +11,7 @@ import (
 	"vger/download"
 	"vger/filelock"
 	"vger/logger"
+	"vger/nativejar"
 	"vger/subscribe"
 	"vger/thunder"
 	"vger/util"
@@ -27,9 +27,9 @@ func init() {
 	logbase := util.ReadConfig("log")
 	logger.InitLog("[V'ger]", path.Join(logbase, "vger.log"))
 
-	// http.DefaultClient.Jar = &cookiejar.SafariCookieJar{}
-	jar, _ := cookiejar.New(nil)
-	http.DefaultClient.Jar = jar
+	//jar, _ := cookiejar.New(nil)
+	//http.DefaultClient.Jar = jar
+	http.DefaultClient.Jar, _ = nativejar.New()
 
 	util.SaveConfig("shutdown-after-finish", "false")
 
