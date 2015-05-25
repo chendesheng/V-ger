@@ -314,9 +314,10 @@ func getBtTaskList(userId string, id string, cid string) ([]ThunderTask, error) 
 }
 
 func getCookieValue(name string) string {
-	url, _ := url.Parse("http://lixian.vip.xunlei.com/")
+	url, _ := url.Parse("http://xunlei.com/")
 	for _, c := range http.DefaultClient.Jar.Cookies(url) {
-		if c.Name == name {
+		//log.Printf("cookie: %s=%s", c.Name, c.Value)
+		if c.Name == name && len(c.Value) > 0 {
 			return c.Value
 		}
 	}

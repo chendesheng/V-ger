@@ -51,14 +51,18 @@ func Login2(gdriveid string, user, password string, quit chan struct{}) (string,
 
 	result := getCookieValue("check_result")
 	if len(result) == 0 {
-		return "", "", fmt.Errorf("Login faild")
+		return "", "", fmt.Errorf("Login failed")
 	}
+	log.Println("check_result:", result)
 
 	args := strings.Split(result, ":")
 	if len(args) < 2 {
-		return "", "", fmt.Errorf("Login faild")
+		return "", "", fmt.Errorf("Login failed")
 	}
 	verifyCode := args[1]
+
+	log.Println("args:", args[0], args[1])
+
 	passwordMd5 := singleMd5(password + strings.ToUpper(verifyCode))
 
 	_, err = httpex.PostFormRespString("http://login.xunlei.com/sec2login/", nil,
@@ -80,6 +84,8 @@ func Login2(gdriveid string, user, password string, quit chan struct{}) (string,
 	}
 
 	userid := getCookieValue("userid")
+	log.Print("userid:", userid)
+
 	html, err := httpex.GetStringResp("http://dynamic.cloud.vip.xunlei.com/user_task",
 		&url.Values{
 			"userid": {userid},
