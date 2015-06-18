@@ -44,7 +44,7 @@ function handleMessage(event) {
                 } else {
                         ele = document.createElement('div');
                         ele.id = 'vger-verifycodebox';
-                        ele.style.cssText = 'box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);background-color:rgb(240,239,233);padding:10px 0;border-radius:4px;display:block;position:fixed;width:150px;left:50%;top:50%;margin-left:-75px;text-align:center;border:none;';
+                        ele.style.cssText = 'box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);background-color:rgb(240,239,233);padding:10px 0;border-radius:4px;display:block;position:fixed;width:150px;left:50%;top:50%;margin-left:-75px;text-align:center;border:none;z-index:2147483639';
                         ele.innerHTML = '<div style="">Input Verify Code</div><div><img style="cursor:pointer;" title="click to refresh" id="vger-verifycodeimg" src="'+event.message+'?"></div><div><input style="text-align:center" id="vger-verifycode" type="text"/></div><div><input id="vger-verifycodebtn" onclick="vgerVerifyCodeClicked();" type="button" value="OK"/></div>';
                         document.body.insertBefore(ele, document.body.firstChild);
                         document.getElementById('vger-verifycodebtn').onclick = function() {
