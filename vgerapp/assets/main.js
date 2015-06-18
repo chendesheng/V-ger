@@ -1,7 +1,7 @@
 angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 	function($scope, $http) {
 		function monitor(path, ondata, onclose, onerror) {
-			var websocket = new WebSocket('ws://192.168.0.110:9527/' + path);
+			var websocket = new WebSocket('ws://192.168.0.111:9527/' + path);
 
 			websocket.onopen = onOpen;
 			websocket.onclose = onClose;
@@ -288,7 +288,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				url.indexOf('cdn.baidupcs.com') != -1 ||
 				url.indexOf('googlevideo.com') != -1 ||
 				url.indexOf('baidupcs.com') != -1 ||
-				/.*dmg|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz/.test(url)) {
+				/(.*dmg|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz)\s*$/.test(url)) {
 				$http.post('new', url).success(function(resp) {
 					if (!resp) {
 						url = '';
