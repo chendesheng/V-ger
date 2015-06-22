@@ -11,17 +11,14 @@
                 _speedString = @"";
                 _paddingLeft = 0;
                 _titleString = @"";
-
-                _trackingArea = nil;
-                [self updateTrackingAreas];
         }
 
         return self;
 }
+
 -(BOOL)mouseDownCanMoveWindow {
         return NO;
 }
-
 -(void)drawRoundedRect:(NSRect)rect radius:(CGFloat)r {
         NSBezierPath *textViewSurround = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:r yRadius:r];
         [textViewSurround fill];
@@ -73,37 +70,17 @@
 }
 
 -(void)dealloc {
-        [_trackingArea release];
         [super dealloc];
 }
 
-- (void)updateTrackingAreas {
-        if (_trackingArea != nil) {
-                [self removeTrackingArea:_trackingArea];
-                [_trackingArea release];
-        }
-
-        NSTrackingAreaOptions options = NSTrackingMouseMoved | NSTrackingActiveInKeyWindow;
-
-        _trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
-                                                    options:options
-                                                      owner:self
-                                                   userInfo:nil];
-
-        [self addTrackingArea:_trackingArea];
-        [super updateTrackingAreas];
-}
-
 - (void)mouseDown:(NSEvent *)event {
-	NSLog(@"progressView mouseDown");
-
         if (_leftString == _rightString) {
                 return;
         }
 
         CGFloat stringWidth = 60;
         NSPoint pt = [self convertPoint:[event locationInWindow] fromView:nil];
-        NSRect bound = NSMakeRect(stringWidth+_paddingLeft, 4, self.frame.size.width-2*stringWidth-_paddingLeft, 22-8);
+        NSRect bound = NSMakeRect(stringWidth+_paddingLeft, 0, self.frame.size.width-2*stringWidth-_paddingLeft, 22);
 
         if (NSPointInRect(pt, bound)) {
                 _percent = (pt.x-bound.origin.x)/bound.size.width;            

@@ -37,6 +37,9 @@
 	w.aspectRatio = self->savedAspectRatio;
 
 	onFullScreen(DID_EXIT_FULL_SCREEN);
+
+	//This is required or the progress view will broken, the progress view must show up right after exit from full screen. FIXME: I don't known why. 
+	setControlsVisible(w, 1, 1);
 }
 
 - (void)windowDidResize:(NSNotification *)notification {

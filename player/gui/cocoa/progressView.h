@@ -8,8 +8,8 @@
 	CGFloat _percent2;
 	NSString *_speedString;
 	CGFloat _paddingLeft;
-	NSTrackingArea* _trackingArea;
 }
 -(void)updatePorgressInfo:(NSString*)leftStr rightString:(NSString*)rightStr percent:(CGFloat)p;
 -(void)updateBufferInfo:(NSString*)speed bufferPercent:(CGFloat)p;
+-(ProgressView*)clone;
 @end
