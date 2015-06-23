@@ -147,6 +147,7 @@ func Parse(url string) (s *Subscribe, result []*task.Task, err error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	log.Println("counts:", len(t))
 
 	//parse subscirbe info
 	resp, err = http.Get(url)

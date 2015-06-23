@@ -33,18 +33,23 @@ func subscribeNewHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	println(len(tasks))
+	log.Print("tasks: ", len(tasks))
 
 	if s1 := subscribe.GetSubscribe(s.Name); s1 != nil {
 		for _, t := range tasks {
 			t1, err := task.GetTask(t.Name)
 			if err != nil {
 				if err == task.ErrNoTask {
-					task.SaveTaskIgnoreErr(t)
-				} else if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
-					task.SaveTaskIgnoreErr(t)
+					var exists bool
+					if exists, err = task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
+						task.SaveTaskIgnoreErr(t)
+					}
+
+					if err != nil {
+						log.Print(err)
+					}
 				} else {
-					log.Println("episode exists")
+					log.Print(err)
 				}
 			} else {
 				if t1.Subscribe != t.Subscribe || t1.Season != t.Season || t1.Episode != t.Episode {
@@ -186,8 +191,10 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 		log.Print(err)
 	} else {
 		for _, t := range tasks {
-			if exists, err := task.Exists(t.Name); err == nil && !exists {
-				if exists, err := task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
+			var exists bool
+			var err error
+			if exists, err = task.Exists(t.Name); err == nil && !exists {
+				if exists, err = task.ExistsEpisode(t.Subscribe, t.Season, t.Episode); err == nil && !exists {
 					log.Printf("subscribe new task: %v", t)
 
 					if t.Season < 0 {
@@ -214,6 +221,14 @@ func updateOne(s *subscribe.Subscribe, cache map[string]int) {
 						}
 					}
 				}
+
+				if err != nil {
+					log.Print(err)
+				}
+			}
+
+			if err != nil {
+				log.Print(err)
 			}
 		}
 	}
