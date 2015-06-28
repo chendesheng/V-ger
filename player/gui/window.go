@@ -106,16 +106,7 @@ func (w *Window) SetSize(width, height int) {
 	w.originalWidth, w.originalHeight = width, height
 
 	if !w.IsFullScreen() {
-		sw, sh := getScreenSize()
-		if width > int(0.9*float64(sw)) || height > int(0.9*float64(sh)) {
-			ratio := float64(height) / float64(width)
-			width = int(float64(sw) * 0.9)
-			height = int(float64(sw) * 0.9 * ratio)
-
-			w.NativeWindow.SetSize(width, height)
-		} else {
-			w.NativeWindow.SetSize(width, height)
-		}
+		w.NativeWindow.SetSize(width, height)
 	}
 }
 
