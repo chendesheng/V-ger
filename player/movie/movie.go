@@ -163,6 +163,7 @@ func (m *Movie) setupContext(file string) (filename string, duration time.Durati
 
 	var ctx libav.AVFormatContext
 
+	file = strings.TrimSpace(file)
 	if strings.HasPrefix(file, "http://") ||
 		strings.HasPrefix(file, "https://") {
 
