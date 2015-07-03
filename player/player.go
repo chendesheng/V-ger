@@ -186,12 +186,12 @@ func (app *appDelegate) onSyncAudioClick(tag int) {
 func (app *appDelegate) OnFullScreen(action int) {
 	app.w.SetFullScreen(action)
 
-	switch action {
-	case WILL_ENTER_FULL_SCREEN, WILL_EXIT_FULL_SCREEN:
-		app.m.ClockHold()
-	case DID_ENTER_FULL_SCREEN, DID_EXIT_FULL_SCREEN:
-		app.m.ClockUnhold()
-	}
+	//switch action {
+	//case WILL_ENTER_FULL_SCREEN, WILL_EXIT_FULL_SCREEN:
+	//	app.m.ClockHold()
+	//case DID_ENTER_FULL_SCREEN, DID_EXIT_FULL_SCREEN:
+	//	app.m.ClockUnhold()
+	//}
 }
 
 func main() {
