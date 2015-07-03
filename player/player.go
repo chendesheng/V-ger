@@ -212,6 +212,8 @@ func main() {
 
 	filelock.DefaultLock, _ = filelock.New("/tmp/vger.db.lock.txt")
 
+	movie.SearchSubtitleTimeout = time.Duration(util.ReadIntConfig("search-subtitle-timeout")) * time.Second
+
 	thunder.UserName = util.ReadConfig("thunder-user")
 	thunder.Password = util.ReadConfig("thunder-password")
 	thunder.Gdriveid = util.ReadConfig("gdriveid")

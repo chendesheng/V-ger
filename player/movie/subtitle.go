@@ -21,13 +21,20 @@ import (
 	"vger/util"
 )
 
+var unarPath string //for unit test
+var SearchSubtitleTimeout = 40 * time.Second
+
 func extract(subFile string) {
 	dir := path.Dir(os.Args[0])
 	var unar string
 	if dir == "." {
 		unar = "./unar"
 	} else {
-		unar = path.Join(dir, "unar")
+		if len(unarPath) > 0 {
+			unar = unarPath
+		} else {
+			unar = path.Join(dir, "unar")
+		}
 	}
 
 	log.Print("Extract file: ", subFile)
@@ -49,19 +56,18 @@ func saveToDisk(subFile string, data []byte) {
 		log.Print(err)
 	}
 }
-func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit chan struct{}) bool {
-	deadline := time.Now().Add(time.Minute)
+func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit chan struct{}) (finded bool) {
 	for {
 		select {
 		case s, ok := <-chSubs:
 			if !ok {
-				return true
+				return
 			}
 
 			log.Printf("%v", s)
 			// text, _ := json.Marshal(s)
 			// io.WriteString(ws, string(text))
-			_, subname, _, data, err := download.GetDownloadInfoN(s.URL, s.Context, 3, true, quit)
+			_, subname, _, data, err := download.GetDownloadInfoN(s.URL, s.Context, 2, true, quit)
 			if err != nil {
 				log.Print(err)
 				break
@@ -86,28 +92,22 @@ func receiveAndExtractSubtitles(chSubs chan subtitles.Subtitle, dir string, quit
 				}
 
 				extract(subFile)
+
+				finded = true
 			} else {
 				saveToDisk(subFile, data)
+
+				finded = true
 			}
 		case <-quit:
-			return false
-		}
-
-		if time.Now().After(deadline) {
-			break
+			return
 		}
 	}
 
-	return true
+	return
 }
-func readSubtitlesFromDir(movieName, dir string, quit chan struct{}) {
+func readSubtitlesFromDir(movieName, dir string) {
 	util.WalkFiles(dir, func(filename string) error {
-		select {
-		case <-quit:
-			return fmt.Errorf("quit")
-		default:
-		}
-
 		f, err := os.OpenFile(filename, os.O_RDONLY, 0666)
 		if err != nil {
 			log.Print(err)
@@ -154,7 +154,7 @@ func downloadSubs(movieName string, url string, search string, quit chan struct{
 	}
 
 	if receiveAndExtractSubtitles(chSubs, dir, quit) {
-		readSubtitlesFromDir(movieName, dir, quit)
+		readSubtitlesFromDir(movieName, dir)
 	}
 }
 
@@ -192,22 +192,28 @@ func (m *Movie) searchDownloadSubtitle() {
 	w.SendShowMessage("Downloading subtitles...", false)
 
 	search, url := m.getSubtitleSearch()
+
+	go func() {
+		select {
+		case <-quit:
+			break
+		case <-time.After(SearchSubtitleTimeout):
+			log.Printf("Search subtitle %s timeout", search)
+			q := m.subQuit
+			m.subQuit = nil
+			close(q)
+			break
+		}
+	}()
+
 	downloadSubs(m.p.Movie, url, search, quit)
 
-	select {
-	case <-quit:
+	subs := shared.GetSubtitlesMap(m.p.Movie)
+	if len(subs) == 0 {
+		w.SendShowMessage("No subtitle", true)
+	} else {
+		m.setupSubtitles(subs)
 		w.SendHideMessage()
-	default:
-		m.subQuit = nil
-		close(quit)
-
-		subs := shared.GetSubtitlesMap(m.p.Movie)
-		if len(subs) == 0 {
-			w.SendShowMessage("No subtitle", true)
-		} else {
-			m.setupSubtitles(subs)
-			w.SendHideMessage()
-		}
 	}
 }
 func (m *Movie) getSub(name string) *subtitle.Subtitle {
