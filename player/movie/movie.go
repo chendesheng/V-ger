@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -216,7 +217,7 @@ func (m *Movie) Open(w *gui.Window, file string) (err error) {
 
 	m.c = clock.New(duration)
 
-	m.p = shared.CreateOrGetPlaying(filename)
+	m.p = shared.CreateOrGetPlaying(filepath.Base(filename))
 	m.p.Duration = duration
 
 	err = m.setupVideo()

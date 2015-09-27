@@ -3,7 +3,7 @@ var $ = require('jquery');
 module.exports = {
 	startMonitor:
 	function (path, ondata, onclose, onerror) {
-		var websocket = new WebSocket('ws://192.168.0.110:9527/' + path);
+		var websocket = new WebSocket('ws://192.168.0.111:9527/' + path);
 
 		websocket.onopen = onOpen;
 		websocket.onclose = onClose;

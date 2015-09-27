@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B05BBD551AD2917200D0C905 /* openURL.h in Headers */ = {isa = PBXBuildFile; fileRef = B05BBD521AD2917200D0C905 /* openURL.h */; };
+		B05BBD561AD2917200D0C905 /* openURL.m in Sources */ = {isa = PBXBuildFile; fileRef = B05BBD531AD2917200D0C905 /* openURL.m */; };
 		B098694419E1207000B23D57 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B098694319E1207000B23D57 /* Cocoa.framework */; };
 		B0986A2A19E12A7B00B23D57 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0986A2919E12A7B00B23D57 /* OpenGL.framework */; };
 		B0986A3219E12C4500B23D57 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0986A3119E12C4500B23D57 /* QuartzCore.framework */; };
@@ -15,7 +17,6 @@
 		B0E6C52619E131690029DA97 /* volumeView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50619E131690029DA97 /* volumeView.m */; };
 		B0E6C52819E131690029DA97 /* titleTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50819E131690029DA97 /* titleTextView.m */; };
 		B0E6C52A19E131690029DA97 /* textView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50A19E131690029DA97 /* textView.m */; };
-		B0E6C52C19E131690029DA97 /* startupView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50C19E131690029DA97 /* startupView.m */; };
 		B0E6C52E19E131690029DA97 /* spinningView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C50E19E131690029DA97 /* spinningView.m */; };
 		B0E6C53019E131690029DA97 /* progressView.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C51019E131690029DA97 /* progressView.m */; };
 		B0E6C53419E131690029DA97 /* gui.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E6C51919E131690029DA97 /* gui.m */; };
@@ -43,6 +44,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B05BBD521AD2917200D0C905 /* openURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = openURL.h; sourceTree = "<group>"; };
+		B05BBD531AD2917200D0C905 /* openURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = openURL.m; sourceTree = "<group>"; };
+		B05BBD541AD2917200D0C905 /* openURL.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = openURL.xib; sourceTree = "<group>"; };
 		B09234B819E1AF3B001AE3B7 /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		B098694019E1207000B23D57 /* liblib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B098694319E1207000B23D57 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -63,8 +67,6 @@
 		B0E6C50919E131690029DA97 /* titleTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = titleTextView.h; sourceTree = "<group>"; };
 		B0E6C50A19E131690029DA97 /* textView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = textView.m; sourceTree = "<group>"; };
 		B0E6C50B19E131690029DA97 /* textView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = textView.h; sourceTree = "<group>"; };
-		B0E6C50C19E131690029DA97 /* startupView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = startupView.m; sourceTree = "<group>"; };
-		B0E6C50D19E131690029DA97 /* startupView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = startupView.h; sourceTree = "<group>"; };
 		B0E6C50E19E131690029DA97 /* spinningView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = spinningView.m; sourceTree = "<group>"; };
 		B0E6C50F19E131690029DA97 /* spinningView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spinningView.h; sourceTree = "<group>"; };
 		B0E6C51019E131690029DA97 /* progressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = progressView.m; sourceTree = "<group>"; };
@@ -113,6 +115,9 @@
 		B098693719E1207000B23D57 = {
 			isa = PBXGroup;
 			children = (
+				B05BBD521AD2917200D0C905 /* openURL.h */,
+				B05BBD531AD2917200D0C905 /* openURL.m */,
+				B05BBD541AD2917200D0C905 /* openURL.xib */,
 				B09234B819E1AF3B001AE3B7 /* MainMenu.xib */,
 				B0E6C50219E131690029DA97 /* windowDelegate.m */,
 				B0E6C50319E131690029DA97 /* windowDelegate.h */,
@@ -124,8 +129,6 @@
 				B0E6C50919E131690029DA97 /* titleTextView.h */,
 				B0E6C50A19E131690029DA97 /* textView.m */,
 				B0E6C50B19E131690029DA97 /* textView.h */,
-				B0E6C50C19E131690029DA97 /* startupView.m */,
-				B0E6C50D19E131690029DA97 /* startupView.h */,
 				B0E6C50E19E131690029DA97 /* spinningView.m */,
 				B0E6C50F19E131690029DA97 /* spinningView.h */,
 				B0E6C51019E131690029DA97 /* progressView.m */,
@@ -219,6 +222,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B05BBD551AD2917200D0C905 /* openURL.h in Headers */,
 				B0E6C53519E131690029DA97 /* gui.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -309,13 +313,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0E6C52C19E131690029DA97 /* startupView.m in Sources */,
 				B0E6C53019E131690029DA97 /* progressView.m in Sources */,
 				B0E6C52819E131690029DA97 /* titleTextView.m in Sources */,
 				B0E6C53919E131690029DA97 /* blurView.m in Sources */,
 				B0E6C53819E131690029DA97 /* callbacks.c in Sources */,
 				B0E6C52619E131690029DA97 /* volumeView.m in Sources */,
 				B0E6C53B19E131690029DA97 /* app.m in Sources */,
+				B05BBD561AD2917200D0C905 /* openURL.m in Sources */,
 				B0E6C53419E131690029DA97 /* gui.m in Sources */,
 				B0E6C52E19E131690029DA97 /* spinningView.m in Sources */,
 				B0E6C52219E131690029DA97 /* windowDelegate.m in Sources */,

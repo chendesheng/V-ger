@@ -13,8 +13,8 @@
 }
 
 - (IBAction)openClick:(id)sender {
-        onOpenFile([_txtURL.stringValue UTF8String]);
         [[self window] close];
+        onOpenFile([_txtURL.stringValue UTF8String]);
 }
 
 - (IBAction)cancelClick:(id)sender {

@@ -288,7 +288,7 @@ angular.module('vger', ['ngAnimate', 'ui']).controller('tasks_ctrl',
 				url.indexOf('cdn.baidupcs.com') != -1 ||
 				url.indexOf('googlevideo.com') != -1 ||
 				url.indexOf('baidupcs.com') != -1 ||
-				/(.*dmg|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz)\s*$/.test(url)) {
+				/(.*dmg|.*mp3|.*zip|.*pdf|.*rar|.*exe|.*iso|.*pkg|.*gz)\s*$/.test(url)) {
 				$http.post('new', url).success(function(resp) {
 					if (!resp) {
 						url = '';
