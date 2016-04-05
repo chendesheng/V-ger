@@ -53,7 +53,13 @@ func parseSubscribeInfo(r io.Reader) (s *Subscribe, err error) {
 				s.Banner = getAttr(getTag1(getTag1(getClass1(n, "fl-img"), "p"), "a"), "href")
 				props := getTag(getTag1(getClass1(n, "fl-info"), "ul"), "li")
 				for _, c := range props {
-					span := getTag1(c, "span")
+					strong := getTag1(c, "strong")
+					var span *html.Node
+					if strong != nil {
+						c = strong
+					}
+					span = getTag1(c, "span")
+
 					if span != nil {
 						k := getText(span)
 						if k == "英文：" {
