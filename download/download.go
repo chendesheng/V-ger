@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"vger/toutf8"
+	"vger/util"
 )
 
 var NetworkTimeout time.Duration
@@ -51,6 +52,11 @@ func GetDownloadInfoN(url string, header http.Header, retryTimes int, readBody b
 	}
 	if header != nil {
 		req.Header = header
+	}
+
+	ua := util.ReadConfig("user-agent")
+	if len(ua) > 0 {
+		req.Header.Set("User-Agent", ua)
 	}
 
 	resp, err := fetchN(req, retryTimes, quit)
