@@ -5,6 +5,7 @@ package cocoa
 import "C"
 import (
 	"log"
+	"reflect"
 	"unsafe"
 )
 
@@ -112,17 +113,36 @@ func (w NativeWindow) ShowSubtitle(items []struct {
 		return 0
 	}
 
-	ctexts := make([]C.AttributedString, 0)
-	for _, str := range items {
+	p := (*C.struct_AttributedString)(C.malloc(C.size_t(C.sizeof_struct_AttributedString * len(items))))
+
+	var ctexts []C.AttributedString
+	ctextsHeader := (*reflect.SliceHeader)(unsafe.Pointer(&ctexts))
+	ctextsHeader.Cap = len(items)
+	ctextsHeader.Len = len(items)
+	ctextsHeader.Data = uintptr(unsafe.Pointer(p))
+	defer C.free(unsafe.Pointer(p))
+
+	for i, str := range items {
+		log.Println(str.Content)
 		cstr := C.CString(str.Content)
 		defer C.free(unsafe.Pointer(cstr))
 
-		ctexts = append(ctexts, C.AttributedString{cstr, C.int(str.Style), C.uint(str.Color)})
+		ctext := &ctexts[i]
+		ctext.str = cstr
+		ctext.style = C.int(str.Style)
+		ctext.color = C.uint(str.Color)
 	}
 
-	citem := &C.SubItem{&ctexts[0], C.int(len(ctexts)), C.int(posType), C.double(x), C.double(y)}
+	csubitem := (*C.struct_SubItem)(C.malloc(C.sizeof_struct_SubItem))
+	defer C.free(unsafe.Pointer(csubitem))
 
-	return uintptr(C.showSubtitle(w.ptr, citem))
+	csubitem.texts = (*C.struct_AttributedString)(p)
+	csubitem.length = C.int(len(ctexts))
+	csubitem.align = C.int(posType)
+	csubitem.x = C.double(x)
+	csubitem.y = C.double(y)
+
+	return uintptr(C.showSubtitle(w.ptr, csubitem))
 }
 
 func (w NativeWindow) HideSubtitle(ptr uintptr) {

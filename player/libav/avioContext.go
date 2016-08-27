@@ -20,7 +20,7 @@ var cbSeekFunc func(pos int64, whence int) int64
 
 func NewAVIOContext(buffer AVObject, readfn func(AVObject) int, seekfn func(pos int64, whence int) int64) AVIOContext {
 	ptr := C.new_io_context(
-		(*_Ctype_unsignedchar)(buffer.ptr),
+		(*C.uchar)(buffer.ptr),
 		C.int(buffer.size),
 		nil)
 

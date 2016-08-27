@@ -54,12 +54,12 @@ func (ctx *AVCodecContext) PixelFormat() int {
 	return int(ctx.ptr.pix_fmt)
 }
 
-func (ctx *AVCodecContext) DecodeVideo(frame AVFrame, packet AVPacket) (bool, int) {
-	// println("decode video ", frame.ptr)
-	// println("decode video ", ctx.ptr)
+func (ctx *AVCodecContext) DecodeVideo(frame AVFrame, packet AVPacket) bool {
+	//println("decode video ", frame.ptr)
+	//println("decode video ", ctx.ptr)
 	var gotFrame C.int
-	errno := C.avcodec_decode_video2(ctx.ptr, frame.ptr, &gotFrame, packet.pointer())
-	return gotFrame != 0, int(errno)
+	C.avcodec_decode_video2(ctx.ptr, frame.pointer(), &gotFrame, packet.pointer())
+	return gotFrame != 0
 }
 
 func (ctx *AVCodecContext) Timebase() AVRational {

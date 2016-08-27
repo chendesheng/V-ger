@@ -17,7 +17,7 @@ func NewAVProbeData() AVProbeData {
 }
 
 func (p *AVProbeData) SetBuffer(buf AVObject) {
-	p.ptr.buf = (*_Ctype_unsignedchar)(buf.ptr)
+	p.ptr.buf = (*C.uchar)(buf.ptr)
 	p.ptr.buf_size = C.int(buf.size)
 }
 

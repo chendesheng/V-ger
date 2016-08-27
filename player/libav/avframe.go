@@ -15,15 +15,19 @@ type AVFrame struct {
 	ptr *C.AVFrame
 }
 
-func (frame *AVFrame) SetOpaque(obj AVObject) {
+func (frame AVFrame) pointer() *C.AVFrame {
+	return frame.ptr
+}
+
+func (frame AVFrame) SetOpaque(obj AVObject) {
 	frame.ptr.opaque = obj.ptr
 }
 
-func (frame *AVFrame) Opaque() AVObject {
+func (frame AVFrame) Opaque() AVObject {
 	return AVObject{ptr: frame.ptr.opaque}
 }
 
-func (frame *AVFrame) IsNil() bool {
+func (frame AVFrame) IsNil() bool {
 	return frame.ptr == nil
 }
 
@@ -32,39 +36,39 @@ func AllocFrame() AVFrame {
 	return frame
 }
 
-func (frame *AVFrame) ChannelLayout() int64 {
+func (frame AVFrame) ChannelLayout() int64 {
 	return int64(frame.ptr.channel_layout)
 }
 
-func (frame *AVFrame) NbSamples() int {
+func (frame AVFrame) NbSamples() int {
 	return int(frame.ptr.nb_samples)
 }
 
-func (frame *AVFrame) Format() int {
+func (frame AVFrame) Format() int {
 	return int(frame.ptr.format)
 }
 
-func (frame *AVFrame) SampleRate() int {
+func (frame AVFrame) SampleRate() int {
 	return int(frame.ptr.sample_rate)
 }
 
-func (frame *AVFrame) Data() unsafe.Pointer {
+func (frame AVFrame) Data() unsafe.Pointer {
 	return unsafe.Pointer(&frame.ptr.data[0])
 }
 
-func (frame *AVFrame) Linesize(i int) int {
+func (frame AVFrame) Linesize(i int) int {
 	return int(frame.ptr.linesize[i])
 }
 
-func (frame *AVFrame) Picture() AVPicture {
+func (frame AVFrame) Picture() AVPicture {
 	return AVPicture{ptr: (*C.AVPicture)(unsafe.Pointer(frame.ptr))}
 }
 
-func (frame *AVFrame) RepeatPict() int {
+func (frame AVFrame) RepeatPict() int {
 	return int(frame.ptr.repeat_pict)
 }
 
-func (frame *AVFrame) Flip(height int) {
+func (frame AVFrame) Flip(height int) {
 	// for i := 0; i < 3; i++ {
 	// 	frame.ptr.data[i] = (*C.uint8_t)(unsafe.Pointer(uintptr(unsafe.Pointer(frame.ptr.data[i])) + uintptr(frame.ptr.linesize[i]*(frame.ptr.height-1))))
 	// 	frame.ptr.linesize[i] = -frame.ptr.linesize[i]
@@ -113,13 +117,13 @@ func (frame *AVFrame) Flip(height int) {
 	pic.linesize[3] *= -1
 }
 
-func (frame *AVFrame) Free() {
+func (frame AVFrame) Free() {
 	C.av_frame_free(&frame.ptr)
 }
 
-func (frame *AVFrame) Dts() float64 {
+func (frame AVFrame) Dts() float64 {
 	return float64(frame.ptr.pkt_dts)
 }
-func (frame *AVFrame) Pts() float64 {
+func (frame AVFrame) Pts() float64 {
 	return float64(frame.ptr.pkt_pts)
 }
