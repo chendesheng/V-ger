@@ -12,7 +12,6 @@ import (
 	"log"
 	"strings"
 	"unsafe"
-	"github.com/qiniu/iconv"
 )
 
 type CharsetDetect struct {
@@ -55,20 +54,17 @@ func GuessEncoding(data []byte) (string, error) {
 
 	return strings.ToLower(cd.Close()), nil
 }
+
 func ConvertToUTF8From(s string, encoding string) (string, error) {
-	c, err := iconv.Open("UTF-8", encoding)
+	c, err := Open("UTF-8", encoding)
 	defer c.Close()
 	if err != nil {
 		return "", err
 	}
 
-	res, _, err := c.Conv([]byte(s), make([]byte, 512))
-	if err != nil {
-		return "", err
-	}
-
-	return string(res), nil
+	return c.ConvStr(s)
 }
+
 func ConverToUTF8(r io.Reader) (string, string, error) {
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -85,18 +81,19 @@ func ConverToUTF8(r io.Reader) (string, string, error) {
 		return string(data), encoding, nil
 	}
 
-	c, err := iconv.Open("UTF-8", encoding)
+	c, err := Open("UTF-8", encoding)
 	defer c.Close()
 	if err != nil {
 		return "", "", err
 	}
 
-	res, _, err := c.Conv(data, make([]byte, 512))
+	res, err := c.ConvStr(string(data))
 	if err != nil {
 		return "", "", err
 	}
 
-	return string(res), encoding, nil
+
+	return res, encoding, nil
 }
 
 func GB18030ToUTF8(text string) (res string, err error) {
