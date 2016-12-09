@@ -29,7 +29,6 @@ import "C"
 import (
 	"syscall"
 	"unsafe"
-  "errors"
 )
 
 var EILSEQ = syscall.Errno(C.EILSEQ)
@@ -68,9 +67,9 @@ func (cd Iconv) ConvStr(s string) (string, error) {
   defer C.free(unsafe.Pointer(cs))
 
   out := (*C.char)(unsafe.Pointer(uintptr(0)))
-  outbytes := int(C.iconv_all(cd.Handle, cs, C.size_t(len(s)), (**C.char)(&out), 512));
-  if (outbytes == -1) {
-    return "", errors.New("convert error")
+  outbytes, errno := C.iconv_all(cd.Handle, cs, C.size_t(len(s)), (**C.char)(&out), DefaultBufSize);
+  if (errno != nil) {
+    return "", errno
   }
   return C.GoStringN(out, C.int(outbytes)), nil
 }
