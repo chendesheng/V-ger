@@ -15,6 +15,8 @@ func init() {
 	cocoa.OnProgressChange = onProgressChange
 	cocoa.OnTimerTick = onTimerTick
 	cocoa.OnFullScreen = onFullScreen
+	cocoa.OnWillSleep = onWillSleep
+	cocoa.OnDidWake = onDidWake
 }
 
 type Window struct {

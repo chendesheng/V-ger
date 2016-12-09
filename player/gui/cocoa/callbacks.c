@@ -63,6 +63,14 @@
 		return goIsSearchingSubtitle();
 	}
 
+  inline void onWillSleep() {
+    goOnWillSleep();
+  }
+
+  inline void onDidWake() {
+    goOnDidWake();
+  }
+
 #else
 #include <stdio.h>
     inline void onDraw() {
@@ -106,6 +114,14 @@
 	inline void onMouseWheel(double deltaY) {
 	//	goOnMouseWheel(deltaY);
 	}
+
+  inline void onWillSleep() {
+  // goOnWillSleep();
+  }
+
+  inline void onDidWake() {
+  // goOnDidWake();
+  }
 
 	inline int onMenuClick(int type, int tag) {
         printf("onMenuClick: %d %d\n", type, tag);

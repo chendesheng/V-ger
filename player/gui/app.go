@@ -47,6 +47,15 @@ func onMouseWheel(deltaX, deltaY float64) {
 	}
 }
 
+func onWillSleep() {
+  log.Print("onWillSleep");
+  appDelegate.OnWillSleep()
+}
+
+func onDidWake() {
+		appDelegate.OnDidWake()
+}
+
 type AppDelegate interface {
 	OpenFile(string) bool
 	OnOpenOpenPanel()
@@ -55,6 +64,8 @@ type AppDelegate interface {
 	OnMenuClick(int, int) int
 	OnMouseWheel(float64, float64)
 	OnFullScreen(int)
+  OnWillSleep()
+  OnDidWake()
 }
 
 var appDelegate AppDelegate

@@ -22,6 +22,8 @@ var (
 	OnCloseOpenPanel func(string)
 	OnOpenFile       func(string) bool
 	OnFullScreen     func(int)
+	OnWillSleep      func()
+	OnDidWake        func()
 
 	P Player
 )
@@ -182,6 +184,16 @@ func goGetPlayingAudioTrack() C.int {
 //export goIsSearchingSubtitle
 func goIsSearchingSubtitle() C.int {
 	return b2i(P.IsSearchingSubtitle())
+}
+
+//export goOnWillSleep
+func goOnWillSleep() {
+  OnWillSleep();
+}
+
+//export goOnDidWake
+func goOnDidWake() {
+	OnDidWake();
 }
 
 func b2i(b bool) C.int {

@@ -65,6 +65,9 @@ void onPlaybackChange(int, double);
 int onOpenFile(const char*);
 void onWillTerminate();
 void onFullScreen(int);
+void onWillSleep();
+void onDidWake();
+
 int isPlaying();
 void getAllSubtitleNames(void***, int*);
 void getPlayingSubtitles(int*, int*);

@@ -331,6 +331,12 @@ func (m *Movie) TogglePlay() {
 	}
 }
 
+func (m *Movie) PausePlay() {
+  if (m.c != nil) {
+    m.c.Pause();
+  }
+}
+
 func (m *Movie) GetAllAudioTracks() (names []string) {
 	if len(m.audioStreams) > 0 {
 		names = make([]string, len(m.audioStreams))

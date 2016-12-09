@@ -25,13 +25,20 @@ void initialize() {
         [[NSBundle mainBundle] loadNibNamed:@"MainMenu" owner:NSApp topLevelObjects:nil];
 
         [[NSAppleEventManager sharedAppleEventManager] setEventHandler:appDelegate andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+
+        [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver: appDelegate 
+                                                               selector: @selector(receiveSleepNotification:) 
+                                                                   name: NSWorkspaceWillSleepNotification object: NULL];
+        [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver: appDelegate 
+                                                               selector: @selector(receiveWakeNotification:) 
+                                                                   name: NSWorkspaceDidWakeNotification object: NULL];
 }
 
 void setWindowTitleWithRepresentedFilename(void* wptr, char* title) {
         Window* w = (Window*)wptr;
 
         NSString* str = [NSString stringWithUTF8String:title];
-	[w setTitleWithRepresentedFilename:str];
+        [w setTitleWithRepresentedFilename:str];
 }
 
 void setWindowTitle(void* wptr, char* title) {
@@ -39,6 +46,7 @@ void setWindowTitle(void* wptr, char* title) {
 
         NSString* str = [NSString stringWithUTF8String:title];
         [w setTitle:str];
+
 }
 
 void setWindowSize(void* wptr, int width, int height) {

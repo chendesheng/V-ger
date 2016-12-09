@@ -45,5 +45,14 @@
 	[self->winOpenURL showWindow:self];
 }
 
+- (void)receiveSleepNotification:(NSNotification*)note{
+  NSLog(@"receiveSleepNotification");
+  onWillSleep();
+}
+
+- (void) receiveWakeNotification:(NSNotification*)note{
+  NSLog(@"receiveWakeNotification");
+  onDidWake();
+}
 
 @end

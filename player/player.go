@@ -102,6 +102,13 @@ func (app *appDelegate) OnMouseWheel(deltaX, deltaY float64) {
 	}
 }
 
+func (app *appDelegate) OnWillSleep() {
+  app.m.PausePlay();
+}
+
+func (app *appDelegate) OnDidWake() {
+}
+
 const (
 	MENU_AUDIO = iota
 	MENU_SUBTITLE
@@ -219,8 +226,8 @@ func main() {
 	thunder.Gdriveid = util.ReadConfig("gdriveid")
 
 	if http.DefaultClient.Jar == nil {
-		//http.DefaultClient.Jar, _ = cookiejar.New(nil)
-		http.DefaultClient.Jar, _ = nativejar.New()
+		http.DefaultClient.Jar, _ = cookiejar.New(nil)
+		//http.DefaultClient.Jar, _ = nativejar.New()
 	}
 
 	log.Print("gdriveid:", thunder.Gdriveid)
