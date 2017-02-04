@@ -208,7 +208,7 @@ func (m *Movie) decode() {
 		case <-m.quit:
 			return
 		case <-time.After(50 * time.Millisecond):
-			log.Print("write m.chProgress timeout")
+			// log.Print("write m.chProgress timeout")
 		case <-m.chHold:
 			log.Print("hold movie")
 			select {

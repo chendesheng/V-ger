@@ -17,6 +17,7 @@ func init() {
 	cocoa.OnFullScreen = onFullScreen
 	cocoa.OnWillSleep = onWillSleep
 	cocoa.OnDidWake = onDidWake
+	cocoa.OnImportSubtitle = onImportSubtitle
 }
 
 type Window struct {

@@ -123,7 +123,7 @@ func (w NativeWindow) ShowSubtitle(items []struct {
 	defer C.free(unsafe.Pointer(p))
 
 	for i, str := range items {
-		log.Println(str.Content)
+		// log.Println(str.Content)
 		cstr := C.CString(str.Content)
 		defer C.free(unsafe.Pointer(cstr))
 

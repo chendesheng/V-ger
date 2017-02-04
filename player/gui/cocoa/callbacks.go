@@ -24,6 +24,7 @@ var (
 	OnFullScreen     func(int)
 	OnWillSleep      func()
 	OnDidWake        func()
+	OnImportSubtitle func(string)
 
 	P Player
 )
@@ -43,6 +44,13 @@ func goOnMenuClick(typ int, tag int) C.int {
 		return C.int(OnMenuClick(typ, tag))
 	} else {
 		return 0
+	}
+}
+
+//export goOnImportSubtitle
+func goOnImportSubtitle(filename *_Ctype_char) {
+	if OnImportSubtitle != nil {
+		OnImportSubtitle(C.GoString(filename))
 	}
 }
 

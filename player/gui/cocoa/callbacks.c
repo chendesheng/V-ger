@@ -71,6 +71,10 @@
     goOnDidWake();
   }
 
+inline void onImportSubtitle(char* filename) {
+  goOnImportSubtitle(filename);
+}
+
 #else
 #include <stdio.h>
     inline void onDraw() {
@@ -135,4 +139,6 @@ inline void getPlayingSubtitles(int* firstSub, int* secondSub) {}
 inline int getPlayingAudioTrack(){return -1;}
 inline void getAllAudioTracks(void*** names, int* length) {}
 inline int isSearchingSubtitle() { return 0; }
+inline void onImportSubtitle(char* filename) {}
+
 #endif

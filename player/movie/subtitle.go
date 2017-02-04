@@ -135,6 +135,7 @@ func readSubtitlesFromDir(movieName, dir string) {
 		return nil
 	}, ".srt", ".ass")
 }
+
 func downloadSubs(movieName string, url string, search string, quit chan struct{}) {
 	chSubs := make(chan subtitles.Subtitle)
 
@@ -155,6 +156,31 @@ func downloadSubs(movieName string, url string, search string, quit chan struct{
 
 	if receiveAndExtractSubtitles(chSubs, dir, quit) {
 		readSubtitlesFromDir(movieName, dir)
+	}
+}
+
+func (m *Movie) ImportSubtitle(filename string) {
+	f, err := os.OpenFile(filename, os.O_RDONLY, 0666)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	utf8Text, _, err := toutf8.ConverToUTF8(f)
+	// log.Print(utf8Text)
+	movieName := m.p.Movie
+	name := path.Base(filename)
+
+	// lang1, lang2 := cld.DetectLanguage2(utf8Text)
+	dis := getNameDistance(name, movieName)
+
+	shared.InsertSubtitle(&shared.Sub{movieName, name, 0, utf8Text, path.Ext(filename)[1:], "", "", dis})
+	go m.w.SendShowMessage(fmt.Sprintf(`"%s" Imported`, name), true)
+	log.Printf("insert subtitle %s, dis:%d", name, dis)
+
+	subs := shared.GetSubtitlesMap(m.p.Movie)
+	if len(subs) > 0 {
+		m.setupSubtitles(subs, name)
 	}
 }
 
@@ -212,7 +238,7 @@ func (m *Movie) searchDownloadSubtitle() {
 	if len(subs) == 0 {
 		w.SendShowMessage("No subtitle", true)
 	} else {
-		m.setupSubtitles(subs)
+		m.setupSubtitles(subs, "")
 		w.SendHideMessage()
 	}
 }
@@ -224,12 +250,20 @@ func (m *Movie) getSub(name string) *subtitle.Subtitle {
 	}
 	return nil
 }
-func (m *Movie) setupDefaultSubtitles() {
+func (m *Movie) setupDefaultSubtitles(selectedSub string) {
 	m.stopPlayingSubs()
 
-	s1, s2 := m.getSub(m.p.Sub1), m.getSub(m.p.Sub2)
-	if s1 == nil && s2 == nil {
-		s1, s2 = subtitle.Subtitles(m.subs).Select()
+	var s1 *subtitle.Subtitle
+	var s2 *subtitle.Subtitle
+
+	if len(selectedSub) == 0 {
+		s1, s2 = m.getSub(m.p.Sub1), m.getSub(m.p.Sub2)
+		if s1 == nil && s2 == nil {
+			s1, s2 = subtitle.Subtitles(m.subs).Select()
+		}
+	} else {
+		s1 = m.getSub(selectedSub)
+		s2 = nil
 	}
 
 	switch {
@@ -254,7 +288,7 @@ func (m *Movie) setupDefaultSubtitles() {
 	shared.SavePlayingAsync(m.p)
 }
 
-func (m *Movie) setupSubtitles(subs map[string]*shared.Sub) {
+func (m *Movie) setupSubtitles(subs map[string]*shared.Sub, selectedSub string) {
 	if len(subs) > 0 {
 		m.subs = nil
 		width, height := m.v.Width, m.v.Height
@@ -264,7 +298,7 @@ func (m *Movie) setupSubtitles(subs map[string]*shared.Sub) {
 
 		sort.Sort(subtitle.Subtitles(m.subs))
 
-		m.setupDefaultSubtitles()
+		m.setupDefaultSubtitles(selectedSub)
 	}
 }
 

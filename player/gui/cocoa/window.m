@@ -158,6 +158,21 @@
         onMenuClick(MENU_SEARCH_SUBTITLE, 0);
 }
 
+-(void)importSubtitle:(id)sender {
+        NSOpenPanel *panel = [NSOpenPanel openPanel];
+        [panel setCanChooseDirectories:NO];
+        [panel setAllowsMultipleSelection:NO];
+        [panel beginSheetModalForWindow: self completionHandler:^(NSInteger result){
+                setControlsVisible(self, 1, 1);
+
+                if(result == NSFileHandlingPanelOKButton){
+                        NSString* filename = [[panel URL] path];
+                        char* cfilename = (char*)[filename UTF8String];
+                        onImportSubtitle(cfilename);
+                }
+        }];
+}
+
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     if ([item action] == @selector(playPause:)) {
             if (isPlaying()) {

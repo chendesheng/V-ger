@@ -103,7 +103,7 @@ func (app *appDelegate) OnMouseWheel(deltaX, deltaY float64) {
 }
 
 func (app *appDelegate) OnWillSleep() {
-  app.m.PausePlay();
+	app.m.PausePlay()
 }
 
 func (app *appDelegate) OnDidWake() {
@@ -147,6 +147,10 @@ func (app *appDelegate) OnMenuClick(typ int, tag int) int {
 		app.onSyncAudioClick(tag)
 	}
 	return 0
+}
+
+func (app *appDelegate) ImportSubtitle(filename string) {
+	go app.m.ImportSubtitle(filename)
 }
 
 func (app *appDelegate) onSeekMenuClick(typ int) {

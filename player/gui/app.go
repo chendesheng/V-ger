@@ -10,6 +10,12 @@ func onOpenFile(filename string) bool {
 	}
 }
 
+func onImportSubtitle(filename string) {
+	if appDelegate != nil {
+		appDelegate.ImportSubtitle(filename)
+	}
+}
+
 func onWillTerminate() {
 	if appDelegate != nil {
 		appDelegate.WillTerminate()
@@ -53,7 +59,7 @@ func onWillSleep() {
 }
 
 func onDidWake() {
-		appDelegate.OnDidWake()
+	appDelegate.OnDidWake()
 }
 
 type AppDelegate interface {
@@ -64,8 +70,9 @@ type AppDelegate interface {
 	OnMenuClick(int, int) int
 	OnMouseWheel(float64, float64)
 	OnFullScreen(int)
-  OnWillSleep()
-  OnDidWake()
+	OnWillSleep()
+	OnDidWake()
+	ImportSubtitle(string)
 }
 
 var appDelegate AppDelegate

@@ -134,7 +134,7 @@ func checkDownloadSubtitle(m *Movie, file string, filename string) {
 		}
 	} else {
 		log.Print("setupSubtitles")
-		m.setupSubtitles(subs)
+		m.setupSubtitles(subs, "")
 
 		m.SeekPlayingSubs(m.c.GetTime())
 	}
@@ -555,3 +555,4 @@ func (m *Movie) SetAudioTrack(i int) {
 		shared.SavePlayingAsync(m.p)
 	}
 }
+
