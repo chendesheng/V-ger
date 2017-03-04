@@ -4,9 +4,9 @@ import (
 	"errors"
 	"log"
 	"net/url"
-	"vger/httpex"
 
 	"vger/html"
+	"vger/httpex"
 )
 
 func yyetsParseSub(n *html.Node, quit chan struct{}) *Subtitle {
@@ -70,7 +70,7 @@ type yyetsSearch struct {
 
 func (y *yyetsSearch) search(result chan Subtitle) error {
 	log.Printf("YYets search subtitle: %s %d", y.name, y.maxcnt)
-	resp, err := httpex.Get("http://www.zimuzu.tv/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
+	resp, err := httpex.Get("http://www.zmz2017.com/search/index?type=subtitle&order=uptime&keyword="+url.QueryEscape(y.name), y.quit)
 	if err != nil {
 		return err
 	}

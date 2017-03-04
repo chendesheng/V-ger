@@ -77,7 +77,10 @@ func WalkFiles(dir string, fn func(string) error, exts ...string) {
 
 func extractOneFile(unarPath, filename string) {
 	dir := path.Dir(filename)
-	cmd := exec.Command(unarPath, filename, "-f", "-o", dir)
+	log.Printf("extractOneFile: %s", dir)
+	log.Printf("extractOneFile: %s", filename)
+	cmd := exec.Command(unarPath, filename)
+	cmd.Dir = dir
 
 	if err := cmd.Run(); err != nil {
 		log.Print(err)

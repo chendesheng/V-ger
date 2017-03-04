@@ -28,7 +28,7 @@ func (s *Subtitle) String() string {
 func SearchSubtitles(name string, url string, result chan Subtitle, quit chan struct{}) {
 	searchers := []subSearcher{
 		&yyetsSearch{name, 1, quit},
-		&kankanSearch{url, quit},
+		//&kankanSearch{url, quit},
 		&addic7ed{name, quit},
 	}
 
