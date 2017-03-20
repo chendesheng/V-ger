@@ -1,7 +1,7 @@
 package cocoa
 
 // #cgo CFLAGS: -x objective-c
-// #cgo LDFLAGS: -framework Cocoa -framework OpenGL -framework QuartzCore
+// #cgo LDFLAGS: -framework IOKit -framework Cocoa -framework OpenGL -framework QuartzCore
 import "C"
 import (
 	"log"

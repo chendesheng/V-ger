@@ -10,6 +10,7 @@
 #import "volumeView.h"
 // #import "titleTextView.h"
 #import "app.h"
+#import <IOKit/pwr_mgt/IOPMLib.h>
 
 void initialize() {
         if (NSApp)
@@ -254,4 +255,38 @@ void setSubFontSize(void* wptr, double sz) {
 
         Window* w = (Window*)wptr;
         [w->glView setFontSize:sz];
+}
+
+// kIOPMAssertionTypeNoDisplaySleep prevents display sleep,
+// kIOPMAssertionTypeNoIdleSleep prevents idle sleep
+
+//reasonForActivity is a descriptive string used by the system whenever it needs 
+//  to tell the user why the system is not sleeping. For example, 
+//  "Mail Compacting Mailboxes" would be a useful string.
+
+//  NOTE: IOPMAssertionCreateWithName limits the string to 128 characters. 
+CFStringRef* reasonForActivity= CFSTR("vger player is playing");
+
+IOPMAssertionID assertionID;
+int sleepLock = 0;
+
+void allowDisplaySleep() {
+    IOReturn success = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, 
+					kIOPMAssertionLevelOn, reasonForActivity, &assertionID); 
+    if (success != 0) {
+      sleepLock++;
+    } else {
+      NSLog(@"cannot allow display sleep");
+    }
+}
+
+
+void preventDisplaySleep() {
+    if (sleepLock <= 0) return;
+    IOReturn success = IOPMAssertionRelease(assertionID);
+    if (success != 0) {
+      sleepLock--;
+    } else {
+      NSLog(@"cannot prevent display sleep");
+    }
 }

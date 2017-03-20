@@ -26,6 +26,14 @@ func AddRecentOpenedFile(str string) {
 	C.addRecentOpenedFile(cstr)
 }
 
+func AllowDisplaySleep() {
+	C.allowDisplaySleep();
+}
+
+func PreventDisplaySleep() {
+	C.preventDisplaySleep();
+}
+
 func (w NativeWindow) Alert(str string) {
 	cstr := C.CString(str)
 	defer C.free(unsafe.Pointer(cstr))

@@ -53,6 +53,9 @@ void setVolumeVisible(void*, int);
 
 void addRecentOpenedFile(char*);
 
+void allowDisplaySleep();
+void preventDisplaySleep();
+
 //callbacks
 int onMenuClick(int, int);
 void onOpenOpenPanel();

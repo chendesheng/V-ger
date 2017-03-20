@@ -8,6 +8,7 @@ import (
 	"time"
 	"vger/player/clock"
 	"vger/player/libav"
+	"vger/player/gui/cocoa"
 )
 
 type VideoRender interface {
@@ -241,12 +242,15 @@ func (v *Video) Play() {
 		}
 	}()
 
+	cocoa.PreventDisplaySleep();
+
 	for {
 		v.r.SendShowSpinning()
 
 		t := time.Now()
 		select {
 		case packet := <-v.ChPackets:
+
 			v.r.SendHideSpinning(false)
 			//error happens, wait until package come
 			if packet.IsNil() {
@@ -319,6 +323,7 @@ func (v *Video) Play() {
 }
 
 func (v *Video) Hold() {
+	cocoa.AllowDisplaySleep();
 	select {
 	case v.chHold <- struct{}{}:
 		v.FlushBuffer()
@@ -330,6 +335,8 @@ func (v *Video) Hold() {
 }
 
 func (v *Video) Unhold() {
+	cocoa.PreventDisplaySleep();
+
 	v.FlushBuffer()
 	select {
 	case v.chHold <- struct{}{}:
@@ -406,4 +413,5 @@ func (v *Video) Close() {
 	v.imageData.Free()
 
 	v.codec.Close()
+	cocoa.AllowDisplaySleep();
 }
