@@ -270,23 +270,22 @@ CFStringRef* reasonForActivity= CFSTR("vger player is playing");
 IOPMAssertionID assertionID;
 int sleepLock = 0;
 
-void allowDisplaySleep() {
+void preventDisplaySleep() {
     IOReturn success = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, 
 					kIOPMAssertionLevelOn, reasonForActivity, &assertionID); 
     if (success != 0) {
       sleepLock++;
     } else {
-      NSLog(@"cannot allow display sleep");
+      NSLog(@"cannot prevent display sleep");
     }
 }
 
-
-void preventDisplaySleep() {
+void allowDisplaySleep() {
     if (sleepLock <= 0) return;
     IOReturn success = IOPMAssertionRelease(assertionID);
     if (success != 0) {
       sleepLock--;
     } else {
-      NSLog(@"cannot prevent display sleep");
+      NSLog(@"cannot allow display sleep");
     }
 }
